@@ -1,4 +1,8 @@
 ﻿![BUSINESS AS USUAL](https://img.shields.io/badge/BUSINESS_AS_USUAL-%23F57C00?style=for-the-badge&logo=data:image/png;base64,...)
+![CI Build](https://github.com/cruckman900/BusinessAsUsual/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/cruckman/BusinessAsUsual)
+![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual)
+![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual)
 # 🎸 Business As Usual: Modular ASP.NET Core Backend
 
 Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform built for scale, clarity, and creative firepower. This backend is the engine behind your business suite, orchestrating products, services, accounting, inventory, scheduling, and billing with precision and swagger.
