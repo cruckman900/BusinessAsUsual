@@ -1,0 +1,9 @@
+{
+  "settings": {
+    "documentationRules": {
+      "companyName": "Business As Usual",
+      "documentExposedElements": true,
+      "documentInternalElements": false
+    }
+  }
+}

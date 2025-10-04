@@ -1,0 +1,46 @@
+# 🔒 General
+*.log
+*.tmp
+*.suo
+*.user
+*.DS_Store
+
+# 🧠 Build artifacts
+bin/
+obj/
+out/
+dist/
+
+# 🎸 Visual Studio
+.vs/
+.vscode/
+*.dbmdl
+*.jfm
+
+# 🧪 Test results
+TestResults/
+*.coverage
+*.coveragexml
+
+# 📦 Package folders
+**/node_modules/
+packages/
+bower_components/
+
+# 🐳 Docker
+*.env
+.env.*
+docker-compose.override.yml
+
+# 📚 Documentation artifacts
+*.docfx
+*.mdf
+*.ldf
+
+# 🔍 Analyzer cache
+AnalyzerCache/
+RoslynCache/
+
+# 🧼 Ignore everything in .github except workflows
+.github/*
+!.github/workflows/cd
