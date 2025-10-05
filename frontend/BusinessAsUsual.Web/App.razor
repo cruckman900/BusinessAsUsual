@@ -1,13 +1,32 @@
 ﻿@using MudBlazor
+@using Microsoft.AspNetCore.Routing
+@using BusinessAsUsual.Web.Theming
+@using BusinessAsUsual.Web.Components.Layout
 
-<MudLayout>
-    <MudAppBar Color="Color.Primary">Business As Usual</MudAppBar>
+<MudThemeProvider Theme="@CurrentTheme"
+                  IsDarkMode="@IsDarkMode"
+                  IsDarkModeChanged="@OnDarkModeChanged">
 
-    <MudDrawer Open="true" ClipMode="DrawerClipMode.Always">
-        <!-- Sidebar content -->
-    </MudDrawer>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+        <NotFound>
+            <MudText Color="Color.Error">Page not found.</MudText>
+        </NotFound>
+    </Router>
+</MudThemeProvider>
 
-    <MudMainContent>
-        <!-- Routed content or splash screen -->
-    </MudMainContent>
-</MudLayout>
+@code {
+    private bool IsDarkMode = true;
+
+    private MudTheme CurrentTheme => IsDarkMode
+        ? ThemeConfig.GetDarkTheme()
+        : ThemeConfig.GetLightTheme();
+
+    private Task OnDarkModeChanged(bool value)
+    {
+        IsDarkMode = value;
+        return Task.CompletedTask;
+    }
+}
