@@ -1,0 +1,34 @@
+name: Smart Changelog
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.cs'
+      - '**/*.md'
+      - '.github/workflows/changelog.yml'
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Parse Smart Commits
+      uses: aviskarkc10/smart-changelog@v1.2.0
+      with:
+        changelog_file: CHANGELOG.md
+        commit_limit: 20
+        tag_prefix: v
+        group_by: type
+        include_tags: true
+
+    - name: Commit updated changelog
+      run: |
+        git config user.name "Smart Changelog Bot"
+        git config user.email "changelog@businessasusual.local"
+        git add CHANGELOG.md
+        git commit -m "docs(changelog): auto-update from Smart Commits #changelog"
+        git push
