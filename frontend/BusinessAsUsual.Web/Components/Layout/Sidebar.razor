@@ -1,9 +1,20 @@
-﻿@namespace BusinessAsUsual.Web.Components.Layout
-@using MudBlazor
-<MudDrawer Open="true" ClipMode="DrawerClipMode.Always" Elevation="1">
-    <MudNavMenu>
-        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info">About</MudNavLink>
-        <MudNavLink Href="/contributors" Icon="@Icons.Material.Filled.Group">Contributors</MudNavLink>
-    </MudNavMenu>
-</MudDrawer>
+﻿<aside class="sidebar-zone bg-light text-dark border-end p-0" style="width: 250px;">
+    <div class="sticky-inner p-3">
+        <h5 class="text-primary">Navigation</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/">🏠 Home</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/about">ℹ️ About</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/contributors">👥 Contributors</NavLink>
+            </li>
+        </ul>
+    </div>
+</aside>
+
+@code {
+    [Parameter] public bool IsDark { get; set; }
+}

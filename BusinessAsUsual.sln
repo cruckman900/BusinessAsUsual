@@ -17,6 +17,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "frontend", "frontend", "{CE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessAsUsual.Web", "frontend\BusinessAsUsual.Web\BusinessAsUsual.Web.csproj", "{76C3C62C-403F-4373-BE2C-4BC9BDDEDAF6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		docs\ARCHITECTURE.md = docs\ARCHITECTURE.md
+		docs\BADGES.md = docs\BADGES.md
+		docs\BRANDING.md = docs\BRANDING.md
+		docs\CHANGELOG.md = docs\CHANGELOG.md
+		.github\workflows\changelog.yml = .github\workflows\changelog.yml
+		docs\CODEOWNERS.md = docs\CODEOWNERS.md
+		Directory.Build.props = Directory.Build.props
+		Dockerfile = Dockerfile
+		docs\LICENSE.md = docs\LICENSE.md
+		docs\METADATA.md = docs\METADATA.md
+		docs\ONBOARDING.md = docs\ONBOARDING.md
+		docs\PSCOMMANDS.md = docs\PSCOMMANDS.md
+		README.md = README.md
+		docs\README.md = docs\README.md
+		docs\SPLASH.md = docs\SPLASH.md
+		docs\STRATEGY.md = docs\STRATEGY.md
+		docs\STYLEGUIDE.md = docs\STYLEGUIDE.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,5 +121,8 @@ Global
 		{6D42EBB5-0DAC-482A-946D-E525EF148E16} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 		{E8A8034D-160D-4DEC-A9BD-87B6B2E1A935} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 		{76C3C62C-403F-4373-BE2C-4BC9BDDEDAF6} = {CE609670-85B9-0D16-FB54-ED063D5D8A6D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F827300-8DD6-4B16-88E2-867FB0B9F7FB}
 	EndGlobalSection
 EndGlobal

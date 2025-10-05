@@ -1,21 +1,23 @@
-﻿@namespace BusinessAsUsual.Web.Components.Layout
-@using MudBlazor
-
-<MudIconButton Icon="@CurrentIcon"
-               Color="Color.Secondary"
-               OnClick="ToggleTheme"
-               Size="Size.Medium"
-               AriaLabel="Toggle theme" />
+﻿<button @onclick="ToggleTheme"
+        class="btn btn-outline-light rounded-circle"
+        title="Toggle theme">
+    @CurrentIcon
+</button>
 
 @code {
-    [CascadingParameter] public MudThemeProvider ThemeProvider { get; set; } = default!;
-    [CascadingParameter] public bool IsDarkMode { get; set; }
-    [CascadingParameter(Name = "IsDarkModeChanged")] public EventCallback<bool> IsDarkModeChanged { get; set; }
+    private bool isDark = true;
 
-    private string CurrentIcon => IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
+    private string CurrentIcon => isDark ? "☀️" : "🌙";
 
     private async Task ToggleTheme()
     {
-        await IsDarkModeChanged.InvokeAsync(!IsDarkMode);
+        isDark = !isDark;
+
+        if (JS is not null)
+        {
+            await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+        }
     }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 }

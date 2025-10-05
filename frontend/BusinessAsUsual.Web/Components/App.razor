@@ -1,11 +1,28 @@
-﻿@using BusinessAsUsual.Web.Components.Layout
-@using Microsoft.AspNetCore.Components.Routing
-@using MudBlazor
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using BusinessAsUsual.Web.Components.Layout
+
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
-        <MudText Color="Color.Error">Page not found.</MudText>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <div class="text-center p-5">
+                <h1 class="display-4 text-danger">404 - Page Not Found</h1>
+                <p class="lead">The riff you're looking for doesn't exist.</p>
+                <NavLink class="btn btn-outline-primary" href="/">Return to Home</NavLink>
+            </div>
+        </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    private bool IsDarkMode = true;
+
+    public void ToggleTheme()
+    {
+        IsDarkMode = !IsDarkMode;
+        Console.WriteLine($"Theme changed: {IsDarkMode}");
+    }
+}

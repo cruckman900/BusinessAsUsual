@@ -1,32 +1,13 @@
-﻿@using MudBlazor
-@using Microsoft.AspNetCore.Routing
-@using BusinessAsUsual.Web.Theming
+﻿@using Microsoft.AspNetCore.Components.Routing
 @using BusinessAsUsual.Web.Components.Layout
+@using MudBlazor
 
-<MudThemeProvider Theme="@CurrentTheme"
-                  IsDarkMode="@IsDarkMode"
-                  IsDarkModeChanged="@OnDarkModeChanged">
-
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        </Found>
-        <NotFound>
-            <MudText Color="Color.Error">Page not found.</MudText>
-        </NotFound>
-    </Router>
-</MudThemeProvider>
-
-@code {
-    private bool IsDarkMode = true;
-
-    private MudTheme CurrentTheme => IsDarkMode
-        ? ThemeConfig.GetDarkTheme()
-        : ThemeConfig.GetLightTheme();
-
-    private Task OnDarkModeChanged(bool value)
-    {
-        IsDarkMode = value;
-        return Task.CompletedTask;
-    }
-}
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <MudText Color="Color.Error">Page not found.</MudText>
+    </NotFound>
+</Router>

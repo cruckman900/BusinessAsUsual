@@ -1,7 +1,7 @@
-﻿@namespace BusinessAsUsual.Web.Components.Layout
-@using MudBlazor
-<MudPaper Class="d-flex justify-content-center align-items-center p-2" Style="background-color:#0057B8;">
-    <MudText Typo="Typo.caption" Style="color:#FF6B00;">
-        © 2025 Business As Usual. All rights reserved.
-    </MudText>
-</MudPaper>
+﻿<footer class="footer-zone text-center py-2 mt-auto @(IsDark ? "bg-dark text-light" : "bg-primary text-warning")">
+    <span class="small">© 2025 Business As Usual. All riffs reserved.</span>
+</footer>
+
+@code {
+    [Parameter] public bool IsDark { get; set; }
+}

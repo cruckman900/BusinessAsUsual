@@ -1,15 +1,31 @@
-﻿@namespace BusinessAsUsual.Web.Components.Layout
-@using MudBlazor
+﻿<nav class="navbar navbar-zone @(IsDark ? "navbar-dark bg-dark" : "navbar-light bg-primary") px-3 py-2">
+    <button class="btn btn-outline-light me-3 d-flex align-items-center gap-2"
+            @onclick="OnToggleSidebar">
+        <span class="navbar-toggler-icon"></span>
+        <span>@(SidebarLabel)</span>
+    </button>
 
-<MudPaper Class="d-flex align-items-center px-3 py-2" Elevation="1" Style="background-color:#0057B8;">
-    <MudIcon Icon="@Icons.Material.Filled.Menu" Color="Color.Default" Class="me-2" />
+    <a class="navbar-brand fw-bold text-warning" href="/">Business As Usual</a>
 
-    <MudText Typo="Typo.h6" Style="color:#FF6B00;">
-        Business As Usual
-    </MudText>
+    <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/">Home</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/about">About</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/contributors">Contributors</NavLink>
+            </li>
+        </ul>
 
-    <MudSpacer />
+        @* <ThemeToggle /> *@
+    </div>
+</nav>
 
-    <!-- Theme toggle placeholder -->
-    <ThemeToggle />
-</MudPaper>
+@code {
+    [Parameter] public EventCallback OnToggleSidebar { get; set; }
+    [Parameter] public required string SidebarLabel { get; set; }
+    [Parameter] public bool IsDark { get; set; }
+}

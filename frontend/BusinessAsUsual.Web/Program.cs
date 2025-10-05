@@ -27,11 +27,11 @@ namespace BusinessAsUsual.Web
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Register Razor Components and MudBlazor services
+            builder.Services.AddRazorPages();
+            builder.Services.AddServerSideBlazor();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
-            builder.Services.AddMudServices();
+            // Register Razor Components and MudBlazor services
 
             var app = builder.Build();
 
@@ -43,13 +43,15 @@ namespace BusinessAsUsual.Web
             }
 
             app.UseStaticFiles();
+            app.UseRouting();
+
             app.UseHttpsRedirection();
-            app.UseAntiforgery();
+
+            app.MapBlazorHub();
+            app.MapFallbackToPage("/_Host");
 
             // Map static assets and Razor components
             app.MapStaticAssets();
-            app.MapRazorComponents<App>()
-                .AddInteractiveServerRenderMode();
 
             // Launch the application
             await app.RunAsync().ConfigureAwait(false);

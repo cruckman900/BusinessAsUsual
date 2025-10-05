@@ -1,14 +1,38 @@
-﻿@namespace BusinessAsUsual.Web.Components.Layout
-@using BusinessAsUsual.Web.Components.Layout
-@using MudBlazor
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-<MudLayout>
-    <Navbar />
-    <Header />
-    <Sidebar />
-    <MudMainContent>
+<div class="layout-grid @(isDark ? "dark" : "light") @(sidebarOpen ? "" : "sidebar-collapsed")">
+    <Header IsDark="@isDark" />
+    <Navbar IsDark="@isDark" OnToggleSidebar="@ToggleSidebar" SidebarLabel="@(sidebarOpen ? "🡸 Collapse Sidebar" : "🡺 Expand Sidebar")" />
+    @if (sidebarOpen)
+    {
+        <div class="sidebar @(sidebarOpen ? "expanded" : "collapsed")">
+            <Sidebar IsDark="@isDark" />
+        </div>
+    }
+    <main class="main-zonet p-4">
         @Body
-    </MudMainContent>
-    <Footer />
-</MudLayout>
+    </main>
+    <Footer IsDark="@isDark" />
+</div>
+
+@code {
+    private bool isDark = true;
+    private bool sidebarOpen = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+        }
+    }
+
+    public void ToggleTheme()
+    {
+        isDark = !isDark;
+        JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+    }
+
+    public void ToggleSidebar() => sidebarOpen = !sidebarOpen;
+}
