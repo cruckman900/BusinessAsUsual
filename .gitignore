@@ -42,5 +42,5 @@ AnalyzerCache/
 RoslynCache/
 
 # 🧼 Ignore everything in .github except workflows
-.github/*
-!.github/workflows/cd
+# .github/*
+# !.github/workflows/cd

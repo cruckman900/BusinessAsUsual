@@ -1,0 +1,13 @@
+# Analyzer enforcement
+BusinessAsUsual.Analyzers/ @ChristopherRuckman
+
+# CI/CD workflows
+.github/workflows/ @ChristopherRuckman
+
+# Main app
+BusinessAsUsual/ @ChristopherRuckman
+
+# Docs and branding
+/docs/ @ChristopherRuckman
+CHANGELOG.md @ChristopherRuckman
+README.md @ChristopherRuckman
