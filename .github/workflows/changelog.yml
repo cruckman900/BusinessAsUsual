@@ -19,4 +19,4 @@ jobs:
           output-file: CHANGELOG.md
           skip-version-file: true
           tag-prefix: v
-          preset: conventional
+          preset: angular
