@@ -4,7 +4,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY BusinessAsUsual.Admin/*.csproj ./BusinessAsUsual.Admin/
+COPY *.csproj ./
 RUN dotnet restore ./BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj
 COPY . .
 WORKDIR /src/BusinessAsUsual.Admin

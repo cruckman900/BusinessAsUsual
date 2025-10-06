@@ -37,8 +37,8 @@ services:
 
   tests:
     build:
-      context: ./BusinessAsUsual.Tests
-      dockerfile: Dockerfile
+      context: ./BusinessAsUsual
+      dockerfile: BusinessAsUsual.Tests/Dockerfile
     depends_on:
       - backend
       - admin
