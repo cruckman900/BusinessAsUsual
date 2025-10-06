@@ -8,10 +8,20 @@ on:
 jobs:
   changelog:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure Git
+        run: |
+          git config user.name "Conventional Changelog Action"
+          git config user.email "conventional.changelog.action@github.com"
+
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "v0.1.0" >/dev/nul 2>&1; then
+            echo "tag v0.1.0 already exists. Skipping release."
       - name: Generate changelog
         uses: TriPSs/conventional-changelog-action@v4
         with:
