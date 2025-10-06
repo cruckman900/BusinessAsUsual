@@ -21,14 +21,8 @@ jobs:
       with:
         dotnet-version: '9.0.x'
 
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        docker-compose version
-
     - name: Docker Compose Build
-      run: docker-compose -f docker-compose.yml up --build --abort-on-container-exit
+      run: docker compose -f docker-compose.yml up --build --abort-on-container-exit
 
     - name: Restore
       run: dotnet restore
