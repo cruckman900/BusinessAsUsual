@@ -4,14 +4,45 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Business As Usual — modular, expressive, and contributor-ready web suite." />
+    <meta name="author" content="Christopher Ruckman" />
+    <meta name="theme-color" content="#ff8800" />
+
+    <!-- Open Graph (for social sharing) -->
+    <meta property="og:title" content="Business As Usual" />
+    <meta property="og:description" content="Modular ASP.NET Core suite with dynamic UI, Smart Commit clarity, and onboarding power." />
+    <meta property="og:image" content="/images/og-image.png" />
+    <meta property="og:url" content="https://businessasusual.app" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Business As Usual" />
+    <meta name="twitter:description" content="Modular ASP.NET Core suite with dynamic UI, Smart Commit clarity, and onboarding power." />
+    <meta name="twitter:image" content="/images/og-image.png" />
+
+    <!-- Favicon stack -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    <!-- Title -->
     <title>Business As Usual</title>
-    <base href="~/" />
+
+    <!-- Styles -->
     <link href="css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
+
+    <!-- Scripts -->
     <script src="js/theme.js"></script>
 </head>
+
 <body>
     <component type="typeof(App)" render-mode="ServerPrerendered" />
     <script src="_framework/blazor.server.js"></script>
