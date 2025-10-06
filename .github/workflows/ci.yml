@@ -21,6 +21,11 @@ jobs:
       with:
         dotnet-version: '9.0.x'
 
+    - name: Write .env file
+      run: |
+        echo "DB_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env
+        echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
+
     - name: Docker Compose Build
       run: docker compose -f docker-compose.yml up --build --abort-on-container-exit
 
