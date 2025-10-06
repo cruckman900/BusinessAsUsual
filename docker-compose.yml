@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: ./frontend/BusinessAsUsual.Web
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -11,7 +11,7 @@ services:
 
   backend:
     build:
-      context: ./backend/BusinessAsUsual.API
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "5000:80"
