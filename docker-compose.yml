@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - admin
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MasterAdmin=Server=db;Database=master;User=sa;Password=Your_password123;
+    depends_on:
+      - db
+
+  admin:
+    build:
+      context: ./BusinessAsUsual.Admin
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MasterAdmin=Server=db;Database=master;User=sa;Password=Your_password123;
+    depends_on:
+      - db
+
+  tests:
+    build:
+      context: ./BusinessAsUsual.Tests
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+      - admin
+      - db
+    command: ["dotnet", "test", "--no-build", "--verbosity", "normal"]
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    env_file:
+      - .env
+    ports:
+      - "1433:1433"
