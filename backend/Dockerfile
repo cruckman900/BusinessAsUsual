@@ -15,7 +15,7 @@ RUN dotnet restore "BusinessAsUsual.API/BusinessAsUsual.API.csproj"
 COPY . .
 
 # Publish only the API project
-WORKDIR "/src/BusinessAsUsual.API"
+WORKDIR /src/BusinessAsUsual.API
 RUN dotnet publish "BusinessAsUsual.API.csproj" -c Release -o /app/publish
 
 # Stage 2: Runtime
