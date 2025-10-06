@@ -25,7 +25,7 @@ services:
 
   admin:
     build:
-      context: ./BusinessAsUsual.Admin
+      context: ./BusinessAsUsual
       dockerfile: BusinessAsUsual.Admin/Dockerfile
     ports:
       - "8080:80"
