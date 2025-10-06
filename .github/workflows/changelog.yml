@@ -22,7 +22,9 @@ jobs:
         run: |
           if git rev-parse "v0.1.0" >/dev/nul 2>&1; then
             echo "tag v0.1.0 already exists. Skipping release."
-            
+          else
+            echo "tag does ot exist. Proceeding with changelog generation."
+          fi
       - name: Generate changelog
         uses: TriPSs/conventional-changelog-action@v4
         with:
