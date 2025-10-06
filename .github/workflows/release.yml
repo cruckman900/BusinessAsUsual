@@ -1,12 +1,14 @@
-name: Generate Changelog
+name: Release Orchestration
 
 on:
   pull_request:
+    types: [closed]
     branches:
       - main
 
 jobs:
-  changelog:
+  release:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -18,21 +20,10 @@ jobs:
           git config user.name "Conventional Changelog Action"
           git config user.email "conventional.changelog.action@github.com"
 
-      - name: Get latest tag
-        id: get_tag
-        run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
-
-      - name: Check if tag exists
-        run: |
-          if git rev-parse "${{ steps.get_tag.outputs.tag }}" >/dev/null 2>&1; then
-            echo "Tag ${{ steps.get_tag.outputs.tag }} already exists. Skipping release."
-            exit 0
-          fi
-
       - name: Fetch full Git history and tags
         run: git fetch --unshallow --tags
 
-      - name: Generate changelog
+      - name: Generate changelog and tag release
         uses: TriPSs/conventional-changelog-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,3 +32,6 @@ jobs:
           tag-prefix: v
           preset: angular
           fallback-version: 0.1.1
+          create-release: true
+          release-title: "BusinessAsUsual v${{ steps.changelog.outputs.version }}"
+          release-notes: true
