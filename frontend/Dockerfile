@@ -1,16 +1,21 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
+# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Frontend/Frontend.csproj", "Frontend/"]
-RUN dotnet restore "Frontend/Frontend.csproj"
-COPY . .
-WORKDIR "/src/Frontend"
-RUN dotnet publish "Frontend.csproj" -c Release -o /app/publish
 
-FROM base AS final
+# Copy and restore the frontend project
+COPY ["frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj", "frontend/BusinessAsUsual.Web/"]
+RUN dotnet restore "frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj"
+
+# Copy the full source tree
+COPY . .
+
+# Publish the frontend project
+WORKDIR "/src/frontend/BusinessAsUsual.Web"
+RUN dotnet publish "BusinessAsUsual.Web.csproj" -c Release -o /app/publish
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Frontend.dll"]
+EXPOSE 80
+ENTRYPOINT ["dotnet", "BusinessAsUsual.Web.dll"]

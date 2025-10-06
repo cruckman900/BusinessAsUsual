@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend/BusinessAsUsual.Web
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -11,13 +11,15 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/BusinessAsUsual.API/Dockerfile
     ports:
       - "5000:80"
+    env_file:
+      - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__MasterAdmin=Server=db;Database=master;User=sa;Password=Your_password123;
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DB_CONNECTION_STRING=${DB_CONNECTION_STRING}
     depends_on:
       - db
 
