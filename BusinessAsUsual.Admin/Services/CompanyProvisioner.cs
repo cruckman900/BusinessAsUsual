@@ -46,7 +46,7 @@ namespace BusinessAsUsual.Admin.Services
             _logger.LogInformation("Starting provisioning for company: {CompanyName}", companyName);
 
             var dbName = $"bau_{companyName.ToLower().Replace(" ", "_")}";
-            var masterConnStr = _config.GetConnectionString("MasterAdmin");
+            var masterConnStr = _config.GetConnectionString("DefaultConnection");
 
             await using var masterConnection = new SqlConnection(masterConnStr);
             await masterConnection.OpenAsync();

@@ -20,7 +20,7 @@
             <nav class="col-md-2 bg-light sidebar py-4">
                 <ul class="nav flex-column">
                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/Admin/Index">Provision Company</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/ProvisionCompany">Provision Company</a></li>
                     <li class="nav-item"><a class="nav-link" href="/Admin/Companies">Company List</a></li>
                 </ul>
             </nav>
@@ -34,5 +34,7 @@
     <footer class="bg-dark text-white text-center py-3 mt-auto">
         <small>© 2025 Business As Usual. All rights reserved.</small>
     </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

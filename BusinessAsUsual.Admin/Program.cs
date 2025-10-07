@@ -1,3 +1,5 @@
+using BusinessAsUsual.Admin.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +8,10 @@ builder.Services.AddRazorPages();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Register your services
+builder.Services.AddScoped<TenantMetadataService>();
+builder.Services.AddScoped<CompanyProvisioner>();
 
 var app = builder.Build();
 

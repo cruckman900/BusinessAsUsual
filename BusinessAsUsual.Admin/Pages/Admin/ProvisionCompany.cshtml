@@ -1,0 +1,32 @@
+﻿@page
+@model BusinessAsUsual.Admin.Pages.Admin.ProvisionCompanyModel
+
+<div class="container mt-4">
+    <h2 class="fw-bold text-primary">Provision a New Company</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Company.Name" class="form-label"></label>
+            <input asp-for="Company.Name" class="form-control" placeholder="e.g. NEXTRiff Inc." />
+            <span asp-validation-for="Company.Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Company.DbName" class="form-label"></label>
+            <input asp-for="Company.DbName" class="form-control" placeholder="e.g. NEXTRiffDB" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Company.AdminEmail"></label>
+            <input asp-for="Company.AdminEmail" class="form-control" placeholder="e.g. admin@nextriff.com" />
+            <span asp-validation-for="Company.AdminEmail" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success fw-bold">
+            Provision Company
+        </button>
+    </form>
+</div>
+
+@* @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} *@

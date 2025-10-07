@@ -1,0 +1,41 @@
+name: 🏷️ Auto Label PRs
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧠 Analyze PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = {
+              feat: "feature",
+              fix: "bug",
+              chore: "maintenance",
+              docs: "documentation",
+              refactor: "refactor",
+              test: "tests",
+              perf: "performance",
+              ci: "ci-cd",
+              style: "style",
+              security: "security",
+              build: "build",
+              infra: "infrastructure"
+            };
+
+            const title = context.payload.pull_request.title.toLowerCase();
+            const matched = Object.keys(labels).filter(tag => title.startsWith(`${tag}:`) || title.includes(`${tag}(`));
+            const labelSet = matched.map(tag => labels[tag]);
+
+            if (labelSet.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelSet
+              });
+            }
