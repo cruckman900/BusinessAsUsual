@@ -14,8 +14,6 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Services.AddScoped<TenantMetadataService>();
 builder.Services.AddScoped<CompanyProvisioner>();
 
-ConfigLoader.LoadEnvironmentVariables();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
