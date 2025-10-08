@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
