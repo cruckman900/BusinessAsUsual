@@ -34,6 +34,8 @@ CREATE TABLE AuditLog (
     Id UNIQUEIDENTIFIER PRIMARY KEY,
     CompanyId UNIQUEIDENTIFIER NOT NULL,
     Actor NVARCHAR(100) NOT NULL,
+    Action NVARCHAR(255) NOT NULL,
+    EntityId UNIQUEIDENTIFIER,
     Timestamp DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
@@ -99,6 +101,10 @@ CREATE INDEX IX_AuditLog_CompanyId ON AuditLog(CompanyId);
 CREATE INDEX IX_ProvisioningLog_CompanyId ON ProvisioningLog(CompanyId);
 CREATE INDEX IX_Employees_CompanyId ON Employees(CompanyId);
 CREATE INDEX IX_Products_CompanyId ON Products(CompanyId);
+
+CREATE UNIQUE INDEX UX_ModuleUsage_Company_Module ON ModuleUsage(CompanyId, ModuleName);
+CREATE UNIQUE INDEX UX_CompanySettings_CompanyId ON CompanySettings(CompanyId);
+
 -- Repeat for other tables as needed
 
 -- Optional: stored procedures, triggers, views
