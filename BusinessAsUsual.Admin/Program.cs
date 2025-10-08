@@ -1,3 +1,4 @@
+using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
 
@@ -14,8 +15,7 @@ builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Register your services
-builder.Services.AddScoped<TenantMetadataService>();
-builder.Services.AddScoped<CompanyProvisioner>();
+builder.Services.AddBusinessAsUsualServices();
 
 var app = builder.Build();
 
