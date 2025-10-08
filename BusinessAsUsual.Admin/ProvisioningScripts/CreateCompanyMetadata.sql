@@ -11,6 +11,7 @@ BEGIN
         AdminEmail NVARCHAR(100) NOT NULL,
         BillingPlan NVARCHAR(50) NOT NULL DEFAULT 'Standard',
         ModulesEnabled NVARCHAR(MAX) NOT NULL DEFAULT 'Employees,Products',
+        IsDisabled BIT NOT NULL DEFAULT 0,
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END

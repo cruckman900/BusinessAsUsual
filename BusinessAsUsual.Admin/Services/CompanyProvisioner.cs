@@ -41,7 +41,7 @@ namespace BusinessAsUsual.Admin.Services
         /// <param name="companyName">The name of the company to provision.</param>
         /// <param name="adminEmail">The email address of the company admin.</param>
         /// <returns>True if provisioning succeeds; otherwise, false.</returns>
-        public async Task<bool> CreateCompanyDatabaseAsync(string companyName, string adminEmail)
+        public async Task<bool> CreateCompanyDatabaseAsync(string companyName, string adminEmail, string billingPlan, string[] modules)
         {
             _logger.LogInformation("Starting provisioning for company: {CompanyName}", companyName);
 
@@ -81,6 +81,8 @@ namespace BusinessAsUsual.Admin.Services
                     Name = companyName,
                     DbName = dbName,
                     AdminEmail = adminEmail,
+                    BillingPlan = billingPlan,
+                    ModulesEnabled = string.Join(",", modules),
                     CreatedAt = DateTime.UtcNow
                 };
 
