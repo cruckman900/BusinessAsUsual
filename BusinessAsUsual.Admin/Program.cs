@@ -1,4 +1,5 @@
 using BusinessAsUsual.Admin.Services;
+using BusinessAsUsual.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 // Register your services
 builder.Services.AddScoped<TenantMetadataService>();
 builder.Services.AddScoped<CompanyProvisioner>();
+
+ConfigLoader.LoadEnvironmentVariables();
 
 var app = builder.Build();
 
