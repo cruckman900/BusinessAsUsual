@@ -1,4 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using BusinessAsUsual.Admin.Models;
 
 namespace BusinessAsUsual.Admin.Services
@@ -14,19 +17,17 @@ namespace BusinessAsUsual.Admin.Services
         private readonly ILogger<CompanyProvisioner> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompanyProvisioner"/> class.
+        /// Default constructor for CompanyProvisioner
         /// </summary>
-        /// <param name="config">Application configuration for connection strings.</param>
-        /// <param name="env">Hosting environment for locating script files.</param>
-        /// <param name="metadataService">Service for saving company metadata.</param>
-        /// <param name="logger">Logging service</param>
-        public CompanyProvisioner
-            (
-                IConfiguration config, 
-                IHostEnvironment env,
-                TenantMetadataService metadataService,
-                ILogger<CompanyProvisioner> logger
-            )
+        /// <param name="config"></param>
+        /// <param name="env"></param>
+        /// <param name="metadataService"></param>
+        /// <param name="logger"></param>
+        public CompanyProvisioner(
+            IConfiguration config,
+            IHostEnvironment env,
+            TenantMetadataService metadataService,
+            ILogger<CompanyProvisioner> logger)
         {
             _config = config;
             _env = env;
@@ -34,50 +35,63 @@ namespace BusinessAsUsual.Admin.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Creates a new database for the specified company, seeds it with default schema,
-        /// and logs metadata to the master database.
-        /// </summary>
-        /// <param name="companyName">The name of the company to provision.</param>
-        /// <param name="adminEmail">The email address of the company admin.</param>
-        /// <returns>True if provisioning succeeds; otherwise, false.</returns>
-        public async Task<bool> CreateCompanyDatabaseAsync(string companyName, string adminEmail, string billingPlan, string[] modules)
+        private async Task LogProvisioningStepAsync(SqlConnection connection, Guid companyId, string step, string status, string message)
         {
-            _logger.LogInformation("Starting provisioning for company: {CompanyName}", companyName);
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+        INSERT INTO ProvisioningLog (Id, CompanyId, Step, Status, Message, Timestamp)
+        VALUES (@Id, @CompanyId, @Step, @Status, @Message, GETUTCDATE())";
 
+            command.Parameters.AddWithValue("@Id", Guid.NewGuid());
+            command.Parameters.AddWithValue("@CompanyId", companyId);
+            command.Parameters.AddWithValue("@Step", step);
+            command.Parameters.AddWithValue("@Status", status);
+            command.Parameters.AddWithValue("@Message", message);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        /// Provisions a new company by creating metadata, tenant database, and schema.
+        /// </summary>
+        public async Task<bool> ProvisionCompanyAsync(string companyName, string adminEmail, string billingPlan, string[] modules)
+        {
+            var companyId = Guid.NewGuid();
             var dbName = $"bau_{companyName.ToLower().Replace(" ", "_")}";
             var masterConnStr = _config.GetConnectionString("DefaultConnection");
 
             await using var masterConnection = new SqlConnection(masterConnStr);
             await masterConnection.OpenAsync();
-
-            if (masterConnection is null)
-                throw new InvalidOperationException("Failed to create SQL connection.");
-
-            await using var transaction = await masterConnection!.BeginTransactionAsync();
-
-            if (transaction is null)
-                throw new InvalidOperationException("Failed to begin SQL transaction.");
+            await using var transaction = await masterConnection.BeginTransactionAsync();
 
             try
             {
+                // Step 1: Create metadata schema if needed
+                var metadataScriptPath = Path.Combine(_env.ContentRootPath, "ProvisioningScripts", "CreateCompanyMetadata.sql");
+                var metadataScript = await File.ReadAllTextAsync(metadataScriptPath);
+                await new SqlCommand(metadataScript, masterConnection, (SqlTransaction)transaction).ExecuteNonQueryAsync();
+                await LogProvisioningStepAsync(masterConnection, companyId, "CreateMetadataSchema", "Success", "Metadata schema ensured.");
+
+                // Step 2: Create tenant database
                 var createDbCommand = $"CREATE DATABASE [{dbName}]";
+                await new SqlCommand(createDbCommand, masterConnection, (SqlTransaction)transaction).ExecuteNonQueryAsync();
+                await LogProvisioningStepAsync(masterConnection, companyId, "CreateTenantDatabase", "Success", $"Database '{dbName}' created.");
 
-                _logger.LogInformation("Creating database: {DbName}", dbName);
-                await new SqlCommand(createDbCommand, masterConnection, (SqlTransaction)transaction!).ExecuteNonQueryAsync();
+                // Step 3: Run tenant schema
+                var tenantConnStr = masterConnStr!.Replace("Database=BusinessAsUsual", $"Database={dbName}");
+                await using var tenantConnection = new SqlConnection(tenantConnStr);
+                await tenantConnection.OpenAsync();
+                await LogProvisioningStepAsync(tenantConnection, companyId, "RunTenantSchema", "Success", "Default schema applied.");
 
-                _logger.LogInformation("Switching to database: {DbName}", dbName);
-                await masterConnection.ChangeDatabaseAsync(dbName);
+                var tenantScriptPath = Path.Combine(_env.ContentRootPath, "ProvisioningScripts", "DefaultSchema.sql");
+                var tenantScript = await File.ReadAllTextAsync(tenantScriptPath);
+                await new SqlCommand(tenantScript, tenantConnection).ExecuteNonQueryAsync();
+                await LogProvisioningStepAsync(masterConnection, companyId, "SaveMetadata", "Success", "Company metadata saved.");
 
-                var scriptPath = Path.Combine(_env.ContentRootPath, "ProvisioningScripts", "DefaultSchema.sql");
-                var script = await File.ReadAllTextAsync(scriptPath);
-
-                _logger.LogInformation("Executing provisioning script from: {ScriptPath}", scriptPath);
-                await new SqlCommand(script, masterConnection, (SqlTransaction)transaction!).ExecuteNonQueryAsync();
-
+                // Step 4: Save metadata
                 var company = new Company
                 {
-                    Id = Guid.NewGuid(),
+                    Id = companyId,
                     Name = companyName,
                     DbName = dbName,
                     AdminEmail = adminEmail,
@@ -86,24 +100,18 @@ namespace BusinessAsUsual.Admin.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _logger.LogInformation("Saving metadata for company: {CompanyName}", companyName);
                 await _metadataService.SaveAsync(company);
-
                 await transaction.CommitAsync();
 
-                _logger.LogInformation("Provisioning complete for company: {CompanyName}", companyName);
+                _logger.LogInformation("Provisioned company '{CompanyName}' with DB '{DbName}'", companyName, dbName);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Provisioning failed for company: {CompanyName}", companyName);
                 await transaction.RollbackAsync();
+                await LogProvisioningStepAsync(masterConnection, companyId, "Provisioning", "Failed", ex.Message);
+                _logger.LogError(ex, "Provisioning failed for company '{CompanyName}'", companyName);
                 return false;
-            }
-            finally
-            {
-                await transaction.DisposeAsync();
-                await masterConnection.DisposeAsync();
             }
         }
     }
