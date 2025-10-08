@@ -26,7 +26,25 @@ namespace BusinessAsUsual.Admin.Models
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string AdminEmail { get; set; } = string.Empty;
 
-        /// <summary>UTC timestamp when the company was created.</summary>
+        /// <summary>
+        /// Billing plan assigned to the company.
+        /// </summary>
+        [Display(Name = "Billing Plan")]
+        [Required]
+        public string BillingPlan { get; set; } = "Standard";
+
+        /// <summary>
+        /// Comma-separated list of enabled modules.
+        /// </summary>
+        [Display(Name = "Modules Enabled")]
+        [Required]
+        public string ModulesEnabled { get; set; } = "Employees,Products";
+
+        /// <summary>
+        /// UTC timestamp when the company was created.
+        /// </summary>
+        [Display(Name = "Created At")]
+        [Required]
         public DateTime CreatedAt { get; set; }
     }
 }
