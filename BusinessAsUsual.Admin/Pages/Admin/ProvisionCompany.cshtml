@@ -27,6 +27,18 @@
     </form>
 </div>
 
-@* @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-} *@
+<dialog id="statusModal">
+    <p id="statusMessage">Working on it...</p>
+    <button onclick="document.getElementById('statusModal').close()">Close</button>
+</dialog>
+
+@section Scripts {
+    <script>
+        document.querySelector("form").addEventListener("submit", function () {
+            const modal = document.getElementById("statusModal");
+            const message = document.getElementById("statusMessage");
+            message.textContent = "Provisioning in progress";
+            modal.showModal();
+        }
+    </script>
+}
