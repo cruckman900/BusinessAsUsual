@@ -35,7 +35,7 @@ namespace BusinessAsUsual.Admin.Services
             _logger = logger;
         }
 
-        private async Task LogProvisioningStepAsync(SqlConnection connection, Guid companyId, string step, string status, string message)
+        static private async Task LogProvisioningStepAsync(SqlConnection connection, Guid companyId, string step, string status, string message)
         {
             var command = connection.CreateCommand();
             command.CommandText = @"

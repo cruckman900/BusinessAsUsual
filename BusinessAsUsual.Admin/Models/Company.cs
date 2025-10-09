@@ -12,8 +12,8 @@ namespace BusinessAsUsual.Admin.Models
 
         /// <summary>Name of the company.</summary>
         [Display(Name = "Company Name")]
-        [Required(ErrorMessage = "Company name is required.")]
-        [StringLength(100, ErrorMessage = "Name must be under 100 characters.")]
+        [Required(ErrorMessage = "Company Name is required.")]
+        [StringLength(100, ErrorMessage = "Company Name must be under 100 characters.")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>Database name assigned to the company.</summary>
@@ -22,7 +22,7 @@ namespace BusinessAsUsual.Admin.Models
 
         /// <summary>Email address of the company admin.</summary>
         [Display(Name = "Admin Email")]
-        [Required(ErrorMessage = "Admin email is required.")]
+        [Required(ErrorMessage = "Admin Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string AdminEmail { get; set; } = string.Empty;
 
@@ -30,21 +30,21 @@ namespace BusinessAsUsual.Admin.Models
         /// Billing plan assigned to the company.
         /// </summary>
         [Display(Name = "Billing Plan")]
-        [Required]
+        [Required(ErrorMessage = "Billing Plan is required.")]
         public string BillingPlan { get; set; } = "Standard";
 
         /// <summary>
         /// Comma-separated list of enabled modules.
         /// </summary>
         [Display(Name = "Modules Enabled")]
-        [Required]
+        [Required(ErrorMessage = "Modules Enabled is required.")]
         public string ModulesEnabled { get; set; } = "Employees,Products";
 
         /// <summary>
         /// UTC timestamp when the company was created.
         /// </summary>
         [Display(Name = "Created At")]
-        [Required]
+        [Required(ErrorMessage = "Created At is required.")]
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 CREATE TABLE CompanyInfo (
     Id UNIQUEIDENTIFIER PRIMARY KEY,
     Name NVARCHAR(100) NOT NULL,
-    CreatedAt DATETIME NOT NULL
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
 CREATE TABLE CompanySettings (
@@ -11,15 +11,38 @@ CREATE TABLE CompanySettings (
     BillingPlan NVARCHAR(50) NOT NULL,
     ModulesEnabled NVARCHAR(MAX) NOT NULL,
     IsDisabled BIT NOT NULL DEFAULT 0,
-    CreatedAt DATETIME NOT NULL
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+);
+
+CREATE TABLE CompanyLocation (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CompanyId UNIQUEIDENTIFIER NOT NULL,
+    LocationName NVARCHAR(100) NOT NULL,
+    ContactName NVARCHAR(100) NOT NULL,
+    ContactEmail NVARCHAR(100) NOT NULL,
+    BillAddr1 NVARCHAR(100) NOT NULL,
+    BillAddr2 NVARCHAR(100),
+    BillCity NVARCHAR(100) NOT NULL,
+    BillState NVARCHAR(50) NOT NULL,
+    BillZipcode NVARCHAR(25) NOT NULL,
+    BillCountry NVARCHAR(100) NOT NULL,
+    ShipAddr1 NVARCHAR(100),
+    ShipAddr2 NVARCHAR(100),
+    ShipCity NVARCHAR(100),
+    ShipState NVARCHAR(50),
+    ShipCountry NVARCHAR(100),
+    ShipZipcode NVARCHAR(25),
+    ShipCountry NVARCHAR(100),
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
 CREATE TABLE BillingHistory (
     Id UNIQUEIDENTIFIER PRIMARY KEY,
     CompanyId UNIQUEIDENTIFIER NOT NULL,
     Amount DECIMAL(18,2) NOT NULL,
-    Description NVARCHAR(255),
-    BilledAt DATETIME NOT NULL
+    Description NVARCHAR(255) NOT NULL,
+    BilledAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
+    PaidOn DATETIME
 );
 
 CREATE TABLE ModuleUsage (
@@ -27,7 +50,7 @@ CREATE TABLE ModuleUsage (
     CompanyId UNIQUEIDENTIFIER NOT NULL,
     ModuleName NVARCHAR(100) NOT NULL,
     UsageCount INT NOT NULL DEFAULT 0,
-    LastUsed DATETIME NOT NULL
+    LastUsed DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
 CREATE TABLE AuditLog (
@@ -51,10 +74,14 @@ CREATE TABLE ProvisioningLog (
 CREATE TABLE Employees (
     Id UNIQUEIDENTIFIER PRIMARY KEY,
     CompanyId UNIQUEIDENTIFIER NOT NULL,
-    Name NVARCHAR(100) NOT NULL,
+    FirstName NVARCHAR(100) NOT NULL,
+    LastName NVARCHAR(100) NOT NULL,
+    MiddleName NVARCHAR(100) NOT NULL,
+    Prefix NVARCHAR(50) NOT NULL,
+    Suffix NVARCHAR(50) NOT NULL,
     Role NVARCHAR(50),
     Email NVARCHAR(100),
-    CreatedAt DATETIME NOT NULL
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
 CREATE TABLE Products (
@@ -63,11 +90,24 @@ CREATE TABLE Products (
     Name NVARCHAR(100) NOT NULL,
     Description NVARCHAR(255),
     Price DECIMAL(18,2) NOT NULL,
-    CreatedAt DATETIME NOT NULL
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+);
+
+CREATE TABLE Services (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CompanyId UNIQUEIDENTIFIER NOT NULL,
+    Name NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(255),
+    Price DECIMAL(18,2) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
 );
 
 ALTER TABLE CompanySettings
 ADD CONSTRAINT FK_CompanySettings_CompanyInfo
+FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
+
+ALTER TABLE CompanyLocation
+ADD CONSTRAINT FK_CompanyLocation_CompanyInfo
 FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 
 ALTER TABLE BillingHistory
@@ -94,13 +134,19 @@ ALTER TABLE Products
 ADD CONSTRAINT FK_Products_CompanyInfo
 FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 
+ALTER TABLE Services
+ADD CONSTRAINT FK_Services_CompanyInfo
+FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
+
 CREATE INDEX IX_CompanySettings_CompanyId ON CompanySettings(CompanyId);
+CREATE INDEX IX_CompanyLocation_CompanyId ON CompanyLocation(CompanyId);
 CREATE INDEX IX_BillingHistory_CompanyId ON BillingHistory(CompanyId);
 CREATE INDEX IX_ModuleUsage_CompanyId ON ModuleUsage(CompanyId);
 CREATE INDEX IX_AuditLog_CompanyId ON AuditLog(CompanyId);
 CREATE INDEX IX_ProvisioningLog_CompanyId ON ProvisioningLog(CompanyId);
 CREATE INDEX IX_Employees_CompanyId ON Employees(CompanyId);
 CREATE INDEX IX_Products_CompanyId ON Products(CompanyId);
+CREATE INDEX IX_Services_CompanyId ON Services(CompanyId);
 
 CREATE UNIQUE INDEX UX_ModuleUsage_Company_Module ON ModuleUsage(CompanyId, ModuleName);
 CREATE UNIQUE INDEX UX_CompanySettings_CompanyId ON CompanySettings(CompanyId);
