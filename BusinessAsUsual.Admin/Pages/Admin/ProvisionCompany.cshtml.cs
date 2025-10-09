@@ -11,13 +11,13 @@ namespace BusinessAsUsual.Admin.Pages.Admin
     /// </summary>
     public class ProvisionCompanyModel : PageModel
     {
-        private readonly CompanyProvisioner _provisioner;
+        private readonly ProvisioningService _provisioner;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProvisionCompanyModel"/> class.
         /// </summary>
         /// <param name="provisioner">The service responsible for provisioning company databases and metadata.</param>
-        public ProvisionCompanyModel(CompanyProvisioner provisioner)
+        public ProvisionCompanyModel(ProvisioningService provisioner)
         {
             _provisioner = provisioner ?? throw new ArgumentNullException(nameof(provisioner));
         }

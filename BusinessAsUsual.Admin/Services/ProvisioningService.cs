@@ -9,12 +9,12 @@ namespace BusinessAsUsual.Admin.Services
     /// <summary>
     /// Handles the provisioning of new company databases and schema setup.
     /// </summary>
-    public class CompanyProvisioner
+    public class ProvisioningService : IProvisioningService
     {
         private readonly IConfiguration _config;
         private readonly IHostEnvironment _env;
         private readonly TenantMetadataService _metadataService;
-        private readonly ILogger<CompanyProvisioner> _logger;
+        private readonly ILogger<ProvisioningService> _logger;
 
         /// <summary>
         /// Default constructor for CompanyProvisioner
@@ -23,11 +23,11 @@ namespace BusinessAsUsual.Admin.Services
         /// <param name="env"></param>
         /// <param name="metadataService"></param>
         /// <param name="logger"></param>
-        public CompanyProvisioner(
+        public ProvisioningService(
             IConfiguration config,
             IHostEnvironment env,
             TenantMetadataService metadataService,
-            ILogger<CompanyProvisioner> logger)
+            ILogger<ProvisioningService> logger)
         {
             _config = config;
             _env = env;
@@ -54,7 +54,7 @@ namespace BusinessAsUsual.Admin.Services
         /// <summary>
         /// Provisions a new company by creating metadata, tenant database, and schema.
         /// </summary>
-        public async Task<bool> ProvisionCompanyAsync(string companyName, string adminEmail, string billingPlan, string[] modules)
+        public async Task<bool> ProvisionTenantAsync(string companyName, string adminEmail, string billingPlan, string[] modules)
         {
             var companyId = Guid.NewGuid();
             var dbName = $"bau_{companyName.ToLower().Replace(" ", "_")}";
