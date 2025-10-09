@@ -11,7 +11,7 @@
         /// Provisions a new tenant by creating the necessary schema, assigning an administrator,
         /// configuring the billing plan, and enabling selected modules.
         /// </summary>
-        /// <param name="companyName">
+        /// <param name="tenantName">
         ///     The name of the company to be provisioned. This will be used to generate schema identifiers and branding metadata.
         /// </param>
         /// <param name="adminEmail">
@@ -27,7 +27,7 @@
         ///     A task that resolves to <c>true</c> if provisioning succeeds, or <c>false</c> if any step fails. Errors should be logged and surfaced via contributor-facing diagnostics.
         /// </returns>
         Task<bool> ProvisionTenantAsync(
-            string companyName,
+            string tenantName,
             string adminEmail,
             string billingPlan,
             string[] modules

@@ -29,6 +29,7 @@
 
 <dialog id="statusModal">
     <p id="statusMessage">Working on it...</p>
+    <div id="statusLog"></div>
     <button onclick="document.getElementById('statusModal').close()">Close</button>
 </dialog>
 
@@ -40,5 +41,24 @@
             message.textContent = "Provisioning in progress";
             modal.showModal();
         }
+    </script>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/provisioningHub")
+            .build();
+
+        connection.on("ReceiveStatus", function (message) {
+            const modal = document.getElementById("statusModal");
+            const log = document.getElementById("statusLog");
+            log.innerHTML += `<p>${message}</p>`;
+            modal.showModal();
+        });
+
+        connection.start();
     </script>
 }
