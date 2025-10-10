@@ -1,14 +1,60 @@
-﻿using Azure.Identity;
+﻿using BusinessAsUsual.Admin.Database;
 using BusinessAsUsual.Admin.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace BusinessAsUsual.Admin.Services
 {
+    /// <summary>
+    /// ProvisioningLog table logger class.
+    /// </summary>
+    public class ProvisioningLogger
+    {
+        private readonly IHubContext<ProvisioningHub> _hub;
+        private readonly IConfiguration _config;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="hub"></param>
+        /// <param name="config"></param>
+        public ProvisioningLogger(IHubContext<ProvisioningHub> hub, IConfiguration config)
+        {
+            _hub = hub;
+            _config = config;
+        }
+
+        /// <summary>
+        /// Log provisioning setps to the ProvisioningLog table in the BusinessAsUsual datebase.
+        /// </summary>
+        /// <param name="tenantName"></param>
+        /// <param name="step"></param>
+        /// <param name="status"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task LogStepAsync(string tenantName, string step, string status, string message)
+        {
+            await _hub.Clients.All.SendAsync("Log", new { tenantName, step, status, message });
+
+            var connStr = _config["ConnectionStrings:DefaultConnection"];
+            await using var conn = new SqlConnection(connStr);
+            await conn.OpenAsync();
+
+            var command = conn.CreateCommand();
+            command.CommandText = @"
+            INSERT INTO ProvisioningLog (TenantName, Step, Status, Message, Timestamp)
+            VALUES (@Tenantname, @Step, @Status, @Message, GETUTCDATE())";
+
+            command.Parameters.AddWithValue("@Id", Guid.NewGuid());
+            command.Parameters.AddWithValue("@TenantName", tenantName);
+            command.Parameters.AddWithValue("@Step", step);
+            command.Parameters.AddWithValue("@Status", status);
+            command.Parameters.AddWithValue("@Message", message);
+
+            await command.ExecuteNonQueryAsync();
+        }
+    }
+
     /// <summary>
     /// SignalR hub that handles messaging to the client.
     /// </summary>
@@ -49,78 +95,28 @@ namespace BusinessAsUsual.Admin.Services
         private readonly TenantMetadataService _metadataService = metadataService;
         private readonly ILogger<ProvisioningService> _logger = logger;
 
-        static private async Task LogProvisioningStepAsync(SqlConnection connection, Guid companyId, string step, string status, string message)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = @"
-                INSERT INTO ProvisioningLog (Id, CompanyId, Step, Status, Message, Timestamp)
-                VALUES (@Id, @CompanyId, @Step, @Status, @Message, GETUTCDATE())";
-
-            command.Parameters.AddWithValue("@Id", Guid.NewGuid());
-            command.Parameters.AddWithValue("@CompanyId", companyId);
-            command.Parameters.AddWithValue("@Step", step);
-            command.Parameters.AddWithValue("@Status", status);
-            command.Parameters.AddWithValue("@Message", message);
-
-            await command.ExecuteNonQueryAsync();
-        }
-
         /// <summary>
         /// Provisions a new company by creating metadata, tenant database, and schema.
         /// </summary>
         public async Task<bool> ProvisionTenantAsync(string tenantName, string adminEmail, string billingPlan, string[] modules)
         {
-            var companyId = Guid.NewGuid();
-            var dbName = $"bau_{tenantName.ToLower().Replace(" ", "_")}";
-            var masterConnStr = _config.GetConnectionString("DefaultConnection");
+            var provLogger = new ProvisioningLogger(_hub, _config);
+            var provDb = new ProvisioningDb(_config);
 
-            await using var masterConnection = new SqlConnection(masterConnStr);
-            await masterConnection.OpenAsync();
-            await using var transaction = await masterConnection.BeginTransactionAsync();
+            var dbName = $"bau_{tenantName.ToLower().Replace(" ", "_")}";
 
             try
             {
-                _logger.LogInformation("🚀 [Provisioning] Starting tenant provisioning for '{TenantName}'", tenantName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "🚀 [Provisioning] Starting tenant provisioning for '{TenantName}'", tenantName);
-                // Step 1: Create metadata schema if needed
-                _logger.LogInformation("📦 [Provisioning] Creating metadata for '{TenantName}'...", tenantName);
-                var metadataScriptPath = Path.Combine(_env.ContentRootPath, "ProvisioningScripts", "CreateCompanyMetadata.sql");
-                var metadataScript = await File.ReadAllTextAsync(metadataScriptPath);
-                await new SqlCommand(metadataScript, masterConnection, (SqlTransaction)transaction).ExecuteNonQueryAsync();
-                await LogProvisioningStepAsync(masterConnection, companyId, "CreateMetadataSchema", "Success", "Metadata schema ensured.");
-                _logger.LogInformation("✅ [Provisioning] Metadata created successfully");
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "✅ [Provisioning] Metadata created successfully");
+                // 🪵 Ensure ProvisioningLog table exists in default DB
+                await provDb.ApplySchemaAsync("BusinessAsUsual", _metadataService.GetProvisioningLogScript());
 
-                // Step 2: Create tenant database
-                _logger.LogInformation("📦 [Provisioning] Creating database ({Database})", dbName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "📦 [Provisioning] Creating database ({Database})", dbName);
-                var createDbCommand = $"CREATE DATABASE [{dbName}]";
-                await new SqlCommand(createDbCommand, masterConnection, (SqlTransaction)transaction).ExecuteNonQueryAsync();
-                await LogProvisioningStepAsync(masterConnection, companyId, "CreateTenantDatabase", "Success", $"Database '{dbName}' created.");
-                _logger.LogInformation("✅ [Provisioning] Database created successfully");
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "✅ [Provisioning] Database created successfully");
+                // 🏢 Ensure Companies registry table exists in default DB
+                await provDb.ApplySchemaAsync("BusinessAsUsual", _metadataService.GetCompanyRegistryScript());
 
-                // Step 3: Run tenant schema
-                _logger.LogInformation("📦 [Provisioning] Creating schema for '{TenantName}'...", tenantName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "📦 [Provisioning] Creating schema for '{TenantName}'...", tenantName);
-                var tenantConnStr = masterConnStr!.Replace("Database=BusinessAsUsual", $"Database={dbName}");
-                await using var tenantConnection = new SqlConnection(tenantConnStr);
-                await tenantConnection.OpenAsync();
-                await LogProvisioningStepAsync(tenantConnection, companyId, "RunTenantSchema", "Success", "Default schema applied.");
-
-                var tenantScriptPath = Path.Combine(_env.ContentRootPath, "ProvisioningScripts", "DefaultSchema.sql");
-                var tenantScript = await File.ReadAllTextAsync(tenantScriptPath);
-                await new SqlCommand(tenantScript, tenantConnection).ExecuteNonQueryAsync();
-                await LogProvisioningStepAsync(masterConnection, companyId, "SaveMetadata", "Success", "Company metadata saved.");
-                _logger.LogInformation("✅ [Provisioning] Schema created successfully");
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "✅ [Provisioning] Schema created successfully✅ [Provisioning] Schema created successfully");
-
-                // Step 4: Save metadata
-                _logger.LogInformation("📦 [Provisioning] Saving metadata for {TenantName}", tenantName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "📦 [Provisioning] Saving metadata for {TenantName}", tenantName);
+                // 🧾 Save company metadata to global registry
                 var company = new Company
                 {
-                    Id = companyId,
+                    Id = Guid.NewGuid(),
                     Name = tenantName,
                     DbName = dbName,
                     AdminEmail = adminEmail,
@@ -129,21 +125,27 @@ namespace BusinessAsUsual.Admin.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _metadataService.SaveAsync(company);
-                await transaction.CommitAsync();
-                _logger.LogInformation("✅ [Provisioning] Metadata saved successfully");
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "✅ [Provisioning] Metadata saved successfully");
+                await provDb.SaveCompanyInfoAsync(company);
 
-                _logger.LogInformation("🎉 [Provisioning] Tenant '{TenantName}' provisioned successfully", tenantName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "🎉 [Provisioning] Tenant '{TenantName}' provisioned successfully", tenantName);
+                // 📡 Log start of provisioning
+                await provLogger.LogStepAsync(tenantName, "Provisioning", "Started", $"Creating database {dbName}");
+
+                // 🏗️ Create tenant database
+                await provDb.CreateDatabaseAsync(dbName);
+
+                // 🧱 Apply tenant schema from DefaultSchema.sql
+                await provDb.ApplySchemaAsync(dbName, _metadataService.GetCreateScript(_env, tenantName));
+
+                // ✅ Log success
+                await provLogger.LogStepAsync(tenantName, "Provisioning", "Success", $"Tenant database {dbName} created and schema applied");
+
                 return true;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                await LogProvisioningStepAsync(masterConnection, companyId, "Provisioning", "Failed", ex.Message);
-                _logger.LogError(ex, "❌ [Provisioning] Failed for company '{TenantName}'", tenantName);
-                await _hub.Clients.All.SendAsync("ReceiveStatus", "❌ [Provisioning] Failed for company '{TenantName}'", tenantName);
+                // ❌ Log failure
+                await provLogger.LogStepAsync(tenantName, "Provisioning", "Failed", ex.Message);
+                _logger.LogError(ex, "Provisioning failed for tenant {Tenant}", tenantName);
                 return false;
             }
         }
