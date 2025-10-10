@@ -39,7 +39,7 @@ Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/business-as-usual-backend.git
+git clone https://github.com/cruckman900/BusinessAsUsual.git
 cd business-as-usual-backend
 
 # Build and run with Docker

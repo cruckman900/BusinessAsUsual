@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-/// <summary>
-/// Page model for the admin index page.
-/// </summary>
-public class IndexModel : PageModel
+namespace BusinessAsUsual.Admin.Pages
 {
     /// <summary>
-    /// Handles GET requests for the Index page.
+    /// Page model for the admin index page.
     /// </summary>
-    public void OnGet()
+    public class IndexModel : PageModel
     {
-        // Your logic here
+        /// <summary>
+        /// Handles GET requests for the Index page.
+        /// </summary>
+        public void OnGet()
+        {
+            // Your logic here
+        }
     }
 }

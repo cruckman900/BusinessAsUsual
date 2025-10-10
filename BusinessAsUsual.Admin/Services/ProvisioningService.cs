@@ -14,6 +14,11 @@ namespace BusinessAsUsual.Admin.Services
     /// </summary>
     public class ProvisioningHub: Hub
     {
+        /// <summary>
+        /// Broadcast log message to the client.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task SendStatus(string message)
         {
             await Clients.All.SendAsync("ReceiveStatus", message);
@@ -23,35 +28,26 @@ namespace BusinessAsUsual.Admin.Services
     /// <summary>
     /// Handles the provisioning of new company databases and schema setup.
     /// </summary>
-    public class ProvisioningService : IProvisioningService
+    /// <remarks>
+    /// Default constructor for CompanyProvisioner
+    /// </remarks>
+    /// <param name="hub"></param>
+    /// <param name="config"></param>
+    /// <param name="env"></param>
+    /// <param name="metadataService"></param>
+    /// <param name="logger"></param>
+    public class ProvisioningService(
+        IHubContext<ProvisioningHub> hub,
+        IConfiguration config,
+        IHostEnvironment env,
+        TenantMetadataService metadataService,
+        ILogger<ProvisioningService> logger) : IProvisioningService
     {
-        private readonly IHubContext<ProvisioningHub> _hub;
-        private readonly IConfiguration _config;
-        private readonly IHostEnvironment _env;
-        private readonly TenantMetadataService _metadataService;
-        private readonly ILogger<ProvisioningService> _logger;
-
-        /// <summary>
-        /// Default constructor for CompanyProvisioner
-        /// </summary>
-        /// <param name="hub"></param>
-        /// <param name="config"></param>
-        /// <param name="env"></param>
-        /// <param name="metadataService"></param>
-        /// <param name="logger"></param>
-        public ProvisioningService(
-            IHubContext<ProvisioningHub> hub,
-            IConfiguration config,
-            IHostEnvironment env,
-            TenantMetadataService metadataService,
-            ILogger<ProvisioningService> logger)
-        {
-            _hub = hub;
-            _config = config;
-            _env = env;
-            _metadataService = metadataService;
-            _logger = logger;
-        }
+        private readonly IHubContext<ProvisioningHub> _hub = hub;
+        private readonly IConfiguration _config = config;
+        private readonly IHostEnvironment _env = env;
+        private readonly TenantMetadataService _metadataService = metadataService;
+        private readonly ILogger<ProvisioningService> _logger = logger;
 
         static private async Task LogProvisioningStepAsync(SqlConnection connection, Guid companyId, string step, string status, string message)
         {

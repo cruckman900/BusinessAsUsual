@@ -1,12 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessAsUsual.Tests.Utilities
+﻿namespace BusinessAsUsual.Tests.Utilities
 {
-    internal class TestClock
+    /// <summary>
+    /// Provides a controllable clock for testing time-dependent logic.
+    /// </summary>
+    public class TestClock
     {
+        private DateTime? _frozenTime;
+
+        /// <summary>
+        /// Gets the current time. If frozen, returns the frozen value.
+        /// </summary>
+        public DateTime Now => _frozenTime ?? DateTime.UtcNow;
+
+        /// <summary>
+        /// Freezes the clock at the specified time.
+        /// </summary>
+        public void Freeze(DateTime time) => _frozenTime = time;
+
+        /// <summary>
+        /// Unfreezes the clock, returning to real time.
+        /// </summary>
+        public void Unfreeze() => _frozenTime = null;
     }
 }

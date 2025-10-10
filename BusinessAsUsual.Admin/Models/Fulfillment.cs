@@ -26,7 +26,7 @@ namespace BusinessAsUsual.Admin.Models
 
         /// <summary>Entity that fulfilled the order</summary>
         [Display(Name = "Fulfilled By")]
-        [MaxLength(100, ErrorMessage = 'Fulfilled By must be less than 100 characters.')]
+        [MaxLength(100, ErrorMessage = "Fulfilled By must be less than 100 characters.")]
         public string FulfilledBy { get; set; } = string.Empty;
 
         /// <summary>Fulfillment Notes</summary>
