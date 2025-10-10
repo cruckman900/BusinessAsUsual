@@ -14,8 +14,8 @@ namespace BusinessAsUsual.Admin.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddBusinessAsUsualServices(this IServiceCollection services)
         {
-            services.AddScoped<TenantMetadataService>();
             services.AddScoped<IProvisioningService, ProvisioningService>();
+            services.AddScoped<TenantMetadataService>();
             return services;
         }
     }

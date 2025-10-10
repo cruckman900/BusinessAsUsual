@@ -40,7 +40,7 @@ namespace BusinessAsUsual.Admin.Pages.Admin
                 return Page();
             }
 
-            var success = await _provisioner.CreateCompanyDatabaseAsync(Company.Name, Company.AdminEmail);
+            var success = await _provisioner.ProvisionTenantAsync(Company.Name, Company.AdminEmail, Company.BillingPlan, Company.ModulesEnabled.Split(","));
 
             if (success)
             {
