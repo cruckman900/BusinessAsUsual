@@ -9,40 +9,61 @@ namespace BusinessAsUsual.Admin.Services
     /// </summary>
     public class TenantMetadataService
     {
-        private readonly IConfiguration _config;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="TenantMetadataService"/> class
+        /// If not exists, Create Companies table in the BusinessAsUsual database.
         /// </summary>
-        /// <param name="config"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TenantMetadataService(IConfiguration config)
+        /// <returns>Sql</returns>
+        public virtual string GetCompanyRegistryScript()
         {
-            _config = config ?? throw new ArgumentNullException(nameof(config));
+            return @"
+            IF NOT EXISTS (
+                SELECT * FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_NAME = 'Companies'
+            )
+            BEGIN
+                CREATE TABLE Companies (
+                    Id UNIQUEIDENTIFIER PRIMARY KEY,
+                    Name NVARCHAR(100) NOT NULL,
+                    DbName NVARCHAR(100) NOT NULL,
+                    AdminEmail NVARCHAR(100) NOT NULL,
+                    BillingPlan NVARCHAR(50) NOT NULL DEFAULT 'Standard',
+                    ModulesEnabled NVARCHAR(MAX) NOT NULL DEFAULT 'Employees,Products',
+                    IsDisabled BIT NOT NULL DEFAULT 0,
+                    CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+                );
+            END";
         }
 
         /// <summary>
-        /// Saves metadata for a newly provisioned company.
+        /// Returns the SQL script to create the ProvisioningLog in BusinessAsUsual.
         /// </summary>
-        /// <param name="company">The company metadata to sae.</param>
-        public async Task SaveAsync(Company company)
+        /// <returns>Sql</returns>
+        public virtual string GetProvisioningLogScript()
         {
-            var connStr = _config.GetConnectionString("MasterAdmin");
-            
-            await using var conn = new SqlConnection(connStr);
-            await conn.OpenAsync();
+            return $@"
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProvisioningLog')
+            BEGIN
+                CREATE TABLE ProvisioningLog (
+                    Id INT PRIMARY KEY IDENTITY,
+                    TenantName NVARCHAR(100),
+                    Step NVARCHAR(50),
+                    Status NVARCHAR(50),
+                    Message NVARCHAR(MAX),
+                    Timestamp DATETIME
+                );
+            END";
+        }
 
-            var cmd = new SqlCommand(@"
-                INSERT INTO Companies (Id, Name, DbName, AdminEmail, CreatedAt)
-                VALUES (@Id, @Name, @DbName, @AdminEmail, @CreatedAt)", conn);
-
-            cmd.Parameters.AddWithValue("@Id", company.Id);
-            cmd.Parameters.AddWithValue("@Name", company.Name);
-            cmd.Parameters.AddWithValue("@DbName", company.DbName);
-            cmd.Parameters.AddWithValue("@AdminEmail", company.AdminEmail);
-            cmd.Parameters.AddWithValue("@CreatedAt", company.CreatedAt);
-
-            await cmd.ExecuteNonQueryAsync();
+        /// <summary>
+        /// Returns the SQL script to create metadata tables for tenant
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="tenantName"></param>
+        /// <returns></returns>
+        public virtual string GetCreateScript(IHostEnvironment env, string tenantName)
+        {
+            var path = Path.Combine(env.ContentRootPath, "ProvisioningScripts", "DefaultSchema.sql");
+            return File.ReadAllText(path);
         }
     }
 }
