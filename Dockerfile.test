@@ -5,4 +5,6 @@ COPY . .
 
 RUN dotnet restore BusinessAsUsual.sln
 RUN dotnet build BusinessAsUsual.sln --no-restore
-RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings
+RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj \
+    --no-build \
+    --settings BusinessAsUsual.Tests/TestConfig.runsettings
