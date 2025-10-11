@@ -10,6 +10,3 @@ RUN dotnet restore BusinessAsUsual.sln
 
 # Build the solution
 RUN dotnet build BusinessAsUsual.sln --no-restore
-
-# Run tests (optional: target specific test project)
-RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings

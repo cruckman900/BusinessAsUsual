@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
+WORKDIR /app
+COPY --from=build /app/BusinessAsUsual.Web/bin/Release/net9.0/publish/ .
+
+ENTRYPOINT ["dotnet", "BusinessAsUsual.Web.dll"]

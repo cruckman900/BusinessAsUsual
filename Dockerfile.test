@@ -1,0 +1,6 @@
+FROM build AS test
+
+# Optional: validate env vars with SmartEnvValidator
+# ENV AWS_SQL_CONNECTION_STRING=...
+
+RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings

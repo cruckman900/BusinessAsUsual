@@ -11,30 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      AWS_SQL_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
       DB_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
-      ASW_SQL_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
-
-    - name: Write .env file
+    - name: Write .env.local file
       run: |
-        echo "AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env
-        echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
+        echo "AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env.local
+        echo "ASPNETCORE_ENVIRONMENT=Production" >> .env.local
 
-    - name: Docker Compose Build
-      run: docker compose -f docker-compose.yml up --build --abort-on-container-exit
+    - name: Build and run tests via Docker Compose
+      run: docker compose -f docker-compose.yml up --build --abort-on-container-exit tests
 
-    - name: Restore
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --no-restore
-
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+    - name: Cleanup
+      if: always()
+      run: docker compose down --volumes --remove-orphans
