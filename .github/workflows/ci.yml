@@ -24,7 +24,7 @@ jobs:
 
     - name: Write .env file
       run: |
-        echo "DB_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env
+        echo "AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env
         echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
 
     - name: Docker Compose Build
