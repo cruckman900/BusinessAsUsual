@@ -1,6 +1,10 @@
 **/.classpath
 **/.dockerignore
+
+# Ignore .env everywhere except root
 **/.env
+!.env
+
 **/.git
 **/.gitignore
 **/.project
