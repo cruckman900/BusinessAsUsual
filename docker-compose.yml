@@ -18,7 +18,7 @@ services:
     ports:
       - "5000:80"
     env_file:
-      - ./BusinessAsUsual/.env
+      - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
@@ -35,7 +35,7 @@ services:
     ports:
       - "8080:80"
     env_file:
-      - ./BusinessAsUsual/.env
+      - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
@@ -67,4 +67,4 @@ services:
     ports:
       - "1433:1433"
     env_file:
-      - ./BusinessAsUsual/.env
+      - .env
