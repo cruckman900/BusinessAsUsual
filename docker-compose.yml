@@ -24,7 +24,8 @@ services:
       - ./.env:/app/.env
     working_dir: /app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   admin:
     build:
@@ -56,9 +57,12 @@ services:
       - ./.env:/app/.env
     working_dir: /app
     depends_on:
-      - backend
-      - admin
-      - db
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+      admin:
+        condition: service_started
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest

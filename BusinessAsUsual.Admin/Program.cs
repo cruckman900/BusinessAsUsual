@@ -1,7 +1,8 @@
-using BusinessAsUsual.Admin.Extensions;
+﻿using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
 using DotNetEnv;
+using Microsoft.Data.SqlClient;
 
 namespace BusinessAsUsual.Admin
 {
@@ -33,6 +34,38 @@ namespace BusinessAsUsual.Admin
 
             // Register your services
             builder.Services.AddBusinessAsUsualServices();
+
+            var connString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+
+            if (string.IsNullOrWhiteSpace(connString))
+            {
+                Console.WriteLine("❌ AWS_SQL_CONNECTION_STRING is missing or empty.");
+            }
+            else
+            {
+                var retries = 10;
+                while (retries > 0)
+                {
+                    try
+                    {
+                        using var conn = new SqlConnection(connString);
+                        await conn.OpenAsync();
+                        Console.WriteLine("✅ SQL Server is ready.");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⏳ Waiting for SQL Server... {ex.Message}");
+                        Thread.Sleep(2000);
+                        retries--;
+                    }
+                }
+
+                if (retries == 0)
+                {
+                    Console.WriteLine("❌ SQL Server did not become ready in time.");
+                }
+            }
 
             var app = builder.Build();
 
