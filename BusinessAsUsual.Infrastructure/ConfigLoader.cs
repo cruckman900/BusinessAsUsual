@@ -11,6 +11,18 @@ namespace BusinessAsUsual.Infrastructure
     public static class ConfigLoader
     {
         /// <summary>
+        /// Get key/value
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static string Get(string key)
+        {
+            return Environment.GetEnvironmentVariable(key)
+                ?? throw new InvalidOperationException($"Missing config value for {key}");
+        }
+
+        /// <summary>
         /// Loads environment variables from the specified .env file.
         /// </summary>
         /// <param name="envFilePath">Path to the .env file (default: ".env")</param>
