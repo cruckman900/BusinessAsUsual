@@ -1,6 +1,8 @@
-FROM build AS test
+FROM mcr.microsoft.com/dotnet/sdk:9.0
 
-# Optional: validate env vars with SmartEnvValidator
-# ENV AWS_SQL_CONNECTION_STRING=...
+WORKDIR /app
+COPY . .
 
+RUN dotnet restore BusinessAsUsual.sln
+RUN dotnet build BusinessAsUsual.sln --no-restore
 RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings
