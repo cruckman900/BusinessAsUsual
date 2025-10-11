@@ -1,21 +1,17 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 
 namespace BusinessAsUsual.Infrastructure
 {
     /// <summary>
-    /// Loads environment variables from .env files and system overrides.
+    /// Loads environment variables from a centralized .env file and system overrides.
     /// Ensures contributor clarity and legacy-minded configuration.
     /// </summary>
     public static class ConfigLoader
     {
         /// <summary>
-        /// Get key/value
+        /// Gets a required environment variable by key.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
         public static string Get(string key)
         {
             return Environment.GetEnvironmentVariable(key)
@@ -23,10 +19,30 @@ namespace BusinessAsUsual.Infrastructure
         }
 
         /// <summary>
-        /// Loads environment variables from the specified .env file.
+        /// Loads environment variables from the appropriate .env file based on environment context.
         /// </summary>
-        /// <param name="envFilePath">Path to the .env file (default: ".env")</param>
-        public static void LoadEnvironmentVariables(string envFilePath = ".env")
+        public static void LoadEnvironmentVariables()
+        {
+            string envFilePath;
+
+            if (Directory.Exists("/app"))
+            {
+                // Running inside Docker
+                envFilePath = "/app/.env";
+            }
+            else
+            {
+                // Running locally (e.g., Test Explorer, CLI)
+                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".env"));
+            }
+
+            LoadEnvironmentVariables(envFilePath);
+        }
+
+        /// <summary>
+        /// Loads environment variables from a specified .env file path.
+        /// </summary>
+        public static void LoadEnvironmentVariables(string envFilePath)
         {
             if (!File.Exists(envFilePath))
             {
@@ -39,7 +55,6 @@ namespace BusinessAsUsual.Infrastructure
             {
                 var trimmed = line.Trim();
 
-                // Skip comments and empty lines
                 if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
                     continue;
 
@@ -50,12 +65,8 @@ namespace BusinessAsUsual.Infrastructure
                 var key = parts[0].Trim();
                 var value = parts[1].Trim().Trim('"');
 
-                // Only set if not already defined
-                if (Environment.GetEnvironmentVariable(key) == null)
-                {
-                    Environment.SetEnvironmentVariable(key, value);
-                    Console.WriteLine($"🔧 ConfigLoader: Loaded {key} from .env");
-                }
+                Environment.SetEnvironmentVariable(key, value);
+                Console.WriteLine($"🔧 ConfigLoader: Loaded {key} from .env");
             }
         }
     }
