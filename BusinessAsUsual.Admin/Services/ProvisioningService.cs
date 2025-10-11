@@ -33,7 +33,8 @@ namespace BusinessAsUsual.Admin.Services
         {
             await _hub.Clients.All.SendAsync("Log", new { tenantName, step, status, message });
 
-            var connStr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+            var connStr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING")
+                ?? throw new InvalidOperationException("Missing AWS_SQL_CONNECTION_STRING");
             await using var conn = new SqlConnection(connStr);
             await conn.OpenAsync();
 
