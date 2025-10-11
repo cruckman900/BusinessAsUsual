@@ -33,7 +33,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
     volumes:
-      - ./BusinessAsUsual.Admin/.env:/app/.env
+      - ./.env:/app/.env
     depends_on:
       - db
 
@@ -47,7 +47,7 @@ services:
       - db
     environment:
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
-    command: ["dotnet", "test", "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--verbosity", "normal"]
+    command: ["dotnet", "test", "/app/BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--verbosity", "normal"]
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
