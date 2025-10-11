@@ -12,9 +12,7 @@ jobs:
 
     env:
       DB_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
-      ASW_SQL_CONNECTION_STRING: ${{ secrets.ASW_SQL_CONNECTION_STRING }}
-      ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
-      E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+      ASW_SQL_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
 
     steps:
     - uses: actions/checkout@v3
