@@ -11,17 +11,16 @@ namespace BusinessAsUsual.Tests.Infrastructure
     public class ConfigLoaderTests
     {
         /// <summary>
-        /// Ensures that <see cref="ConfigLoader.LoadEnvironmentVariables"/> successfully loads
-        /// the <c>DB_CONNECTION_STRING</c> from the .env file and that it contains expected components.
+        /// Verifies that <see cref="ConfigLoader.LoadEnvironmentVariables()"/> loads AWS_SQL_CONNECTION_STRING correctly.
         /// </summary>
         [Fact]
         public void ShouldLoadEnvironmentVariablesFromDotEnv()
         {
             // Act
-            ConfigLoader.LoadEnvironmentVariables();
+            ConfigLoader.LoadEnvironmentVariables(); // Let it auto-resolve path
 
             // Assert
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+            var connectionString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
 
             Assert.False(string.IsNullOrWhiteSpace(connectionString));
             Assert.Contains("Server=", connectionString);
