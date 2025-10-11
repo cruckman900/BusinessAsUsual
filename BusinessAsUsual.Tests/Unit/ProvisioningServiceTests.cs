@@ -8,6 +8,7 @@ using Moq;
 
 namespace BusinessAsUsual.Tests.Unit
 {
+    /// Hello world
     /// <summary>
     /// Tests for the ProvisioningService class.
     /// </summary>
