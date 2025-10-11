@@ -11,17 +11,14 @@ namespace BusinessAsUsual.Admin.Services
     public class ProvisioningLogger
     {
         private readonly IHubContext<ProvisioningHub> _hub;
-        private readonly IConfiguration _config;
 
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="hub"></param>
-        /// <param name="config"></param>
-        public ProvisioningLogger(IHubContext<ProvisioningHub> hub, IConfiguration config)
+        public ProvisioningLogger(IHubContext<ProvisioningHub> hub)
         {
             _hub = hub;
-            _config = config;
         }
 
         /// <summary>
@@ -36,7 +33,7 @@ namespace BusinessAsUsual.Admin.Services
         {
             await _hub.Clients.All.SendAsync("Log", new { tenantName, step, status, message });
 
-            var connStr = _config["ConnectionStrings:DefaultConnection"];
+            var connStr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
             await using var conn = new SqlConnection(connStr);
             await conn.OpenAsync();
 

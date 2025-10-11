@@ -9,25 +9,14 @@ namespace BusinessAsUsual.Admin.Database
     /// </summary>
     public class ProvisioningDb
     {
-        private readonly IConfiguration _config;
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="config"></param>
-        public ProvisioningDb(IConfiguration config)
-        {
-            _config = config;
-        }
-
         /// <summary>
         /// Creates a provisioned company's tenant database.
         /// </summary>
         /// <param name="dbName"></param>
         public virtual async Task CreateDatabaseAsync(string dbName)
         {
-            var masterConn = _config["ConnectionStrings:DefaultConnection"]?
-                .Replace("Database=BusinessAsUsual", "Database=master");
+            var constr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+            var masterConn = constr?.Replace("Database=BusinessAsUsual", "Database=master");
 
             await using var conn = new SqlConnection(masterConn);
             await conn.OpenAsync();
@@ -54,8 +43,8 @@ namespace BusinessAsUsual.Admin.Database
         /// <param name="script"></param>
         public virtual async Task ApplySchemaAsync(string dbName, string script)
         {
-            var tenantConn = _config["ConnectionStrings:DefaultConnection"]?
-                .Replace("Database=BusinessAsUsual", $"Database={dbName}");
+            var constr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+            var tenantConn = constr?.Replace("Database=BusinessAsUsual", $"Database={dbName}");
 
             await using var conn = new SqlConnection(tenantConn);
             await conn.OpenAsync();
@@ -71,7 +60,7 @@ namespace BusinessAsUsual.Admin.Database
         /// <param name="company">The company metadata to sae.</param>
         public virtual async Task SaveCompanyInfoAsync(Company company)
         {
-            var connStr = _config.GetConnectionString("DefaultConnection");
+            var connStr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
 
             await using var conn = new SqlConnection(connStr);
             await conn.OpenAsync();

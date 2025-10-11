@@ -2,7 +2,6 @@
 using BusinessAsUsual.Admin.Database;
 using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -17,11 +16,13 @@ namespace BusinessAsUsual.Tests.Unit
         /// <summary>
         /// Test if ProvisionTenantAsync returns true after attempting to provision company.
         /// </summary>
-        /// <returns></returns>
         [Trait("Category", "Unit")]
         [Fact]
         public async Task ProvisionTenantAsync_ReturnsTrue_WhenProvisioningSucceeds()
         {
+            // 🧪 Set environment variable for connection string
+            Environment.SetEnvironmentVariable("ASW_SQL_CONNECTION_STRING", "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
+
             // 🧪 Mock SignalR hub
             var mockClients = new Mock<IHubClients>();
             var mockClientProxy = new Mock<IClientProxy>();
@@ -37,38 +38,34 @@ namespace BusinessAsUsual.Tests.Unit
             var hub = new Mock<IHubContext<ProvisioningHub>>();
             hub.Setup(h => h.Clients).Returns(mockClients.Object);
 
-            // 🧪 Mock config and environment
-            var config = new Mock<IConfiguration>();
+            // 🧪 Mock environment and logger
             var env = new Mock<IHostEnvironment>();
             var logger = new Mock<ILogger<ProvisioningService>>();
 
             env.Setup(e => e.ContentRootPath).Returns("/fake/path");
-            config.Setup(c => c["ConnectionStrings:DefaultConnection"])
-                  .Returns("Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
 
             // 🧪 Mock metadata service
             var metadata = new Mock<TenantMetadataService>();
 
             metadata.Setup(m => m.GetProvisioningLogScript())
-                    .Returns("CREATE TABLE ProvisioningLog (Id INT PRIMARY KEY IDENTITY, TenantName NVARCHAR(100), Step NVARCHAR(50), Status NVARCHAR(50), Message NVARCHAR(MAX), Timestamp DATETIME);");
+                    .Returns("CREATE TABLE ProvisioningLog (...)");
 
             metadata.Setup(m => m.GetCompanyRegistryScript())
-                    .Returns("CREATE TABLE Companies (Id UNIQUEIDENTIFIER PRIMARY KEY, Name NVARCHAR(100), DbName NVARCHAR(100), AdminEmail NVARCHAR(100), BillingPlan NVARCHAR(50), ModulesEnabled NVARCHAR(MAX), IsDisabled BIT, CreatedAt DATETIME);");
+                    .Returns("CREATE TABLE Companies (...)");
 
             metadata.Setup(m => m.GetCreateScript(env.Object, "TestCo"))
-                    .Returns("CREATE TABLE CompanySettings (CompanyId INT PRIMARY KEY IDENTITY, CompanyName NVARCHAR(100), AdminEmail NVARCHAR(100), BillingPlan NVARCHAR(50), CreatedAt DATETIME);");
+                    .Returns("CREATE TABLE CompanySettings (...)");
 
-            // 🧪 Mock ProvisioningDb
-            var provDb = new Mock<ProvisioningDb>(config.Object);
+            // 🧪 Mock ProvisioningDb using env-based ConfigLoader
+            var provDb = new Mock<ProvisioningDb>();
             provDb.Setup(d => d.ApplySchemaAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
             provDb.Setup(d => d.CreateDatabaseAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
             provDb.Setup(d => d.SaveCompanyInfoAsync(It.IsAny<Company>())).Returns(Task.CompletedTask);
 
             // 🧪 Mock ProvisioningLogger
-            var provLogger = new Mock<ProvisioningLogger>(hub.Object, config.Object);
+            var provLogger = new Mock<ProvisioningLogger>(hub.Object);
             provLogger.Setup(l => l.LogStepAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                       .Returns(Task.CompletedTask);
-
 
             // 🧪 Create provisioner with mocks
             var provisioner = new ProvisioningService(

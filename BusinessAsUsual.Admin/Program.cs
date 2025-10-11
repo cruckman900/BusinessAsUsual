@@ -1,7 +1,7 @@
 using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
+using DotNetEnv;
 
 namespace BusinessAsUsual.Admin
 {
@@ -20,6 +20,7 @@ namespace BusinessAsUsual.Admin
         {
             // Load environment variables from .env
             ConfigLoader.LoadEnvironmentVariables();
+            Env.Load();
 
             var builder = WebApplication.CreateBuilder(args);
 
