@@ -21,7 +21,7 @@ namespace BusinessAsUsual.Tests.Unit
         public async Task ProvisionTenantAsync_ReturnsTrue_WhenProvisioningSucceeds()
         {
             // 🧪 Set environment variable for connection string
-            Environment.SetEnvironmentVariable("ASW_SQL_CONNECTION_STRING", "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
+            Environment.SetEnvironmentVariable("AWS_SQL_CONNECTION_STRING", "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
 
             // 🧪 Mock SignalR hub
             var mockClients = new Mock<IHubClients>();
