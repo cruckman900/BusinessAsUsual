@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+WORKDIR /app
 
 # Copy test and admin projects
 COPY ["BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "BusinessAsUsual.Tests/"]
@@ -12,5 +12,5 @@ RUN dotnet restore "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj"
 COPY . .
 
 # Run tests
-WORKDIR /src/BusinessAsUsual.Tests
-# RUN dotnet test --verbosity normal
+WORKDIR /app/BusinessAsUsual.Tests
+RUN dotnet test --verbosity normal
