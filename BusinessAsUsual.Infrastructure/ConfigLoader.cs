@@ -82,7 +82,7 @@ namespace BusinessAsUsual.Infrastructure
                 var value = parts[1].Trim().Trim('"');
 
                 Environment.SetEnvironmentVariable(key, value);
-                Console.WriteLine($"🔧 ConfigLoader: Loaded {key} from .env");
+                Console.WriteLine($"🔧 ConfigLoader: Loaded SA_PASSWORD from {Path.GetFileName(envFilePath)}");
             }
         }
     }
