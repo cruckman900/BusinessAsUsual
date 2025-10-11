@@ -39,11 +39,13 @@ services:
     build:
       context: .
       dockerfile: BusinessAsUsual.Tests/Dockerfile
+    environment:
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
     depends_on:
       - backend
       - admin
       - db
-    # command: ["dotnet", "test", "--no-build", "--verbosity", "normal"]
+    command: ["dotnet", "test", "--no-build", "--verbosity", "normal"]
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest

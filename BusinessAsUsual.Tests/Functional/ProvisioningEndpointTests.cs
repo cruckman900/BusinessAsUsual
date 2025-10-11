@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using BusinessAsUsual.Admin.Areas.Admin.Models;
 using Xunit.Abstractions;
+using DotNetEnv;
 
 namespace BusinessAsUsual.Tests.Functional
 {
@@ -35,6 +36,9 @@ namespace BusinessAsUsual.Tests.Functional
         [Fact]
         public async Task PostProvisioning_ReturnsSuccess()
         {
+            Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+            Console.WriteLine($"Working directory: {Directory.GetCurrentDirectory()}");
+
             var payload = new Company
             {
                 Name = "TestCo",
