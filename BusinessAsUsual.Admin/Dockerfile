@@ -10,8 +10,8 @@ WORKDIR /src
 # Copy only project files for restore caching
 COPY BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj BusinessAsUsual.Admin/
 COPY BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj BusinessAsUsual.Infrastructure/
-COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
-COPY BusinessAsUsual.Shared/BusinessAsUsual.Shared.csproj BusinessAsUsual.Shared/
+# COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
+# COPY BusinessAsUsual.Shared/BusinessAsUsual.Shared.csproj BusinessAsUsual.Shared/
 
 # Restore dependencies
 RUN dotnet restore BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj
