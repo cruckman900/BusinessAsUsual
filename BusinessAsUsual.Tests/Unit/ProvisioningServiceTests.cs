@@ -1,4 +1,6 @@
-﻿using BusinessAsUsual.Admin.Services;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Admin.Database;
+using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -8,20 +10,19 @@ using Moq;
 namespace BusinessAsUsual.Tests.Unit
 {
     /// <summary>
-    /// Unit tests for the <see cref="ProvisioningService"/> class.
-    /// Validates provisioning logic in isolation using mocked configuration, environment, and metadata service.
+    /// Tests for the ProvisioningService class.
     /// </summary>
     public class ProvisioningServiceTests
     {
         /// <summary>
-        /// Verifies that <see cref="ProvisioningService.ProvisionTenantAsync"/> returns true
-        /// when all provisioning steps succeed using mocked configuration, environment, and metadata service.
+        /// Test if ProvisionTenantAsync returns true after attempting to provision company.
         /// </summary>
+        /// <returns></returns>
         [Trait("Category", "Unit")]
         [Fact]
         public async Task ProvisionTenantAsync_ReturnsTrue_WhenProvisioningSucceeds()
         {
-            // Setup mocked SignalR hub
+            // 🧪 Mock SignalR hub
             var mockClients = new Mock<IHubClients>();
             var mockClientProxy = new Mock<IClientProxy>();
 
@@ -36,47 +37,52 @@ namespace BusinessAsUsual.Tests.Unit
             var hub = new Mock<IHubContext<ProvisioningHub>>();
             hub.Setup(h => h.Clients).Returns(mockClients.Object);
 
-            // Setup mocked config and environment
+            // 🧪 Mock config and environment
             var config = new Mock<IConfiguration>();
             var env = new Mock<IHostEnvironment>();
             var logger = new Mock<ILogger<ProvisioningService>>();
 
             env.Setup(e => e.ContentRootPath).Returns("/fake/path");
             config.Setup(c => c["ConnectionStrings:DefaultConnection"])
-                  .Returns("Server=bau-sql.ch64meuam1eh.us-east-2.rds.amazonaws.com,1433;Database=BusinessAsUsual;User Id=admin;Password=from-the-ashes-2025;Encrypt=True;TrustServerCertificate=True");
+                  .Returns("Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
 
-            // Setup mocked metadata service with in-memory SQL
-            var metadata = new Mock<TenantMetadataService>(config.Object);
-            metadata.Setup(m => m.GetCreateScript("TestCo"))
-                    .Returns(@"
-                        CREATE DATABASE [bau_testco];
-                        USE [bau_testco];
-                        CREATE TABLE ProvisioningLog (
-                            Id INT PRIMARY KEY IDENTITY,
-                            TenantName NVARCHAR(100),
-                            Step NVARCHAR(50),
-                            Status NVARCHAR(50),
-                            Message NVARCHAR(MAX),
-                            Timestamp DATETIME
-                        );
-                    ");
+            // 🧪 Mock metadata service
+            var metadata = new Mock<TenantMetadataService>();
 
-            // Create provisioner with mocks
+            metadata.Setup(m => m.GetProvisioningLogScript())
+                    .Returns("CREATE TABLE ProvisioningLog (Id INT PRIMARY KEY IDENTITY, TenantName NVARCHAR(100), Step NVARCHAR(50), Status NVARCHAR(50), Message NVARCHAR(MAX), Timestamp DATETIME);");
+
+            metadata.Setup(m => m.GetCompanyRegistryScript())
+                    .Returns("CREATE TABLE Companies (Id UNIQUEIDENTIFIER PRIMARY KEY, Name NVARCHAR(100), DbName NVARCHAR(100), AdminEmail NVARCHAR(100), BillingPlan NVARCHAR(50), ModulesEnabled NVARCHAR(MAX), IsDisabled BIT, CreatedAt DATETIME);");
+
+            metadata.Setup(m => m.GetCreateScript(env.Object, "TestCo"))
+                    .Returns("CREATE TABLE CompanySettings (CompanyId INT PRIMARY KEY IDENTITY, CompanyName NVARCHAR(100), AdminEmail NVARCHAR(100), BillingPlan NVARCHAR(50), CreatedAt DATETIME);");
+
+            // 🧪 Mock ProvisioningDb
+            var provDb = new Mock<ProvisioningDb>(config.Object);
+            provDb.Setup(d => d.ApplySchemaAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+            provDb.Setup(d => d.CreateDatabaseAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+            provDb.Setup(d => d.SaveCompanyInfoAsync(It.IsAny<Company>())).Returns(Task.CompletedTask);
+
+            // 🧪 Mock ProvisioningLogger
+            var provLogger = new Mock<ProvisioningLogger>(hub.Object, config.Object);
+            provLogger.Setup(l => l.LogStepAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                      .Returns(Task.CompletedTask);
+
+
+            // 🧪 Create provisioner with mocks
             var provisioner = new ProvisioningService(
-                hub.Object,
-                config.Object,
                 env.Object,
                 metadata.Object,
-                logger.Object);
+                logger.Object,
+                provDb.Object,
+                provLogger.Object);
 
-            // Execute provisioning logic
+            // 🧪 Execute provisioning logic
             var result = await provisioner.ProvisionTenantAsync("TestCo", "admin@testco.com", "standard", new[] { "Billing", "Inventory" });
 
-            // Assert success
+            // ✅ Assert success
             Assert.True(result);
-
-            // Optional cleanup (integration only)
-            //TestDbCleaner.Cleanup("bau_testco");
         }
     }
 }

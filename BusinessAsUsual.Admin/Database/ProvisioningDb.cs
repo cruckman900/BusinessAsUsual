@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Admin.Models;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Admin.Services;
 using Microsoft.Data.SqlClient;
 
 namespace BusinessAsUsual.Admin.Database
@@ -23,7 +24,7 @@ namespace BusinessAsUsual.Admin.Database
         /// Creates a provisioned company's tenant database.
         /// </summary>
         /// <param name="dbName"></param>
-        public async Task CreateDatabaseAsync(string dbName)
+        public virtual async Task CreateDatabaseAsync(string dbName)
         {
             var masterConn = _config["ConnectionStrings:DefaultConnection"]?
                 .Replace("Database=BusinessAsUsual", "Database=master");
@@ -31,17 +32,27 @@ namespace BusinessAsUsual.Admin.Database
             await using var conn = new SqlConnection(masterConn);
             await conn.OpenAsync();
 
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = $"CREATE DATABASE [{dbName}]";
-            await cmd.ExecuteNonQueryAsync();
-        }
+            var checkCmd = conn.CreateCommand();
+            checkCmd.CommandText = $"SELECT COUNT(*) FROM sys.databases WHERE name = @dbName";
+            checkCmd.Parameters.AddWithValue("@dbName", dbName);
 
+            var result = await checkCmd.ExecuteScalarAsync();
+            var exists = Convert.ToInt32(result) > 0;
+            if (exists)
+            {
+                return;
+            }
+
+            var createCmd = conn.CreateCommand();
+            createCmd.CommandText = $"CREATE DATABASE [{dbName}]";
+            await createCmd.ExecuteNonQueryAsync();
+        }
         /// <summary>
         /// Runs the provided sql script on the provided database.
         /// </summary>
         /// <param name="dbName"></param>
         /// <param name="script"></param>
-        public async Task ApplySchemaAsync(string dbName, string script)
+        public virtual async Task ApplySchemaAsync(string dbName, string script)
         {
             var tenantConn = _config["ConnectionStrings:DefaultConnection"]?
                 .Replace("Database=BusinessAsUsual", $"Database={dbName}");
@@ -58,7 +69,7 @@ namespace BusinessAsUsual.Admin.Database
         /// Saves metadata for a newly provisioned company.
         /// </summary>
         /// <param name="company">The company metadata to sae.</param>
-        public async Task SaveCompanyInfoAsync(Company company)
+        public virtual async Task SaveCompanyInfoAsync(Company company)
         {
             var connStr = _config.GetConnectionString("DefaultConnection");
 
@@ -66,9 +77,10 @@ namespace BusinessAsUsual.Admin.Database
             await conn.OpenAsync();
 
             var cmd = new SqlCommand(@"
-                INSERT INTO Companies (Name, DbName, AdminEmail, CreatedAt)
+                INSERT INTO Companies (Id, Name, DbName, AdminEmail, CreatedAt)
                 VALUES (@Id, @Name, @DbName, @AdminEmail, @CreatedAt)", conn);
 
+            cmd.Parameters.AddWithValue("@Id", company.Id);
             cmd.Parameters.AddWithValue("@Name", company.Name);
             cmd.Parameters.AddWithValue("@DbName", company.DbName);
             cmd.Parameters.AddWithValue("@AdminEmail", company.AdminEmail);

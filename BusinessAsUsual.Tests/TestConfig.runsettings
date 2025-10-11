@@ -1,0 +1,6 @@
+﻿<RunSettings>
+  <RunConfiguration>
+    <DisableAppDomain>false</DisableAppDomain>
+    <DisableShadowCopy>false</DisableShadowCopy>
+  </RunConfiguration>
+</RunSettings>

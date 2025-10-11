@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Admin.Services;
+﻿using BusinessAsUsual.Admin.Database;
+using BusinessAsUsual.Admin.Services;
 
 namespace BusinessAsUsual.Admin.Extensions
 {
@@ -16,6 +17,11 @@ namespace BusinessAsUsual.Admin.Extensions
         {
             services.AddScoped<IProvisioningService, ProvisioningService>();
             services.AddScoped<TenantMetadataService>();
+            services.AddScoped<ProvisioningDb>();
+            services.AddScoped<ProvisioningLogger>();
+            services.AddScoped<ProvisioningService>();
+            services.AddScoped<ISmartCommitLogger, SmartCommitLogger>();
+            services.AddSignalR();
             return services;
         }
     }

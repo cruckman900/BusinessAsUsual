@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Models
+namespace BusinessAsUsual.Admin.Areas.Admin.Models
 {
     /// <summary>
     /// Represents a line item as defined in Business As Usual

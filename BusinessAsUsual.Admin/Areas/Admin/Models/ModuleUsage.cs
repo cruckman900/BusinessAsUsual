@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Models
+namespace BusinessAsUsual.Admin.Areas.Admin.Models
 {
     /// <summary>Represents the usage of a module per company inside Business As Usual system.
     /// </summary>

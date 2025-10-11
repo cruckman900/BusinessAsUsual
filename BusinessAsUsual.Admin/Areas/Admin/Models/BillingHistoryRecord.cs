@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Models
+namespace BusinessAsUsual.Admin.Areas.Admin.Models
 {
     /// <summary>
     /// Represents a billing record within the Business As Usual systeml

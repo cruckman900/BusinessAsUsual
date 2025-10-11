@@ -1,4 +1,6 @@
-﻿namespace BusinessAsUsual.Admin.Services
+﻿using BusinessAsUsual.Admin.Database;
+
+namespace BusinessAsUsual.Admin.Services
 {
     /// <summary>
     ///     Defines the contract for provisioning new tenants within the Business As Usual platform.
