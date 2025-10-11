@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
-WORKDIR /src
+WORKDIR /app
 
 # Copy everything into the container
 COPY . .
