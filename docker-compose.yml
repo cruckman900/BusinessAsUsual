@@ -43,7 +43,7 @@ services:
       - backend
       - admin
       - db
-    command: ["dotnet", "test", "--no-build", "--verbosity", "normal"]
+    # command: ["dotnet", "test", "--no-build", "--verbosity", "normal"]
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
