@@ -17,6 +17,9 @@ RUN dotnet restore "BusinessAsUsual.sln"
 # Copy everything
 COPY . .
 
+RUN ls -la /app/.env
+RUN cat /app/.env
+
 # Run tests
 WORKDIR /app/BusinessAsUsual.Tests
 RUN dotnet test --verbosity normal
