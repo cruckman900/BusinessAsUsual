@@ -23,20 +23,36 @@ namespace BusinessAsUsual.Infrastructure
         /// </summary>
         public static void LoadEnvironmentVariables()
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+            string envFileName = environment switch
+            {
+                "Production" => ".env.production",
+                "CI" => ".env.ci",
+                _ => ".env.local"
+            };
+
             string envFilePath;
 
             if (Directory.Exists("/app"))
             {
                 // Running inside Docker
-                envFilePath = "/app/.env";
+                envFilePath = Path.Combine("/app", envFileName);
             }
             else
             {
                 // Running locally (e.g., Test Explorer, CLI)
-                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".env"));
+                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", envFileName));
             }
 
-            LoadEnvironmentVariables(envFilePath);
+            if (File.Exists(envFilePath))
+            {
+                Console.WriteLine($"✅ ConfigLoader: Loading {envFileName} from {envFilePath}");
+                LoadEnvironmentVariables(envFilePath);
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ ConfigLoader: {envFileName} not found at {envFilePath}");
+            }
         }
 
         /// <summary>
