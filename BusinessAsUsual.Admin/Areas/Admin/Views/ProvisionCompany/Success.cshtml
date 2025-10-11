@@ -6,3 +6,17 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.sj"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("provisionerHub")
+        .build();
+
+    connection.on("Log", function (message) {
+        const logContainer = document.getElementById("modal-body");
+        logContainer.innerHTML += <div>${message}</div>;
+    });
+
+    connection.start();
+</script>
