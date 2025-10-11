@@ -47,6 +47,8 @@ namespace BusinessAsUsual.Admin
             app.UseAuthorization();
             app.UseDeveloperExceptionPage();
 
+            app.MapHub<ProvisioningHub>("/provisioningHub");
+
             app.MapControllerRoute(
                 name: "areas",
                 pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
