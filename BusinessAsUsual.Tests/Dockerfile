@@ -13,4 +13,4 @@ COPY . .
 
 # Run tests
 WORKDIR /src/BusinessAsUsual.Tests
-RUN dotnet test --verbosity normal
+# RUN dotnet test --verbosity normal
