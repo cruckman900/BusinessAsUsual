@@ -47,6 +47,8 @@ services:
       - db
     environment:
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+    volumes:
+      - ./.env:/app/.env
     env_file:
       - .env
     command: ["dotnet", "test", "/app/BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--verbosity", "normal"]
