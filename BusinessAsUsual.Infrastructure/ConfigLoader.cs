@@ -28,7 +28,7 @@ namespace BusinessAsUsual.Infrastructure
                 var trimmed = line.Trim();
 
                 // Skip comments and empty lines
-                if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("#"))
+                if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
                     continue;
 
                 var parts = trimmed.Split('=', 2);
