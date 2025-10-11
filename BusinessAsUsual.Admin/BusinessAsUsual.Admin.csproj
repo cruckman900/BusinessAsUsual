@@ -5,7 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Services\IProvisioningService.cs~RF2621f1cc.TMP" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
@@ -23,6 +28,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update=".env">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

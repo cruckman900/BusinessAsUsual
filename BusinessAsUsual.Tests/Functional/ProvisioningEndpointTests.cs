@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net.Http.Json;
+using BusinessAsUsual.Admin.Areas.Admin.Models;
+using Xunit.Abstractions;
 
 namespace BusinessAsUsual.Tests.Functional
 {
@@ -9,9 +10,10 @@ namespace BusinessAsUsual.Tests.Functional
     /// Validates that the API correctly handles tenant provisioning requests
     /// and returns appropriate HTTP responses.
     /// </summary>
-    public class ProvisioningEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+    public class ProvisioningEndpointTests : IClassFixture<WebApplicationFactory<Admin.Program>>
     {
         private readonly HttpClient _client;
+        private readonly ITestOutputHelper _output;
 
         /// <summary>
         /// Initializes the test client using the application factory.
@@ -19,9 +21,11 @@ namespace BusinessAsUsual.Tests.Functional
         /// <param name="factory">
         /// The web application factory used to create the test server and client.
         /// </param>
-        public ProvisioningEndpointTests(WebApplicationFactory<Program> factory)
+        /// <param name="output"></param>
+        public ProvisioningEndpointTests(WebApplicationFactory<Admin.Program> factory, ITestOutputHelper output)
         {
             _client = factory.CreateClient();
+            _output = output;
         }
 
         /// <summary>
@@ -31,15 +35,19 @@ namespace BusinessAsUsual.Tests.Functional
         [Fact]
         public async Task PostProvisioning_ReturnsSuccess()
         {
-            var payload = new
+            var payload = new Company
             {
-                companyName = "TestCo",
-                adminEmail = "admin@testco.com",
-                billingPlan = "Standard",
-                modules = new[] { "Billing", "Inventory" }
+                Name = "TestCo",
+                AdminEmail = "admin@testco.com",
+                BillingPlan = "Standard",
+                ModulesEnabled = "Billing,Inventory"
             };
 
-            var response = await _client.PostAsJsonAsync("/api/provision", payload);
+            var response = await _client.PostAsJsonAsync("/Admin/ProvisionCompany", payload);
+            var body = await response.Content.ReadAsStringAsync();
+
+            _output.WriteLine($"Status: {response.StatusCode}");
+            _output.WriteLine($"body: {body}");
 
             // Assert that the response status code is 200 OK
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);

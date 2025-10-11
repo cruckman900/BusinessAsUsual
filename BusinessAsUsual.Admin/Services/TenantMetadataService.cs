@@ -1,8 +1,4 @@
-﻿using BusinessAsUsual.Admin.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Data.SqlClient;
-
-namespace BusinessAsUsual.Admin.Services
+﻿namespace BusinessAsUsual.Admin.Services
 {
     /// <summary>
     /// Handles saving and retrieving metadata for provisioned companies.
