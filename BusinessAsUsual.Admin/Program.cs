@@ -20,7 +20,7 @@ namespace BusinessAsUsual.Admin
         {
             // Load environment variables from .env
             ConfigLoader.LoadEnvironmentVariables();
-            Env.Load("/app/.env");
+            Env.Load();
 
             var builder = WebApplication.CreateBuilder(args);
 
