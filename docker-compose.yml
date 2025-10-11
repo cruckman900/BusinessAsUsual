@@ -23,7 +23,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
     volumes:
-      - ./BusinessAsUsual/.env:/app/.env
+      - ./.env:/app/.env
     working_dir: /app
     depends_on:
       - db
@@ -40,7 +40,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
     volumes:
-      - ./BusinessAsUsual/.env:/app/.env
+      - ./.env:/app/.env
     working_dir: /app
     depends_on:
       - db
@@ -55,7 +55,7 @@ services:
     environment:
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
     volumes:
-      - ./BusinessAsUsual/.env:/app/.env
+      - ./.env:/app/.env
     working_dir: /app
     depends_on:
       - backend
