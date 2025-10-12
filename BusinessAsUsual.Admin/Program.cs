@@ -1,4 +1,5 @@
 ﻿using BusinessAsUsual.Admin.Extensions;
+using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
 using DotNetEnv;
@@ -28,6 +29,7 @@ namespace BusinessAsUsual.Admin
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+            builder.Services.AddSignalR();
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
             builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -83,6 +85,7 @@ namespace BusinessAsUsual.Admin
             app.UseDeveloperExceptionPage();
 
             app.MapHub<ProvisioningHub>("/provisioningHub");
+            app.MapHub<SmartCommitHub>("/smartCommitHub");
 
             app.MapControllerRoute(
                 name: "admin_default",

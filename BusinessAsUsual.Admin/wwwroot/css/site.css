@@ -24,9 +24,17 @@ html, body {
     padding: 1rem;
 }
 
+.layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
 .main-content {
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+    padding: 1rem;
     background: #fff;
-    padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
@@ -54,11 +62,63 @@ html, body {
     text-decoration: underline;
 }
 
+.nav-links li.active a {
+    font-weight: bold;
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+}
+
 /* === Sidebar === */
 .sidebar {
+    transition: width 0.3s ease;
+    overflow: hidden;
     background-color: #ecf0f1;
     padding: 1rem;
     border-right: 2px solid #bdc3c7;
+}
+
+.sidebar.expanded {
+    width: 250px;
+}
+
+.sidebar.collapsed {
+    width: 3rem;
+}
+
+.sidebar.collapsed #sidebar-title {
+    display: none;
+}
+
+.sidebar.collapsed .list-group-item {
+    text-align: center;
+    padding: 0.75rem 0;
+}
+
+.sidebar.collapsed .list-group-item a {
+    display: block;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.sidebar.collapsed .list-group-item a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    padding: 0.75rem 0;
+}
+
+.sidebar.collapsed .list-group-item a span {
+    display: none;
+}
+
+.sidebar button {
+    display: block;
+    margin: 0 auto;
+}
+
+.sidebar.expanded .list-group-item a i {
+    margin-right: 0.5rem;
 }
 
 .sidebar h3 {
@@ -76,38 +136,6 @@ html, body {
     margin: 0.5rem 0;
     color: #2c3e50;
     text-decoration: none;
-}
-
-.landing-page {
-    padding: 2rem;
-    background-color: var(--sidebar-bg);
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
-
-.landing-page h1 {
-    font-size: 2rem;
-    color: var(--brand-text);
-}
-
-.landing-page p {
-    font-size: 1.2rem;
-    color: var(--sidebar-link);
-}
-
-.cta-buttons .btn {
-    display: inline-block;
-    margin: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--navbar-bg);
-    color: var(--navbar-text);
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
-}
-
-.cta-buttons .btn:hover {
-    background-color: var(--navbar-link-hover);
 }
 
 .sidebar a:hover {
