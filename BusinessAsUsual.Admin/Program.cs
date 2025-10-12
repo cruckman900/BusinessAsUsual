@@ -76,6 +76,7 @@ namespace BusinessAsUsual.Admin
                 app.UseHsts();
             }
 
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
@@ -84,8 +85,8 @@ namespace BusinessAsUsual.Admin
             app.MapHub<ProvisioningHub>("/provisioningHub");
 
             app.MapControllerRoute(
-                name: "areas",
-                pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+                name: "admin_default",
+                pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}"
             );
 
 #pragma warning disable ASP0014

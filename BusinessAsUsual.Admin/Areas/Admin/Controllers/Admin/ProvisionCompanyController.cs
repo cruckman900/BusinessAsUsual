@@ -27,6 +27,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers.Admin
         /// Displays the provisioning form with an empty Company model.
         /// </summary>
         /// <returns>View with empty form fields.</returns>
+        [Area("Admin")]
+        [Route("/admin/provisioncompany")]
         [HttpGet]
         public IActionResult Index() => View(new Company());
 
