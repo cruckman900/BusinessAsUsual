@@ -3,18 +3,90 @@
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
 
-<section class="hero-section">
-    <div class="hero-overlay">
-        <h1>Welcome to Business As Usual</h1>
-        <p>Your admin dashboard for provisioning, scaling, and legacy-minded orchestration.</p>
-        <a href="/Companies/Provision" class="btn hero-btn">Get Started</a>
+<section class="dashboard-hero">
+    <h1>Welcome to Business As Usual</h1>
+    <p class="tagline">Every commit is a legacy. Every contributor leaves a mark.</p>
+</section>
+
+<section class="search-container">
+    <input type="text" id="searchBox" placeholder="Search companies or users..." class="form-control" />
+    <ul id="searchResults" class="list-group"></ul>
+</section>
+
+<section class="smart-commit-feed">
+    <h2>Recent Smart Commits</h2>
+    <ul id="commit-feed" class="commit-list">
+        @if (TempData["SmartCommit"] != null)
+        {
+            <li>@TempData["SmartCommit"]</li>
+        }
+        else
+        {
+            <li><em>No recent commits yet. Time to make history.</em></li>
+        }
+    </ul>
+</section>
+
+<section class="quick-actions">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+        <a href="/admin/company/provision" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Provision Company
+        </a>
+        <a href="/admin/user/add" class="btn btn-secondary">
+            <i class="fas fa-user-plus"></i> Add User
+        </a>
+        <a href="/admin/company/audit" class="btn btn-outline-dark">
+            <i class="fas fa-history"></i> View Audit Log
+        </a>
     </div>
 </section>
 
-<section class="landing-page">
-    <div class="cta-buttons text-center mt-2">
-        <a href="/Companies/Provision" class="btn">Provision New Company</a>
-        <a href="/Users" class="btn">Manage Users</a>
-        <a href="/Settings" class="btn">System Settings</a>
-    </div>
+<section class="system-health">
+    <h2>System Health</h2>
+    <ul>
+        <li>EC2: <span class="status-ok">Running</span></li>
+        <li>RDS: <span class="status-ok">Connected</span></li>
+        <li>CI/CD: <span class="status-ok">Synced</span></li>
+    </ul>
 </section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("/smartCommitHub")
+      .build();
+
+    connection.on("ReceiveCommit", function (message) {
+      const feed = document.getElementById("commit-feed");
+      const li = document.createElement("li");
+      li.textContent = message;
+      feed.prepend(li);
+    });
+
+    connection.start().catch(err => console.error(err));
+</script>
+
+
+<script>
+    const data = ["Acme Corp", "Beta LLC", "Charlie Inc", "Alice Smith", "Bob Jones"];
+
+    document.getElementById("searchBox").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const list = document.getElementById("searchResults");
+
+      if (!query) {
+        list.innerHTML = "";
+        return;
+      }
+
+      const results = data.filter(item => item.toLowerCase().includes(query));
+      list.innerHTML = "";
+      results.forEach(result => {
+        const li = document.createElement("li");
+        li.className = "list-group-item";
+        li.textContent = result;
+        list.appendChild(li);
+      });
+    });
+</script>

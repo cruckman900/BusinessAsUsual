@@ -1,0 +1,32 @@
+﻿<!-- ActionModal.cshtml -->
+<div class="modal fade" id="actionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="modalTitle">Action Status</h5>
+            </div>
+            <div class="modal-body">
+                <div id="modalProgressStream" class="text-monospace"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+          .withUrl("/statusHub")
+          .build();
+
+        connection.on("ReceiveStatusUpdate", function (message) {
+          const stream = document.getElementById("modalProgressStream");
+          stream.innerHTML += `<div>${message}</div>`;
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+    </script>
+}

@@ -1,0 +1,77 @@
+{
+  "Home": {
+    "icon": "fas fa-home",
+    "route":  "/",
+    "items": []
+  },
+  "Companies": {
+    "icon": "fas fa-building",
+    "items": [
+      {
+        "label": "Provision Company",
+        "route": "/admin/company/provision",
+        "description": "Create a new company record",
+        "icon": "fas fa-plus-circle"
+      },
+      {
+        "label": "View Companies",
+        "route": "/admin/company/view",
+        "description": "Browse and filter existing companies",
+        "icon": "fas fa-list"
+      },
+      {
+        "label": "Edit Company",
+        "route": "/admin/company/edit",
+        "description": "Modify company details",
+        "icon": "fas fa-edit"
+      },
+      {
+        "label": "Company Details",
+        "route": "/admin/company/details",
+        "description": "View full company metadata",
+        "icon": "fas fa-info-circle"
+      },
+      {
+        "label": "Archive Company",
+        "route": "/admin/company/archive",
+        "description": "Deactivate or soft-delete a company",
+        "icon": "fas fa-archive"
+      },
+      {
+        "label": "Merge Companies",
+        "route": "/admin/company/merge",
+        "description": "Combine two companies into one",
+        "icon": "fas fa-object-group"
+      },
+      {
+        "label": "Audit Log",
+        "route": "/admin/company/audit",
+        "description": "Track contributor actions",
+        "icon": "fas fa-history"
+      },
+      {
+        "label": "Company Settings",
+        "route": "/admin/company/settings",
+        "description": "Configure company-specific options",
+        "icon": "fas fa-cogs"
+      }
+    ]
+  },
+  "Users": {
+    "icon": "fas fa-users",
+    "items": [
+      {
+        "label": "Add User",
+        "route": "/admin/user/add",
+        "description": "Create a new user account",
+        "icon": "fas fa-user-plus"
+      },
+      {
+        "label": "Manage Users",
+        "route": "/admin/user/manage",
+        "description": "Edit, deactivate, or assign roles",
+        "icon": "fas fa-user-cog"
+      }
+    ]
+  }
+}
