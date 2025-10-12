@@ -1,0 +1,32 @@
+﻿/* === sidebar.css — Left Sidebar === */
+
+.sidebar {
+    background-color: var(--sidebar-bg);
+    padding: 1rem;
+    border-right: 2px solid var(--sidebar-border);
+    height: 100%;
+    position: sticky;
+    top: 4.5rem; /* below header + navbar */
+    align-self: start;
+}
+
+.sidebar h3 {
+    font-size: 1.2rem;
+    color: var(--sidebar-heading);
+    margin-bottom: 1rem;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar a {
+    display: block;
+    margin: 0.5rem 0;
+    color: var(--sidebar-link);
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    text-decoration: underline;
+}

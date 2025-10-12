@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Business As Usual</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/layout.css" />
+    <link rel="stylesheet" href="~/css/header.css" />
+    <link rel="stylesheet" href="~/css/navbar.css" />
+    <link rel="stylesheet" href="~/css/sidebar.css" />
+    <link rel="stylesheet" href="~/css/footer.css" />
+    <link rel="stylesheet" href="~/css/form.css" />
+    <link rel="stylesheet" href="~/css/hero.css" />
+    <link rel="stylesheet" href="~/css/theme.css" />
+    <script src="~/js/ThemeSwitcher.js"></script>
+</head>
+<body>
+    <partial name="_Header" />
+    <div class="layout-container">
+        <partial name="_Sidebar" />
+        <main class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+    <partial name="_Footer" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

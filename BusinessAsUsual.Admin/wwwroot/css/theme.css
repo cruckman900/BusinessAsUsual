@@ -1,0 +1,103 @@
+﻿/* === theme.css — Default Theme Variables === */
+:root {
+    --brand-bg: #1a1a1a;
+    --brand-text: #f1f1f1;
+    --signature-text: #00ffcc;
+    --signature-glow: #00ffcc;
+    --navbar-bg: #2c3e50;
+    --navbar-text: #ffffff;
+    --navbar-link: #ffffff;
+    --navbar-link-hover: #00ffcc;
+    --sidebar-bg: #ecf0f1;
+    --sidebar-border: #bdc3c7;
+    --sidebar-heading: #34495e;
+    --sidebar-link: #2c3e50;
+    --header-bg: #1a1a1a;
+    --footer-bg: #2c3e50;
+    --footer-text: #ffffff;
+    --content-bg: #ffffff;
+    --content-text: #333333;
+}
+
+/* === Dark Mode Theme === */
+.theme-dark {
+    --brand-bg: #121212;
+    --brand-text: #e0e0e0;
+    --signature-text: #00ffcc;
+    --signature-glow: #00ffcc;
+    --navbar-bg: #1f1f1f;
+    --navbar-text: #e0e0e0;
+    --navbar-link: #e0e0e0;
+    --navbar-link-hover: #00ffcc;
+    --sidebar-bg: #1a1a1a;
+    --sidebar-border: #333;
+    --sidebar-heading: #00ffcc;
+    --sidebar-link: #e0e0e0;
+    --header-bg: #121212;
+    --footer-bg: #1f1f1f;
+    --footer-text: #e0e0e0;
+    --content-bg: #1a1a1a;
+    --content-text: #e0e0e0;
+}
+
+/* === Light Theme === */
+.theme-light {
+    --brand-bg: #ffffff;
+    --brand-text: #222;
+    --signature-text: #555;
+    --signature-glow: #aaa;
+    --navbar-bg: #f0f0f0;
+    --navbar-text: #333;
+    --navbar-link: #333;
+    --navbar-link-hover: #007acc;
+    --sidebar-bg: #fafafa;
+    --sidebar-border: #ddd;
+    --sidebar-heading: #444;
+    --sidebar-link: #333;
+    --header-bg: #ffffff;
+    --footer-bg: #f0f0f0;
+    --footer-text: #333;
+    --content-bg: #fefefe;
+    --content-text: #222;
+}
+
+/* === LinearDescent Retro Theme === */
+.theme-retro {
+    --brand-bg: #000;
+    --brand-text: #00ffcc;
+    --signature-text: #00ffcc;
+    --signature-glow: #00ffcc;
+    --navbar-bg: #111;
+    --navbar-text: #00ffcc;
+    --navbar-link: #00ffcc;
+    --navbar-link-hover: #ff00ff;
+    --sidebar-bg: #222;
+    --sidebar-border: #00ffcc;
+    --sidebar-heading: #ff00ff;
+    --sidebar-link: #00ffcc;
+    --header-bg: #000;
+    --footer-bg: #111;
+    --footer-text: #00ffcc;
+    --content-bg: #000;
+    --content-text: #00ffcc;
+}
+
+.theme-contributor {
+    --brand-bg: #0d0d0d;
+    --brand-text: #f5f5f5;
+    --signature-text: #ffd700;
+    --signature-glow: #ffcc00;
+    --navbar-bg: #222;
+    --navbar-text: #ffd700;
+    --navbar-link: #ffd700;
+    --navbar-link-hover: #ffcc00;
+    --sidebar-bg: #111;
+    --sidebar-border: #ffd700;
+    --sidebar-heading: #ffcc00;
+    --sidebar-link: #ffd700;
+    --header-bg: #0d0d0d;
+    --footer-bg: #222;
+    --footer-text: #ffd700;
+    --content-bg: #111;
+    --content-text: #ffd700;
+}

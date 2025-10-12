@@ -1,0 +1,27 @@
+﻿/* === navbar.css — Top Navigation Bar === */
+
+.navbar {
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: var(--navbar-link);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--navbar-link-hover);
+}

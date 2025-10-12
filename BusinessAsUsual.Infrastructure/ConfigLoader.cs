@@ -41,7 +41,7 @@ namespace BusinessAsUsual.Infrastructure
             else
             {
                 // Running locally (e.g., Test Explorer, CLI)
-                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", envFileName));
+                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", envFileName));
             }
 
             if (File.Exists(envFilePath))

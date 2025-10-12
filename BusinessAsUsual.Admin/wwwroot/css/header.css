@@ -1,0 +1,51 @@
+﻿/* === header.css — Top Branding & Signature === */
+
+.header-branding {
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
+    padding: 1rem 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-title {
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+}
+
+.brand-signature {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--signature-text);
+    opacity: 0.8;
+    text-shadow: 0 0 2px var(--signature-glow);
+}
+
+.brand-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.brand-logo {
+    height: 48px;
+    width: auto;
+}
+
+.brand-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--brand-text);
+}
+
+.brand-signature {
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+    color: var(--signature-text);
+    text-shadow: 0 0 2px var(--signature-glow);
+    opacity: 0.8;
+}
