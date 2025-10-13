@@ -24,6 +24,9 @@
     <script src="~/js/menuSystem.js"></script>
 </head>
 <body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+    </div>
     @await Html.PartialAsync("_Header")
     <div class="layout-container">
         @await Html.PartialAsync("_Sidebar")
@@ -35,3 +38,16 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    globalThis.addEventListener("DOMContentLoaded", async () => {
+        try {
+            await globalThis.loadMenuJson(); // ✅ now properly awaited
+        } catch (err) {
+            console.warn("[SmartCommit] Menu JSON load failed during startup", err);
+        }
+
+        const loader = document.getElementById("loading-screen");
+        if (loader) loader.style.display = "none";
+    });
+</script>

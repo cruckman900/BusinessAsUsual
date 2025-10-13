@@ -30,6 +30,18 @@
 
 <script>
     globalThis.addEventListener("DOMContentLoaded", () => {
+      const savedTheme = localStorage.getItem("selectedTheme") || "default";
+      document.body.className = `theme-${savedTheme}`;
+
+      const themeToggle = document.getElementById("theme-toggle");
+      if (themeToggle) themeToggle.value = savedTheme;
+
+      console.log(`[SmartCommit] Restored theme: ${savedTheme}`);
+    });
+</script>
+
+<script>
+    globalThis.addEventListener("DOMContentLoaded", () => {
       globalThis.renderNavbar();
     });
 </script>
