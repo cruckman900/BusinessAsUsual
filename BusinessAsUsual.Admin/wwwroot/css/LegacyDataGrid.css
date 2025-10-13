@@ -8,6 +8,37 @@
     font-family: var(--font-sans, sans-serif);
 }
 
+.legacy-datagrid {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+    font-size: 0.95rem;
+}
+
+.legacy-datagrid th {
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 2px solid var(--sidebar-border);
+}
+
+.legacy-datagrid td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--sidebar-border);
+}
+
+.legacy-datagrid a.action-link {
+    color: var(--signature-text);
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.legacy-datagrid a.action-link:hover {
+    color: var(--signature-glow);
+}
+
 .legacy-grid-table {
     width: 100%;
     border-collapse: collapse;

@@ -6,5 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedTheme = themeToggle.value;
         document.body.className = ""; // Clear existing theme
         document.body.classList.add(`theme-${selectedTheme}`);
+        localStorage.setItem("selectedTheme", selectedTheme);
+        console.log(`[SmartCommit] Theme set to: ${selectedTheme}`);
     });
 });
