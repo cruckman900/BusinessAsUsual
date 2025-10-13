@@ -1,8 +1,10 @@
-﻿using BusinessAsUsual.Admin.Extensions;
+﻿using BusinessAsUsual.Admin.Data;
+using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 
 namespace BusinessAsUsual.Admin
@@ -24,20 +26,22 @@ namespace BusinessAsUsual.Admin
             ConfigLoader.LoadEnvironmentVariables();
             Env.Load();
 
+            var connString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddSignalR();
+            builder.Services.AddDbContext<AdminDbContext>(options =>
+                options.UseSqlServer(connString));
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
             builder.Logging.SetMinimumLevel(LogLevel.Information);
 
             // Register your services
             builder.Services.AddBusinessAsUsualServices();
-
-            var connString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
 
             if (string.IsNullOrWhiteSpace(connString))
             {
@@ -86,6 +90,8 @@ namespace BusinessAsUsual.Admin
 
             app.MapHub<ProvisioningHub>("/provisioningHub");
             app.MapHub<SmartCommitHub>("/smartCommitHub");
+
+            app.MapDefaultControllerRoute();
 
             app.MapControllerRoute(
                 name: "admin_default",

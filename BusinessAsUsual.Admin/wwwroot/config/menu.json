@@ -1,72 +1,57 @@
 {
   "Home": {
+    "id": "nav-home",
     "icon": "fas fa-home",
-    "route":  "/",
+    "route": "/",
     "items": []
   },
   "Companies": {
+    "id": "nav-companies",
     "icon": "fas fa-building",
     "items": [
       {
+        "id": "menu-provision-company",
         "label": "Provision Company",
         "route": "/admin/company/provision",
         "description": "Create a new company record",
         "icon": "fas fa-plus-circle"
       },
       {
+        "id": "menu-view-companies",
         "label": "View Companies",
         "route": "/admin/company/view",
         "description": "Browse and filter existing companies",
         "icon": "fas fa-list"
       },
       {
-        "label": "Edit Company",
-        "route": "/admin/company/edit",
-        "description": "Modify company details",
-        "icon": "fas fa-edit"
-      },
-      {
-        "label": "Company Details",
-        "route": "/admin/company/details",
-        "description": "View full company metadata",
-        "icon": "fas fa-info-circle"
-      },
-      {
-        "label": "Archive Company",
-        "route": "/admin/company/archive",
-        "description": "Deactivate or soft-delete a company",
-        "icon": "fas fa-archive"
-      },
-      {
+        "id": "menu-merge-companies",
         "label": "Merge Companies",
         "route": "/admin/company/merge",
         "description": "Combine two companies into one",
         "icon": "fas fa-object-group"
       },
       {
+        "id": "menu-audit-log",
         "label": "Audit Log",
         "route": "/admin/company/audit",
         "description": "Track contributor actions",
         "icon": "fas fa-history"
-      },
-      {
-        "label": "Company Settings",
-        "route": "/admin/company/settings",
-        "description": "Configure company-specific options",
-        "icon": "fas fa-cogs"
       }
     ]
   },
   "Users": {
+    "id": "nav-users",
     "icon": "fas fa-users",
     "items": [
       {
+        "id": "menu-add-user",
         "label": "Add User",
         "route": "/admin/user/add",
         "description": "Create a new user account",
         "icon": "fas fa-user-plus"
       },
       {
+        "id": "menu-manage-users",
         "label": "Manage Users",
         "route": "/admin/user/manage",
         "description": "Edit, deactivate, or assign roles",

@@ -1,8 +1,13 @@
 ﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Reflection;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 {
@@ -15,16 +20,19 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     {
         private readonly IProvisioningService _provisioner;
         private readonly IHubContext<SmartCommitHub> _hubContext;
+        private readonly AdminDbContext _context;
 
         /// <summary>
         /// Injects the provisioning service for tenant orchestration.
         /// </summary>
         /// <param name="provisioningService">Service responsible for provisioning logic.</param>
         /// <param name="hubContext"></param>
-        public CompanyController(IProvisioningService provisioningService, IHubContext<SmartCommitHub> hubContext)
+        /// <param name="context"></param>
+        public CompanyController(IProvisioningService provisioningService, IHubContext<SmartCommitHub> hubContext, AdminDbContext context)
         {
             _provisioner = provisioningService;
             _hubContext = hubContext;
+            _context = context;
         }
 
         /// <summary>
@@ -83,7 +91,22 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// Lists all companies with filtering options.
         /// </summary>
         [HttpGet("view")]
-        public IActionResult ViewCompanies() => View();
+        public IActionResult ViewCompanies()
+        {
+            var companies = _context.Companies.ToList(); // Pull from DB
+
+            var displayNames = typeof(Company)
+                .GetProperties()
+                .ToDictionary(
+                    prop => prop.Name.ToLowerInvariant(),
+                    prop => prop.GetCustomAttribute<DisplayAttribute>()?.Name ?? prop.Name
+                );
+
+            ViewData["GridId"] = "companies-grid";
+            ViewData["ColumnDisplayNames"] = displayNames;
+
+            return View(companies.Cast<dynamic>().ToList());
+        }
 
         /// <summary>
         /// Displays the edit form for a specific company.
@@ -96,8 +119,14 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// Shows detailed metadata for a specific company.
         /// </summary>
         /// <param name="id">The unique identifier of the company.</param>
-        [HttpGet("details/{id}")]
-        public IActionResult CompanyDetails(Guid id) => View();
+        [HttpGet("details")]
+        public async Task<IActionResult> CompanyDetails(Guid id)
+        {
+            var company = await _context.Companies.FindAsync(id);
+
+            if (ModelState.IsValid) return View(company);
+            else return NotFound();
+        }
 
         /// <summary>
         /// Displays the archive confirmation for a company.

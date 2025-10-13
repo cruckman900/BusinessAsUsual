@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Welcome";
-    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    Layout = "_Layout";
 }
 
 <section class="dashboard-hero">
@@ -50,6 +50,10 @@
         <li>CI/CD: <span class="status-ok">Synced</span></li>
     </ul>
 </section>
+
+<script>
+    localStorage.setItem("sidebarState", "collapsed");
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
