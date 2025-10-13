@@ -31,6 +31,24 @@
     gap: 1rem;
 }
 
+.brand-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.help-button {
+    color: #4fc3f7;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.help-button:hover {
+    color: #90caf9;
+}
+
 .brand-logo {
     height: 48px;
     width: auto;

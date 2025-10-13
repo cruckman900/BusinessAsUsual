@@ -1,0 +1,35 @@
+﻿@model IEnumerable<dynamic>
+@{
+    var gridId = ViewData["GridId"] ?? "legacy-grid";
+    var rowActions = ViewData["RowActions"] ?? "";
+    var displayNames = ViewData["ColumnDisplayNames"] as Dictionary<string, string> ?? new();
+}
+
+<div id="@gridId" class="legacy-datagrid-container">
+    <div class="grid-controls">
+        <label for="pageSize">Rows per page:</label>
+        <select id="@gridId-pageSize" class="grid-page-size">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+    </div>
+
+    <table class="legacy-grid-table">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="grid-pagination">
+        <button class="grid-prev">Previous</button>
+        <span class="grid-page-info"></span>
+        <button class="grid-next">Next</button>
+    </div>
+</div>
+
+<script src="~/js/LegacyDataGrid.js"></script>
+<link rel="stylesheet" href="~/css/LegacyDataGrid.css" />
+<script>
+    const columnDisplayNames = @Html.Raw(Json.Serialize(displayNames));
+    globalThis.initLegacyDataGrid("@gridId", @Html.Raw(Json.Serialize(Model)), "@rowActions", columnDisplayNames);
+</script>

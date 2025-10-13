@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "View Companies";
+    Layout = "_Layout";
+}
+
+<script>
+    globalThis.renderCompanyActions = function(row) {
+      const id = row.Id || row.id || row.companyId; // fallback logic
+
+      return `
+        <a href="/admin/company/details?id=${id}" class="btn btn-sm btn-info">View</a>
+        <a href="/admin/company/edit?id=${id}" class="btn btn-sm btn-warning">Edit</a>
+        <button onclick="archiveCompany(${id})" class="btn btn-sm btn-danger">Archive</button>
+      `;
+    };
+
+    function archiveCompany(id) {
+      if (confirm("Archive this company?")) {
+        console.log(`[SmartCommit] Archive requested for Company ID: ${id}`);
+        // TODO: API call or form post
+      }
+    }
+</script>
+
+<section class="grid-section">
+    <h2>Companies</h2>
+
+    @await Component.InvokeAsync("LegacyDataGrid", new {
+        model = Model,
+        gridId = "companies-grid",
+        rowActions = "renderCompanyActions"
+        })
+</section>

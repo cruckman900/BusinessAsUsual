@@ -1,0 +1,41 @@
+﻿@{
+    Layout = "_Layout";
+    var content = ViewData["Content"] as string;
+}
+
+<div class="help-layout">
+    <aside id="help-sidebar" class="help-sidebar">
+        <h3>Help Topics</h3>
+        <ul class="topic-links">
+            <li><a href="/Help?topic=getting-started">Getting Started</a></li>
+            <li><a href="/Help?topic=sidebar-behavior">Sidebar Behavior</a></li>
+            <li><a href="/Help?topic=contributor-mode">Contributor Mode</a></li>
+        </ul>
+
+        <h3>Contents</h3>
+        <ul id="toc-links" class="toc-links"></ul>
+    </aside>
+
+    <main class="help-main">
+        <h2>@ViewData["Title"]</h2>
+        <div class="markdown-shell">
+            @Html.Raw(content)
+        </div>
+    </main>
+</div>
+
+<script>
+    globalThis.addEventListener("DOMContentLoaded", () => {
+        const toc = document.getElementById("toc-links");
+        const headings = document.querySelectorAll(".markdown-shell h1, .markdown-shell h2, .markdown-shell h3");
+
+        headings.forEach((heading, index) => {
+            const id = `heading-${index}`;
+            heading.id = id;
+
+            const li = document.createElement("li");
+            li.innerHTML = `<a href="#${id}">${heading.textContent}</a>`;
+            toc.appendChild(li);
+        });
+    });
+</script>

@@ -1,0 +1,105 @@
+﻿.markdown-shell {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 2rem;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.markdown-pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.markdown-code {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.markdown-shell h1,
+.markdown-shell h2,
+.markdown-shell h3 {
+    color: #ffd700;
+    margin-top: 1.5rem;
+}
+
+.markdown-shell a {
+    color: #4fc3f7;
+    text-decoration: underline;
+}
+
+.markdown-shell ul,
+.markdown-shell ol {
+    padding-left: 2rem;
+}
+
+.markdown-shell blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1rem;
+    color: #aaa;
+    font-style: italic;
+}
+
+.help-layout {
+    display: flex;
+    gap: 2rem;
+}
+
+.help-sidebar {
+    position: sticky;
+    top: 2rem;
+    width: 250px;
+    background: #2c2c2c;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: monospace;
+    height: fit-content;
+}
+
+.help-sidebar h3 {
+    margin-bottom: 1rem;
+    color: #ffd700;
+}
+
+.toc-links {
+    list-style: none;
+    padding-left: 0;
+}
+
+.toc-links li {
+    margin-bottom: 0.5rem;
+}
+
+.toc-links a {
+    color: #4fc3f7;
+    text-decoration: none;
+}
+
+.toc-links a:hover {
+    text-decoration: underline;
+}
+
+.help-main {
+    flex: 1;
+}
+
+.topic-links {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 2rem;
+}
+
+.topic-links li {
+    margin-bottom: 0.5rem;
+}
+
+.topic-links a {
+    color: #90caf9;
+    text-decoration: none;
+}
+
+.topic-links a:hover {
+    text-decoration: underline;
+}

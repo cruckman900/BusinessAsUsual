@@ -1,5 +1,6 @@
 ﻿/* === theme.css — Default Theme Variables === */
 :root {
+    --body-bg: #111111;
     --brand-bg: #1a1a1a;
     --brand-text: #f1f1f1;
     --signature-text: #00ffcc;
@@ -21,6 +22,7 @@
 
 /* === Dark Mode Theme === */
 .theme-dark {
+    --body-bg: #0a0a0a;
     --brand-bg: #121212;
     --brand-text: #e0e0e0;
     --signature-text: #00ffcc;
@@ -42,6 +44,7 @@
 
 /* === Light Theme === */
 .theme-light {
+    --body-bg: #eaeaea;
     --brand-bg: #ffffff;
     --brand-text: #222;
     --signature-text: #555;
@@ -63,6 +66,7 @@
 
 /* === LinearDescent Retro Theme === */
 .theme-retro {
+    --body-bg: #000000;
     --brand-bg: #000;
     --brand-text: #00ffcc;
     --signature-text: #00ffcc;
@@ -83,6 +87,7 @@
 }
 
 .theme-contributor {
+    --body-bg: #050505;
     --brand-bg: #0d0d0d;
     --brand-text: #f5f5f5;
     --signature-text: #ffd700;

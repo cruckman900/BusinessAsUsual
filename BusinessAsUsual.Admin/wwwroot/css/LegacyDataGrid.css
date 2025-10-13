@@ -1,0 +1,33 @@
+﻿body::after {
+    content: "LegacyDataGrid.css loaded";
+    display: none;
+}
+
+.legacy-datagrid-container {
+    margin: 2rem 0;
+    font-family: var(--font-sans, sans-serif);
+}
+
+.legacy-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.legacy-grid-table th,
+.legacy-grid-table td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.legacy-grid-table th.sortable {
+    cursor: pointer;
+}
+
+.grid-controls,
+.grid-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+}
