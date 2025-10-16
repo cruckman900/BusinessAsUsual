@@ -10,3 +10,4 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`[SmartCommit] Theme set to: ${selectedTheme}`);
     });
 });
+// trigger push
