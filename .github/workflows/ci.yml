@@ -10,10 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_SQL_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
-      DB_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -22,7 +18,8 @@ jobs:
       run: |
         echo "AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env.local
         echo "ASPNETCORE_ENVIRONMENT=Development" >> .env.local
-
+        echo "SA_PASSWORD=${{ secrets.SA_PASSWORD }}" >> .env.local
+        echo "ACCEPT_EULA=Y" >> .env.local
     - name: Show .env.local contents
       run: cat .env.local
 
