@@ -20,7 +20,7 @@ services:
     env_file:
       - .env.local
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
     volumes:
       - ./.env.local:/app/.env.local
     working_dir: /app
@@ -91,8 +91,8 @@ services:
         condition: service_started
       admin:
         condition: service_started
-    command: ["dotnet", "test", "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--settings", "TestConfig.runsettings"]
-
+    # command: ["dotnet", "test", "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--settings", "TestConfig.runsettings"]
+    command: ["/bin/sh", "-c", "echo '🧪 Starting tests with env:' && env && dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings"]
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
