@@ -7,42 +7,42 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    # depends_on:
-    #   - backend
-    #   - admin
+    depends_on:
+      - backend
+      - admin
 
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:80"
-  #   env_file:
-  #     - .env.local
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Production
-  #   volumes:
-  #     - ./.env.local:/app/.env.local
-  #   working_dir: /app
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    env_file:
+      - .env.local
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - ./.env.local:/app/.env.local
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
 
-  # admin:
-  #   build:
-  #     context: .
-  #     dockerfile: BusinessAsUsual.Admin/Dockerfile
-  #   ports:
-  #     - "8080:80"
-  #   env_file:
-  #     - .env.local
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #   volumes:
-  #     - ./.env.local:/app/.env.local
-  #   working_dir: /app
-  #   depends_on:
-  #     - db
+  admin:
+    build:
+      context: .
+      dockerfile: BusinessAsUsual.Admin/Dockerfile
+    ports:
+      - "8080:80"
+    env_file:
+      - .env.local
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./.env.local:/app/.env.local
+    working_dir: /app
+    depends_on:
+      - db
 
   build:
     build:
@@ -68,42 +68,42 @@ services:
       - ./.env.local:/app/.env.local
     working_dir: /app
     command: ["dotnet", "BusinessAsUsual.Web.dll"]
-    # depends_on:
-    #   db:
-    #     condition: service_healthy
+    depends_on:
+      db:
+        condition: service_healthy
 
-  # tests:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.test
-  #   env_file:
-  #     - .env.local
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
-  #   volumes:
-  #     - ./.env.local:/app/.env.local
-  #   working_dir: /app
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     backend:
-  #       condition: service_started
-  #     admin:
-  #       condition: service_started
-  #   command: ["dotnet", "test", "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--settings", "TestConfig.runsettings"]
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    env_file:
+      - .env.local
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+    volumes:
+      - ./.env.local:/app/.env.local
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+      admin:
+        condition: service_started
+    command: ["dotnet", "test", "BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj", "--no-build", "--settings", "TestConfig.runsettings"]
 
-  # db:
-  #   image: mcr.microsoft.com/mssql/server:2022-latest
-  #   ports:
-  #     - "1433:1433"
-  #   env_file:
-  #     - .env.local
-  #   environment:
-  #     - ACCEPT_EULA=Y
-  #     - SA_PASSWORD=${SA_PASSWORD}
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q \"SELECT 1\""]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    env_file:
+      - .env.local
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "sqlcmd -S localhost -U sa -P $SA_PASSWORD -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
