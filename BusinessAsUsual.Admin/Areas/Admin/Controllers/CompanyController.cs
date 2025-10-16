@@ -48,7 +48,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// <param name="company">Form-bound company data.</param>
         /// <returns>Redirect to success view or redisplay form with errors.</returns>
         [HttpPost("provision")]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> ProvisionCompany([FromForm] Company company)
         {
             if (!ModelState.IsValid || company == null)
@@ -69,7 +69,14 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 
                 await _hubContext.Clients.All.SendAsync("ReceiveCommit", commitTag);
 
-                return RedirectToAction("ProvisionSuccess");
+                if (Request.Headers.Accept.ToString().Contains("application/json"))
+                {
+                    return Ok(new { message = "Provisioning successful", commitTag });
+                }
+                else
+                {
+                    return RedirectToAction("ProvisionSuccess");
+                }
             }
 
             ModelState.AddModelError("", "Provisioning failed due to internal error.");

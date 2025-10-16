@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http.Json;
-using BusinessAsUsual.Admin.Areas.Admin.Models;
-using Xunit.Abstractions;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Infrastructure;
 using DotNetEnv;
+using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http.Json;
+using Xunit.Abstractions;
 
 namespace BusinessAsUsual.Tests.Functional
 {
@@ -36,18 +37,32 @@ namespace BusinessAsUsual.Tests.Functional
         [Fact]
         public async Task PostProvisioning_ReturnsSuccess()
         {
-            Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
-            Console.WriteLine($"Working directory: {Directory.GetCurrentDirectory()}");
+            // Load environment variables from .env
+            //ConfigLoader.LoadEnvironmentVariables();
+            //Env.Load();
+            //Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+            //Console.WriteLine($"Working directory: {Directory.GetCurrentDirectory()}");
 
-            var payload = new Company
+            //var payload = new Company
+            //{
+            //    Name = "TestCo",
+            //    AdminEmail = "admin@testco.com",
+            //    BillingPlan = "Standard",
+            //    ModulesEnabled = "Billing,Inventory"
+            //};
+
+            //var response = await _client.PostAsJsonAsync("/Admin/Provision", payload);
+            var formData = new Dictionary<string, string>
             {
-                Name = "TestCo",
-                AdminEmail = "admin@testco.com",
-                BillingPlan = "Standard",
-                ModulesEnabled = "Billing,Inventory"
+                { "Name", "TestCo" },
+                { "AdminEmail", "admin@testco.com" },
+                { "BillingPlan", "Standard" },
+                { "ModulesEnabled", "Billing,Inventory" }
             };
 
-            var response = await _client.PostAsJsonAsync("/Admin/ProvisionCompany", payload);
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/admin/company/provision", content);
+
             var body = await response.Content.ReadAsStringAsync();
 
             _output.WriteLine($"Status: {response.StatusCode}");

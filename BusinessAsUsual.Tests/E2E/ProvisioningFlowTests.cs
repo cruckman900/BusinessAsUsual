@@ -1,5 +1,6 @@
 ﻿using BusinessAsUsual.Admin;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Xunit;
@@ -30,18 +31,25 @@ namespace BusinessAsUsual.Tests.E2E
         [Fact]
         public async Task ProvisioningFlow_ReturnsSuccessPayload()
         {
-            var json = JsonSerializer.Serialize(new
+            var formData = new Dictionary<string, string>
             {
-                Name = "TestCo",
-                AdminEmail = "admin@test.com",
-                BillingPlan = "Standard",
-                ModulesEnabled = "Billing,Inventory"
-            });
+                { "Name", "TestCo" },
+                { "AdminEmail", "admin@testco.com" },
+                { "BillingPlan", "Standard" },
+                { "ModulesEnabled", "Billing,Inventory" }
+            };
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("/Admin/ProvisionCompany", content);
+            var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
-            response.EnsureSuccessStatusCode(); // throws if not 2xx
+            var request = new HttpRequestMessage(HttpMethod.Post, "/admin/company/provision")
+            {
+                Content = content
+            };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
 
             var responseBody = await response.Content.ReadAsStringAsync();
             var payload = JsonDocument.Parse(responseBody);
