@@ -20,6 +20,7 @@ jobs:
         echo "ASPNETCORE_ENVIRONMENT=Development" >> .env.local
         echo "SA_PASSWORD=${{ secrets.SA_PASSWORD }}" >> .env.local
         echo "ACCEPT_EULA=Y" >> .env.local
+        
     - name: Show .env.local contents
       run: cat .env.local
 
