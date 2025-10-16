@@ -23,8 +23,8 @@ jobs:
         echo "AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}" >> .env.local
         echo "ASPNETCORE_ENVIRONMENT=Production" >> .env.local
 
-    # - name: Build and run tests via Docker Compose
-    #   run: docker compose -f docker-compose.yml up --build --abort-on-container-exit tests
+    - name: Build and run tests via Docker Compose
+      run: docker compose -f docker-compose.yml up --build --abort-on-container-exit tests
 
     - name: Cleanup
       if: always()
