@@ -15,30 +15,39 @@ namespace BusinessAsUsual.Admin.Database
         /// <param name="dbName"></param>
         public virtual async Task CreateDatabaseAsync(string dbName)
         {
-            var constr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
-            var masterConn = constr?.Replace("Database=BusinessAsUsual", "Database=master");
-
-            await using var conn = new SqlConnection(masterConn);
-            await conn.OpenAsync();
-
-            var checkCmd = conn.CreateCommand();
-            checkCmd.CommandText = $"SELECT COUNT(*) FROM sys.databases WHERE name = @dbName";
-            checkCmd.Parameters.AddWithValue("@dbName", dbName);
-
-            var result = await checkCmd.ExecuteScalarAsync();
-            var exists = Convert.ToInt32(result) > 0;
-            if (exists)
+            try
             {
-                return;
-            }
+                var constr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+                var masterConn = constr?.Replace("Database=BusinessAsUsual", "Database=master");
 
-            var createCmd = conn.CreateCommand();
-            createCmd.CommandText = $@"
-            IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'{dbName}')
-            BEGIN
-                CREATE DATABASE [{dbName}]
-            END";
-            await createCmd.ExecuteNonQueryAsync();
+                Console.WriteLine($"Trying to use connection string: {constr}");
+                
+                    await using var conn = new SqlConnection(masterConn);
+                await conn.OpenAsync();
+
+                var checkCmd = conn.CreateCommand();
+                checkCmd.CommandText = $"SELECT COUNT(*) FROM sys.databases WHERE name = @dbName";
+                checkCmd.Parameters.AddWithValue("@dbName", dbName);
+
+                var result = await checkCmd.ExecuteScalarAsync();
+                var exists = Convert.ToInt32(result) > 0;
+                if (exists)
+                {
+                    return;
+                }
+
+                var createCmd = conn.CreateCommand();
+                createCmd.CommandText = $@"
+                IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'{dbName}')
+                BEGIN
+                    CREATE DATABASE [{dbName}]
+                END";
+                await createCmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) {
+            {
+                Console.WriteLine($"❌ CreateDatabaseAsync failed with exception: {ex}");
+            }
         }
         /// <summary>
         /// Runs the provided sql script on the provided database.
