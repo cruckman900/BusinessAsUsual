@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0
 
 WORKDIR /app
 COPY . .
-
+COPY BusinessAsUsual.Tests/TestConfig.runsettings /app/TestConfig.runsettings
 RUN dotnet restore BusinessAsUsual.sln
 RUN dotnet build BusinessAsUsual.sln --no-restore
 RUN dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj \
