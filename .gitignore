@@ -29,7 +29,7 @@ bower_components/
 
 # 🐳 Docker
 *.env
-.env.*
+.env.local
 docker-compose.override.yml
 
 # 📚 Documentation artifacts
