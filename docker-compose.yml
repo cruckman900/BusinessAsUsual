@@ -77,8 +77,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
-    ports:
-      - "1433:1433"
+    expose:
+      - "1433"
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong!Password123
