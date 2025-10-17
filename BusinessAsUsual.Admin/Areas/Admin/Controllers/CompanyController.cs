@@ -51,36 +51,44 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> ProvisionCompany([FromForm] Company company)
         {
-            if (!ModelState.IsValid || company == null)
+            try
             {
-                return View(company); // redisplay form with validation errors
+                if (!ModelState.IsValid || company == null)
+                {
+                    return View(company); // redisplay form with validation errors
+                }
+
+                var success = await _provisioner.ProvisionTenantAsync(
+                    company.Name,
+                    company.AdminEmail,
+                    company.BillingPlan,
+                    company.ModulesEnabled.Split(","));
+
+                if (success)
+                {
+                    var commitTag = $"🟢 Provisioned {company.Name} with {company.ModulesEnabled} [{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}]";
+                    TempData["SmartCommit"] = commitTag;
+
+                    await _hubContext.Clients.All.SendAsync("ReceiveCommit", commitTag);
+
+                    if (Request.Headers.Accept.ToString().Contains("application/json"))
+                    {
+                        return Ok(new { message = "Provisioning successful", commitTag });
+                    }
+                    else
+                    {
+                        return RedirectToAction("ProvisionSuccess");
+                    }
+                }
+
+                ModelState.AddModelError("", "Provisioning failed due to internal error.");
+                return View(company);
             }
-
-            var success = await _provisioner.ProvisionTenantAsync(
-                company.Name,
-                company.AdminEmail,
-                company.BillingPlan,
-                company.ModulesEnabled.Split(","));
-
-            if (success)
+            catch (Exception ex)
             {
-                var commitTag = $"🟢 Provisioned {company.Name} with {company.ModulesEnabled} [{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}]";
-                TempData["SmartCommit"] = commitTag;
-
-                await _hubContext.Clients.All.SendAsync("ReceiveCommit", commitTag);
-
-                if (Request.Headers.Accept.ToString().Contains("application/json"))
-                {
-                    return Ok(new { message = "Provisioning successful", commitTag });
-                }
-                else
-                {
-                    return RedirectToAction("ProvisionSuccess");
-                }
+                // Log failure
+                Console.WriteLine($"❌ CompanyController - ProvisionCompany error ex: {ex}");
             }
-
-            ModelState.AddModelError("", "Provisioning failed due to internal error.");
-            return View(company);
         }
 
         /// <summary>
