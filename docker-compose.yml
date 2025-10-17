@@ -82,11 +82,16 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong!Password123
+    restart: always
     volumes:
       - ./init.sql:/init.sql
+      - mssql_data:/var/opt/mssql
     command: /bin/bash -c "/opt/mssql/bin/sqlservr & sleep 30 && /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong!Password123' -i /init.sql"
     healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123"]
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 30
+      
+volumes:
+  mssql_data:
