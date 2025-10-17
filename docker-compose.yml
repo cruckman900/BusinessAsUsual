@@ -109,6 +109,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
+    networks:
+      - BusinessAsUsual
     depends_on:
       db:
         condition: service_healthy
