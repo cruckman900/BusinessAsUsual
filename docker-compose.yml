@@ -5,6 +5,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    networks:
+      - BusinessAsUsual
     ports:
       - "3000:3000"
     depends_on:
@@ -15,6 +17,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    networks:
+      - BusinessAsUsual
     ports:
       - "5000:80"
     environment:
@@ -29,6 +33,8 @@ services:
     build:
       context: .
       dockerfile: BusinessAsUsual.Admin/Dockerfile
+    networks:
+      - BusinessAsUsual
     ports:
       - "8080:80"
     environment:
@@ -44,6 +50,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.runtime.build
+    networks:
+      - BusinessAsUsual
     ports:
       - "5001:80"
     environment:
@@ -60,6 +68,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test
+    networks:
+      - BusinessAsUsual
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;
@@ -77,6 +87,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.db
+    networks:
+      - BusinessAsUsual
     expose:
       - "1433"
     environment:
@@ -106,3 +118,7 @@ services:
   
 volumes:
   mssql_data:
+
+networks:
+  BusinessAsUsual:
+    name: BusinessAsUsual
