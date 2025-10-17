@@ -116,7 +116,8 @@ services:
         condition: service_healthy
     volumes:
       - ./init.sql:/init.sql
-    entrypoint: ["/bin/bash", "-c", "sleep 10 && /opt/mssql-tools/bin/sqlcmd -S db -U sa -P 'YourStrong!Password123' -i /init.sql"]
+      - ./db-init.sh:/db-init.sh
+    entrypoint: ["/bin/bash", "-c", "sleep 10 && /bin/bash /db-init.sh"]
   
 volumes:
   mssql_data:
