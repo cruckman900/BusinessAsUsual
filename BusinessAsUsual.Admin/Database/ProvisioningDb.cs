@@ -44,7 +44,7 @@ namespace BusinessAsUsual.Admin.Database
                 END";
                 await createCmd.ExecuteNonQueryAsync();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
             {
                 Console.WriteLine($"❌ CreateDatabaseAsync failed with exception: {ex}");
             }
