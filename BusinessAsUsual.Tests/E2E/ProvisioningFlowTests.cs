@@ -31,38 +31,46 @@ namespace BusinessAsUsual.Tests.E2E
         [Fact]
         public async Task ProvisioningFlow_ReturnsSuccessPayload()
         {
-            var formData = new Dictionary<string, string>
+            try
             {
-                { "Name", "TestCo" },
-                { "AdminEmail", "admin@testco.com" },
-                { "BillingPlan", "Standard" },
-                { "ModulesEnabled", "Billing,Inventory" }
-            };
+                var formData = new Dictionary<string, string>
+                {
+                    { "Name", "TestCo" },
+                    { "AdminEmail", "admin@testco.com" },
+                    { "BillingPlan", "Standard" },
+                    { "ModulesEnabled", "Billing,Inventory" }
+                };
 
-            var content = new FormUrlEncodedContent(formData);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                var content = new FormUrlEncodedContent(formData);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/admin/company/provision")
+                var request = new HttpRequestMessage(HttpMethod.Post, "/admin/company/provision")
+                {
+                    Content = content
+                };
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await _client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"Status: {response.StatusCode}");
+                Console.WriteLine($"Body: {responseBody}");
+
+                var payload = JsonDocument.Parse(responseBody);
+
+                var message = payload.RootElement.GetProperty("message").GetString();
+                var commitTag = payload.RootElement.GetProperty("commitTag").GetString();
+
+                Assert.Equal("Provisioning successful", message);
+                Assert.Contains("Provisioned TestCo", commitTag);
+            }
+            catch (Exception ex)
             {
-                Content = content
-            };
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            var response = await _client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-
-            Console.WriteLine($"Status: {response.StatusCode}");
-            Console.WriteLine($"Body: {responseBody}");
-
-            var payload = JsonDocument.Parse(responseBody);
-
-            var message = payload.RootElement.GetProperty("message").GetString();
-            var commitTag = payload.RootElement.GetProperty("commitTag").GetString();
-
-            Assert.Equal("Provisioning successful", message);
-            Assert.Contains("Provisioned TestCo", commitTag);
+                Console.WriteLine($"❌ Test failed with exception: {ex}");
+                throw;
+            }
         }
     }
 }
