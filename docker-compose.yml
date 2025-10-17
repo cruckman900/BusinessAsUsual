@@ -35,29 +35,23 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;
     working_dir: /app
+    volumes:
+      - ./.env:/app/.env
     depends_on:
       - db
-
-  build:
-    build:
-      context: .
-      dockerfile: Dockerfile.build
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: ["echo", "Build container ready"]
 
   runtime:
     build:
       context: .
-      dockerfile: Dockerfile.runtime
+      dockerfile: Dockerfile.runtime.build
     ports:
       - "5001:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;
     working_dir: /app
-    command: ["dotnet", "BusinessAsUsual.Web.dll"]
+    volumes:
+      - ./.env:/app/.env
     depends_on:
       db:
         condition: service_healthy
@@ -80,12 +74,17 @@ services:
     command: ["/bin/sh", "-c", "echo '🧪 Starting tests with env:' && env && dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings"]
 
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     ports:
       - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong!Password123
+    volumes:
+      - ./init.sql:/init.sql
+    command: /bin/bash -c "/opt/mssql/bin/sqlservr & sleep 30 && /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong!Password123' -i /init.sql"
     healthcheck:
       test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123"]
       interval: 10s
