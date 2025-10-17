@@ -52,6 +52,10 @@ namespace BusinessAsUsual.Tests.E2E
             response.EnsureSuccessStatusCode();
 
             var responseBody = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine($"Status: {response.StatusCode}");
+            Console.WriteLine($"Body: {responseBody}");
+
             var payload = JsonDocument.Parse(responseBody);
 
             var message = payload.RootElement.GetProperty("message").GetString();
