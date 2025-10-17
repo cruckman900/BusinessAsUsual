@@ -18,7 +18,7 @@ RUN dotnet restore BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj
 
 # Copy full source tree
 COPY . .
-COPY .env.ci /app/.env
+COPY .env /app/.env
 # Optional: validate env vars (SmartEnvValidator hook)
 # RUN ./scripts/validate-env.sh || echo "Skipping env validation in build stage"
 

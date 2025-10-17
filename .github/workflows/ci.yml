@@ -33,6 +33,9 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
 
+      - name: Copy .env.ci to .env
+        run: cp .env.ci .env
+        
       - name: Build containers
         run: docker-compose build
 
