@@ -5,9 +5,3 @@ COPY . .
 COPY BusinessAsUsual.Tests/TestConfig.runsettings /app/TestConfig.runsettings
 RUN dotnet restore BusinessAsUsual.sln
 RUN dotnet build BusinessAsUsual.sln --no-restore
-
-USER root
-
-RUN apt-get update && apt-get install -y iputils-ping
-
-USER mssql
