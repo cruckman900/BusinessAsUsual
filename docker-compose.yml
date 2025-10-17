@@ -23,7 +23,7 @@ services:
       - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=tcp:db,1433;;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     depends_on:
       db:
@@ -39,7 +39,7 @@ services:
       - "8080:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=tcp:db,1433;;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     volumes:
       - ./.env:/app/.env
@@ -56,7 +56,7 @@ services:
       - "5001:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=tcp:db,1433;;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     volumes:
       - ./.env:/app/.env
@@ -72,7 +72,7 @@ services:
       - BusinessAsUsual
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=tcp:db,1433;;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     depends_on:
       db:
