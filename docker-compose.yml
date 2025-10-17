@@ -94,7 +94,9 @@ services:
       retries: 30
 
   initdb:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     depends_on:
       db:
         condition: service_healthy
