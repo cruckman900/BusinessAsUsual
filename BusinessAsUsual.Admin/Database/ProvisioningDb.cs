@@ -33,7 +33,11 @@ namespace BusinessAsUsual.Admin.Database
             }
 
             var createCmd = conn.CreateCommand();
-            createCmd.CommandText = $"CREATE DATABASE [{dbName}]";
+            createCmd.CommandText = $@"
+            IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'{dbName}')
+            BEGIN
+                CREATE DATABASE [{dbName}]
+            END";
             await createCmd.ExecuteNonQueryAsync();
         }
         /// <summary>
