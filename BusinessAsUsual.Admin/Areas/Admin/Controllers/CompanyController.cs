@@ -89,6 +89,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
                 // Log failure
                 Console.WriteLine($"❌ CompanyController - ProvisionCompany error ex: {ex}");
             }
+            return View();
         }
 
         /// <summary>
