@@ -28,7 +28,7 @@ namespace BusinessAsUsual.Infrastructure
             {
                 "Production" => ".env.production",
                 "CI" => ".env.ci",
-                _ => ".env"
+                _ => ".env.ci"
             };
 
             string envFilePath;
