@@ -49,7 +49,7 @@ jobs:
         run: docker-compose run --rm initdb
 
       - name: Run tests
-        run: docker-compose run --rm --network businessasusual_default tests
+        run: docker compose run --rm --network businessasusual_default tests
 
       - name: Tear down services
         run: |
