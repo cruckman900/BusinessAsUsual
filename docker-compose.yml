@@ -86,12 +86,12 @@ services:
     volumes:
       - ./init.sql:/init.sql
       - mssql_data:/var/opt/mssql
-    command: /bin/bash -c "/opt/mssql/bin/sqlservr & sleep 30 && /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong!Password123' -i /init.sql"
+    command: /opt/mssql/bin/sqlservr
     healthcheck:
       test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 30
-      
+
 volumes:
   mssql_data:
