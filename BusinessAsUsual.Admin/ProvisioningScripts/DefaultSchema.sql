@@ -7,6 +7,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CompanySettings')
 BEGIN
@@ -19,6 +20,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CompanyLocation')
 BEGIN
@@ -43,6 +45,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'BillingHistory')
 BEGIN
@@ -55,6 +58,7 @@ BEGIN
         PaidOn DATETIME
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ModuleUsage')
 BEGIN
@@ -66,6 +70,7 @@ BEGIN
         LastUsed DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLog')
 BEGIN
@@ -78,6 +83,7 @@ BEGIN
         Timestamp DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Employees')
 BEGIN
@@ -94,6 +100,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Products')
 BEGIN
@@ -106,6 +113,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Services')
 BEGIN
@@ -118,6 +126,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Customers')
 BEGIN
@@ -134,6 +143,7 @@ BEGIN
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
 BEGIN
@@ -150,6 +160,7 @@ BEGIN
         Total DECIMAL(18,2) NOT NULL DEFAULT 0.00
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderItems')
 BEGIN
@@ -167,6 +178,7 @@ BEGIN
         LineTotal DECIMAL(18,2) NOT NULL
     );
 END
+GO
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Fulfillment')
 BEGIN
@@ -179,6 +191,7 @@ BEGIN
         Notes NVARCHAR(MAX)
     );
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_CompanySettings_CompanyInfo'
@@ -188,6 +201,7 @@ BEGIN
     ADD CONSTRAINT FK_CompanySettings_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_CompanyLocation_CompanyInfo'
@@ -197,6 +211,7 @@ BEGIN
     ADD CONSTRAINT FK_CompanyLocation_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_BillingHistory_CompanyInfo'
@@ -206,6 +221,7 @@ BEGIN
     ADD CONSTRAINT FK_BillingHistory_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_ModuleUsage_CompanyInfo'
@@ -215,6 +231,7 @@ BEGIN
     ADD CONSTRAINT FK_ModuleUsage_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_AuditLog_CompanyInfo'
@@ -224,6 +241,7 @@ BEGIN
     ADD CONSTRAINT FK_AuditLog_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Employees_CompanyInfo'
@@ -233,6 +251,7 @@ BEGIN
     ADD CONSTRAINT FK_Employees_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Products_CompanyInfo'
@@ -242,6 +261,7 @@ BEGIN
     ADD CONSTRAINT FK_Products_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Services_CompanyInfo'
@@ -251,6 +271,7 @@ BEGIN
     ADD CONSTRAINT FK_Services_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Customers_CompanyInfo'
@@ -260,6 +281,7 @@ BEGIN
     ADD CONSTRAINT FK_Customers_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Orders_CompanyInfo'
@@ -269,6 +291,7 @@ BEGIN
     ADD CONSTRAINT FK_Orders_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Orders_Customers'
@@ -278,6 +301,7 @@ BEGIN
     ADD CONSTRAINT FK_Orders_Customers
     FOREIGN KEY (CustomerId) REFERENCES Customers(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_OrderItems_CompanyInfo'
@@ -287,6 +311,7 @@ BEGIN
     ADD CONSTRAINT FK_OrderItems_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_OrderItems_Orders'
@@ -296,6 +321,7 @@ BEGIN
     ADD CONSTRAINT FK_OrderItems_Orders
     FOREIGN KEY (OrderId) REFERENCES Orders(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Fulfillment_CompanyInfo'
@@ -305,6 +331,7 @@ BEGIN
     ADD CONSTRAINT FK_Fulfillment_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.foreign_keys WHERE name = 'FK_Fulfillment_Orders'
@@ -314,6 +341,7 @@ BEGIN
     ADD CONSTRAINT FK_Fulfillment_Orders
     FOREIGN KEY (OrderId) REFERENCES Orders(Id);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_CompanySettings_CompanyId'
@@ -321,6 +349,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_CompanySettings_CompanyId ON CompanySettings(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_CompanyLocation_CompanyId'
@@ -328,6 +357,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_CompanyLocation_CompanyId ON CompanyLocation(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_BillingHistory_CompanyId'
@@ -335,6 +365,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_BillingHistory_CompanyId ON BillingHistory(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_ModuleUsage_CompanyId'
@@ -342,6 +373,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_ModuleUsage_CompanyId ON ModuleUsage(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_AuditLog_CompanyId'
@@ -349,13 +381,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_AuditLog_CompanyId ON AuditLog(CompanyId);
 END
-
-IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_ProvisioningLog_CompanyId'
-)
-BEGIN
-    CREATE INDEX IX_ProvisioningLog_CompanyId ON ProvisioningLog(CompanyId);
-END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Employees_CompanyId'
@@ -363,6 +389,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Employees_CompanyId ON Employees(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Products_CompanyId'
@@ -370,6 +397,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Products_CompanyId ON Products(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Services_CompanyId'
@@ -377,6 +405,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Services_CompanyId ON Services(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Customers_CompanyId'
@@ -384,6 +413,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Customers_CompanyId ON Customers(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Orders_CompanyId'
@@ -391,6 +421,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Orders_CompanyId ON Orders(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Orders_CustomerId'
@@ -398,6 +429,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Orders_CustomerId ON Orders(CustomerId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_OrderItems_CompanyId'
@@ -405,6 +437,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_OrderItems_CompanyId ON OrderItems(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_OrderItems_OrderId'
@@ -412,6 +445,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_OrderItems_OrderId ON OrderItems(OrderId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Fulfillment_CompanyId'
@@ -419,6 +453,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Fulfillment_CompanyId ON Fulfillment(CompanyId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'IX_Fulfillment_OrderId'
@@ -426,6 +461,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE INDEX IX_Fulfillment_OrderId ON Fulfillment(OrderId);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'UX_ModuleUsage_Company_Module'
@@ -433,6 +469,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX UX_ModuleUsage_Company_Module ON ModuleUsage(CompanyId, ModuleName);
 END
+GO
 
 IF NOT EXISTS (
     SELECT * FROM sys.indexes WHERE name = 'UX_CompanySettings_CompanyId'
@@ -440,6 +477,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE UNIQUE INDEX UX_CompanySettings_CompanyId ON CompanySettings(CompanyId);
 END
+GO
 
 -- Optional: stored procedures, triggers, views
 -- CREATE PROCEDURE sp_AddEmployee AS ...

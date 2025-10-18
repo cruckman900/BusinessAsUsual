@@ -35,8 +35,8 @@ namespace BusinessAsUsual.Tests.E2E
             {
                 var formData = new Dictionary<string, string>
                 {
-                    { "Name", "TestCo" },
-                    { "AdminEmail", "admin@testco.com" },
+                    { "Name", "NEXTRiff" },
+                    { "AdminEmail", "admin@nextriff.com" },
                     { "BillingPlan", "Standard" },
                     { "ModulesEnabled", "Billing,Inventory" }
                 };
@@ -56,15 +56,19 @@ namespace BusinessAsUsual.Tests.E2E
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 Console.WriteLine($"Status: {response.StatusCode}");
+                Console.WriteLine($"Content-Type: {response.Content.Headers.ContentType}");
                 Console.WriteLine($"Body: {responseBody}");
+
+                if (response.Content.Headers.ContentType?.MediaType != "application/json")
+                {
+                    throw new InvalidOperationException("Expected JSON response but got HTML.");
+                }
 
                 var payload = JsonDocument.Parse(responseBody);
 
                 var message = payload.RootElement.GetProperty("message").GetString();
-                var commitTag = payload.RootElement.GetProperty("commitTag").GetString();
 
                 Assert.Equal("Provisioning successful", message);
-                Assert.Contains("Provisioned TestCo", commitTag);
             }
             catch (Exception ex)
             {

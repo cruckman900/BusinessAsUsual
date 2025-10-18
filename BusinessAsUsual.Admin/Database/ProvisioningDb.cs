@@ -22,7 +22,7 @@ namespace BusinessAsUsual.Admin.Database
 
                 Console.WriteLine($"Trying to use connection string: {constr}");
                 
-                    await using var conn = new SqlConnection(masterConn);
+                await using var conn = new SqlConnection(masterConn);
                 await conn.OpenAsync();
 
                 var checkCmd = conn.CreateCommand();
@@ -43,10 +43,13 @@ namespace BusinessAsUsual.Admin.Database
                     CREATE DATABASE [{dbName}]
                 END";
                 await createCmd.ExecuteNonQueryAsync();
+
+                Console.WriteLine($"🎉 Database '{dbName}' created successfully.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ CreateDatabaseAsync failed with exception: {ex}");
+                throw;
             }
         }
         /// <summary>
@@ -56,15 +59,18 @@ namespace BusinessAsUsual.Admin.Database
         /// <param name="script"></param>
         public virtual async Task ApplySchemaAsync(string dbName, string script)
         {
-            var constr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
-            var tenantConn = constr?.Replace("Database=BusinessAsUsual", $"Database={dbName}");
+            var raw = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING")
+                      ?? throw new InvalidOperationException("Missing AWS_SQL_CONNECTION_STRING");
 
-            await using var conn = new SqlConnection(tenantConn);
-            await conn.OpenAsync();
+            var builder = new SqlConnectionStringBuilder(raw)
+            {
+                InitialCatalog = dbName     // injects the correct DB name
+            };
 
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = script;
-            await cmd.ExecuteNonQueryAsync();
+            Console.WriteLine($"🔌 Final connection string: {builder.ConnectionString}");
+
+            var executor = new SchemaExecutor();
+            await executor.ExecuteScriptAsync(builder.ConnectionString, script);
         }
 
         /// <summary>

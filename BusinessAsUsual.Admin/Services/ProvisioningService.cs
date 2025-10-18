@@ -33,17 +33,22 @@ namespace BusinessAsUsual.Admin.Services
         {
             await _hub.Clients.All.SendAsync("Log", new { tenantName, step, status, message });
 
-            var connStr = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING")
+            var raw = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING")
                 ?? throw new InvalidOperationException("Missing AWS_SQL_CONNECTION_STRING");
-            await using var conn = new SqlConnection(connStr);
+
+            var builder = new SqlConnectionStringBuilder(raw)
+            {
+                InitialCatalog = "BusinessAsUsual" // ← reset to admin DB
+            };
+
+            await using var conn = new SqlConnection(builder.ConnectionString);
             await conn.OpenAsync();
 
             var command = conn.CreateCommand();
             command.CommandText = @"
             INSERT INTO ProvisioningLog (TenantName, Step, Status, Message, Timestamp)
-            VALUES (@Tenantname, @Step, @Status, @Message, GETUTCDATE())";
+            VALUES (@TenantName, @Step, @Status, @Message, GETUTCDATE())";
 
-            command.Parameters.AddWithValue("@Id", Guid.NewGuid());
             command.Parameters.AddWithValue("@TenantName", tenantName);
             command.Parameters.AddWithValue("@Step", step);
             command.Parameters.AddWithValue("@Status", status);
@@ -53,10 +58,10 @@ namespace BusinessAsUsual.Admin.Services
         }
     }
 
-    /// <summary>
-    /// SignalR hub that handles messaging to the client.
-    /// </summary>
-    public class ProvisioningHub: Hub
+        /// <summary>
+        /// SignalR hub that handles messaging to the client.
+        /// </summary>
+        public class ProvisioningHub: Hub
     {
         /// <summary>
         /// Broadcast log message to the client.

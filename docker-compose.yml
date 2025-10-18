@@ -22,8 +22,8 @@ services:
     ports:
       - "5000:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=CI
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     depends_on:
       db:
@@ -38,8 +38,8 @@ services:
     ports:
       - "8080:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=CI
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     volumes:
       - ./.env:/app/.env
@@ -55,8 +55,8 @@ services:
     ports:
       - "5001:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=CI
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     volumes:
       - ./.env:/app/.env
@@ -71,8 +71,8 @@ services:
     networks:
       - BusinessAsUsual
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=TestDb;Encrypt=True;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=CI
+      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
     working_dir: /app
     depends_on:
       db:
@@ -81,16 +81,16 @@ services:
         condition: service_started
       admin:
         condition: service_started
-    command: ["/bin/sh", "-c", "echo '🧪 Starting tests with env:' && env && dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings"]
-
+    command: ["/bin/sh", "-c", "echo '🧪 Starting tests with env:' && env && echo '⏳ Waiting for DB to finish init...' && sleep 25 && dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings"]
+  
   db:
     build:
       context: .
       dockerfile: Dockerfile.db
     networks:
       - BusinessAsUsual
-    expose:
-      - "1433"
+    ports:
+      - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong!Password123
@@ -100,10 +100,10 @@ services:
       - mssql_data:/var/opt/mssql
     command: /opt/mssql/bin/sqlservr
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123 -Q \"SELECT 1\""]
       interval: 10s
-      timeout: 10s
-      retries: 30
+      timeout: 5s
+      retries: 10
 
   initdb:
     build:
@@ -124,4 +124,4 @@ volumes:
 
 networks:
   BusinessAsUsual:
-    name: BusinessAsUsual
+    driver: bridge
