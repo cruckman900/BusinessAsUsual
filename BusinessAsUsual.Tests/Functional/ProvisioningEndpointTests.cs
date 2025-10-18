@@ -37,21 +37,6 @@ namespace BusinessAsUsual.Tests.Functional
         [Fact]
         public async Task PostProvisioning_ReturnsSuccess()
         {
-            // Load environment variables from .env
-            //ConfigLoader.LoadEnvironmentVariables();
-            //Env.Load();
-            //Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
-            //Console.WriteLine($"Working directory: {Directory.GetCurrentDirectory()}");
-
-            //var payload = new Company
-            //{
-            //    Name = "TestCo",
-            //    AdminEmail = "admin@testco.com",
-            //    BillingPlan = "Standard",
-            //    ModulesEnabled = "Billing,Inventory"
-            //};
-
-            //var response = await _client.PostAsJsonAsync("/Admin/Provision", payload);
             var formData = new Dictionary<string, string>
             {
                 { "Name", "TestCo" },

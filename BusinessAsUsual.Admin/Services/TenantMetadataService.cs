@@ -47,7 +47,9 @@
                     Message NVARCHAR(MAX),
                     Timestamp DATETIME
                 );
-            END";
+            END
+            GO
+            ";
         }
 
         /// <summary>

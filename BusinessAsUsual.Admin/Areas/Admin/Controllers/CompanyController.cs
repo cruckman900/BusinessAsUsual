@@ -71,16 +71,19 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 
                     await _hubContext.Clients.All.SendAsync("ReceiveCommit", commitTag);
 
-                    if (Request.Headers.Accept.ToString().Contains("application/json"))
+                    if (Request.GetTypedHeaders().Accept?.Any(h => h.MediaType == "application/json") == true)
                     {
+                        Console.WriteLine("🧪 Success. Returning JSON response");
                         return Ok(new { message = "Provisioning successful", commitTag });
                     }
                     else
                     {
+                        Console.WriteLine("🧪 Success. Returning HTML view");
                         return RedirectToAction("ProvisionSuccess");
                     }
                 }
 
+                Console.WriteLine("❌ ProvisioningService reported failure. Returning HTML view");
                 ModelState.AddModelError("", "Provisioning failed due to internal error.");
                 return View(company);
             }
@@ -88,8 +91,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
             {
                 // Log failure
                 Console.WriteLine($"❌ CompanyController - ProvisionCompany error ex: {ex}");
+                throw;
             }
-            return View();
         }
 
         /// <summary>

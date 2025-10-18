@@ -18,6 +18,21 @@ namespace BusinessAsUsual.Infrastructure
                 ?? throw new InvalidOperationException($"Missing config value for {key}");
         }
 
+        private static string GetProjectRoot()
+        {
+            var currentDir = Directory.GetCurrentDirectory();
+            var directoryInfo = new DirectoryInfo(currentDir);
+            while (directoryInfo != null && !File.Exists(Path.Combine(directoryInfo.FullName, "BusinessAsUsual.sln")))
+            {
+                directoryInfo = directoryInfo.Parent;
+            }
+            if (directoryInfo == null)
+            {
+                throw new InvalidOperationException("Could not find project root directory.");
+            }
+            return directoryInfo.FullName;
+        }
+
         /// <summary>
         /// Loads environment variables from the appropriate .env file based on environment context.
         /// </summary>
@@ -26,7 +41,7 @@ namespace BusinessAsUsual.Infrastructure
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             string envFileName = environment switch
             {
-                "Production" => ".env.production",
+                "Development" => ".env.local",
                 "CI" => ".env.ci",
                 _ => ".env.ci"
             };
@@ -41,7 +56,8 @@ namespace BusinessAsUsual.Infrastructure
             else
             {
                 // Running locally (e.g., Test Explorer, CLI)
-                envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", envFileName));
+                //envFilePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", envFileName));
+                envFilePath = Path.Combine(GetProjectRoot(), envFileName);
             }
 
             if (File.Exists(envFilePath))

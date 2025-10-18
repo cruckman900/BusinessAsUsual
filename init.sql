@@ -1,19 +1,19 @@
-DROP DATABASE IF EXISTS [TestDb];
+DROP DATABASE IF EXISTS [BusinessAsUsual];
 GO
 
-CREATE DATABASE [TestDb];
+CREATE DATABASE [BusinessAsUsual];
 GO
 
 EXEC sp_configure 'remote access', 1;
 RECONFIGURE;
 
-USE [TestDb];
+USE [BusinessAsUsual];
 GO
 
 CREATE TABLE TestPing (Id INT);
 GO
 
-USE [TestDb];
+USE [BusinessAsUsual];
 GO
 
 SELECT name FROM sys.tables;
