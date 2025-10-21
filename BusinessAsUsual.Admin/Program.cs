@@ -26,7 +26,7 @@ namespace BusinessAsUsual.Admin
             ConfigLoader.LoadEnvironmentVariables();
             Env.Load();
 
-            var connString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+            var connString = ConfigLoader.Get("AWS_SQL_CONNECTION_STRING");
 
             var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,7 @@
-using MudBlazor.Services;
+using BusinessAsUsual.Infrastructure;
+using BusinessAsUsual.Web.Data;
+using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Web
 {
@@ -26,11 +29,18 @@ namespace BusinessAsUsual.Web
         /// </remarks>
         public static async Task Main(string[] args)
         {
+            // Load environment variables from .env
+            ConfigLoader.LoadEnvironmentVariables();
+            Env.Load();
+
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddDbContext<CompanyDbContext>(options =>
+                options.UseSqlServer(
+                    ConfigLoader.Get("AWS_SQL_CONNECTION_STRING")));
             // Register Razor Components and MudBlazor services
 
             var app = builder.Build();
