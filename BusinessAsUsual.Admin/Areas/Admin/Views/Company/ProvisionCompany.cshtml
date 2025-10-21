@@ -1,6 +1,6 @@
 ﻿@model BusinessAsUsual.Admin.Areas.Admin.Models.Company
 
-<form asp-action="Index" method="post">
+<form asp-area"Admin" asp-controller="Company" asp-action="ProvisionCompany" method="post">
     <input asp-for="Name" id="CompanyName" placeholder="Company Name" />
     <input asp-for="AdminEmail" id="AdminEmail" placeholder="Admin email" />
     <input asp-for="BillingPlan" id="BillingPlan" placeholder="Billing Plan" />
