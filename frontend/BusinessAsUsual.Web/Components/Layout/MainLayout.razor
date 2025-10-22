@@ -14,14 +14,24 @@
                 <Sidebar IsDark="@isDark" />
             </div>
         }
-        <main class="main-zonet p-4">
+        <main class="main-zone p-4">
             @Body
+            <button class="btn btn-primary" @onclick="TestClick">Click Me</button>
+
+            <p>@clickedText</p>
         </main>
         <Footer IsDark="@isDark" />
     </div>
 </CascadingValue>
 
 @code {
+    private string clickedText = "Not clicked";
+
+    private void TestClick()
+    {
+        clickedText = "Clicked!";
+    }
+
     private bool isDark = true;
     private bool sidebarOpen = true;
 
@@ -44,12 +54,12 @@
     {
         var uri = e.Location;
 
-        if (uri.EndsWith('/'))
-            ActiveSidebarSection = "Main";
-        else if (uri.Contains("/about"))
+        if (uri.Contains("/about"))
             ActiveSidebarSection = "About";
         else if (uri.Contains("/human-resources") || uri.Contains("/employees") || uri.Contains("/departments"))
             ActiveSidebarSection = "HR";
+        else if (uri.EndsWith('/'))
+            ActiveSidebarSection = "Main";
 
         StateHasChanged();
     }
