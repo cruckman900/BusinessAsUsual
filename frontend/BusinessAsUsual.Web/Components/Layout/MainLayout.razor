@@ -48,13 +48,12 @@
             ActiveSidebarSection = "Main";
         else if (uri.Contains("/about"))
             ActiveSidebarSection = "About";
-        else if (uri.Contains("/employees") || uri.Contains("/departments"))
+        else if (uri.Contains("/human-resources") || uri.Contains("/employees") || uri.Contains("/departments"))
             ActiveSidebarSection = "HR";
 
         StateHasChanged();
     }
 
-    // Renamed to avoid IDisposable confusion
     public void Dispose() => Nav.LocationChanged -= HandleLocationChanged;
 
     private void SetSidebarSection(string section)

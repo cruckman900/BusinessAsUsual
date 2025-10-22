@@ -1,4 +1,17 @@
 ﻿@page "/test"
 
 <h3>Test Page</h3>
-<button @onclick="() => System.Diagnostics.Debug.WriteLine(\" ✅ Test button clicked\")">Click Me</button>
+<button class="btn btn-primary" @onclick="TestClick">Click Me</button>
+
+<p>@clickedText</p>
+
+<p> @RendererInfo.IsInteractive </p>
+
+@code {
+    private string clickedText = "Not clicked";
+
+    private void TestClick()
+    {
+        clickedText = "Clicked!";
+    }
+}
