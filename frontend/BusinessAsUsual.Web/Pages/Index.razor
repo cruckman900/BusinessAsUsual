@@ -1,0 +1,31 @@
+﻿@page "/"
+@namespace BusinessAsUsual.Web.Components.Pages
+@using BusinessAsUsual.Web.Services
+@using MudBlazor
+
+@* @inject NavigationManager Nav
+@inject CompanySession Session *@
+
+<MudText Typo="Typo.h3" Color="Color.Primary">
+    Welcome to Business As Usual
+</MudText>
+
+<MudText Typo="Typo.subtitle1">
+    Your modular, contributor-ready business suite starts here.
+</MudText>
+
+@* @code {
+    protected override void OnInitialized()
+    {
+        var conn = Session.GetConnectionString();
+
+        if (string.IsNullOrWhiteSpace(conn))
+        {
+            // Nav.NavigateTo("/login");
+        }
+        else
+        {
+            // Optionally load dashboard or redirect to another page
+        }
+    }
+} *@

@@ -1,20 +1,32 @@
 ﻿<aside class="sidebar-zone bg-light text-dark border-end p-0" style="width: 250px;">
     <div class="sticky-inner p-3">
         <h5 class="text-primary">Navigation</h5>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/">🏠 Home</NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/about">ℹ️ About</NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/contributors">👥 Contributors</NavLink>
-            </li>
-        </ul>
+        @if (ActiveSidebarSection == "Main")
+        {
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/">🏠 Home</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/about">ℹ️ About</NavLink>
+                </li>
+            </ul>
+        }
+        else if (ActiveSidebarSection == "HR")
+        {
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/employees">👥 Employees</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/departments">🏢 Departments</NavLink>
+                </li>
+            </ul>
+        }
     </div>
 </aside>
 
 @code {
+    [CascadingParameter] public string ActiveSidebarSection { get; set; } = "Main";
     [Parameter] public bool IsDark { get; set; }
 }

@@ -1,0 +1,35 @@
+﻿using Microsoft.Data.SqlClient;
+
+namespace BusinessAsUsual.Web.Services
+{
+    /// <summary>
+    /// Manages the database connection string for a specific company session.
+    /// </summary>
+    public class CompanySession
+    {
+        private string? _connectionString;
+
+        /// <summary>
+        /// Set database connection string for the given database name.
+        /// </summary>
+        /// <param name="dbName"></param>
+        public void SetDatabase(string dbName)
+        {
+            var baseConnectionString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+            var builder = new SqlConnectionStringBuilder(baseConnectionString)
+            {
+                InitialCatalog = dbName
+            };
+
+            _connectionString = builder.ConnectionString;
+
+            Console.WriteLine($"✅ CompanySession initialized with DB: {dbName}");
+        }
+
+        /// <summary>
+        /// Returns the connection string for the current company session.
+        /// </summary>
+        /// <returns></returns>
+        public string? GetConnectionString() => _connectionString;
+    }
+}

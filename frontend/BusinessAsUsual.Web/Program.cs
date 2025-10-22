@@ -1,5 +1,5 @@
 using BusinessAsUsual.Infrastructure;
-using BusinessAsUsual.Web.Data;
+using BusinessAsUsual.Web.Data.Context;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 

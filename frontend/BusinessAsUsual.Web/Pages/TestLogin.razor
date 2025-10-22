@@ -1,0 +1,20 @@
+﻿@page "/testlogin"
+
+<h3>Test Login</h3>
+<input @bind="DatabaseName" />
+<button @onclick="TestClick">Click Me</button>
+
+@code {
+    private string DatabaseName = "";
+
+    protected override void OnInitialized()
+    {
+        System.Diagnostics.Debug.WriteLine($"✅ Component Initialized");
+    }
+
+    private async Task TestClick()
+    {
+        await Task.CompletedTask;
+        System.Diagnostics.Debug.WriteLine($"✅ Clicked with DB: {DatabaseName}");
+    }
+}

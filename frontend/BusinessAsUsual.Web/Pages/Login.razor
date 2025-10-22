@@ -1,0 +1,45 @@
+﻿@page "/login"
+@using BusinessAsUsual.Web.Services
+
+@inject NavigationManager Nav
+@inject CompanySession Session
+
+<h3>Login</h3>
+
+<input @bind="DatabaseName" placeholder="Enter company DB name" />
+@if (ShowValidationMessage)
+{
+    <p class="text-danger">Please enter a database name.</p>
+}
+<button class="btn btn-primary ml-2" @onclick="HandleLogin">Login</button>
+<button @onclick="() => Console.WriteLine(\" ✅ Button clicked\")">Test Click</button>
+
+@code {
+    private string? DatabaseName = string.Empty;
+    private bool ShowValidationMessage = false;
+
+
+    protected override void OnInitialized()
+    {
+        System.Diagnostics.Debug.WriteLine($"✅ Component Initialized");
+    }
+
+    private async Task HandleLogin()
+    {
+        await Task.CompletedTask; // ✅ satisfies async requirement
+        System.Diagnostics.Debug.WriteLine("in handle login");
+
+        if (!string.IsNullOrWhiteSpace(DatabaseName))
+        {
+            ShowValidationMessage = false;
+            System.Diagnostics.Debug.WriteLine($"🔐 Logging in with DB: {DatabaseName}");
+            Session.SetDatabase(DatabaseName);
+            Nav.NavigateTo("/", true);
+        }
+        else
+        {
+            ShowValidationMessage = true;
+            System.Diagnostics.Debug.WriteLine("⚠️ No DB name entered.");
+        }
+    }
+}

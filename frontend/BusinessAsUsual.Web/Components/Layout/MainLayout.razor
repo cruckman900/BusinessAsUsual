@@ -1,20 +1,25 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+
+@inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<div class="layout-grid @(isDark ? "dark" : "light") @(sidebarOpen ? "" : "sidebar-collapsed")">
-    <Header IsDark="@isDark" />
-    <Navbar IsDark="@isDark" OnToggleSidebar="@ToggleSidebar" SidebarLabel="@(sidebarOpen ? "🡸 Collapse Sidebar" : "🡺 Expand Sidebar")" />
-    @if (sidebarOpen)
-    {
-        <div class="sidebar @(sidebarOpen ? "expanded" : "collapsed")">
-            <Sidebar IsDark="@isDark" />
-        </div>
-    }
-    <main class="main-zonet p-4">
-        @Body
-    </main>
-    <Footer IsDark="@isDark" />
-</div>
+<CascadingValue Value="ActiveSidebarSection">
+    <div class="layout-grid @(isDark ? "dark" : "light") @(sidebarOpen ? "" : "sidebar-collapsed")">
+        <Header IsDark="@isDark" />
+        <Navbar IsDark="@isDark" OnSectionSelected="SetSidebarSection" OnToggleSidebar="@ToggleSidebar" SidebarLabel="@(sidebarOpen ? "🡸 Collapse Sidebar" : "🡺 Expand Sidebar")" />
+        @if (sidebarOpen)
+        {
+            <div class="sidebar @(sidebarOpen ? "expanded" : "collapsed")">
+                <Sidebar IsDark="@isDark" />
+            </div>
+        }
+        <main class="main-zonet p-4">
+            @Body
+        </main>
+        <Footer IsDark="@isDark" />
+    </div>
+</CascadingValue>
 
 @code {
     private bool isDark = true;
@@ -26,6 +31,35 @@
         {
             await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
         }
+    }
+
+    private string ActiveSidebarSection = "Main";
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        var uri = e.Location;
+
+        if (uri.EndsWith('/'))
+            ActiveSidebarSection = "Main";
+        else if (uri.Contains("/about"))
+            ActiveSidebarSection = "About";
+        else if (uri.Contains("/employees") || uri.Contains("/departments"))
+            ActiveSidebarSection = "HR";
+
+        StateHasChanged();
+    }
+
+    // Renamed to avoid IDisposable confusion
+    public void Dispose() => Nav.LocationChanged -= HandleLocationChanged;
+
+    private void SetSidebarSection(string section)
+    {
+        ActiveSidebarSection = section;
     }
 
     public void ToggleTheme()
