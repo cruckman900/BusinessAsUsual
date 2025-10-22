@@ -8,12 +8,13 @@
                 <span class="navbar-toggler-icon"></span>
                 <span>@(SidebarLabel)</span>
             </button>
-
-            <a class="navbar-brand fw-bold text-warning" href="/">Business As Usual</a>
         </div>
 
         <div class="navbar-collapse">
             <ul class="navbar-nav d-flex flex-row gap-3">
+                <li class="nav-item ms-2">
+                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Home</NavLink>
+                </li>
                 <li class="nav-item">
                     <NavLink class="nav-link" href="/about">About</NavLink>
                 </li>
@@ -22,6 +23,9 @@
                 </li>
                 <li class="nav-item">
                     <NavLink href="/test" class="nav-link" activeClass="active">Test</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink href="/editform-test" class="nav-link" activeClass="active">EditForm Test</NavLink>
                 </li>
             </ul>
         </div>

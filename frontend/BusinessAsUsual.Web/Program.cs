@@ -63,7 +63,6 @@ namespace BusinessAsUsual.Web
 
             app.UseHttpsRedirection();
 
-            app.MapStaticAssets();
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 

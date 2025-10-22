@@ -44,17 +44,16 @@
     <script src="js/theme.js"></script>
 
     <!-- Blazor -->
-
+    <base href="~/" />
 </head>
 
 <body>
-    <component type="typeof(App)" render-mode="Server" />
+    <component type="typeof(App)" render-mode="Server" prerender="false" />
     <div id="blazor-error-ui">
         An error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    <base href="~/" />
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>
