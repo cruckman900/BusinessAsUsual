@@ -3,8 +3,8 @@
 @using BusinessAsUsual.Web.Services
 @using MudBlazor
 
-@* @inject NavigationManager Nav
-@inject CompanySession Session *@
+@inject NavigationManager Nav
+@* @inject CompanySession Session *@
 
 <MudText Typo="Typo.h3" Color="Color.Primary">
     Welcome to Business As Usual
@@ -14,18 +14,23 @@
     Your modular, contributor-ready business suite starts here.
 </MudText>
 
-@* @code {
-    protected override void OnInitialized()
-    {
-        var conn = Session.GetConnectionString();
+@code {
+    private bool _redirected = false;
 
-        if (string.IsNullOrWhiteSpace(conn))
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await Task.Yield(); // ✅ Ensures async execution is honored
+
+        if (firstRender && !_redirected)
         {
-            // Nav.NavigateTo("/login");
-        }
-        else
-        {
-            // Optionally load dashboard or redirect to another page
+            _redirected = true;
+
+            var conn = ""; // Placeholder
+
+            if (string.IsNullOrWhiteSpace(conn))
+            {
+                Nav.NavigateTo("/login", forceLoad: true);
+            }
         }
     }
-} *@
+}

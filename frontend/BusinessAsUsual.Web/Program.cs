@@ -36,11 +36,13 @@ namespace BusinessAsUsual.Web
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
             builder.Services.AddDbContext<CompanyDbContext>(options =>
                 options.UseSqlServer(
                     ConfigLoader.Get("AWS_SQL_CONNECTION_STRING")));
+
+            // Register Scoped services
+            builder.Services.AddScoped<Services.CompanySession>();
+
             // Register Razor Components and MudBlazor services
 
             var app = builder.Build();
@@ -52,16 +54,18 @@ namespace BusinessAsUsual.Web
                 app.UseHsts();
             }
 
+            // Map static assets and Razor components
             app.UseStaticFiles();
+
             app.UseRouting();
+
+            app.UseAntiforgery();
 
             app.UseHttpsRedirection();
 
+            app.MapStaticAssets();
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
-
-            // Map static assets and Razor components
-            app.MapStaticAssets();
 
             // Launch the application
             await app.RunAsync().ConfigureAwait(false);

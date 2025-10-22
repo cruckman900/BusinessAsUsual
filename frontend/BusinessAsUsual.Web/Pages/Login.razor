@@ -11,17 +11,24 @@
 {
     <p class="text-danger">Please enter a database name.</p>
 }
-<button class="btn btn-primary ml-2" @onclick="HandleLogin">Login</button>
-<button @onclick="() => Console.WriteLine(\" ✅ Button clicked\")">Test Click</button>
+@* <button class="btn btn-primary ml-2" @onclick="HandleLogin">Login</button> *@
+<button @onclick="TestClick">Test Click</button>
 
 @code {
     private string? DatabaseName = string.Empty;
     private bool ShowValidationMessage = false;
 
 
-    protected override void OnInitialized()
+    private void TestClick()
     {
-        System.Diagnostics.Debug.WriteLine($"✅ Component Initialized");
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("✅ TestClick method invoked");            
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Error in TestClick: {ex.Message}");
+        }
     }
 
     private async Task HandleLogin()

@@ -1,5 +1,6 @@
-﻿@page "/"
+﻿@page "_Host"
 @namespace BusinessAsUsual.Web.Pages
+@using BusinessAsUsual.Web.Components
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
@@ -41,10 +42,19 @@
 
     <!-- Scripts -->
     <script src="js/theme.js"></script>
+
+    <!-- Blazor -->
+
 </head>
 
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" />
+    <component type="typeof(App)" render-mode="Server" />
+    <div id="blazor-error-ui">
+        An error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <base href="~/" />
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>
