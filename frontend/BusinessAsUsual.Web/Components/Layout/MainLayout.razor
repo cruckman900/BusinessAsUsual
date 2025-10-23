@@ -39,7 +39,14 @@
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+            try
+            {
+                await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"JS error: {ex.Message}");
+            }
         }
     }
 

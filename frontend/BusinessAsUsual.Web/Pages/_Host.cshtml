@@ -45,6 +45,13 @@
 
     <!-- Blazor -->
     <base href="~/" />
+
+    <!-- Error Tracking -->
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+          console.log("Global JS error:", message, source, lineno, colno, error);
+        };
+    </script>
 </head>
 
 <body>

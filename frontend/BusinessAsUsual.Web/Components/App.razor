@@ -6,8 +6,11 @@
 
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        <LoggingErrorBoundary>
+            <ChildContent>
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            </ChildContent>
+        </LoggingErrorBoundary>
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(MainLayout)">
@@ -18,8 +21,6 @@
 </Router>
 
 @code {
-    private bool IsDarkMode = true;
-
     public void ToggleTheme()
     {
         IsDarkMode = !IsDarkMode;
@@ -30,4 +31,10 @@
         typeof(NotFound),
         new Dictionary<string, object?>()
     );
+
+    private void HandleError(Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine($"🔥 Blazor error caught: {ex.Message}");
+    }
+    private bool IsDarkMode = true;
 }
