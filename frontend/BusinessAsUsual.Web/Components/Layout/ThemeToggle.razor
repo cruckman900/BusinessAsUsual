@@ -11,11 +11,19 @@
 
     private async Task ToggleTheme()
     {
-        isDark = !isDark;
-
-        if (JS is not null)
+        try
         {
-            await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+            isDark = !isDark;
+
+            if (JS is not null)
+            {
+                await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"JS error: {ex.Message}");
         }
     }
 

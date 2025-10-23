@@ -15,15 +15,23 @@ namespace BusinessAsUsual.Web.Services
         /// <param name="dbName"></param>
         public void SetDatabase(string dbName)
         {
-            var baseConnectionString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
-            var builder = new SqlConnectionStringBuilder(baseConnectionString)
+            try
             {
-                InitialCatalog = dbName
-            };
+                var baseConnectionString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");
+                var builder = new SqlConnectionStringBuilder(baseConnectionString)
+                {
+                    InitialCatalog = dbName
+                };
 
-            _connectionString = builder.ConnectionString;
+                _connectionString = builder.ConnectionString;
 
-            Console.WriteLine($"✅ CompanySession initialized with DB: {dbName}");
+                System.Diagnostics.Debug.WriteLine($"✅ CompanySession initialized with DB: {dbName}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CompanySession failed to initialize DB: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            }
         }
 
         /// <summary>

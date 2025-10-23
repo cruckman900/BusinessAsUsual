@@ -4,8 +4,15 @@
 
     private async Task ToggleSidebar()
     {
-        if (OnToggleSidebar.HasDelegate)
-            await OnToggleSidebar.InvokeAsync();
+        try
+        {
+            if (OnToggleSidebar.HasDelegate)
+                    await OnToggleSidebar.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error toggling sidebar: {ex.Message}");
+        }
     }
 }
 

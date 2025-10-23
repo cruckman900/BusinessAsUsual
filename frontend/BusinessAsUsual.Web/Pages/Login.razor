@@ -15,9 +15,14 @@
 <button @onclick="TestClick">Test Click</button>
 
 @code {
-    private string? DatabaseName = string.Empty;
-    private bool ShowValidationMessage = false;
+    // S2933: Make 'DatabaseName' 'readonly'.
+    // This cannot be made readonly because it is mutated by @bind.
+    // To resolve the diagnostic, suppress the warning for this field.
+#pragma warning disable S2933 // Field should be readonly
+    private string? DatabaseName = string.Empty; // Cannot be readonly because it is mutated by @bind
+#pragma warning restore S2933
 
+    private bool ShowValidationMessage = false;
 
     private void TestClick()
     {
@@ -33,20 +38,27 @@
 
     private async Task HandleLogin()
     {
-        await Task.CompletedTask; // ✅ satisfies async requirement
-        System.Diagnostics.Debug.WriteLine("in handle login");
+        try
+        {
+            await Task.CompletedTask; // ✅ satisfies async requirement
+            System.Diagnostics.Debug.WriteLine("in handle login");
 
-        if (!string.IsNullOrWhiteSpace(DatabaseName))
-        {
-            ShowValidationMessage = false;
-            System.Diagnostics.Debug.WriteLine($"🔐 Logging in with DB: {DatabaseName}");
-            Session.SetDatabase(DatabaseName);
-            Nav.NavigateTo("/", true);
+            if (!string.IsNullOrWhiteSpace(DatabaseName))
+            {
+                ShowValidationMessage = false;
+                System.Diagnostics.Debug.WriteLine($"🔐 Logging in with DB: {DatabaseName}");
+                Session.SetDatabase(DatabaseName);
+                Nav.NavigateTo("/", true);
+            }
+            else
+            {
+                ShowValidationMessage = true;
+                System.Diagnostics.Debug.WriteLine("⚠️ No DB name entered.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            ShowValidationMessage = true;
-            System.Diagnostics.Debug.WriteLine("⚠️ No DB name entered.");
+            System.Diagnostics.Debug.WriteLine($"❌ Error in Login HandleClick: {ex.Message}");
         }
     }
 }
