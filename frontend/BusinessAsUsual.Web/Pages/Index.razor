@@ -19,18 +19,26 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await Task.Yield(); // ✅ Ensures async execution is honored
-
-        if (firstRender && !_redirected)
+        try
         {
-            _redirected = true;
+            await Task.Yield(); // ✅ Ensures async execution is honored
 
-            var conn = ""; // Placeholder
-
-            if (string.IsNullOrWhiteSpace(conn))
+            if (firstRender && !_redirected)
             {
-                Nav.NavigateTo("/login", forceLoad: true);
+                _redirected = true;
+
+                var conn = ""; // Placeholder
+
+                if (string.IsNullOrWhiteSpace(conn))
+                {
+                    Nav.NavigateTo("/login");
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"🔥 Blazor error caught: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
         }
     }
 }

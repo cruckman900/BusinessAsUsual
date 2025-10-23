@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Server.Circuits
+@inherits LayoutComponentBase
 @implements IDisposable
 
 @inject NavigationManager Nav
@@ -54,21 +55,35 @@
 
     protected override void OnInitialized()
     {
-        Nav.LocationChanged += HandleLocationChanged;
+        try
+        {
+            Nav.LocationChanged += HandleLocationChanged;            
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in Index OnInitialized: {ex.Message}");
+        }
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        var uri = e.Location;
+        try
+        {
+            var uri = e.Location;
 
-        if (uri.Contains("/about"))
-            ActiveSidebarSection = "About";
-        else if (uri.Contains("/human-resources") || uri.Contains("/employees") || uri.Contains("/departments"))
-            ActiveSidebarSection = "HR";
-        else if (uri.EndsWith('/'))
-            ActiveSidebarSection = "Main";
+            if (uri.Contains("/about"))
+                ActiveSidebarSection = "About";
+            else if (uri.Contains("/human-resources") || uri.Contains("/employees") || uri.Contains("/departments"))
+                ActiveSidebarSection = "HR";
+            else if (uri.EndsWith('/'))
+                ActiveSidebarSection = "Main";
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in Index HandleLocationChanged: {ex.Message}");
+        }
     }
 
     public void Dispose() => Nav.LocationChanged -= HandleLocationChanged;

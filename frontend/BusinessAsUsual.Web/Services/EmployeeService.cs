@@ -26,10 +26,19 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task<List<Employee>> GetAllEmployeesAsync(Guid CompanyId)
         {
-            return await _db.Employees
-                .Where(e => e.CompanyId == CompanyId)
-                .OrderBy(e => e.LastName)
-                .ToListAsync();
+            try
+            {
+                return await _db.Employees
+                    .Where(e => e.CompanyId == CompanyId)
+                    .OrderBy(e => e.LastName)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while retrieving employees. {ex}");
+                return new List<Employee>();
+            }
         }
 
         /// <summary>
@@ -39,7 +48,16 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task<Employee?> GetEmployeeByIdAsync(Guid employeeId)
         {
-            return await _db.Employees.FindAsync(employeeId);
+            try
+            {
+                return await _db.Employees.FindAsync(employeeId);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while retrieving the employee. {ex}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -49,10 +67,18 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task AddEmployeeAsync(Employee employee)
         {
-            employee.CreatedAt = DateTime.UtcNow;
-            employee.UpdatedAt = DateTime.UtcNow;
-            _db.Employees.Add(employee);
-            await _db.SaveChangesAsync();
+            try
+            {
+                employee.CreatedAt = DateTime.UtcNow;
+                employee.UpdatedAt = DateTime.UtcNow;
+                _db.Employees.Add(employee);
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while adding the employee. {ex}");
+            }
         }
 
         /// <summary>
@@ -62,9 +88,17 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task UpdateEmployeeAsync(Employee employee)
         {
-            employee.UpdatedAt = DateTime.UtcNow;
-            _db.Employees.Update(employee);
-            await _db.SaveChangesAsync();
+            try
+            {
+                employee.UpdatedAt = DateTime.UtcNow;
+                _db.Employees.Update(employee);
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while updating the employee. {ex}");
+            }
         }
 
         /// <summary>
@@ -75,13 +109,21 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task AssignRoleAsync(Guid employeeId, string role)
         {
-            var employee = await _db.Employees.FindAsync(employeeId);
-            if (employee == null) return;
+            try
+            {
+                var employee = await _db.Employees.FindAsync(employeeId);
+                if (employee == null) return;
 
-            employee.Role = role;
-            employee.UpdatedAt = DateTime.UtcNow;
-            _db.Employees.Update(employee);
-            await _db.SaveChangesAsync();
+                employee.Role = role;
+                employee.UpdatedAt = DateTime.UtcNow;
+                _db.Employees.Update(employee);
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while assigning role to the employee. {ex}");
+            }
         }
 
         /// <summary>
@@ -91,13 +133,21 @@ namespace BusinessAsUsual.Web.Services
         /// <returns></returns>
         public async Task ToggleStatusAsync(Guid employeeId)
         {
-            var employee = await _db.Employees.FindAsync(employeeId);
-            if (employee == null) return;
+            try
+            {
+                var employee = await _db.Employees.FindAsync(employeeId);
+                if (employee == null) return;
 
-            employee.IsActive = !employee.IsActive;
-            employee.UpdatedAt = DateTime.UtcNow;
-            _db.Employees.Update(employee);
-            await _db.SaveChangesAsync();
+                employee.IsActive = !employee.IsActive;
+                employee.UpdatedAt = DateTime.UtcNow;
+                _db.Employees.Update(employee);
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                System.Diagnostics.Debug.WriteLine($"An error occurred while toggling the employee status. {ex}");
+            }
         }
     }
 }
