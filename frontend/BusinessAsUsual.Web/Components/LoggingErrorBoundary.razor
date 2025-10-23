@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+<ErrorBoundary>
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent>
+        @if (error is not null)
+        {
+            <div class="text-danger">
+                <h4>🔥 Unhandled Exception</h4>
+                <p>@error.Message</p>
+                <pre>@error.StackTrace</pre>
+            </div>
+        }
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private Exception? error;
+
+    protected override void OnParametersSet()
+    {
+        error = null;
+    }
+
+    private RenderFragment ErrorContent => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "text-danger");
+        builder.AddContent(2, $"🔥 Unhandled Exception: {error?.Message}");
+        builder.CloseElement();
+    };
+}
