@@ -1,6 +1,8 @@
 using BusinessAsUsual.Infrastructure;
 using BusinessAsUsual.Web.Data.Context;
+using BusinessAsUsual.Web.Services;
 using DotNetEnv;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Web
@@ -42,6 +44,11 @@ namespace BusinessAsUsual.Web
 
             // Register Scoped services
             builder.Services.AddScoped<Services.CompanySession>();
+            builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
+
+            // Register Circuit Logging
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
+            builder.Logging.AddConsole();
 
             // Register Razor Components and MudBlazor services
 
