@@ -14,6 +14,14 @@
 
     private void TestClick()
     {
-        clickedText = "Clicked!";
+        try
+        {
+            clickedText = "Clicked!";
+            System.Diagnostics.Debug.WriteLine("button clicked!");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+        }
     }
 }
