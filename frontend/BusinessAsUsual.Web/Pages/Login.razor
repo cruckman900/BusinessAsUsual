@@ -4,15 +4,32 @@
 @inject NavigationManager Nav
 @inject CompanySession Session
 
-<h3>Login</h3>
+<MudPaper Elevation="4" Class="p-6 mx-auto" MaxWidth="MaxWidth.Small">
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">Login</MudText>
 
-<input @bind="DatabaseName" placeholder="Enter company DB name" />
-@if (ShowValidationMessage)
-{
-    <p class="text-danger">Please enter a database name.</p>
-}
-@* <button class="btn btn-primary ml-2" @onclick="HandleLogin">Login</button> *@
-<button @onclick="TestClick">Test Click</button>
+    <MudTextField @bind-Value="DatabaseName"
+                  Label="Company DB Name"
+                  Placeholder="Enter company DB name"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Normal"
+                  Immediate="true"
+                  Required="true"
+                  For="@(() => DatabaseName)" />
+
+    @if (ShowValidationMessage)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption">
+            Please enter a database name.
+        </MudText>
+    }
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Class="mt-3"
+               OnClick="HandleLogin">
+        Login
+    </MudButton>
+</MudPaper>
 
 @code {
     // S2933: Make 'DatabaseName' 'readonly'.
@@ -23,18 +40,6 @@
 #pragma warning restore S2933
 
     private bool ShowValidationMessage = false;
-
-    private void TestClick()
-    {
-        try
-        {
-            System.Diagnostics.Debug.WriteLine("✅ TestClick method invoked");            
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ Error in TestClick: {ex.Message}");
-        }
-    }
 
     private async Task HandleLogin()
     {

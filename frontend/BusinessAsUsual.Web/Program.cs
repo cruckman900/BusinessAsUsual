@@ -1,9 +1,11 @@
 using BusinessAsUsual.Infrastructure;
 using BusinessAsUsual.Web.Data.Context;
+using BusinessAsUsual.Web.Factory;
 using BusinessAsUsual.Web.Services;
 using DotNetEnv;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 
 namespace BusinessAsUsual.Web
 {
@@ -41,9 +43,16 @@ namespace BusinessAsUsual.Web
             builder.Services.AddDbContext<CompanyDbContext>(options =>
                 options.UseSqlServer(
                     ConfigLoader.Get("AWS_SQL_CONNECTION_STRING")));
+            builder.Services.AddMudServices();
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            });
 
             // Register Scoped services
-            builder.Services.AddScoped<Services.CompanySession>();
+            builder.Services.AddScoped<CompanyDbContextFactory>();
+            builder.Services.AddScoped<EmployeeService>();
+            builder.Services.AddScoped<CompanySession>();
             builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
 
             // Register Circuit Logging
