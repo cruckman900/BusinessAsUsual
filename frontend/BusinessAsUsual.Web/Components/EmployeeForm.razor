@@ -1,5 +1,84 @@
-﻿<h3>EmployeeForm</h3>
+﻿@using BusinessAsUsual.Web.Data.Entities
+@using BusinessAsUsual.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject EmployeeService EmployeeService
+
+@if (_isReady)
+{
+    <MudPaper Class="p-6" Style="max-width: 600px; margin: auto;">
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true">
+            @(Employee.Id == Guid.Empty ? "Add Employee" : "Edit Employee")
+        </MudText>
+
+        <div style="overflow-y: auto; max-height: 70vh;">
+            <EditForm Model="Employee" OnValidSubmit="HandleSubmit" Style="width: 100%;">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <MudTextField @bind-Value="Employee.FirstName" Label="First Name" Required="true" Immediate="true" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.FirstName)" />
+
+                <MudTextField @bind-Value="Employee.LastName" Label="Last Name" Required="true" Immediate="true" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.LastName)" />
+
+                <MudTextField @bind-Value="Employee.MiddleName" Label="Middle Name" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.MiddleName)" />
+
+                <MudTextField @bind-Value="Employee.Prefix" Label="Prefix" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.Prefix)" />
+
+                <MudTextField @bind-Value="Employee.Suffix" Label="Suffix" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.Suffix)" />
+
+                <MudTextField @bind-Value="Employee.Email" Label="Email" InputType="InputType.Email" Required="true" Immediate="true" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.Email)" />
+
+                <MudTextField @bind-Value="Employee.Role" Label="Role" Margin="Margin.Normal" FullWidth="true" />
+                <ValidationMessage For="@(() => Employee.Role)" />
+
+                <MudStack Direction="Row" Spacing="2" Class="mt-4">
+                    <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Save</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel" FullWidth="true">Cancel</MudButton>
+                </MudStack>
+            </EditForm>
+        </div>
+    </MudPaper>
+}
 
 @code {
+    [Parameter] public Employee Employee { get; set; } = new();
+    [Parameter] public EventCallback OnSaved { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
 
+    private bool _isReady;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(50); // give MudFocusTrap a moment to initialize
+            _isReady = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Employee.Id == Guid.Empty)
+        {
+            Employee.CompanyId = Guid.Parse("85FBC8A5-DCF4-4761-8188-776C373197EF");
+            await EmployeeService.AddEmployeeAsync(Employee);
+        }
+        else
+        {
+            await EmployeeService.UpdateEmployeeAsync(Employee);
+        }
+
+        await OnSaved.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        await OnClose.InvokeAsync();
+    }
 }

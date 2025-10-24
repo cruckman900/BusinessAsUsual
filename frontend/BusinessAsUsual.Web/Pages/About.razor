@@ -1,7 +1,49 @@
 ﻿@page "/about"
 
-<h3>About</h3>
+<HeadContent>
+    <title>About BusinessAsUsual</title>
+    <meta name="description" content="Learn about BusinessAsUsual, the end-to-end business management solution with a customer-facing API suite." />
+</HeadContent>
 
-@code {
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-1">
+    <MudPaper Elevation="4" Class="p-6">
+        <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+            About BusinessAsUsual
+        </MudText>
+        <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+            BusinessAsUsual is your full-stack business management solution—modular, scalable, and contributor-friendly.
+        </MudText>
 
-}
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.h5" Color="Color.Dark" GutterBottom="true">🚀 What Makes It Different</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem><MudText><strong>At-a-Glance Dashboard:</strong> Real-time insights into orders, employees, inventory, and services.</MudText></MudListItem>
+            <MudListItem><MudText><strong>Modular Management Suite:</strong> Employee onboarding, inventory tracking, product catalog, and order lifecycle control.</MudText></MudListItem>
+            <MudListItem><MudText><strong>Customer-Facing API Suite:</strong> Let your customers integrate directly with your backend—no need to build their own.</MudText></MudListItem>
+        </MudList>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.h5" Color="Color.Dark" GutterBottom="true">🧠 Built for Contributors</MudText>
+        <MudText>
+            BusinessAsUsual is architected with onboarding clarity and legacy-grade documentation:
+        </MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem><MudText>XML-documented services and entities</MudText></MudListItem>
+            <MudListItem><MudText>Smart Commit tagging for workflow transparency</MudText></MudListItem>
+            <MudListItem><MudText>Modular architecture for future empowerment</MudText></MudListItem>
+        </MudList>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.h5" Color="Color.Dark" GutterBottom="true">🌐 Who It's For</MudText>
+        <MudText>This platform is built for:</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem><MudText>Small businesses scaling operations without scaling complexity</MudText></MudListItem>
+            <MudListItem><MudText>Enterprise teams seeking clarity and control</MudText></MudListItem>
+            <MudListItem><MudText>Developers who want to build without reinventing the backend</MudText></MudListItem>
+            <MudListItem><MudText>Visionaries who value expressive infrastructure and teachable wins</MudText></MudListItem>
+        </MudList>
+    </MudPaper>
+</MudContainer>

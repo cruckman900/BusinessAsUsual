@@ -16,61 +16,49 @@ public static class ThemeConfig
     /// Returns the Business As Usual dark theme.
     /// Uses deep grays and bold orange/blue branding for high contrast and contributor clarity.
     /// </summary>
-    /// <returns>
-    /// A configured <see cref="MudTheme"/> instance with customized <see cref="PaletteDark"/> settings.
-    /// </returns>
-    public static MudTheme GetDarkTheme()
+    public static MudTheme GetDarkTheme() => new MudTheme
     {
-        return new MudTheme
+        Palette = new PaletteDark
         {
-            PaletteDark = new PaletteDark
-            {
-                Primary = "#0057B8", // Business Blue
-                Secondary = "#FF6B00", // Business Orange
-                Background = Colors.Gray.Darken4,
-                AppbarBackground = "#0057B8",
-                DrawerBackground = Colors.Gray.Darken3,
-                Surface = Colors.Gray.Darken2,
-                TextPrimary = Colors.Gray.Lighten5,
-                TextSecondary = Colors.Gray.Lighten2,
-                ActionDefault = "#FF6B00",
-                ActionDisabled = Colors.Gray.Darken1,
-                Divider = Colors.Gray.Darken1,
-                TableLines = Colors.Gray.Darken1,
-                LinesDefault = Colors.Gray.Darken2,
-                OverlayDark = Colors.Gray.Darken4
-            }
-        };
-    }
+            Primary = "#0057B8", // Business Blue
+            Secondary = "#FF6B00", // Business Orange
+            Background = Colors.Grey.Darken4,
+            AppbarBackground = "#0057B8",
+            DrawerBackground = Colors.Grey.Darken3,
+            Surface = Colors.Grey.Darken2,
+            TextPrimary = Colors.Grey.Lighten5,
+            TextSecondary = Colors.Grey.Lighten2,
+            ActionDefault = "#FF6B00",
+            ActionDisabled = Colors.Grey.Darken1,
+            Divider = Colors.Grey.Darken1,
+            TableLines = Colors.Grey.Darken1,
+            LinesDefault = Colors.Grey.Darken2,
+            OverlayDark = Colors.Grey.Darken4
+        }
+    };
 
     /// <summary>
     /// Returns the Business As Usual light theme.
     /// Uses soft grays and vibrant orange/blue branding for clarity and onboarding warmth.
     /// </summary>
-    /// <returns>
-    /// A configured <see cref="MudTheme"/> instance with customized <see cref="PaletteLight"/> settings.
-    /// </returns>
-    public static MudTheme GetLightTheme()
+    public static MudTheme GetLightTheme() => new MudTheme
     {
-        return new MudTheme
+        Palette = new PaletteLight
         {
-            PaletteLight = new PaletteLight
-            {
-                Primary = "#0057B8", // Business Blue
-                Secondary = "#FF6B00", // Business Orange
-                Background = Colors.Gray.Lighten5,
-                AppbarBackground = "#0057B8",
-                DrawerBackground = Colors.Gray.Lighten4,
-                Surface = Colors.Gray.Lighten3,
-                TextPrimary = Colors.Gray.Darken4,
-                TextSecondary = Colors.Gray.Darken2,
-                ActionDefault = "#FF6B00",
-                ActionDisabled = Colors.Gray.Lighten1,
-                Divider = Colors.Gray.Lighten2,
-                TableLines = Colors.Gray.Lighten2,
-                LinesDefault = Colors.Gray.Lighten3,
-                OverlayLight = Colors.Gray.Lighten5
-            }
-        };
-    }
+            Primary = "#0057B8", // Business Blue
+            Secondary = "#FF6B00", // Business Orange
+            Background = Colors.Grey.Lighten5,
+            AppbarBackground = "#0057B8",
+            DrawerBackground = Colors.Grey.Lighten4,
+            Surface = Colors.Grey.Lighten3,
+            TextPrimary = Colors.Grey.Darken4,
+            TextSecondary = Colors.Grey.Darken2,
+            ActionDefault = "#FF6B00",
+            ActionDisabled = Colors.Grey.Lighten1,
+            Divider = Colors.Grey.Lighten2,
+            TableLines = Colors.Grey.Lighten2,
+            LinesDefault = Colors.Grey.Lighten3,
+            OverlayLight = Colors.Grey.Lighten5
+        }
+    };
 }
