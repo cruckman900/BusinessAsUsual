@@ -34,7 +34,7 @@ namespace BusinessAsUsual.Web
         public static async Task Main(string[] args)
         {
             // Load environment variables from .env
-            ConfigLoader.LoadEnvironmentVariables();
+            await ConfigLoader.LoadEnvironmentVariables();
             Env.Load();
 
             var builder = WebApplication.CreateBuilder(args);

@@ -9,10 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Services\IProvisioningService.cs~RF2621f1cc.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Folder Include="schema\tables\" />
+    <Folder Include="schema\tables\core\ "/>
+    <Folder Include="schema\tables\auth\" />
+    <Folder Include="schema\tables\permissions\" />
+    <Folder Include="schema\tables\meta\" />
+    <Folder Include="schema\tables\mobile\" />
+    <Folder Include="schema\constraints\" />
+    <Folder Include="schema\indexes\" />
+    <Folder Include="schema\unique_indexes\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
