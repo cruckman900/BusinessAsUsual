@@ -23,7 +23,7 @@ namespace BusinessAsUsual.Admin
         public static async Task Main(string[] args)
         {
             // Load environment variables from .env
-            ConfigLoader.LoadEnvironmentVariables();
+            await ConfigLoader.LoadEnvironmentVariables();
             Env.Load();
 
             var connString = ConfigLoader.Get("AWS_SQL_CONNECTION_STRING");
