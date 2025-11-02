@@ -69,11 +69,11 @@ namespace BusinessAsUsual.Domain.Entities.Company
         /// <summary>
         /// Roles assigned to this user.
         /// </summary>
-        public ICollection<CompanyUserRoleAssignment> RoleAssignments { get; set; }
+        public ICollection<CompanyUserRoleAssignment> RoleAssignments { get; set; } = new List<CompanyUserRoleAssignment>();
 
         /// <summary>
         /// Permission overrides for this user.
         /// </summary>
-        public ICollection<CompanyUserRolePermissionOverride> PermissionOverrides { get; set; }
+        public ICollection<CompanyUserRolePermissionOverride> PermissionOverrides { get; set; } = new List<CompanyUserRolePermissionOverride>();
     }
 }

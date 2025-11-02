@@ -66,11 +66,11 @@ namespace BusinessAsUsual.Domain.Entities.Company
         /// <summary>
         /// Group memberships this permission belongs to.
         /// </summary>
-        public ICollection<CompanyUserRolePermissionGroupMember> GroupMemberships { get; set; }
+        public ICollection<CompanyUserRolePermissionGroupMember> GroupMemberships { get; set; } = new List<CompanyUserRolePermissionGroupMember>();
 
         /// <summary>
         /// Overrides applied to this permission.
         /// </summary>
-        public ICollection<CompanyUserRolePermissionOverride> Overrides { get; set; }
+        public ICollection<CompanyUserRolePermissionOverride> Overrides { get; set; } = new List<CompanyUserRolePermissionOverride>();
     }
 }
