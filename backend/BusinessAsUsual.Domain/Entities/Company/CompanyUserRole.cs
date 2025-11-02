@@ -72,11 +72,11 @@ namespace BusinessAsUsual.Domain.Entities.Company
         /// <summary>
         /// Users assigned to this role.
         /// </summary>
-        public ICollection<CompanyUserRoleAssignment> AssignedUsers { get; set; }
+        public ICollection<CompanyUserRoleAssignment> AssignedUsers { get; set; } = new List<CompanyUserRoleAssignment>();
 
         /// <summary>
         /// Permission group assignments for this role.
         /// </summary>
-        public ICollection<CompanyUserRolePermissionGroupAssignment> PermissionGroupAssignments { get; set; }
+        public ICollection<CompanyUserRolePermissionGroupAssignment> PermissionGroupAssignments { get; set; } = new List<CompanyUserRolePermissionGroupAssignment>();
     }
 }
