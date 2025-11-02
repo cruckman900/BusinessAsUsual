@@ -1,9 +1,6 @@
-﻿using BusinessAsUsual.Domain.Entities.Company;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Models.Company
+namespace BusinessAsUsual.Domain.Entities.Company
 {
     /// <summary>
     /// Represents a registered company within the system.
