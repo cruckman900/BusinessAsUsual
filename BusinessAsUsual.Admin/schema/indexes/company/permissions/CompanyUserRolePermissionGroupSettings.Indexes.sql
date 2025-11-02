@@ -1,0 +1,4 @@
+﻿CREATE INDEX idx_CURPGS_CompanyID ON CompanyUserRolePermissionGroupSettings (CompanyID);
+CREATE INDEX idx_CURPGS_PermissionGroupID ON CompanyUserRolePermissionGroupSettings (PermissionGroupID);
+CREATE INDEX idx_CURPGS_IsActive ON CompanyUserRolePermissionGroupSettings (IsActive);
+CREATE INDEX idx_CURPGS_SettingKey ON CompanyUserRolePermissionGroupSettings (SettingKey);

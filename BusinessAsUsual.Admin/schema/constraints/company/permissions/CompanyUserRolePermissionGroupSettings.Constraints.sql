@@ -1,0 +1,5 @@
+﻿ALTER TABLE CompanyUserRolePermissionGroupSettings
+ADD CONSTRAINT fk_CURPGS_CompanyID FOREIGN KEY (CompanyID) REFERENCES CompanyInfo(CompanyID);
+
+ALTER TABLE CompanyUserRolePermissionGroupSettings
+ADD CONSTRAINT fk_CURPGS_PermissionGroupID FOREIGN KEY (PermissionGroupID) REFERENCES CompanyUserRolePermissionGroups(PermissionGroupID);
