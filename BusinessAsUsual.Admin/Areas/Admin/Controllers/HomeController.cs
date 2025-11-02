@@ -8,6 +8,10 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers.Admin
     [Area("Admin")]
     public class HomeController : Controller
     {
+        /// <summary>
+        /// home page
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Index()
         {
             return View();

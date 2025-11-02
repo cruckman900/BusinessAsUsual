@@ -39,7 +39,7 @@ namespace BusinessAsUsual.API
             builder.Logging.SetMinimumLevel(LogLevel.Information);
 
             // Optional: register shared services
-            builder.Services.AddBusinessAsUsualServices();
+            //TODO: builder.Services.AddBusinessAsUsualServices();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
