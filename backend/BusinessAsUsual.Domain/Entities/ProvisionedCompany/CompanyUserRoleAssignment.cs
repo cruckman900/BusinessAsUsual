@@ -1,30 +1,36 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Domain.Entities.Company
+namespace BusinessAsUsual.Domain.Entities.ProvisionedCompany
 {
     /// <summary>
-    /// Represents the assignment of a permission group to a specific user role.
+    /// Represents the assignment of a user to a specific role within a company.
     /// </summary>
-    public class CompanyUserRolePermissionGroupAssignment
+    public class CompanyUserRoleAssignment
     {
         /// <summary>
-        /// Unique identifier for the group assignment entry.
+        /// Unique identifier for the role assignment entry.
         /// </summary>
         [Key]
         [Required(ErrorMessage = "Assignment ID is required.")]
         public Guid AssignmentID { get; set; }
 
         /// <summary>
-        /// Identifier of the role receiving the permission group.
+        /// Identifier of the company this setting belongs to.
+        /// </summary>
+        [Required(ErrorMessage = "Company ID is required.")]
+        public Guid CompanyID { get; set; }
+
+        /// <summary>
+        /// Identifier of the user receiving the role.
+        /// </summary>
+        [Required(ErrorMessage = "User ID is required.")]
+        public Guid UserID { get; set; }
+
+        /// <summary>
+        /// Identifier of the role being assigned.
         /// </summary>
         [Required(ErrorMessage = "Role ID is required.")]
         public Guid RoleID { get; set; }
-
-        /// <summary>
-        /// Identifier of the permission group being assigned.
-        /// </summary>
-        [Required(ErrorMessage = "Permission group ID is required.")]
-        public Guid PermissionGroupID { get; set; }
 
         /// <summary>
         /// Indicates whether this assignment is active.
@@ -46,13 +52,18 @@ namespace BusinessAsUsual.Domain.Entities.Company
         // ────────────────────────────────
 
         /// <summary>
-        /// The role receiving the permission group.
+        /// The company this setting belongs to.
         /// </summary>
-        public CompanyUserRole Role { get; set; } = new CompanyUserRole();
+        public CompanyInfo Company { get; set; } = new CompanyInfo();
 
         /// <summary>
-        /// The permission group being assigned.
+        /// The user receiving the role.
         /// </summary>
-        public CompanyUserRolePermissionGroup PermissionGroup { get; set; } = new CompanyUserRolePermissionGroup();
+        public CompanyUser User { get; set; } = new CompanyUser();
+
+        /// <summary>
+        /// The role being assigned.
+        /// </summary>
+        public CompanyUserRole Role { get; set; } = new CompanyUserRole();
     }
 }
