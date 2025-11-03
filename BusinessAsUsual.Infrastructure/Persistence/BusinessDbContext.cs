@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Domain.Entities.Company;
+﻿using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Domain.Entities.ProvisionedCompany;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Infrastructure.Persistence
@@ -22,7 +23,10 @@ namespace BusinessAsUsual.Infrastructure.Persistence
         // ────────────────────────────────
 
         /// <summary>Represents the companies registered in the system.</summary>
-        public DbSet<CompanyInfo> Companies { get; set; }
+        public DbSet<Company> Companies { get; set; }
+
+        /// <summary>Represents the companies registered in the system.</summary>
+        public DbSet<CompanyInfo> CompanyInfo { get; set; }
 
         /// <summary>Represents global settings for each company.</summary>
         public DbSet<CompanySetting> CompanySettings { get; set; }

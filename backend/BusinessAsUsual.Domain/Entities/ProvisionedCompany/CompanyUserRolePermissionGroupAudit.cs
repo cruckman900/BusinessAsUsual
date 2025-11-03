@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Domain.Entities.Company
+namespace BusinessAsUsual.Domain.Entities.ProvisionedCompany
 {
     /// <summary>
     /// Represents an audit log entry for changes made to a permission group.

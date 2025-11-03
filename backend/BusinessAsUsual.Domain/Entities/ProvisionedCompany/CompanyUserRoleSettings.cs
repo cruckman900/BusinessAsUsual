@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Domain.Entities.Company
+namespace BusinessAsUsual.Domain.Entities.ProvisionedCompany
 {
     /// <summary>
     /// Represents a customizable setting associated with a specific user role.

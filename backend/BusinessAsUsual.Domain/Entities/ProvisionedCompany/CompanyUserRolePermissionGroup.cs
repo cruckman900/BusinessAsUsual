@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Domain.Entities.Company
+namespace BusinessAsUsual.Domain.Entities.ProvisionedCompany
 {
     /// <summary>
     /// Represents a group of permissions that can be assigned to roles for modular access control.

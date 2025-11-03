@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Infrastructure;
+﻿using BusinessAsUsual.Application.Services.Provisioning;
+using BusinessAsUsual.Infrastructure;
 using BusinessAsUsual.Infrastructure.Persistence;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
@@ -40,6 +41,9 @@ namespace BusinessAsUsual.API
 
             // Optional: register shared services
             //TODO: builder.Services.AddBusinessAsUsualServices();
+
+            builder.Services.AddScoped<CompanyProvisioningService>();
+            builder.Services.AddScoped<TenantProvisioningService>();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
