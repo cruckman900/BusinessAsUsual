@@ -1,0 +1,13 @@
+﻿CREATE TABLE CompanySessions (
+    SessionID CHAR(36) NOT NULL PRIMARY KEY,
+    CompanyID CHAR(36) NOT NULL,
+    UserID CHAR(36) NOT NULL,
+    SessionToken VARCHAR(255) NOT NULL UNIQUE,
+    IPAddress VARCHAR(45),
+    UserAgent TEXT,
+    IsActive BOOLEAN NOT NULL DEFAULT TRUE,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ExpiresAt DATETIME,
+    TerminatedAt DATETIME,
+    TerminationReason VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

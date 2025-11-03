@@ -60,13 +60,22 @@ public class TenantProvisioningService
         await tenantDb.Database.MigrateAsync();
 
         // ─────────────────────────────────────────────
-        // Step 3: Seed default company data
+        // Step 3: Create schema objects in tenant database
+        // ─────────────────────────────────────────────
+        using var sqlConnection = new SqlConnection(tenantConnectionString);
+        await sqlConnection.OpenAsync();
+
+        var executor = new SqlScriptExecutor("schema");
+        await executor.ExecuteAllAsync(sqlConnection);
+
+        // ─────────────────────────────────────────────
+        // Step 4: Seed default company data
         // ─────────────────────────────────────────────
         var provisioningService = new CompanyProvisioningService(tenantDb);
         await provisioningService.ProvisionCompanyAsync(companyName, description);
 
         // ─────────────────────────────────────────────
-        // Step 4: (Optional) Store tenant metadata
+        // Step 5: (Optional) Store tenant metadata
         // ─────────────────────────────────────────────
         // TODO: Save tenant info to master DB for routing
     }
