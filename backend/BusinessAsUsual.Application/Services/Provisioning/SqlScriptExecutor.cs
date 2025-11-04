@@ -9,6 +9,10 @@ public class SqlScriptExecutor
 {
     private readonly string _schemaRoot;
 
+    /// <summary>
+    /// inject schema root path
+    /// </summary>
+    /// <param name="schemaRoot"></param>
     public SqlScriptExecutor(string schemaRoot)
     {
         _schemaRoot = schemaRoot;
