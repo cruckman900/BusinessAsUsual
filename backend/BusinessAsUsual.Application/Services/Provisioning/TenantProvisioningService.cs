@@ -1,6 +1,4 @@
-﻿using BusinessAsUsual.Domain.Entities;
-using BusinessAsUsual.Infrastructure.Data;
-using BusinessAsUsual.Infrastructure.Persistence;
+﻿using BusinessAsUsual.Infrastructure.Persistence;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +31,7 @@ public class TenantProvisioningService
         // ─────────────────────────────────────────────
         // Step 1: Create tenant database
         // ─────────────────────────────────────────────
-        var dbName = $"bau_{companyName.ToLower()}";
+        var dbName = $"bau_{companyName.ToLower().Replace(" ", "_")}";
         var masterConnectionString = _config.GetConnectionString("MasterDb");
 
         using var masterConnection = new SqlConnection(masterConnectionString);
@@ -65,7 +63,8 @@ public class TenantProvisioningService
         using var sqlConnection = new SqlConnection(tenantConnectionString);
         await sqlConnection.OpenAsync();
 
-        var executor = new SqlScriptExecutor("schema");
+        var schemaPath = Path.Combine(AppContext.BaseDirectory, "schema");
+        var executor = new SqlScriptExecutor(schemaPath);
         await executor.ExecuteAllAsync(sqlConnection);
 
         // ─────────────────────────────────────────────

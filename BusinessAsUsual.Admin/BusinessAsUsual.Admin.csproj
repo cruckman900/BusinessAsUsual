@@ -9,9 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="schema\tables\auth\**" />
+    <Compile Remove="schema\tables\core\**" />
+    <Content Remove="schema\tables\auth\**" />
+    <Content Remove="schema\tables\core\**" />
+    <EmbeddedResource Remove="schema\tables\auth\**" />
+    <EmbeddedResource Remove="schema\tables\core\**" />
+    <None Remove="schema\tables\auth\**" />
+    <None Remove="schema\tables\core\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="schema\tables\" />
-    <Folder Include="schema\tables\core\ " />
-    <Folder Include="schema\tables\auth\" />
     <Folder Include="schema\tables\permissions\" />
     <Folder Include="schema\tables\meta\" />
     <Folder Include="schema\tables\mobile\" />
