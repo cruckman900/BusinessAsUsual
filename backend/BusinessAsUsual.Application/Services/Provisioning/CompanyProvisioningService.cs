@@ -38,7 +38,7 @@ public class CompanyProvisioningService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.Companies.Add(company);
+        await _db.Companies.AddAsync(company);
 
         // ─────────────────────────────────────────────
         // Seed default roles
@@ -53,7 +53,7 @@ public class CompanyProvisioningService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.CompanyUserRoles.Add(adminRole);
+        await _db.CompanyUserRoles.AddAsync(adminRole);
 
         // ─────────────────────────────────────────────
         // Seed default user
@@ -68,7 +68,7 @@ public class CompanyProvisioningService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.CompanyUsers.Add(defaultUser);
+        await _db.CompanyUsers.AddAsync(defaultUser);
 
         // ─────────────────────────────────────────────
         // Assign role to user
@@ -83,12 +83,12 @@ public class CompanyProvisioningService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.CompanyUserRoleAssignments.Add(roleAssignment);
+        await _db.CompanyUserRoleAssignments.AddAsync(roleAssignment);
 
         // ─────────────────────────────────────────────
         // Seed default settings
         // ─────────────────────────────────────────────
-        _db.CompanySettings.Add(new CompanySetting
+        await _db.CompanySettings.AddAsync(new CompanySetting
         {
             SettingID = Guid.NewGuid(),
             CompanyID = company.CompanyID,
@@ -111,12 +111,12 @@ public class CompanyProvisioningService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.CompanyUserRolePermissionGroups.Add(defaultGroup);
+        await _db.CompanyUserRolePermissionGroups.AddAsync(defaultGroup);
 
         // ─────────────────────────────────────────────
         // Assign group to role
         // ─────────────────────────────────────────────
-        _db.CompanyUserRolePermissionGroupAssignments.Add(new CompanyUserRolePermissionGroupAssignment
+        await _db.CompanyUserRolePermissionGroupAssignments.AddAsync(new CompanyUserRolePermissionGroupAssignment
         {
             AssignmentID = Guid.NewGuid(),
             RoleID = adminRole.RoleID,

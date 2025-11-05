@@ -18,6 +18,9 @@ namespace BusinessAsUsual.Infrastructure.Persistence
         {
         }
 
+        /// <summary>Configures the DbSet properties for the context.</summary>
+        public DbSet<TenantMetadata> Tenants { get; set; }
+
         // ────────────────────────────────
         // DbSets for Company Provisioning
         // ────────────────────────────────

@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Infrastructure.Persistence;
+﻿using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Infrastructure.Persistence;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -76,6 +77,16 @@ public class TenantProvisioningService
         // ─────────────────────────────────────────────
         // Step 5: (Optional) Store tenant metadata
         // ─────────────────────────────────────────────
-        // TODO: Save tenant info to master DB for routing
+        var metadata = new TenantMetadata
+        {
+            TenantMetadataID = Guid.NewGuid(),
+            CompanyName = companyName,
+            DatabaseName = dbName,
+            ConnectionString = tenantConnectionString,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _masterDbContext.Tenants.AddAsync(metadata);
+        await _masterDbContext.SaveChangesAsync();
     }
 }
