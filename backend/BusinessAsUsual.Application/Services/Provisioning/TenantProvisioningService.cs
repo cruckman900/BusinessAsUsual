@@ -1,4 +1,5 @@
 ﻿using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Infrastructure.Data;
 using BusinessAsUsual.Infrastructure.Persistence;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -12,14 +13,16 @@ namespace BusinessAsUsual.Application.Services.Provisioning;
 public class TenantProvisioningService
 {
     private readonly IConfiguration _config;
+    private readonly MasterDbContext _masterDbContext;
 
     /// <summary>
     /// inject configuration
     /// </summary>
     /// <param name="config"></param>
-    public TenantProvisioningService(IConfiguration config)
+    public TenantProvisioningService(IConfiguration config, MasterDbContext masterDbContext)
     {
         _config = config;
+        _masterDbContext = masterDbContext;
     }
 
     /// <summary>
