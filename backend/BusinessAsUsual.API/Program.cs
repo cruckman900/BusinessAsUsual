@@ -1,5 +1,6 @@
 ﻿using BusinessAsUsual.Application.Services.Provisioning;
 using BusinessAsUsual.Infrastructure;
+using BusinessAsUsual.Infrastructure.Data;
 using BusinessAsUsual.Infrastructure.Persistence;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
@@ -33,6 +34,8 @@ namespace BusinessAsUsual.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<MasterDbContext>(options =>
+                options.UseSqlServer(connString));
             builder.Services.AddDbContext<BusinessDbContext>(options =>
                 options.UseSqlServer(connString));
             builder.Logging.ClearProviders();
