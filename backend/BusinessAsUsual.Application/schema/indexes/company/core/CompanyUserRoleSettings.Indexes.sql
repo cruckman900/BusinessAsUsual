@@ -1,2 +1,0 @@
-﻿CREATE INDEX idx_CompanyUserRoleSettings_RoleID ON CompanyUserRoleSettings (RoleID);
-CREATE INDEX idx_CompanyUserRoleSettings_SettingKey ON CompanyUserRoleSettings (SettingKey);

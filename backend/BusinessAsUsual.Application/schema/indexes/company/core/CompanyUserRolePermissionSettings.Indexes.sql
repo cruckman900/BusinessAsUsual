@@ -1,2 +1,0 @@
-﻿CREATE INDEX idx_CURPS_PermissionID ON CompanyUserRolePermissionSettings (PermissionID);
-CREATE INDEX idx_CURPS_SettingKey ON CompanyUserRolePermissionSettings (SettingKey);

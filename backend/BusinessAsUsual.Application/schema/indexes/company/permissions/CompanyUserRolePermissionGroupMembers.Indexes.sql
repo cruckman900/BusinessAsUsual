@@ -1,4 +1,0 @@
-﻿CREATE INDEX idx_CURPGM_CompanyID ON CompanyUserRolePermissionGroupMembers (CompanyID);
-CREATE INDEX idx_CURPGM_PermissionGroupID ON CompanyUserRolePermissionGroupMembers (PermissionGroupID);
-CREATE INDEX idx_CURPGM_PermissionID ON CompanyUserRolePermissionGroupMembers (PermissionID);
-CREATE INDEX idx_CURPGM_AddedByUserID ON CompanyUserRolePermissionGroupMembers (AddedByUserID);

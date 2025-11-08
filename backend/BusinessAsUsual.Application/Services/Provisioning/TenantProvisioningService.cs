@@ -1,9 +1,9 @@
 ﻿using BusinessAsUsual.Domain.Entities;
 using BusinessAsUsual.Infrastructure.Data;
 using BusinessAsUsual.Infrastructure.Persistence;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using MySqlConnector;
 
 namespace BusinessAsUsual.Application.Services.Provisioning;
 
@@ -19,6 +19,7 @@ public class TenantProvisioningService
     /// inject configuration
     /// </summary>
     /// <param name="config"></param>
+    /// <param name="masterDbContext"></param>
     public TenantProvisioningService(IConfiguration config, MasterDbContext masterDbContext)
     {
         _config = config;
@@ -36,27 +37,30 @@ public class TenantProvisioningService
         // Step 1: Create tenant database
         // ─────────────────────────────────────────────
         var dbName = $"bau_{companyName.ToLower().Replace(" ", "_")}";
-        var masterConnectionString = _config.GetConnectionString("MasterDb");
+        var masterConnectionString = _config.GetConnectionString("MasterDb") ?? string.Empty;
 
-        using var masterConnection = new SqlConnection(masterConnectionString);
+        using var masterConnection = new MySqlConnection(masterConnectionString);
         await masterConnection.OpenAsync();
 
-        var createDbSql = $"IF DB_ID('{dbName}') IS NULL CREATE DATABASE [{dbName}]";
-        using var createCommand = new SqlCommand(createDbSql, masterConnection);
+        var createDbSql = $"CREATE DATABASE IF NOT EXISTS `{dbName}`;";
+        using var createCommand = new MySqlCommand(createDbSql, masterConnection);
         await createCommand.ExecuteNonQueryAsync();
 
         // ─────────────────────────────────────────────
         // Step 2: Apply migrations to tenant database
         // ─────────────────────────────────────────────
-        var builder = new SqlConnectionStringBuilder(masterConnectionString)
+        var builder = new MySqlConnectionStringBuilder(masterConnectionString)
         {
-            InitialCatalog = dbName
+            Database = dbName
         };
 
         var tenantConnectionString = builder.ConnectionString;
 
         var optionsBuilder = new DbContextOptionsBuilder<BusinessDbContext>();
-        optionsBuilder.UseSqlServer(tenantConnectionString);
+        optionsBuilder.UseMySql(
+            tenantConnectionString,
+            new MySqlServerVersion(await ServerVersion.AutoDetectAsync(tenantConnectionString))
+        );
 
         using var tenantDb = new BusinessDbContext(optionsBuilder.Options);
         await tenantDb.Database.MigrateAsync();
@@ -64,7 +68,7 @@ public class TenantProvisioningService
         // ─────────────────────────────────────────────
         // Step 3: Create schema objects in tenant database
         // ─────────────────────────────────────────────
-        using var sqlConnection = new SqlConnection(tenantConnectionString);
+        using var sqlConnection = new MySqlConnection(tenantConnectionString);
         await sqlConnection.OpenAsync();
 
         var schemaPath = Path.Combine(AppContext.BaseDirectory, "schema");

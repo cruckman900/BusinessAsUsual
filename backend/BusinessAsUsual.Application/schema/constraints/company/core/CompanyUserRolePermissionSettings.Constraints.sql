@@ -1,2 +1,0 @@
-﻿ALTER TABLE CompanyUserRolePermissionSettings
-ADD CONSTRAINT fk_CURPS_PermissionID FOREIGN KEY (PermissionID) REFERENCES CompanyUserRolePermissions(PermissionID);
