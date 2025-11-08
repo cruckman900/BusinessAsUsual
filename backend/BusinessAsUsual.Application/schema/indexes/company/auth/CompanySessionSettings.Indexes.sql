@@ -1,1 +1,0 @@
-﻿CREATE INDEX idx_CompanySessionSettings_CompanyID ON CompanySessionSettings (CompanyID);

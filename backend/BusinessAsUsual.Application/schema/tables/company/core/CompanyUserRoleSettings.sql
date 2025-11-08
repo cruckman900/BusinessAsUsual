@@ -1,7 +1,0 @@
-﻿CREATE TABLE IF NOT EXISTS CompanyUserRoleSettings (
-    Id CHAR(36) NOT NULL PRIMARY KEY,
-    CompanyUserRoleId CHAR(36) NOT NULL,
-    SettingKey VARCHAR(100) NOT NULL,
-    SettingValue TEXT NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

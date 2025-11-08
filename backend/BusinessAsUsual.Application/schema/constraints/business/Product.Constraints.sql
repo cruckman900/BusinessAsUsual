@@ -1,0 +1,3 @@
+﻿ALTER TABLE Product
+ADD CONSTRAINT FK_Product_Company FOREIGN KEY (CompanyID)
+REFERENCES Company(CompanyID);

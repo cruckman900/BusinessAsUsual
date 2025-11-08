@@ -4,6 +4,7 @@ using BusinessAsUsual.Infrastructure.Data;
 using BusinessAsUsual.Infrastructure.Persistence;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
+using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.API
@@ -34,10 +35,18 @@ namespace BusinessAsUsual.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
             builder.Services.AddDbContext<MasterDbContext>(options =>
-                options.UseSqlServer(connString));
+                options.UseMySql(connString,
+                new MySqlServerVersion(ServerVersion.AutoDetect(
+                    connString
+                ))));
             builder.Services.AddDbContext<BusinessDbContext>(options =>
-                options.UseSqlServer(connString));
+                options.UseMySql(connString,
+                new MySqlServerVersion(ServerVersion.AutoDetect(
+                    connString
+                ))));
+
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
             builder.Logging.SetMinimumLevel(LogLevel.Information);
