@@ -24,14 +24,14 @@ Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform
 
 ## 🧩 Modular Breakdown
 
-| Module        | Purpose                                   | Status     |
-|---------------|--------------------------------------------|------------|
-| `Core`        | Domain models, interfaces, base logic      | ✅ Stable   |
-| `Infrastructure` | DB context, services, external integrations | ✅ Stable   |
-| `Application` | Use cases, DTOs, business rules            | ✅ Stable   |
-| `WebAPI`      | Controllers, endpoints, middleware         | 🚧 In Progress |
-| `Identity`    | Auth, registration, roles, JWT             | ✅ Stable   |
-| `Tenant`      | Multi-tenant logic, scoped services        | 🚧 Planned  |
+| Module           | Purpose                                      | Status         |
+|------------------|----------------------------------------------|----------------|
+| `Core`           | Domain models, interfaces, base logic        | ✅ Stable      |
+| `Infrastructure` | DB context, services, external integrations  | ✅ Stable      |
+| `Application`    | Use cases, DTOs, business rules              | ✅ Stable      |
+| `WebAPI`         | Controllers, endpoints, middleware           | 🚧 In Progress |
+| `Identity`       | Auth, registration, roles, JWT               | ✅ Stable      |
+| `Tenant`         | Multi-tenant logic, scoped services          | 🚧 Planned     |
 
 ---
 
@@ -40,7 +40,7 @@ Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform
 ```bash
 # Clone the repo
 git clone https://github.com/cruckman900/BusinessAsUsual.git
-cd business-as-usual-backend
+cd business-as-usual
 
 # Build and run with Docker
 docker-compose up --build
