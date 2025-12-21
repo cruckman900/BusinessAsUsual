@@ -24,4 +24,12 @@
     <ProjectReference Include="..\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modules\HR.API\" />
+    <Folder Include="Modules\Inventory.API\" />
+    <Folder Include="Modules\Accounting.API\" />
+    <Folder Include="Modules\Timekeeping.API\" />
+    <Folder Include="Modules\Orders.API\" />
+  </ItemGroup>
+
 </Project>

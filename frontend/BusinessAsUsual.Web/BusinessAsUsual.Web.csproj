@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -21,5 +21,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Modules\Accounting\Components\" />
+    <Folder Include="Modules\Accounting\Pages\" />
+    <Folder Include="Modules\HR\Components\" />
+    <Folder Include="Modules\HR\Pages\" />
+    <Folder Include="Modules\Inventory\Components\" />
+    <Folder Include="Modules\Inventory\Pages\" />
+    <Folder Include="Modules\Orders\Components\" />
+    <Folder Include="Modules\Orders\Pages\" />
+    <Folder Include="Modules\Timekeeping\Components\" />
+    <Folder Include="Modules\Timekeeping\Pages\" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 </Project>
