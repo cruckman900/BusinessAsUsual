@@ -1,0 +1,25 @@
+﻿<MudAppBar Elevation="4" Color="Color.Primary">
+    <MudText Typo="Typo.h6" Class="ml-2">Business As Usual</MudText>
+
+    <MudSpacer />
+
+    <!-- Module Nav -->
+    <ModuleNav OnModuleSelected="OnModuleSelected" />
+
+    <!-- Tenant Selector -->
+    <MudSelect T="string" Label="Tenant" Class="ml-4" @bind-Value="_selectedTenant">
+        <MudSelectItem Value="@("Tenant A")">Tenant A</MudSelectItem>
+        <MudSelectItem Value="@("Tenant B")">Tenant A</MudSelectItem>
+    </MudSelect>
+
+    <!-- Notifications -->
+    <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+
+    <!-- Profile -->
+    <MudAvatar Size="Size.Medium" Color="Color.Secondary">CR</MudAvatar>
+</MudAppBar>
+
+@code {
+    [Parameter] public EventCallback<string> OnModuleSelected { get; set; }
+    private string _selectedTenant = "Tenant A";
+}

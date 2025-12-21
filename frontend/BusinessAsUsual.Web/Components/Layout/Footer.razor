@@ -1,7 +1,4 @@
-﻿<footer class="footer-zone text-center py-2 mt-auto @(IsDark ? "bg-dark text-light" : "bg-primary text-warning")">
-    <span class="small">© 2025 Business As Usual. All riffs reserved.</span>
-</footer>
-
-@code {
-    [Parameter] public bool IsDark { get; set; }
-}
+﻿<MudPaper Elevation="0" Class="pa-3 d-flex justify-space-between align-center" Color="Color.Surface">
+    <MudText Typo="Typo.caption">&copy;2025 Business As Usual</MudText>
+    <MudText Typo="Typo.caption">Tenant: Demo Company</MudText>
+</MudPaper>

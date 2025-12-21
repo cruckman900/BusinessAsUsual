@@ -1,96 +1,32 @@
-﻿@using BusinessAsUsual.Web.Theming
-@using Microsoft.AspNetCore.Components.Server.Circuits
-@inherits LayoutComponentBase
-@implements IDisposable
+﻿@inherits LayoutComponentBase
 
-@inject NavigationManager Nav
-@inject IJSRuntime JS
+<MudLayout>
+    <!-- Top Bar -->
+    <TopBar />
 
-<MudDialogProvider />
-<MudSnackbarProvider />
+    <!-- Sidebar -->
+    <MudDrawer @bind-Open="_sidebarOpen" Anchor="Anchor.Start" Elevation="1" Variant="DrawerVariant.Temporary">
+        <Sidebar CurrentModule="@_currentModule" OnNavigate="HandleNavigate" />
+    </MudDrawer>
 
-<CascadingValue Value="ActiveSidebarSection">
-    <div class="layout-grid @(isDark ? "dark" : "light") @(sidebarOpen ? "" : "sidebar-collapsed")">
-        <Header IsDark="@isDark" />
-        <Navbar IsDark="@isDark" OnSectionSelected="SetSidebarSection" OnToggleSidebar="@ToggleSidebar" SidebarLabel="@(sidebarOpen ? "🡸 Collapse Sidebar" : "🡺 Expand Sidebar")" />
-        @if (sidebarOpen)
-        {
-            <div class="sidebar @(sidebarOpen ? "expanded" : "collapsed")">
-                <Sidebar IsDark="@isDark" />
-            </div>
-        }
-        <main class="main-zone p-4">
+    <!-- Main Content -->
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
             @Body
-        </main>
-        <Footer IsDark="@isDark" />
-        <MudDialog />
-    </div>
-</CascadingValue>
+        </MudContainer>
+    </MudMainContent>
+
+    <!-- Footer -->
+    <Footer />
+</MudLayout>
 
 @code {
-    private bool isDark = true;
-    private bool sidebarOpen = true;
+    private bool _sidebarOpen = false;
+    private string _currentModule = "HR";
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void HandleNavigate(string module)
     {
-        if (firstRender)
-        {
-            try
-            {
-                await JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"JS error: {ex.Message}");
-            }
-        }
+        _currentModule = module;
+        _sidebarOpen = true;
     }
-
-    private string ActiveSidebarSection = "Main";
-
-    protected override void OnInitialized()
-    {
-        try
-        {
-            Nav.LocationChanged += HandleLocationChanged;            
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error in Index OnInitialized: {ex.Message}");
-        }
-    }
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        try
-        {
-            var uri = e.Location;
-
-            if (uri.Contains("/human-resources") || uri.Contains("/employees") || uri.Contains("/departments"))
-                ActiveSidebarSection = "HR";
-            else
-                ActiveSidebarSection = "Main";
-
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error in Index HandleLocationChanged: {ex.Message}");
-        }
-    }
-
-    public void Dispose() => Nav.LocationChanged -= HandleLocationChanged;
-
-    private void SetSidebarSection(string section)
-    {
-        ActiveSidebarSection = section;
-    }
-
-    public void ToggleTheme()
-    {
-        isDark = !isDark;
-        JS.InvokeVoidAsync("toggleBootstrapTheme", isDark);
-    }
-
-    public void ToggleSidebar() => sidebarOpen = !sidebarOpen;
 }
