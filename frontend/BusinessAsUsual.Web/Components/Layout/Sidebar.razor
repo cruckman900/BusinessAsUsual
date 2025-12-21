@@ -1,32 +1,14 @@
-﻿<aside class="sidebar-zone bg-light text-dark border-end p-0" style="width: 250px;">
-    <div class="sticky-inner p-3">
-        <h5 class="text-primary">Navigation</h5>
-        @if (ActiveSidebarSection == "Main")
-        {
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">🏠 Home</NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/about">ℹ️ About</NavLink>
-                </li>
-            </ul>
-        }
-        else if (ActiveSidebarSection == "HR")
-        {
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/employees">👥 Employees</NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/departments">🏢 Departments</NavLink>
-                </li>
-            </ul>
-        }
-    </div>
-</aside>
+﻿<MudNavMenu>
+    @if (CurrentModule == "HR")
+    {
+        <MudNavLink Href="/hr/onboarding" Icon="@Icons.Material.Filled.PersonAdd">New Hire Onboarding</MudNavLink>
+        <MudNavLink Href="/hr/directory" Icon="@Icons.Material.Filled.People">Employee Directory</MudNavLink>
+        <MudNavLink Href="/hr/benefits" Icon="@Icons.Material.Filled.CardGiftcard">Benefits Management</MudNavLink>
+    }
+    @* Add other modules here *@
+</MudNavMenu>
 
-@code {
-    [CascadingParameter] public string ActiveSidebarSection { get; set; } = "Main";
-    [Parameter] public bool IsDark { get; set; }
+    @code {
+    [Parameter] public required string CurrentModule { get; set; }
+    [Parameter] public EventCallback<string> OnNavigate { get; set; }
 }
