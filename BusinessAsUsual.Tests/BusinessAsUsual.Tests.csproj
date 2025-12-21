@@ -35,6 +35,11 @@
 
   <ItemGroup>
     <Folder Include="Component\" />
+    <Folder Include="Modules\HR.Tests\" />
+    <Folder Include="Modules\Inventory.Tests\" />
+    <Folder Include="Modules\Accounting.Tests\" />
+    <Folder Include="Modules\Timekeeping.Tests\" />
+    <Folder Include="Modules\Orders.Tests\" />
   </ItemGroup>
 
 </Project>

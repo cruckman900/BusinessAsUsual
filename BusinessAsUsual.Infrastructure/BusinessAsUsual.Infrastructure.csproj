@@ -16,10 +16,20 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
+    <PackageReference Include="MySqlConnector" Version="2.4.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\backend\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Modules\HR.Infrastructure\" />
+    <Folder Include="Modules\Inventory.Infrastructure\" />
+    <Folder Include="Modules\Accounting.Infrastructure\" />
+    <Folder Include="Modules\Timekeeping.Infrastructure\" />
+    <Folder Include="Modules\Orders.Infrastructure\" />
   </ItemGroup>
 
 </Project>

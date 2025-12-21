@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\" />
+    <Folder Include="Modules\HR.Domain\" />
+    <Folder Include="Modules\Inventory.Domain\" />
+    <Folder Include="Modules\Accounting.Domain\" />
+    <Folder Include="Modules\Timekeeping.Domain\" />
+    <Folder Include="Modules\Orders.Domain\" />
+  </ItemGroup>
+
 </Project>
