@@ -9,14 +9,14 @@
     <!-- Tenant Selector -->
     <MudSelect T="string" Label="Tenant" Class="ml-4" @bind-Value="_selectedTenant">
         <MudSelectItem Value="@("Tenant A")">Tenant A</MudSelectItem>
-        <MudSelectItem Value="@("Tenant B")">Tenant A</MudSelectItem>
+        <MudSelectItem Value="@("Tenant B")">Tenant B</MudSelectItem>
     </MudSelect>
 
     <!-- Notifications -->
-    <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+    <MudIconButton Icon="@Icons.Material.Filled.Notifications" Size="Size.Medium" Color="Color.Inherit" />
 
     <!-- Profile -->
-    <MudAvatar Size="Size.Medium" Color="Color.Secondary">CR</MudAvatar>
+    <MudAvatar Size="Size.Small" Color="Color.Secondary">CR</MudAvatar>
 </MudAppBar>
 
 @code {

@@ -1,5 +1,11 @@
-﻿<h3>OnboardingForm</h3>
+﻿<MudForm>
+    <MudTextField T="string" @bind-Value="_position" Label="Full Name" Required="true" />
+    <MudTextField T="string" @bind-Value="_email" Label="Email" Required="true" />
+    <MudTextField T="string" @bind-Value="_startDate" Label="Start Date" />
+</MudForm>
 
 @code {
-
+    private string _position = "";
+    private string _email = "";
+    private string _startDate = "";
 }

@@ -1,5 +1,26 @@
-﻿<h3>NewHireOnboarding</h3>
+﻿@page "/hr/onboarding"
+
+@using BusinessAsUsual.Web.Modules.HR.Services
+@using BusinessAsUsual.Web.Modules.HR.Components
+
+@inject IHRService HRService
+
+<MudPaper Class="pa-4">
+    <MudStepper>
+        <MudStep Title="Personal Info">
+            <OnboardingForm />
+        </MudStep>
+        <MudStep Title="Job Details">
+            <MudTextField @bind-Value="_position" Label="Position" T="string" />
+            <MudTextField @bind-Value="_department" Label="Department" T="string" />
+        </MudStep>
+        <MudStep Title="Review">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled">Submit</MudButton>
+        </MudStep>
+    </MudStepper>
+</MudPaper>
 
 @code {
-
+    private string _position = "";
+    private string _department = "";
 }

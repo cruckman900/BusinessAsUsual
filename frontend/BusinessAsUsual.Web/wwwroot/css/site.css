@@ -1,4 +1,4 @@
-﻿/* Grid layout */
+﻿/* === Layout Grid === */
 .layout-grid {
     display: grid;
     grid-template-areas:
@@ -9,44 +9,33 @@
     grid-template-columns: 250px 1fr;
     grid-template-rows: auto auto 1fr auto;
     height: 100vh;
-    transition: grid-template-columns 0.3s ease, grid-template-areas 0.3s ease;
+    transition: grid-template-columns 0.3s ease;
 }
 
-/* Collapsed sidebar layout */
-.layout-grid.sidebar-collapsed {
-    grid-template-areas:
-        "header header"
-        "navbar navbar"
-        "main main"
-        "footer footer";
-    grid-template-columns: 1fr;
-}
+    .layout-grid.sidebar-collapsed {
+        grid-template-areas:
+            "header header"
+            "navbar navbar"
+            "main main"
+            "footer footer";
+        grid-template-columns: 1fr;
+    }
 
-/* Assign grid areas */
-.navbar-zone {
+/* === Zones === */
+.zone-navbar {
     grid-area: navbar;
 }
 
-.sidebar-zone {
+.zone-sidebar {
     grid-area: sidebar;
 }
 
-.main-zone {
+.zone-main {
     grid-area: main;
 }
 
-.footer-zone {
+.zone-footer {
     grid-area: footer;
-}
-
-.btn-outline-light {
-    border-color: #ffc107;
-    color: #ffc107;
-}
-
-.btn-outline-light:hover {
-    background-color: #ffc107;
-    color: #212529;
 }
 
 header {
@@ -57,14 +46,13 @@ header {
 }
 
 nav {
-    grid-area: nav;
+    grid-area: navbar;
     position: sticky;
     z-index: 2;
 }
 
 aside {
     grid-area: sidebar;
-    height: 100%;
     overflow-y: auto;
 }
 
@@ -80,109 +68,294 @@ footer {
     z-index: 3;
 }
 
-.dark .sidebar {
-    background-color: #ffffff !important;
-    color: #212529 !important;
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.1);
+/* === Buttons === */
+.btn-outline-light {
+    border-color: #ffc107;
+    color: #ffc107;
 }
 
-body.dark .sidebar {
-    background-color: #1f2a36 !important;
-    color: #f8f9fa !important;
-}
+    .btn-outline-light:hover {
+        background-color: #ffc107;
+        color: #212529;
+    }
 
-/* Base dark mode */
+/* === Dark Mode === */
 body.dark {
-    background-color: #212529 !important;
-    color: #f8f9fa !important;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Navbar */
-body.dark .navbar {
-    background-color: #2c3e50 !important;
-    border-bottom: 1px solid #1a252f;
-}
-
-/* Sidebar */
-body.dark aside {
-    background-color: #1f2a36 !important;
-    border-right: 1px solid #2c3e50;
-}
-
-body.dark .sidebar h5 {
-    color: #f8f9fa !important;
-}
-
-body.dark .nav-link {
-    color: #f8f9fa !important;
-}
-
-body.dark .nav-link.active {
-    font-weight: bold;
-    color: #ffc107 !important;
-}
-
-/* Main content */
-body.dark main {
-    background-color: #2a2f36 !important;
-    border-left: 1px solid #1a252f;
-}
-
-/* Footer */
-body.dark footer {
-    background-color: #2c3e50 !important;
-    color: #f8f9fa !important;
-    border-top: 1px solid #1a252f;
-}
-
-/* Buttons */
-body.dark .btn-outline-light {
-    border-color: #f8f9fa;
+    background-color: #212529;
     color: #f8f9fa;
+    font-family: 'Orbitron', 'Roboto', 'Segoe UI', sans-serif;
 }
 
-body.dark .btn-outline-light:hover {
-    background-color: #f8f9fa;
-    color: #212529;
-}
+    body.dark .navbar {
+        background-color: #2c3e50;
+        border-bottom: 1px solid #1a252f;
+    }
 
-/* Headings */
-body.dark h1, body.dark h2, body.dark h3, body.dark h5 {
-    color: #f8f9fa !important;
-}
+    body.dark aside {
+        background-color: #1f2a36;
+        border-right: 1px solid #2c3e50;
+    }
 
-/* Cards or panels (if used) */
-body.dark .card {
-    background-color: #2a2f36;
-    border: 1px solid #3a3f47;
-    color: #f8f9fa;
-}
+    body.dark main {
+        background-color: #2a2f36;
+        border-left: 1px solid #1a252f;
+    }
 
-/* Base light mode */
+    body.dark footer {
+        background-color: #2c3e50;
+        border-top: 1px solid #1a252f;
+        color: #f8f9fa;
+    }
+
+    body.dark .nav-link {
+        color: #f8f9fa;
+    }
+
+        body.dark .nav-link.active {
+            font-weight: bold;
+            color: #ffc107;
+        }
+
+    body.dark h1, body.dark h2, body.dark h3, body.dark h5 {
+        color: #f8f9fa;
+    }
+
+    body.dark .card {
+        background-color: #2a2f36;
+        border: 1px solid #3a3f47;
+        color: #f8f9fa;
+    }
+
+/* === Light Mode === */
 body.light {
     background-color: #f8f9fa;
     color: #212529;
 }
 
-body.light .navbar {
-    background-color: #ffffff;
-    border-bottom: 1px solid #dee2e6;
+    body.light .navbar {
+        background-color: #fff;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    body.light aside {
+        background-color: #fff;
+        border-right: 1px solid #dee2e6;
+    }
+
+/* === MudBlazor Typography Overrides === */
+.mud-typography-h1, h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
 }
 
-body.light aside {
-    background-color: #ffffff;
-    border-right: 1px solid #dee2e6;
+.mud-typography-h2, h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 500;
 }
 
-/* WebKit Browsers: Chrome, Edge, Safari */
+.mud-typography-h3, h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 500;
+}
+
+.mud-typography-body1,
+.mud-typography-body2,
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* === MudBlazor Icon Normalization === */
+.mud-icon {
+    font-size: 1.25rem;
+}
+
+/* Inactive tab labels */
+.mud-tabs .mud-tab {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+/* Selected value text */
+.mud-select {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Placeholder / unselected text */
+.mud-select .mud-input-slot {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+/* Dropdown menu items */
+.mud-popover .mud-list-item {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+    .mud-popover .mud-list-item.mud-selected {
+        color: var(--mud-palette-text-primary) !important;
+        background-color: var(--mud-palette-primary) !important;
+    }
+
+/* Tabs */
+.mud-tabs .mud-tab {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+    .mud-tabs .mud-tab.mud-selected {
+        color: var(--mud-palette-text-primary) !important;
+    }
+
+/* Select */
+.mud-select {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+    .mud-select .mud-input-slot {
+        color: var(--mud-palette-text-secondary) !important;
+    }
+
+.mud-popover .mud-list-item.mud-selected {
+    background-color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-contrast-text) !important;
+}
+
+/* Appbar & Drawer */
+.mud-appbar {
+    color: var(--mud-palette-appbar-text) !important;
+}
+
+.mud-drawer {
+    color: var(--mud-palette-drawer-text) !important;
+}
+
+/* Appbar text/icons */
+.mud-appbar {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Drawer text/icons */
+.mud-drawer {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+    /* Optional: muted items inside drawer */
+    .mud-drawer .mud-list-item {
+        color: var(--mud-palette-text-secondary) !important;
+    }
+
+        .mud-drawer .mud-list-item.mud-selected {
+            color: var(--mud-palette-text-primary) !important;
+            background-color: var(--mud-palette-primary) !important;
+        }
+
+/* Chips */
+.mud-chip {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+    .mud-chip.mud-selected {
+        color: var(--mud-palette-primary-contrast-text) !important;
+        background-color: var(--mud-palette-primary) !important;
+    }
+
+/* Cards & Paper */
+.mud-card, .mud-paper {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+.mud-card-subtitle, .mud-card-header {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+/* Typography (captions, body text) */
+.mud-typography.mud-caption,
+.mud-typography.mud-body2 {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+/* Inputs */
+.mud-input-slot {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+.mud-input {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Lists & Menus */
+.mud-list-item {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+    .mud-list-item.mud-selected {
+        color: var(--mud-palette-primary-contrast-text) !important;
+        background-color: var(--mud-palette-primary) !important;
+    }
+
+/* Default button text */
+.mud-button {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Outlined buttons */
+.mud-button.mud-button-outlined {
+    color: var(--mud-palette-primary) !important;
+    border-color: var(--mud-palette-primary) !important;
+}
+
+/* Contained buttons */
+.mud-button.mud-button-filled {
+    color: var(--mud-palette-primary-contrast-text) !important;
+    background-color: var(--mud-palette-primary) !important;
+}
+
+.mud-appbar {
+    color: var(--mud-palette-appbar-text) !important;
+    background-color: var(--mud-palette-appbar-background) !important;
+}
+
+.mud-drawer {
+    color: var(--mud-palette-text-primary) !important;
+    background-color: var(--mud-palette-drawer-background) !important;
+}
+
+/* Select label & placeholder */
+.mud-select .mud-input-slot {
+    color: var(--mud-palette-text-secondary) !important;
+}
+
+/* Selected value */
+.mud-select {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* Dropdown items */
+.mud-popover .mud-list-item {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+    .mud-popover .mud-list-item.mud-selected {
+        background-color: var(--mud-palette-primary) !important;
+        color: var(--mud-palette-primary-contrast-text) !important;
+    }
+
+/* Dropdown items */
+.mud-popover .mud-list-item {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+    .mud-popover .mud-list-item.mud-selected {
+        background-color: var(--mud-palette-primary) !important;
+        color: var(--mud-palette-primary-contrast-text) !important;
+    }
+
+/* Active tab labels */
+.mud-tabs .mud-tab.mud-selected {
+    color: var(--mud-palette-text-primary) !important;
+}
+
+/* === Scrollbars === */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
-}
-
-::-webkit-scrollbar:hover {
-    background-color: #007bff;
 }
 
 ::-webkit-scrollbar-track {
@@ -190,10 +363,15 @@ body.light aside {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #ffa500;
-    border: 1px solid #343a40;
+    background-color: #ff8800;
+    border-radius: 3px;
 }
 
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #ff9800;
+    }
+
+/* === Modal === */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -214,9 +392,8 @@ body.light aside {
     position: fixed;
     top: 50%;
     left: 50%;
-    margin: auto;
     transform: translate(-50%, -50%);
-    background-color: #2a2f36; /* match dark main content */
+    background-color: #2a2f36;
     color: #f8f9fa;
     padding: 2rem;
     border-radius: 8px;
@@ -224,7 +401,7 @@ body.light aside {
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
-.modal-container label,
-.modal-container .mud-input-label {
-    color: #f8f9fa !important;
-}
+    .modal-container label,
+    .modal-container .mud-input-label {
+        color: #f8f9fa;
+    }

@@ -54,10 +54,17 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
     public record Employee(int Id, string Name, string Department, string Email);
 
     /// <summary>
-    /// Represents a benefit with a specified name and enabled state.
+    /// Represents a feature or service with a name and an enabled state.
     /// </summary>
-    /// <param name="Name">The name of the benefit. This value identifies the benefit and cannot be null.</param>
-    /// <param name="Enabled">A value indicating whether the benefit is enabled. Specify <see langword="true"/> to enable the benefit;
-    /// otherwise, <see langword="false"/>.</param>
-    public record Benefit(string Name, bool Enabled);
+    public record Benefit
+    {
+        /// <summary>
+        /// Gets or sets the name associated with the object.
+        /// </summary>
+        public string Name { get; set; } = "";
+        /// <summary>
+        /// Gets or sets a value indicating whether the feature is enabled.
+        /// </summary>
+        public bool Enabled { get; set; }
+    }
 }

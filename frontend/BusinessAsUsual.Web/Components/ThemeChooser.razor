@@ -1,0 +1,25 @@
+﻿@using BusinessAsUsual.Web.Themes
+@inject ThemeContext ThemeContext
+
+<MudPaper Class="pa-4">
+    <MudSelect T="string" Label="Theme" Value="@ThemeContext.ThemeName" ValueChanged="OnThemeChanged">
+        @foreach (var theme in ThemeRegistry.Themes.Keys)
+        {
+            <MudSelectItem Value="@theme">@theme</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSwitch T="bool" Value="@ThemeContext.IsDarkMode" ValueChanged="OnDarkModeChanged" Color="Color.Primary" Label="Dark Mode" />
+</MudPaper>
+
+@code {
+    private void OnThemeChanged(string newTheme)
+    {
+        ThemeContext.SetTheme(newTheme, ThemeContext.IsDarkMode);
+    }
+
+    private void OnDarkModeChanged(bool darkMode)
+    {
+        ThemeContext.SetTheme(ThemeContext.ThemeName, darkMode);
+    }
+}

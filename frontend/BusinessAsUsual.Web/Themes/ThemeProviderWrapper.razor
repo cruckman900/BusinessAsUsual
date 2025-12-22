@@ -1,0 +1,10 @@
+﻿@inject ThemeContext ThemeContext
+
+<MudThemeProvider Theme="@ThemeContext.CurrentTheme" IsDarkMode="@ThemeContext.IsDarkMode" />
+
+@code {
+    protected override void OnInitialized()
+    {
+        ThemeContext.OnThemeChanged += () => InvokeAsync(StateHasChanged);
+    }
+}

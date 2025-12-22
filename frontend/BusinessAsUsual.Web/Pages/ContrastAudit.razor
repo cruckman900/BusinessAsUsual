@@ -1,0 +1,90 @@
+﻿@page "/contrast-audit"
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+
+    <MudText Typo="Typo.h4">Contrast Audit Page</MudText>
+    <MudDivider Class="mb-4" />
+
+    <!-- Appbar -->
+    <MudAppBar Color="Color.Primary">
+        <MudText Typo="Typo.h6">Appbar Example</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary">Action</MudButton>
+    </MudAppBar>
+
+    <!-- Drawer -->
+    <MudDrawer Open="true" Anchor="Anchor.Left" Elevation="1">
+        <MudList T="string" @bind-SelectedValue="_selectedChip">
+            <MudListItem>Drawer Item A</MudListItem>
+            <MudListItem>Drawer Item B</MudListItem>
+        </MudList>
+    </MudDrawer>
+
+    <MudPaper Class="pa-4 mt-4">
+
+        <!-- Buttons -->
+        <MudText Typo="Typo.h6">Buttons</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary">Primary</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary">Outlined</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Primary">Text</MudButton>
+
+        <!-- Tabs -->
+        <MudTabs Class="mt-4">
+            <MudTabPanel Text="Tab A">Content A</MudTabPanel>
+            <MudTabPanel Text="Tab B">Content B</MudTabPanel>
+        </MudTabs>
+
+        <!-- Select -->
+        <MudSelect T="string" Label="Tenant" Class="mt-4" @bind-Value="_selectedTenant">
+            <MudSelectItem Value="@("Tenant A")">Tenant A</MudSelectItem>
+            <MudSelectItem Value="@("Tenant B")">Tenant B</MudSelectItem>
+        </MudSelect>
+
+        <!-- Chips -->
+        <MudChipSet T="string" @bind-SelectedValue="_selectedChip">
+            <MudChip Value="@ChipA">Chip A</MudChip>
+            <MudChip Value="@ChipB">Chip B</MudChip>
+        </MudChipSet>
+
+        <!-- Cards -->
+        <MudCard Class="mt-4">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Card Header</MudText>
+                <MudText Typo="Typo.subtitle2">Subtitle</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body1">Card body text goes here.</MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <!-- Typography -->
+        <MudText Typo="Typo.h5" Class="mt-4">Heading Example</MudText>
+        <MudText Typo="Typo.body1">Body text example</MudText>
+        <MudText Typo="Typo.caption">Caption example</MudText>
+
+        <!-- Inputs -->
+        <MudTextField T="string" Label="Name" @bind-Value="_name" />
+        <MudTextField T="string" Label="Email" @bind-Value="_email" />
+
+        <!-- Lists -->
+        <MudList T="string" @bind-SelectedValue="_selectedListItem">
+            <MudListItem Value=@("Item A")>Item A</MudListItem>
+            <MudListItem Value=@("Item B")>Item B</MudListItem>
+        </MudList>
+
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string _selectedTenant = string.Empty;
+    private string _selectedChip = string.Empty;
+    private string _selectedListItem = string.Empty;
+    private string _name = string.Empty;
+    private string _email = string.Empty;
+
+    // Define constants or fields for values
+    private const string ChipA = "Chip A";
+    private const string ChipB = "Chip B";
+
+}
