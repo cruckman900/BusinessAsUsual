@@ -1,4 +1,11 @@
 ﻿@inherits LayoutComponentBase
+@using BusinessAsUsual.Web.Themes
+@inject ThemeContext ThemeContext
+
+<ThemeProviderWrapper />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
 <MudLayout>
     <!-- Top Bar -->
@@ -13,6 +20,7 @@
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
             @Body
+            <ThemeChooser />
         </MudContainer>
     </MudMainContent>
 

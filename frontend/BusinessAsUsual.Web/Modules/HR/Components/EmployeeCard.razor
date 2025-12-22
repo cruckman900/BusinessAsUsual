@@ -1,5 +1,16 @@
-﻿<h3>EmployeeCard</h3>
+﻿@using BusinessAsUsual.Web.Modules.HR.Services
+@inherits ComponentBase
+
+<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">@Employee.Name</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText>@Employee.Department</MudText>
+        <MudText>@Employee.Email</MudText>
+    </MudCardContent>
+</MudCard>
 
 @code {
-
+    [Parameter] public required Employee Employee { get; set; }
 }

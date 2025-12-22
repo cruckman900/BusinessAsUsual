@@ -1,5 +1,27 @@
-﻿<h3>BenefitsManagement</h3>
+﻿@page "/hr/benefits"
+
+@using BusinessAsUsual.Web.Modules.HR.Services
+@inject IHRService HRService
+
+<MudGrid>
+    @foreach (var benefit in _benefits)
+    {
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">@benefit.Name</MudText>
+                    <MudSwitch T="bool" @bind-Value="benefit.Enabled" Color="Color.Primary" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+    </MudGrid>
 
 @code {
+    private IEnumerable<Benefit> _benefits = Enumerable.Empty<Benefit>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        _benefits = await HRService.GetBenefitsAsync();
+    }
 }

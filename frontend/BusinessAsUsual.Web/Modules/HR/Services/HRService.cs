@@ -19,9 +19,9 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
 
         private readonly List<Benefit> _benefits = new()
         {
-            new Benefit("Health Insurance", true),
-            new Benefit("Retirement Plan", true),
-            new Benefit("Gym Membership", false),
+            new Benefit { Name = "Health Insurance", Enabled = true },
+            new Benefit { Name = "Retirement Plan", Enabled = true },
+            new Benefit { Name = "Gym Membership", Enabled = false },
         };
 
         /// <summary>
