@@ -32,6 +32,5 @@
     <Folder Include="Modules\Orders\Pages\" />
     <Folder Include="Modules\Timekeeping\Components\" />
     <Folder Include="Modules\Timekeeping\Pages\" />
-    <Folder Include="NewFolder\" />
   </ItemGroup>
 </Project>

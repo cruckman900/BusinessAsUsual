@@ -26,3 +26,26 @@ This file is your backstage diary. Every technical fix, branding tweak, or onboa
 - Reorganized markdown docs into `/docs` for future-proof onboarding
 
 - Why it matters: This file turns troubleshooting into storytelling. It’s your proof of progress, your onboarding compass, and your creative logbook.
+
+## 🛠 Layout Redesign
+We retired the legacy layout and rebuilt a fresh, modular shell with a top bar, dynamic sidebar, and recruiter‑ready content area. See [/Themes/README.md](./Themes/README.md) for details on the redesign process.
+
++-------------------------------------------------------------+
+|                         Top Bar                             |
+|  Tenant Selector | Search | Notifications | Profile Menu    |
++----------------------+--------------------------------------+
+|      Sidebar         |           Main Content Area          |
+|  Navigation Links    |  Recruiter-ready modules:            |
+|  Responsive Theming  |  - HR                                |
+|                      |  - Projects                          |
+|                      |  - Resume                            |
+|                      |  - Future modules                    |
++-------------------------------------------------------------+
+
+## 🎨 Theme Pipeline & Contrast Audit
+
+This project includes a theme registry with multiple recruiter‑ready palettes and a contrast audit page.
+
+- **Theme Registry**: Each theme defines consistent text and contrast values. Special cases (Pearl, Silver, Obsidian) were tested and removed for usability.
+- **Contrast Audit Page**: Navigate to `/contrast-audit` to see a live showcase of MudBlazor components under different themes.
+- **Detailed Notes**: See [/Themes/README.md](./Themes/README.md) for the full pipeline explanation and design decisions.
