@@ -1,0 +1,23 @@
+﻿@* <MudPaper Class="pa-4"> *@
+    <div class="footer-section">
+        <MudSelect T="string" Label="Client" @bind-Value="SelectedTenant" Dense="@Compact">
+            @foreach (var tenant in Tenants)
+            {
+                <MudSelectItem T="string" Value="@tenant">@tenant</MudSelectItem>
+            }
+        </MudSelect>
+    </div>
+@* </MudPaper> *@
+
+@code {
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public IEnumerable<string> Tenants { get; set; } = Array.Empty<string>();
+    [Parameter] public string? CurrentTenant { get; set; }
+    [Parameter] public EventCallback<string> OnTenantChanged { get; set; }
+
+    private string? SelectedTenant
+    {
+        get => CurrentTenant;
+        set => OnTenantChanged.InvokeAsync(value);
+    }
+}

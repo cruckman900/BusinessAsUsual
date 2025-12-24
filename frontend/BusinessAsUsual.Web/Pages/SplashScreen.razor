@@ -1,0 +1,25 @@
+﻿@page "/"
+@using BusinessAsUsual.Web.Components.Layout
+@layout SplashLayout
+
+@inject NavigationManager Nav
+
+<div class="splash-container">
+    <div class="splash-screen">
+        <img src="images/logo.png" class="splash-logo" alt="BAU Logo" />
+        <h1 class="splash-title">Business As Usual</h1>
+        <p>Powered by LinearDescent</p>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Fade-in + hold + fade-out timing
+            await Task.Delay(2000); // visible for 2 seconds
+            Nav.NavigateTo("/login", true);
+        }
+    }
+}

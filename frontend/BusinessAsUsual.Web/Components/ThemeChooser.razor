@@ -1,16 +1,18 @@
 ﻿@using BusinessAsUsual.Web.Themes
 @inject ThemeContext ThemeContext
 
-<MudPaper Class="pa-4">
-    <MudSelect T="string" Label="Theme" Value="@ThemeContext.ThemeName" ValueChanged="OnThemeChanged">
-        @foreach (var theme in ThemeRegistry.Themes.Keys)
-        {
-            <MudSelectItem Value="@theme">@theme</MudSelectItem>
-        }
-    </MudSelect>
+@* <MudPaper Class="pa-4"> *@
+    <div class="footer-section">
+        <MudSelect T="string" Label="Theme" Value="@ThemeContext.ThemeName" ValueChanged="OnThemeChanged">
+            @foreach (var theme in ThemeRegistry.Themes.Keys)
+            {
+                <MudSelectItem Value="@theme">@theme</MudSelectItem>
+            }
+        </MudSelect>
 
-    <MudSwitch T="bool" Value="@ThemeContext.IsDarkMode" ValueChanged="OnDarkModeChanged" Color="Color.Primary" Label="Dark Mode" />
-</MudPaper>
+        <MudSwitch T="bool" Value="@ThemeContext.IsDarkMode" ValueChanged="OnDarkModeChanged" Color="Color.Primary" Label="Dark Mode" />
+    </div>
+@* </MudPaper> *@
 
 @code {
     private void OnThemeChanged(string newTheme)

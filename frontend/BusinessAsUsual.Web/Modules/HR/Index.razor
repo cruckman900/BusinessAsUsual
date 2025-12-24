@@ -1,0 +1,53 @@
+﻿@page "/hr"
+@using BusinessAsUsual.Web.Components.Layout
+@layout MainLayout
+@inherits HRLandingBase
+
+
+<PageHeader Title="@ModuleName"
+            Description="@ModuleDescription"
+            Breadcrumbs="BuildBreadCrumbs()" />
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Onboard Employee</MudText>
+                <MudText Typo="Typo.body2">Start the onboarding process for a new hire.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/hr/onboarding">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Employee Directory</MudText>
+                <MudText Typo="Typo.body2">Browse and manage employee records.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/hr/directory">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Benefits</MudText>
+                <MudText Typo="Typo.body2">Manage employee benefits and enrollment.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/hr/benefits">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>

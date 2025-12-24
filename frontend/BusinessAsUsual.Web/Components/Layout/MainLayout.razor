@@ -1,40 +1,151 @@
 ﻿@inherits LayoutComponentBase
+@using BusinessAsUsual.Web.Components.Layout.Sections
 @using BusinessAsUsual.Web.Themes
 @inject ThemeContext ThemeContext
+@inject NavigationManager Nav
+@implements IDisposable
 
 <ThemeProviderWrapper />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<MudLayout>
-    <!-- Top Bar -->
-    <TopBar />
+<div class="app-shell">
+    <MudLayout>
 
-    <!-- Sidebar -->
-    <MudDrawer @bind-Open="_sidebarOpen" Anchor="Anchor.Start" Elevation="1" Variant="DrawerVariant.Temporary">
-        <Sidebar CurrentModule="@_currentModule" OnNavigate="HandleNavigate" />
-    </MudDrawer>
+        <MudAppBar Elevation="1">
+            <MainTopBar Modules="@Modules"
+                        OverflowModules="@OverflowModules"
+                        CurrentModule="@_currentModule"
+                        CurrentTenant="@CurrentTenant"
+                        OnToggleSidebar="ToggleSidebar" />
+        </MudAppBar>
 
-    <!-- Main Content -->
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
-            @Body
-            <ThemeChooser />
-        </MudContainer>
-    </MudMainContent>
+            @if (_currentModule is not null)
+            {
+                <MudDrawer @bind-Open="_sidebarOpen"
+                            Anchor="Anchor.Left"
+                            Variant="@SidebarVariant"
+                            Elevation="1"
+                            ClipMode="DrawerClipMode.Always">
+            
+                        <Sidebar CurrentModule="@_currentModule" OnNavigate="HandleNavigate" />
+                </MudDrawer>
+            }
 
-    <!-- Footer -->
-    <Footer />
-</MudLayout>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+
+                <div class="page-body">
+                    @Body
+                </div>
+
+                <AppBottomBar CurrentTenant="@CurrentTenant"
+                                AvailableTenants="@AvailableTenants"
+                                OnTenantChanged="HandleTenantChanged" />
+            </MudContainer>
+        </MudMainContent>
+
+    </MudLayout>
+</div>
 
 @code {
-    private bool _sidebarOpen = false;
-    private string _currentModule = "HR";
+    private bool _sidebarOpen = true;
 
-    private void HandleNavigate(string module)
+    // TEMPORARY MODULE LIST
+    private List<(string DisplayName, string Route, string Icon)> Modules = new()
+    {
+        ("HR", "/hr", Icons.Material.Filled.People),
+        ("Finance", "/finance", Icons.Material.Filled.AttachMoney),
+        ("CRM", "/crm", Icons.Material.Filled.BusinessCenter)
+    };
+
+    private List<(string DisplayName, string Route, string Icon)> OverflowModules = new()
+    {
+        ("Contrast Audit", "/contrast-audit", Icons.Material.Filled.Abc)
+    };
+
+    // Current module (string for now)
+    private string? _currentModule = null;
+
+    // Sidebar variant (desktop vs mobile)
+    private DrawerVariant SidebarVariant => DrawerVariant.Responsive;
+
+    // Tenants (clients)
+    private string CurrentTenant = "Business A";
+    private List<string> AvailableTenants = new() { "Business A", "Business B" };
+
+    void HandleTenantChanged(string tenant)
+    {
+        CurrentTenant = tenant;
+    }
+
+    // create module in future
+    // private ModuleDefinition? _currentModule;
+
+    // void SelectModule(ModuleDefinition module)
+    // {
+    //     _currentModule = module;
+    //     _sidebarOpen = true;
+    //     StateHasChanged();
+    // }
+
+    void SelectModule(string module)
     {
         _currentModule = module;
         _sidebarOpen = true;
+    }
+
+    void ToggleSidebar()
+    {
+        _sidebarOpen = !_sidebarOpen;
+    }
+
+    async Task HandleNavigate(string route)
+    {
+        // Navigate to the selected page
+        Nav.NavigateTo(route);
+
+        // Close sidebar on mobile
+        _sidebarOpen = false;
+
+        // Force UI update
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += HandleLocationChanged;
+        UpdateModuleFromUri(Nav.Uri);
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateModuleFromUri(e.Location);
+        StateHasChanged();
+    }
+
+    private void UpdateModuleFromUri(string uri)
+    {
+        var path = new Uri(uri).AbsolutePath.ToLower();
+        if (path.StartsWith("/hr"))
+            _currentModule = "HR";
+        else if (path.StartsWith("/finance"))
+            _currentModule = "Finance";
+        else if (path.StartsWith("/crm"))
+            _currentModule = "CRM";
+        else if (path.StartsWith("/timekeeping"))
+            _currentModule = "Timekeeping";
+        else if (path.StartsWith("/contractaudit"))
+            _currentModule = "Contract Audit";
+        else if (path.StartsWith("/admin"))
+            _currentModule = "Admin";
+        else
+            _currentModule = null; // dashboard, login, etc.
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
     }
 }

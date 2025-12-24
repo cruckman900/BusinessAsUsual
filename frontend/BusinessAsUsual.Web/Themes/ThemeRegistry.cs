@@ -1,5 +1,7 @@
 ﻿using MudBlazor;
 using System.Collections.Generic;
+using static MudBlazor.CategoryTypes;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BusinessAsUsual.Web.Themes
 {
@@ -11,30 +13,66 @@ namespace BusinessAsUsual.Web.Themes
     /// selection by offering a standard set of themes that can be referenced by name.</remarks>
     public static class ThemeRegistry
     {
+        /// <summary>
+        /// Provides a collection of predefined MudTheme instances, each representing a named color theme for use in UI
+        /// components.
+        /// </summary>
+        /// <remarks>The dictionary includes a variety of themes such as "light", "dark", "hazard", and
+        /// others, each with distinct color palettes for both light and dark modes. Use the theme name as the key to
+        /// retrieve the corresponding MudTheme. This collection is intended to simplify theme selection and ensure
+        /// consistency across the application.</remarks>
         public static readonly Dictionary<string, MudTheme> Themes = new()
         {
+            // additional options we can populate later if needed
+            //- Tertiary
+            //- Dark
+            //- DarkContrastText
+            //- GrayLight
+            //- GrayLighter
+            //- GrayDark
+            //- GrayDarker
+            //- TableLines
+            //- Divider
+            //- OverlayLight
+            //- OverlayDark
+
+
             ["light"] = new MudTheme()
             {
                 PaletteLight = new PaletteLight
                 {
                     Primary = "#1976d2",
                     Secondary = "#9c27b0",
-                    Background = "#f8f9fa",
-                    AppbarBackground = "#ffffff",
-                    DrawerBackground = "#ffffff"
-                }
-            },
-            ["dark"] = new MudTheme()
-            {
+                    TextPrimary = "#212121",
+                    TextSecondary = "#616161",
+                    PrimaryContrastText = "#FFFFFF",
+                    SecondaryContrastText = "#FFFFFF",
+                    Background = "#f5f5f5",
+                    AppbarBackground = "#1976d2",
+                    DrawerBackground = "#ffffff",
+                    Success = "#4caf50",
+                    Warning = "#ff9800",
+                    Error = "#f44336",
+                    Info = "#0288d1"
+                },
                 PaletteDark = new PaletteDark
                 {
                     Primary = "#90caf9",
                     Secondary = "#ce93d8",
+                    TextPrimary = "#FFFFFF",
+                    TextSecondary = "#B0BEC5",
+                    PrimaryContrastText = "#000000",
+                    SecondaryContrastText = "#FFFFFF",
                     Background = "#121212",
-                    AppbarBackground = "#1e1e1e",
-                    DrawerBackground = "#1e1e1e"
+                    AppbarBackground = "#0d47a1",
+                    DrawerBackground = "#1a1a1a",
+                    Success = "#66bb6a",
+                    Warning = "#ffa726",
+                    Error = "#ef5350",
+                    Info = "#29b6f6"
                 }
             },
+
             ["hazard"] = new MudTheme()
             {
                 PaletteLight = new PaletteLight
