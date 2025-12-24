@@ -1,0 +1,98 @@
+﻿@* ============================
+   DESKTOP TOP BAR
+   ============================ *@
+<MudHidden Breakpoint="Breakpoint.SmAndDown">
+    <div class="topbar-inner">
+        <div class="brand">
+            <img src="images/logo.png" alt="BAU Logo" class="brand-logo" />
+            <MudText Typo="Typo.h6">Business As Usual</MudText>
+        </div>
+
+        <MudSpacer />
+
+        <div class="module-nav">
+            @foreach (var module in Modules)
+            {
+                <MudNavLink Href="@module.Route"
+                            Match="NavLinkMatch.Prefix"
+                            Class="topnav-link">
+                    <MudIcon Icon="@module.Icon" Class="me-1" />
+                    @module.DisplayName
+                </MudNavLink>
+            }
+            <MudMenu Label="More" Dense="true">
+                @foreach (var module in OverflowModules)
+                {
+                    <MudMenuItem Href="@module.Route">
+                        <MudIcon Icon="@module.Icon" Class="me-1" />
+                        @module.DisplayName
+                    </MudMenuItem>
+                }
+            </MudMenu>
+        </div>
+
+        <MudSpacer />
+
+        <TenantDisplay CurrentTenant="@CurrentTenant" />
+        <UserMenu />
+    </div>
+</MudHidden>
+
+
+@* ============================
+   MOBILE TOP BAR (Hamburger)
+   ============================ *@
+<MudHidden Breakpoint="Breakpoint.MdAndUp">
+    <div class="topbar-mobile">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       OnClick="@(() => _mobileMenuOpen = true)" />
+
+        <MudText Typo="Typo.h6">Business As Usual</MudText>
+
+        <MudSpacer />
+
+        <UserMenu />
+    </div>
+</MudHidden>
+
+
+@* ============================
+   MOBILE DRAWER
+   ============================ *@
+<MudDrawer Anchor="Anchor.Left"
+           Open="@_mobileMenuOpen"
+           Variant="DrawerVariant.Temporary"
+           Elevation="1"
+           Class="mobile-nav-drawer">
+
+    <MudNavMenu>
+        @foreach (var module in Modules)
+        {
+            <MudNavLink Href="@module.Route"
+                        Match="NavLinkMatch.Prefix"
+                        OnClick="@CloseMobileMenu">
+                @module.DisplayName
+            </MudNavLink>
+        }
+    </MudNavMenu>
+
+    <MudDivider />
+
+    <TenantSelector Compact="true" />
+    <UserMenu Compact="true" />
+</MudDrawer>
+
+
+@code {
+
+    [Parameter] public IEnumerable<(string DisplayName, string Route, string Icon)> Modules { get; set; } = Enumerable.Empty<(string, string, string)>();
+    [Parameter] public IEnumerable<(string DisplayName, string Route, string Icon)> OverflowModules { get; set; } = Enumerable.Empty<(string, string, string)>();
+    [Parameter] public string? CurrentModule { get; set; }
+    [Parameter] public string? CurrentTenant { get; set; }
+    [Parameter] public EventCallback OnToggleSidebar { get; set; }
+
+    private bool _mobileMenuOpen = false;
+
+    void CloseMobileMenu() => _mobileMenuOpen = false;
+}

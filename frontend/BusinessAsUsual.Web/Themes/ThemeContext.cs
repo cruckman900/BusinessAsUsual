@@ -30,7 +30,7 @@ public class ThemeContext
     public MudTheme CurrentTheme =>
         ThemeRegistry.Themes.TryGetValue(ThemeName, out var theme)
             ? theme
-            : ThemeRegistry.Themes["light"];
+            : ThemeRegistry.Themes.Values.First();
 
     /// <summary>
     /// Represents a callback that is invoked when the application's theme changes.

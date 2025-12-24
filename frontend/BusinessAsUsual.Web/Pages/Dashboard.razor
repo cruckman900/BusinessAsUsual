@@ -1,4 +1,48 @@
-﻿@page "/"
+﻿@page "/dashboard"
+@inject NavigationManager NavigationManager
 
-<MudText Typo="Typo.h4">Welcome to Business As Usual</MudText>
-<MudButton Href="/hr/onboarding" Color="Color.Primary">Go to HR Module</MudButton>
+<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+
+    <MudText Typo="Typo.h4" Class="dashboard-title">
+        Welcome to Business As Usual
+    </MudText>
+
+    <MudText Typo="Typo.subtitle1" Class="dashboard-subtitle">
+        Choose a module to get started
+    </MudText>
+
+    <MudGrid Class="dashboard-grid">
+
+        @foreach (var module in Modules)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="module-card" Elevation="4" @onclick="() => OpenModule(module.Route)">
+                    <MudIcon Icon="@module.Icon" Size="Size.Large" Class="module-icon" />
+                    <MudText Typo="Typo.h6">@module.Name</MudText>
+                    <MudText Typo="Typo.body2" Class="module-description">@module.Description</MudText>
+                </MudPaper>
+            </MudItem>
+        }
+
+    </MudGrid>
+
+</MudContainer>
+
+@code {
+    record ModuleCard(string Name, string Description, string Icon, string Route);
+
+    List<ModuleCard> Modules = new()
+    {
+        new("HR", "Manage employees, onboarding, and records", Icons.Material.Filled.People, "/hr"),
+        new("Timekeeping", "Timesheets, approvals, and schedules", Icons.Material.Filled.Schedule, "/timekeeping"),
+        new("Finance", "Invoices, billing, and payroll", Icons.Material.Filled.AttachMoney, "/finance"),
+        new("CRM", "Clients, leads, and interactions", Icons.Material.Filled.BusinessCenter, "/crm"),
+        new("Contract Audit", "Compliance and contract tracking", Icons.Material.Filled.Description, "/contractaudit"),
+        new("Admin", "System settings and configuration", Icons.Material.Filled.Settings, "/admin")
+    };
+
+    void OpenModule(string route)
+    {
+        NavigationManager.NavigateTo(route);
+    }
+}

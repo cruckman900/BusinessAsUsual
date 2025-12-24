@@ -1,0 +1,14 @@
+﻿<MudNavMenu>
+    @if (CurrentModule == "HR")
+    {
+        <MudNavLink Href="/hr/onboarding" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">New Hire Onboarding</MudNavLink>
+        <MudNavLink Href="/hr/directory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Employee Directory</MudNavLink>
+        <MudNavLink Href="/hr/benefits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CardGiftcard">Benefits Management</MudNavLink>
+    }
+    @* Add other modules here *@
+</MudNavMenu>
+
+    @code {
+    [Parameter] public required string CurrentModule { get; set; }
+    [Parameter] public EventCallback<string> OnNavigate { get; set; }
+}

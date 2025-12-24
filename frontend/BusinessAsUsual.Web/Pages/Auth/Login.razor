@@ -1,0 +1,101 @@
+﻿@page "/login"
+@using BusinessAsUsual.Web.Components.Layout
+@layout LoginLayout
+@inject NavigationManager NavigationManager
+
+
+<div class="login-wrapper">
+    <MudPaper Class="login-card" Elevation="4">
+
+        <div class="login-header">
+            <img src="images/logo.png" class="login-logo" alt="BAU Logo" />
+
+            <div class="login-header-text">
+                <MudText Typo="Typo.h5" Class="login-title">
+                    Business As Usual
+                </MudText>
+
+                <MudText Typo="Typo.subtitle2" Class="login-subtitle">
+                    Sign in to continue
+                </MudText>
+            </div>
+        </div>
+
+        <MudForm @ref="LoginForm" @onkeydown="HandleKeyDown">
+            <MudTextField Label="Username"
+                          @bind-Value="Username"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          FullWidth="true"
+                          Class="login-input" />
+
+            <MudTextField Label="Password"
+                          @bind-Value="Password"
+                          Immediate="true"
+                          InputType="@PasswordInputType"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@PasswordToggleIcon"
+                          OnAdornmentClick="TogglePasswordVisibility"
+                          Variant="Variant.Outlined"
+                          FullWidth="true"
+                          Class="login-input" />
+        </MudForm>
+
+        @if (ShowError)
+        {
+            <MudText Color="Color.Error" Typo="Typo.caption" Class="login-error">
+                Invalid username or password
+            </MudText>
+        }
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Class="login-button"
+                   OnClick="LoginUser">
+            Sign In
+        </MudButton>
+
+    </MudPaper>
+
+</div>
+
+@code {
+    string Username = "";
+    string Password = "";
+    bool ShowError = false;
+
+    MudForm? LoginForm;
+    InputType PasswordInputType = InputType.Password;
+
+    string PasswordToggleIcon => PasswordInputType == InputType.Password
+        ? Icons.Material.Filled.Visibility
+        : Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        PasswordInputType = PasswordInputType == InputType.Password
+            ? InputType.Text
+            : InputType.Password;
+    }
+
+    void HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            LoginUser();
+        }
+    }
+
+    void LoginUser()
+    {
+        if (Username == "admin" && Password == "password")
+        {
+            NavigationManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            ShowError = true;
+        }
+    }
+}

@@ -1,0 +1,25 @@
+﻿<MudPaper Class="pa-4 mb-4" Elevation="0">
+    <MudStack Row="false" Spacing="1">
+
+        <MudText Typo="Typo.h4">@Title</MudText>
+
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                @Description
+            </MudText>
+        }
+
+        @if (Breadcrumbs != null)
+        {
+            <MudBreadcrumbs Items="Breadcrumbs" />
+        }
+
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public List<BreadcrumbItem>? Breadcrumbs { get; set; }
+}

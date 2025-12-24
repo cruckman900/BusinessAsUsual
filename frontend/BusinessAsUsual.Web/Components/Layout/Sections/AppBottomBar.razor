@@ -1,0 +1,32 @@
+﻿<MudPaper Class="app-bottom-bar" Elevation="3" Square="true">
+    <MudContainer MaxWidth="MaxWidth.False" Class="app-bottom-bar-inner">
+        <div class="app-bottom-bar-inner">
+            <div class="left">
+                <div class="footer-left">
+                    <MudText Typo="Typo.caption">
+                        &copy; @DateTime.Now.Year Business As Usual
+                    </MudText>
+                    <a href="https://lineardescent.netlify.app" alt="Linear Descent Portfolio" target="_blank">
+                        <div class="powered">Powered by LinearDescent</div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="center">
+                <TenantSelector CurrentTenant="@CurrentTenant"
+                                Tenants="@AvailableTenants"
+                                OnTenantChanged="OnTenantChanged" />
+            </div>
+
+            <div class="right">
+                <ThemeChooser />
+            </div>
+        </div>
+    </MudContainer>
+</MudPaper>
+
+@code {
+    [Parameter] public string? CurrentTenant { get; set; }
+    [Parameter] public IEnumerable<string> AvailableTenants { get; set; } = Enumerable.Empty<string>();
+    [Parameter] public EventCallback<string> OnTenantChanged { get; set; }
+}
