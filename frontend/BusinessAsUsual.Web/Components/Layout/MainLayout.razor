@@ -101,7 +101,7 @@
         _sidebarOpen = !_sidebarOpen;
     }
 
-    async Task HandleNavigate(string route)
+    void HandleNavigate(string route)
     {
         // Navigate to the selected page
         Nav.NavigateTo(route);
