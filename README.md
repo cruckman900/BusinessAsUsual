@@ -1,7 +1,6 @@
 ﻿![BUSINESS AS USUAL](https://img.shields.io/badge/BUSINESS_AS_USUAL-%23F57C00?style=for-the-badge&logo=data:image/png;base64,...)
 ![CI Build](https://github.com/cruckman900/BusinessAsUsual/actions/workflows/ci.yml/badge.svg)
 ![Proprietary](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
-![License](https://img.shields.io/github/license/cruckman900/BusinessAsUsual)
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual)
 
 # 🎸 Business As Usual: Modular ASP.NET Core Backend
