@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace BusinessAsUsual.Web.Modules.HR
+namespace BusinessAsUsual.Web.Modules._Shared
 {
     /// <summary>
     /// Serves as the base class for HR-related modules, providing common configuration and metadata for human resources

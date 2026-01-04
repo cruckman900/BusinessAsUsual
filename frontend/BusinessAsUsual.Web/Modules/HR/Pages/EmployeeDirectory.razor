@@ -1,6 +1,10 @@
 ﻿@page "/hr/directory"
 
+@inherits HRLandingBase
+@inject PageHeaderService HeaderService
+
 @using BusinessAsUsual.Web.Modules.HR.Services
+@using BusinessAsUsual.Web.Modules._Shared
 @inject IHRService HRService
 
 <MudTable Items="_employees">
@@ -19,8 +23,14 @@
 @code {
     private IEnumerable<Employee> _employees = Enumerable.Empty<Employee>();
 
+    private RenderFragment HeaderContent =>@<PageHeader Title="Employee Directory"
+            Description="Browse and manage employee records."
+            Breadcrumbs="@(BuildBreadCrumbs("Employee Directory"))" />
+    ;
+
     protected override async Task OnInitializedAsync()
     {
         _employees = await HRService.GetEmployeesAsync();
+        HeaderService.SetHeader(HeaderContent);
     }
 }

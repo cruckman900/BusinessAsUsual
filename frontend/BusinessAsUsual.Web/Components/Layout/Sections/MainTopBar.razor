@@ -1,4 +1,5 @@
-﻿@* ============================
+﻿@using BusinessAsUsual.Web.Modules._Shared
+@* ============================
    DESKTOP TOP BAR
    ============================ *@
 <MudHidden Breakpoint="Breakpoint.SmAndDown">
@@ -17,7 +18,7 @@
                             Match="NavLinkMatch.Prefix"
                             Class="topnav-link">
                     <MudIcon Icon="@module.Icon" Class="me-1" />
-                    @module.DisplayName
+                    @module.Name
                 </MudNavLink>
             }
             <MudMenu Label="More" Dense="true">
@@ -25,7 +26,7 @@
                 {
                     <MudMenuItem Href="@module.Route">
                         <MudIcon Icon="@module.Icon" Class="me-1" />
-                        @module.DisplayName
+                        @module.Name
                     </MudMenuItem>
                 }
             </MudMenu>
@@ -72,7 +73,7 @@
             <MudNavLink Href="@module.Route"
                         Match="NavLinkMatch.Prefix"
                         OnClick="@CloseMobileMenu">
-                @module.DisplayName
+                @module.Name
             </MudNavLink>
         }
     </MudNavMenu>
@@ -86,8 +87,8 @@
 
 @code {
 
-    [Parameter] public IEnumerable<(string DisplayName, string Route, string Icon)> Modules { get; set; } = Enumerable.Empty<(string, string, string)>();
-    [Parameter] public IEnumerable<(string DisplayName, string Route, string Icon)> OverflowModules { get; set; } = Enumerable.Empty<(string, string, string)>();
+    [Parameter] public IEnumerable<ModuleDefinition> Modules { get; set; } = Enumerable.Empty<ModuleDefinition>();
+    [Parameter] public IEnumerable<ModuleDefinition> OverflowModules { get; set; } = Enumerable.Empty<ModuleDefinition>();
     [Parameter] public string? CurrentModule { get; set; }
     [Parameter] public string? CurrentTenant { get; set; }
     [Parameter] public EventCallback OnToggleSidebar { get; set; }

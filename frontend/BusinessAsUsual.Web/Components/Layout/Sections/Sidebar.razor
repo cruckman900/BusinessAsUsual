@@ -1,5 +1,22 @@
-﻿<MudNavMenu>
-    @if (CurrentModule == "HR")
+﻿@using BusinessAsUsual.Web.Modules._Shared
+<MudNavMenu>
+    @if (CurrentModule != null)
+    {
+        <MudPaper Class="ps-4 mb-2" Elevation="1">
+            <MudStack Row="true" AlignItems="@AlignItems.Center" Spacing="1">
+                <MudIcon Icon="@CurrentModule.Icon" Size="Size.Medium" />
+                <MudText Typo="Typo.h6">@CurrentModule.Name</MudText>
+            </MudStack>
+
+            @* @if (!string.IsNullOrWhiteSpace(CurrentModule.Description))
+            {
+                <MudText Typo="Typo.caption" Class="mt-1" Color="Color.Secondary">
+                    @CurrentModule.Description
+                </MudText>
+            } *@
+        </MudPaper>
+    }
+    @if (CurrentModule?.Name == "HR")
     {
         <MudNavLink Href="/hr/onboarding" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">New Hire Onboarding</MudNavLink>
         <MudNavLink Href="/hr/directory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Employee Directory</MudNavLink>
@@ -9,6 +26,6 @@
 </MudNavMenu>
 
     @code {
-    [Parameter] public required string CurrentModule { get; set; }
+    [Parameter] public ModuleDefinition? CurrentModule { get; set; }
     [Parameter] public EventCallback<string> OnNavigate { get; set; }
 }
