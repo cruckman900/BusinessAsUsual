@@ -1,7 +1,10 @@
 ﻿@page "/hr/benefits"
 
 @using BusinessAsUsual.Web.Modules.HR.Services
+@using BusinessAsUsual.Web.Modules._Shared
+@inherits HRLandingBase
 @inject IHRService HRService
+@inject PageHeaderService HeaderService
 
 <MudGrid>
     @foreach (var benefit in _benefits)
@@ -20,8 +23,14 @@
 @code {
     private IEnumerable<Benefit> _benefits = Enumerable.Empty<Benefit>();
 
+    private RenderFragment HeaderContent =>@<PageHeader Title="Benefits"
+            Description="Manage employee benefits and enrollment."
+            Breadcrumbs="@(BuildBreadCrumbs("Benefits"))" />
+    ;
+
     protected override async Task OnInitializedAsync()
     {
         _benefits = await HRService.GetBenefitsAsync();
+        HeaderService.SetHeader(HeaderContent);
     }
 }

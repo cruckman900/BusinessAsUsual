@@ -113,3 +113,13 @@
 - Committed scaffolding, analyzers, and CI pipeline
 - CI/CD triggers on push and PR to main
 - AWS deployment deferred until cloud setup is complete
+
+## [2025-12-23] 🧠 Dashboard Shell Enhancements
+
+- Refactored MainLayout to support dynamic module context
+- Added PageHeader component for clean title + description + breadcrumbs
+- Implemented HRLandingBase for module inheritance
+- Built HR landing page with onboarding, benefits, and directory cards
+- Added module icons to top bar navigation
+- Styled active nav items with animated underline and hover effects
+- Added responsive collapse and overflow handling for module links

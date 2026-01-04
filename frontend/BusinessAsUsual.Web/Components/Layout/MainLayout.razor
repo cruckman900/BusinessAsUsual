@@ -1,9 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using BusinessAsUsual.Web.Components.Layout.Sections
 @using BusinessAsUsual.Web.Themes
-@inject ThemeContext ThemeContext
-@inject NavigationManager Nav
-@implements IDisposable
 
 <ThemeProviderWrapper />
 <MudDialogProvider />
@@ -21,20 +18,27 @@
                         OnToggleSidebar="ToggleSidebar" />
         </MudAppBar>
 
-            @if (_currentModule is not null)
-            {
-                <MudDrawer @bind-Open="_sidebarOpen"
-                            Anchor="Anchor.Left"
-                            Variant="@SidebarVariant"
-                            Elevation="1"
-                            ClipMode="DrawerClipMode.Always">
+        @if (_currentModule is not null)
+        {
+            <MudDrawer @bind-Open="_sidebarOpen"
+                        Anchor="Anchor.Left"
+                        Variant="@SidebarVariant"
+                        Elevation="1"
+                        ClipMode="DrawerClipMode.Always">
             
-                        <Sidebar CurrentModule="@_currentModule" OnNavigate="HandleNavigate" />
-                </MudDrawer>
-            }
+                    <Sidebar CurrentModule="@ActiveModule" OnNavigate="HandleNavigate" />
+            </MudDrawer>
+        }
 
         <MudMainContent>
             <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+
+                @if (HeaderService.Header != null)
+                {
+                    <div class="page-header-container">
+                        @HeaderService.Header
+                    </div>
+                }
 
                 <div class="page-body">
                     @Body
@@ -50,37 +54,7 @@
 </div>
 
 @code {
-    private bool _sidebarOpen = true;
-
-    // TEMPORARY MODULE LIST
-    private List<(string DisplayName, string Route, string Icon)> Modules = new()
-    {
-        ("HR", "/hr", Icons.Material.Filled.People),
-        ("Finance", "/finance", Icons.Material.Filled.AttachMoney),
-        ("CRM", "/crm", Icons.Material.Filled.BusinessCenter)
-    };
-
-    private List<(string DisplayName, string Route, string Icon)> OverflowModules = new()
-    {
-        ("Contrast Audit", "/contrast-audit", Icons.Material.Filled.Abc)
-    };
-
-    // Current module (string for now)
-    private string? _currentModule = null;
-
-    // Sidebar variant (desktop vs mobile)
-    private DrawerVariant SidebarVariant => DrawerVariant.Responsive;
-
-    // Tenants (clients)
-    private string CurrentTenant = "Business A";
-    private List<string> AvailableTenants = new() { "Business A", "Business B" };
-
-    void HandleTenantChanged(string tenant)
-    {
-        CurrentTenant = tenant;
-    }
-
-    // create module in future
+    // TODO: create module in future
     // private ModuleDefinition? _currentModule;
 
     // void SelectModule(ModuleDefinition module)
@@ -89,63 +63,4 @@
     //     _sidebarOpen = true;
     //     StateHasChanged();
     // }
-
-    void SelectModule(string module)
-    {
-        _currentModule = module;
-        _sidebarOpen = true;
-    }
-
-    void ToggleSidebar()
-    {
-        _sidebarOpen = !_sidebarOpen;
-    }
-
-    void HandleNavigate(string route)
-    {
-        // Navigate to the selected page
-        Nav.NavigateTo(route);
-
-        // Close sidebar on mobile
-        _sidebarOpen = false;
-
-        // Force UI update
-        StateHasChanged();
-    }
-
-    protected override void OnInitialized()
-    {
-        Nav.LocationChanged += HandleLocationChanged;
-        UpdateModuleFromUri(Nav.Uri);
-    }
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        UpdateModuleFromUri(e.Location);
-        StateHasChanged();
-    }
-
-    private void UpdateModuleFromUri(string uri)
-    {
-        var path = new Uri(uri).AbsolutePath.ToLower();
-        if (path.StartsWith("/hr"))
-            _currentModule = "HR";
-        else if (path.StartsWith("/finance"))
-            _currentModule = "Finance";
-        else if (path.StartsWith("/crm"))
-            _currentModule = "CRM";
-        else if (path.StartsWith("/timekeeping"))
-            _currentModule = "Timekeeping";
-        else if (path.StartsWith("/contractaudit"))
-            _currentModule = "Contract Audit";
-        else if (path.StartsWith("/admin"))
-            _currentModule = "Admin";
-        else
-            _currentModule = null; // dashboard, login, etc.
-    }
-
-    public void Dispose()
-    {
-        Nav.LocationChanged -= HandleLocationChanged;
-    }
 }

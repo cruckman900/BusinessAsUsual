@@ -349,11 +349,11 @@ body {
 
     /* Active state */
     .module-nav .mud-nav-link.active {
-        color: var(--mud-palette-tertiary);
+        color: var(--mud-palette-secondary);
         font-weight: 600;
         opacity: 1;
-        background-color: rgba(var(--mud-palette-tertiary-rgb), 0.15);
-        border-bottom: 2px solid var(--mud-palette-tertiary);
+        background-color: rgba(var(--mud-palette-secondary-rgb), 0.25);
+        border-bottom: 2px solid var(--mud-palette-secondary);
         padding-bottom: 3px;
     }
 

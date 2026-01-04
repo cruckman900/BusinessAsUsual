@@ -2,6 +2,10 @@
 
 @using BusinessAsUsual.Web.Modules.HR.Services
 @using BusinessAsUsual.Web.Modules.HR.Components
+@using BusinessAsUsual.Web.Modules._Shared
+
+@inherits HRLandingBase
+@inject PageHeaderService HeaderService
 
 @inject IHRService HRService
 
@@ -23,4 +27,15 @@
 @code {
     private string _position = "";
     private string _department = "";
+
+    private RenderFragment HeaderContent =>@<PageHeader
+            Title="Onboard Employee"
+            Description="Start the onboarding process for a new hire."
+            Breadcrumbs="@(BuildBreadCrumbs("Onboard Employee"))" />
+    ;
+
+    protected override void OnInitialized()
+    {
+        HeaderService.SetHeader(HeaderContent);
+    }
 }

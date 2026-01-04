@@ -63,6 +63,7 @@ namespace BusinessAsUsual.Web
             builder.Services.AddScoped<EmployeeService>();
             builder.Services.AddScoped<CompanySession>();
             builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
+            builder.Services.AddScoped<PageHeaderService>();
 
             // DI Registration
             builder.Services.AddScoped<IHRService, HRService>();

@@ -38,12 +38,18 @@ public abstract class ModuleBase : ComponentBase
     /// <returns>A list of <see cref="BreadcrumbItem"/> objects representing the breadcrumb trail for the current page.</returns>
     protected virtual List<BreadcrumbItem> BuildBreadCrumbs(string? pageTitle = null)
     {
-        return
-        [
+        var crumbs = new List<BreadcrumbItem>
+        {
             new BreadcrumbItem("Dashboard", "/dashboard"),
-            //new BreadcrumbItem(ModuleName, $"{ModuleRootRoute}/{ModuleName.ToLower()}", false),
-            new BreadcrumbItem(pageTitle ?? ModuleName, null, true)
-        ];
+            new BreadcrumbItem(ModuleName, ModuleRootRoute, false)
+        };
 
+        // Only add a page-level breadcrumb if this is a subpage
+        if (!string.IsNullOrWhiteSpace(pageTitle))
+        {
+            crumbs.Add(new BreadcrumbItem(pageTitle, null, true));
+        }
+
+        return crumbs;
     }
 }

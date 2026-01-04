@@ -1,12 +1,9 @@
 ﻿@page "/hr"
 @using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
 @layout MainLayout
 @inherits HRLandingBase
-
-
-<PageHeader Title="@ModuleName"
-            Description="@ModuleDescription"
-            Breadcrumbs="BuildBreadCrumbs()" />
+@inject PageHeaderService HeaderService
 
 <MudGrid>
     <MudItem xs="12" sm="6" md="4">
@@ -51,3 +48,19 @@
         </MudCard>
     </MudItem>
 </MudGrid>
+
+@code {
+    private RenderFragment HeaderContent =>@<PageHeader
+        Title="@ModuleName"
+        Description="@ModuleDescription"
+        Breadcrumbs="@BuildBreadCrumbs()" />
+    ;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            HeaderService.SetHeader(HeaderContent);
+        }
+    }
+}

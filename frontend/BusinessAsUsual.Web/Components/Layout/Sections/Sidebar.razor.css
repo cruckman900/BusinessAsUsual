@@ -1,0 +1,10 @@
+﻿.sidebar-header {
+    padding: 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+.mini-description {
+    margin-top: 4px;
+    opacity: 0.8;
+}

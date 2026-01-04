@@ -3,22 +3,24 @@
 ![License](https://img.shields.io/github/license/cruckman900/BusinessAsUsual)
 ![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual)
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual)
-# 🎸 Business As Usual: Modular ASP.NET Core Backend
 
-Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform built for scale, clarity, and creative firepower. This backend is the engine behind your business suite, orchestrating products, services, accounting, inventory, scheduling, and billing with precision and swagger.
+# 🎸 Business As Usual — Modular ASP.NET Core Platform
+
+**Business As Usual** is a multi-tenant, modular ASP.NET Core platform built for clarity, scale, and expressive engineering.  
+It powers a suite of business modules—products, services, accounting, inventory, scheduling, billing, and more—through a clean, extensible architecture.
 
 ---
 
 ## 🚀 Tech Stack
 
-- **Framework:** ASP.NET Core 9.0
-- **Architecture:** Clean Architecture + Modular Design
-- **Containerization:** Docker
-- **Cloud Deployment:** AWS (EC2, RDS, S3, IAM)
-- **Database:** PostgreSQL (via EF Core)
-- **CI/CD:** GitHub Actions + Docker Hub
-- **Security:** JWT Auth, HTTPS, CORS, Rate Limiting
-- **Docs:** Swagger + NOTES.md (timestamped changelog)
+- **Framework:** ASP.NET Core 9.0  
+- **Architecture:** Clean Architecture + Modular Design  
+- **Containerization:** Docker  
+- **Cloud Deployment:** AWS (EC2, RDS, S3, IAM)  
+- **Database:** PostgreSQL (via EF Core)  
+- **CI/CD:** GitHub Actions + Docker Hub  
+- **Security:** JWT Auth, HTTPS, CORS, Rate Limiting  
+- **Docs:** Swagger + `/docs` (architecture, onboarding, theming, metadata)
 
 ---
 
@@ -35,15 +37,37 @@ Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform
 
 ---
 
+## 📚 Documentation
+
+All detailed documentation lives in the `/docs` directory:
+
+- **Onboarding:** `/docs/ONBOARDING.md`  
+- **Architecture:** `/docs/ARCHITECTURE.md`  
+- **Theme System:** `/docs/Themes/README.md`  
+- **Branding & Metadata:** `/docs/BRANDING.md` and `/docs/METADATA.md`  
+- **Changelog:** `/docs/CHANGELOG.md`  
+- **Splash Logic, Badges, and More:** See additional files in `/docs`
+
+This keeps the root README clean while giving contributors a clear map of the system.
+
+---
+
 ## 🛠️ Setup & Onboarding
 
 ```bash
 # Clone the repo
 git clone https://github.com/cruckman900/BusinessAsUsual.git
-cd business-as-usual
+cd BusinessAsUsual
 
 # Build and run with Docker
 docker-compose up --build
 
 # Access Swagger UI
 http://localhost:5000/swagger
+
+🧭 Project Goals
+- Provide a modular, multi-tenant foundation for business applications
+- Maintain a clean, extensible architecture suitable for long-term growth
+- Deliver expressive, accessible UI/UX through a unified theme system
+- Support real-world deployment pipelines (Docker + AWS)
+- Keep documentation clear, discoverable, and contributor-friendly
