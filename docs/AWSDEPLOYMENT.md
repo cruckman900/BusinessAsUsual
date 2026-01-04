@@ -1,4 +1,48 @@
-# Business As Usual – AWS Deployment Log
+```md
+ ______     __  __     ______     __     __   __     ______     ______     ______        ______     ______        __  __     ______     __  __     ______     __        
+/\  == \   /\ \/\ \   /\  ___\   /\ \   /\ "-.\ \   /\  ___\   /\  ___\   /\  ___\      /\  __ \   /\  ___\      /\ \/\ \   /\  ___\   /\ \/\ \   /\  __ \   /\ \       
+\ \  __<   \ \ \_\ \  \ \___  \  \ \ \  \ \ \-.  \  \ \  __\   \ \___  \  \ \___  \     \ \  __ \  \ \___  \     \ \ \_\ \  \ \___  \  \ \ \_\ \  \ \  __ \  \ \ \____  
+ \ \_____\  \ \_____\  \/\_____\  \ \_\  \ \_\\"\_\  \ \_____\  \/\_____\  \/\_____\     \ \_\ \_\  \/\_____\     \ \_____\  \/\_____\  \ \_____\  \ \_\ \_\  \ \_____\ 
+  \/_____/   \/_____/   \/_____/   \/_/   \/_/ \/_/   \/_____/   \/_____/   \/_____/      \/_/\/_/   \/_____/      \/_____/   \/_____/   \/_____/   \/_/\/_/   \/_____/ 
+                                                                                                                                                                        
+```
+
+```md
+ ____  ____  _      _____ ____  _____ ____    ____ ___  _   _     _  _      _____ ____  ____  ____  _____ ____  ____  _____ _      _____ 
+/  __\/  _ \/ \  /|/  __//  __\/  __//  _ \  /  __\\  \//  / \   / \/ \  /|/  __//  _ \/  __\/  _ \/  __// ___\/   _\/  __// \  /|/__ __\
+|  \/|| / \|| |  |||  \  |  \/||  \  | | \|  | | // \  /   | |   | || |\ |||  \  | / \||  \/|| | \||  \  |    \|  /  |  \  | |\ ||  / \  
+|  __/| \_/|| |/\|||  /_ |    /|  /_ | |_/|  | |_\\ / /    | |_/\| || | \|||  /_ | |-|||    /| |_/||  /_ \___ ||  \__|  /_ | | \||  | |  
+\_/   \____/\_/  \|\____\\_/\_\\____\\____/  \____//_/     \____/\_/\_/  \|\____\\_/ \|\_/\_\\____/\____\\____/\____/\____\\_/  \|  \_/  
+                                                                                                                                         
+```
+
+```md
+
+```
+╔═╗╦ ╦╔═╗    ╔╦╗╔═╗╔═╗╦╔═╔═╗╦═╗    ╔╗╔╔═╗╦╔╗╔═╗ ╦    ╦ ╦╔╦╗╔╦╗╔═╗╔═╗    ╔═╗╔═╗╔═╗╦═╗╔═╗╔╦╗╔═╗  ╔╦╗╔═╗╔╗╔╔═╗╔═╗╔═╗╦═╗
+╠═╣║║║╚═╗     ║║║ ║║  ╠╩╗║╣ ╠╦╝    ║║║║ ╦║║║║╔╩╦╝    ╠═╣ ║  ║ ╠═╝╚═╗    ╚═╗║╣ ║  ╠╦╝║╣  ║ ╚═╗  ║║║╠═╣║║║╠═╣║ ╦║╣ ╠╦╝
+╩ ╩╚╩╝╚═╝    ═╩╝╚═╝╚═╝╩ ╩╚═╝╩╚═    ╝╚╝╚═╝╩╝╚╝╩ ╚═    ╩ ╩ ╩  ╩ ╩  ╚═╝    ╚═╝╚═╝╚═╝╩╚═╚═╝ ╩ ╚═╝  ╩ ╩╩ ╩╝╚╝╩ ╩╚═╝╚═╝╩╚═
+                                                                                                                    
+---
+
+# ## 🏢 Enterprise Introduction
+
+**Business As Usual** is a fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.  
+This guide documents the production‑grade deployment pipeline, scaling strategy, observability stack, and operational playbooks that power the BAU platform.
+
+Designed for:
+
+- Reliability  
+- Maintainability  
+- Contributor‑proof onboarding  
+- Enterprise observability  
+- Zero‑downtime updates  
+
+---
+
+# 🏢 Business As Usual — Production Deployment & Operations Guide
+A fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.
+Designed for production reliability, contributor‑proof onboarding, and enterprise‑grade observability
 
 ```bash
    ,     #_
@@ -12,6 +56,69 @@
          _/ _/
        _/m/'
 ```
+
+![Status](https://img.shields.io/badge/Status-Production-green?style=for-the-badge)
+![Dockerized](https://img.shields.io/badge/Docker-Multi--Service-blue?style=for-the-badge&logo=docker)
+![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20Secrets%20Manager%20%7C%20Route53-orange?style=for-the-badge&logo=amazonaws)
+![HTTPS](https://img.shields.io/badge/Security-HTTPS%20Enabled-brightgreen?style=for-the-badge&logo=letsencrypt)
+![Architecture](https://img.shields.io/badge/Architecture-Multi--Tenant-purple?style=for-the-badge)
+![Logging](https://img.shields.io/badge/Logging-Serilog-blueviolet?style=for-the-badge)
+![Monitoring](https://img.shields.io/badge/Monitoring-Admin%20Dashboard-lightgrey?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Business%20As%20Usual-black?style=for-the-badge)
+![Docs](https://img.shields.io/badge/Documentation-Enterprise%20Grade-0a84ff?style=for-the-badge)
+
+# Table of Contents (TODO: this TOC starts close to the bottom of the document. fill in the top portion)
+
+- [Scaling the EC2 Instance](#-scaling-the-ec2-instance)
+  - [When to Scale](#when-to-scale)
+  - [Recommended Instance Types](#recommended-instance-types)
+  - [How to Scale](#how-to-scale)
+  - [Cost Breakdown](#cost-breakdown)
+
+- [AWS Secrets Manager Setup](#-aws-secrets-manager-setup)
+  - [Secret Name](#secret-name)
+  - [Required Keys](#required-keys)
+  - [IAM Policy](#iam-policy)
+  - [Testing Secret Loading](#testing-secret-loading)
+
+- [Health Endpoints](#-health-endpoints)
+  - [/health](#health)
+  - [/ready](#ready)
+  - [Nginx Upstream Health Checks](#nginx-upstream-health-checks)
+
+- [Logging & Monitoring](#-logging--monitoring)
+  - [Serilog Setup](#serilog-setup)
+  - [Docker Log Access](#docker-log-access)
+  - [Optional: Seq Container](#optional-seq-container)
+  - [Admin Dashboard Integration](#admin-dashboard-integration)
+
+- [Snapshotting the Environment (AMI)](#-snapshotting-the-environment-ami)
+  - [When to Snapshot](#when-to-snapshot)
+  - [How to Snapshot](#how-to-snapshot)
+  - [Restoring](#restoring)
+
+- [EC2 Update Playbook](#-ec2-update-playbook)
+  - [Pull Latest Code](#pull-latest-code)
+  - [Rebuild Containers](#rebuild-containers)
+  - [Validate](#validate)
+  - [Check Logs](#check-logs)
+
+- [Crash Testing Procedures](#-crash-testing-procedures)
+  - [Rapid Restart](#rapid-restart)
+  - [SQL Server Cold Start](#sql-server-cold-start)
+  - [CPU Spike](#cpu-spike)
+  - [Memory Pressure](#memory-pressure)
+  - [Nginx Routing Test](#nginx-routing-test)
+  - [Blazor Circuit Stability](#blazor-circuit-stability)
+
+- [Admin Site Enhancements (Planned)](#-admin-site-enhancements-planned)
+  - [System Health Dashboard](#system-health-dashboard)
+  - [Logs Viewer](#logs-viewer)
+  - [Environment Panel](#environment-panel)
+  - [Crash Test Tools](#crash-test-tools)
+  - [Metrics](#metrics)
+
+# Business As Usual – AWS Deployment Log
 
 ## 1. Goal
 
@@ -365,3 +472,312 @@ Deployed Business As Usual to AWS using:
 - Containerized application deployment
 - DNS and TLS configuration
 - Cost-optimized, production-relevant architecture design
+
+---
+
+# 🚀 Deployment Documentation Additions
+
+## 🧱 Scaling the EC2 Instance
+
+### When to Scale
+
+Scale your EC2 instance when you observe:
+- CPU credit exhaustion
+- Slow response times under load
+- Docker containers exiting unexpectedly
+- SQL Server memory pressure
+- Nginx becoming unresponsive
+
+### Recommended Instance Types
+
++-----------+------+-------------+-----------------------------+
+| Instance  | RAM  | vCPU        | Notes                       |
+|-----------|------|-------------|-----------------------------|
+| t3.small  | 2 GB | 2 vCPU      | Works for light traffic;    |
+|           |      | (burstable) | may throttle under load     |
+|-----------|------|-------------|-----------------------------|
+| t3.small  | 2 GB | 2 vCPU      | Prevents CPUT throttling;   |
+| Unlimited |      |             | small extra cost            |
+|-----------|------|-------------|-----------------------------|
+| t3.medium | 4 GB | 2 vCPU      | Ideal for BAU; stable under |
+|           |      |             | multi-service load          |
++-----------+------+-------------+-----------------------------+
+
+### How to Scale
+
+- Stop the instance
+- Actions → Instance Settings → Change Instance Type
+- Select t3.medium
+- Start the instance
+- Validate with:
+
+```bash
+docker ps
+curl -I http://localhost:3000
+```
+
+### Cost Breakdown
+
+- t3.small: ~$15–$20/month
+- t3.small Unlimited: ~$20–$25/month
+- t3.medium: ~$30/month
+
+---
+
+## 🔐 AWS Secrets Manager Setup
+
+### Secret Name
+
+```
+BusinessAsUsual/Secrets
+```
+
+### Required Keys
+
+```json
+{
+  "SA_PASSWORD": "YourStrong!Password123",
+  "ACCEPT_EULA": "Y",
+  "AWS_SQL_CONNECTION_STRING": "Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;"
+}
+```
+
+### IAM Policy
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ],
+      "Resource": "arn:aws:secretsmanager:us-east-1:<ACCOUNT-ID>:secret:BusinessAsUsual/Secrets*"
+    }
+  ]
+}
+```
+
+### Testing Secret Loading
+
+```
+docker logs businessasusual-frontend-1 --tail=50
+```
+
+Look for:
+
+```
+🔐 ConfigLoader: Loaded SA_PASSWORD=...
+```
+
+---
+
+## 🩺 Health Endpoints
+
+### /health
+
+- Returns 200 OK if the service is alive
+- No dependency checks
+- 
+### /ready
+
+Confirms:
+- DB reachable
+- Secrets loaded
+- Migrations applied
+- Internal services initialized
+
+
+### Nginx Upstream Health Checks
+
+```
+proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
+```
+
+---
+
+## 📊 Logging & Monitoring
+
+### Serilog Setup
+
+- Console sink (Docker logs)
+- File sink (optional)
+- Seq sink (optional)
+- Enrichment:
+- Machine name
+- Container name
+- Request ID
+- Tenant
+- User
+- 
+### Docker Log Access
+
+```
+docker logs <container> --tail=100
+```
+
+### Optional: Seq Container
+
+```Yaml
+seq:
+  image: datalust/seq
+  ports:
+    - "5341:80"
+```
+
+### Admin Dashboard Integration
+
+Expose:
+- Recent logs
+- Container health
+- CPU usage
+- Memory usage
+- Uptime
+- Secret load status
+- DB connection status
+- Version/build info
+
+## 📦 Snapshotting the Environment (AMI)
+
+### When to Snapshot
+
+- After a successful deployment
+- Before major changes
+- Before scaling
+- Before database migrations
+
+### How to Snapshot
+
+- EC2 → Instances
+- Select BAU instance
+- Actions → Image and Templates → Create Image
+- Name it:
+
+```
+BAU-Production-YYYY-MM-DD
+```
+
+- Save
+
+### Restoring
+- Launch new instance from AMI
+- Attach Elastic IP
+- Run:
+
+```
+docker-compose up -d
+```
+
+## 🔁 EC2 Update Playbook
+
+### Pull Latest Code
+
+```
+git pull
+```
+
+### Rebuild Containers
+
+```
+docker-compose down
+docker-compose up -d --build
+```
+
+### Validate
+
+```
+curl -I http://localhost:3000
+curl -I http://localhost:8080
+curl -I http://localhost:5000
+```
+
+### Check Logs
+
+```
+docker logs businessasusual-frontend-1 --tail=50
+```
+
+## 💥 Crash Testing Procedures
+
+### Rapid Restar
+
+```
+docker-compose down
+docker-compose up -d
+```
+
+### SQL Server Cold Start
+
+```
+docker-compose stop db
+docker-compose start db
+```
+
+### CPU Spike
+
+```
+stress --cpu 2 --timeout 20
+```
+
+### Memory Pressure
+
+```
+stress --vm 1 --vm-bytes 512M --timeout 20
+```
+
+### Nginx Routing Test
+
+```
+for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
+```
+
+### Blazor Circuit Stability
+
+- Rapid refresh
+- Multiple tabs
+- Idle → resume
+
+---
+
+## 🧭 Admin Site Enhancements (Planned)
+
+### System Health Dashboard
+
+- Container status (running/exited)
+- Uptime
+- CPU usage
+- Memory usage
+- Disk usage
+- DB connection status
+- Secrets load status
+- Version/build info
+- 
+### Logs Viewer
+
+- Tail 100 logs
+- Filter by service
+- Search
+- Auto-refresh
+- 
+### Environment Panel
+
+- ASPNETCORE_ENVIRONMENT
+- Loaded secrets
+- Connection strings
+- ConfigLoader status
+- 
+### Crash Test Tools
+
+- Restart a service
+- Check DB health
+- Check secrets health
+- Check Nginx health
+- 
+### Metrics
+
+- Requests per minute
+- Error rate
+- Circuit disconnects
+- SQL latency
