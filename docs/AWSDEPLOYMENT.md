@@ -8,7 +8,9 @@ AWS • DOCKER • NGINX • HTTPS • SECRETS MANAGER
 
 # ## 🏢 Enterprise Introduction
 
-**Business As Usual** is a fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.  
+# 🏢 Business As Usual — Production Deployment & Operations Guide
+A fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.
+Designed for production reliability, contributor‑proof onboarding, and enterprise‑grade observability
 This guide documents the production‑grade deployment pipeline, scaling strategy, observability stack, and operational playbooks that power the BAU platform.
 
 Designed for:
@@ -17,13 +19,9 @@ Designed for:
 - Maintainability  
 - Contributor‑proof onboarding  
 - Enterprise observability  
-- Zero‑downtime updates  
+- Zero‑downtime updates
 
 ---
-
-# 🏢 Business As Usual — Production Deployment & Operations Guide
-A fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.
-Designed for production reliability, contributor‑proof onboarding, and enterprise‑grade observability
 
 ```bash
    ,     #_
@@ -111,6 +109,25 @@ Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)
 - DNS via **Route 53**
 - HTTPS via **AWS Certificate Manager (ACM)**
 - No NAT Gateway, no load balancer, no surprise billing
+
+flowchart LR
+    A[Client / Browser] --> B[HTTPS Request]
+    B --> C[NGINX Reverse Proxy<br/>inside Docker Container]
+    C --> D[ASP.NET Core Application<br/>inside Docker Container]
+    D --> E[(RDS: SQL Server or PostgreSQL)]
+
+    subgraph EC2 Instance
+        C
+        D
+    end
+
+    subgraph AWS Cloud
+        EC2[EC2 Instance]
+        E
+    end
+
+    C -->|Static Assets| C
+    D -->|EF Core Queries| E
 
 This document captures the exact steps taken to stand up the environment.
 
