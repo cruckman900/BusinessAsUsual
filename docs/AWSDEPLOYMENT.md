@@ -9,7 +9,7 @@ flowchart TB
 
     %% ====== TOP ROW ======
     A["BUSINESS AS USUAL"]:::title
-    B["POWERED BY LINEAR DESCENT"]:::subtitle
+    B["POWERED BY LINEARDESCENT"]:::subtitle
 
     A --> B
 
