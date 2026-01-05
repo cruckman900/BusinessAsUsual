@@ -6,8 +6,6 @@ AWS • DOCKER • NGINX • HTTPS • SECRETS MANAGER
 
 ---
 
-# ## 🏢 Enterprise Introduction
-
 # 🏢 Business As Usual — Production Deployment & Operations Guide
 A fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.
 Designed for production reliability, contributor‑proof onboarding, and enterprise‑grade observability
@@ -97,18 +95,121 @@ Designed for:
   - [Crash Test Tools](#crash-test-tools)
   - [Metrics](#metrics)
 
-# Business As Usual – AWS Deployment Log
+# ✅ SECTION 1 — VPC, Subnets, and Routing Tables
 
-## 1. Goal
+## Understanding the Network Layout
 
-Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)** using a cost-conscious, résumé-ready architecture:
+Business As Usual runs inside a clean, cost‑safe AWS network architecture built around a single VPC. The VPC provides an isolated, software‑defined network where all compute and database resources live. Within that VPC, we intentionally separate infrastructure into two subnets:
 
-- Single **EC2 t3.micro** instance
-- Docker + docker-compose
-- Domain: `https://businessasusual.work`
-- DNS via **Route 53**
-- HTTPS via **AWS Certificate Manager (ACM)**
-- No NAT Gateway, no load balancer, no surprise billing
+- A public subnet for the EC2 instance
+- A private subnet for the RDS database
+
+This separation ensures that only the application server is exposed to the internet, while the database remains fully isolated and reachable only from inside the VPC.
+
+## Public Subnet (10.0.1.0/24)
+
+This subnet contains the EC2 instance running:
+
+- Docker
+- NGINX
+- ASP.NET Core
+- Background services
+- Certbot (for HTTPS renewal)
+
+The public subnet is associated with a public route table that includes:
+
+```
+0.0.0.0/0 → Internet Gateway
+```
+
+This gives the EC2 instance outbound internet access (for package installs, Docker pulls, Certbot challenges) and allows inbound HTTPS traffic from the public internet.
+
+## Private Subnet (10.0.2.0/24)
+
+This subnet contains the RDS instance. It has:
+
+- No public IP
+- No route to the internet
+- No inbound access from outside the VPC
+
+The private route table intentionally omits any 0.0.0.0/0 route, ensuring the database is reachable only from internal resources such as the EC2 instance.
+
+## Why This Matters
+
+This layout gives you:
+
+- A secure, production‑grade network boundary
+- A database that is never exposed publicly
+- A cost‑safe architecture (no NAT Gateway required)
+- A clear separation of concerns for future scaling
+
+```mermaid
+flowchart TB
+    subgraph VPC["VPC (10.0.0.0/16)"]
+        
+        subgraph Public_Subnet["Public Subnet (10.0.1.0/24)"]
+            EC2[EC2 Instance<br/>Docker + ASP.NET Core]
+            IGW[Internet Gateway]
+            RT_Public[Public Route Table<br/>0.0.0.0/0 → IGW]
+        end
+
+        subgraph Private_Subnet["Private Subnet (10.0.2.0/24)"]
+            RDS[(RDS Database)]
+            RT_Private[Private Route Table<br/>No Internet Route]
+        end
+    end
+
+    EC2 --> RT_Public
+    RT_Public --> IGW
+
+    EC2 --> RDS
+    RDS --> RT_Private
+```
+
+---
+
+# ✅ SECTION 2 — DNS → EC2 → Application → Database Request Path
+
+## How Traffic Reaches the Application
+
+When a user visits https://businessasusual.work, the request flows through several AWS components before reaching your application. Understanding this path helps contributors troubleshoot DNS, SSL, routing, and application behavior.
+
+## 1. Route 53 Resolves the Domain
+
+Your domain is hosted in Route 53. The hosted zone contains:
+
+- An A record pointing to the EC2 public IP
+- (Optional) AAAA record for IPv6
+- Nameservers registered with your domain registrar
+
+When a browser looks up your domain, Route 53 returns the EC2 instance’s public IP.
+
+## 2. Browser Sends HTTPS Request to EC2
+
+The user’s browser connects directly to your EC2 instance.
+There is no load balancer in Phase 1 to keep costs low.
+
+## 3. NGINX Terminates TLS and Routes Traffic
+
+NGINX handles:
+
+- TLS termination
+- Static file serving
+- Reverse proxying to ASP.NET Core
+- ACME challenge responses for Certbot
+
+## 4. ASP.NET Core Handles Business Logic
+
+Your application processes the request, executes business rules, and prepares a response.
+
+## 5. EF Core Communicates with RDS
+
+All database operations occur through EF Core, using a secure, internal VPC connection to the RDS instance in the private subnet.
+
+## 6. Response Returns to the User
+
+ASP.NET Core returns JSON, HTML, or API responses back through NGINX to the user’s browser.
+
 
 ```mermaid
 flowchart LR
@@ -130,6 +231,62 @@ flowchart LR
     C -->|Static Assets| C
     D -->|EF Core Queries| E
 ```
+
+---
+
+# ✅ SECTION 3 — HTTPS, Certbot, and Auto‑Renewal Lifecycle
+
+## Why HTTPS Matters
+
+Your application uses HTTPS to ensure encrypted communication between users and the server. Certificates are issued by Let’s Encrypt and automatically renewed using Certbot.
+
+## Initial Certificate Issuance
+
+During setup, Certbot performs an HTTP‑01 challenge, which requires:
+
+- NGINX to serve a temporary challenge file
+- Let’s Encrypt to validate that your EC2 instance controls the domain
+
+Once validated, Certbot installs the certificate and configures NGINX to use it.
+
+## Automatic Renewal
+
+A nightly cron job runs:
+
+```
+certbot renew
+```
+
+Certbot checks certificate expiration and, if renewal is needed:
+
+- Requests a new ACME challenge
+- Places the challenge file in /.well-known/acme-challenge
+- Lets NGINX serve the challenge
+- Receives the renewed certificate
+- Reloads NGINX to apply the update
+
+## Zero Downtime
+
+NGINX reloads gracefully, ensuring:
+
+- No dropped connections
+- No downtime
+- Seamless certificate rotation
+
+---
+
+# Business As Usual – AWS Deployment Log
+
+## 1. Goal
+
+Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)** using a cost-conscious, résumé-ready architecture:
+
+- Single **EC2 t3.micro** instance
+- Docker + docker-compose
+- Domain: `https://businessasusual.work`
+- DNS via **Route 53**
+- HTTPS via **AWS Certificate Manager (ACM)**
+- No NAT Gateway, no load balancer, no surprise billing
 
 ```mermaid
 flowchart TB
@@ -522,7 +679,9 @@ Deployed Business As Usual to AWS using:
 - RDS-ready configuration:
 - Environment-driven DB configuration
 - Documented migration path from Docker DB → Amazon RDS
-  This deployment demonstrates practical experience with:
+
+This deployment demonstrates practical experience with:
+
 - Cloud infrastructure on AWS
 - Linux server administration
 - Containerized application deployment
@@ -546,18 +705,33 @@ Scale your EC2 instance when you observe:
 
 ### Recommended Instance Types
 
-+-----------+------+-------------+-----------------------------+
-| Instance  | RAM  | vCPU        | Notes                       |
-|-----------|------|-------------|-----------------------------|
-| t3.small  | 2 GB | 2 vCPU      | Works for light traffic;    |
-|           |      | (burstable) | may throttle under load     |
-|-----------|------|-------------|-----------------------------|
-| t3.small  | 2 GB | 2 vCPU      | Prevents CPUT throttling;   |
-| Unlimited |      |             | small extra cost            |
-|-----------|------|-------------|-----------------------------|
-| t3.medium | 4 GB | 2 vCPU      | Ideal for BAU; stable under |
-|           |      |             | multi-service load          |
-+-----------+------+-------------+-----------------------------+
+```mermaid
+flowchart TB
+    %% ====== STYLES ======
+    classDef header fill:#1e1e1e,stroke:#1e1e1e,color:#ffffff,font-weight:bold;
+    classDef rowA fill:#f7f7f7,stroke:#d0d0d0,color:#000;
+    classDef rowB fill:#ffffff,stroke:#d0d0d0,color:#000;
+    classDef recommended fill:#d1e7dd,stroke:#0f5132,color:#0f5132,font-weight:bold;
+
+    %% ====== HEADER ======
+    H1["Instance"]:::header --- H2["RAM"]:::header --- H3["vCPU"]:::header --- H4["CPU Baseline %"]:::header --- H5["Cost / Month*"]:::header --- H6["Notes"]:::header
+
+    %% ====== ROW 1 ======
+    R1A["t3.small"]:::rowA --- R1B["2 GB"]:::rowA --- R1C["2 vCPU (burstable)"]:::rowA --- R1D["20%"]:::rowA --- R1E["~$7.50"]:::rowA --- R1F["Works for light traffic; may throttle under load"]:::rowA
+
+    %% ====== ROW 2 ======
+    R2A["t3.small (Unlimited)"]:::rowB --- R2B["2 GB"]:::rowB --- R2C["2 vCPU"]:::rowB --- R2D["20%"]:::rowB --- R2E["~$9–$11"]:::rowB --- R2F["Prevents CPU throttling; small extra cost"]:::rowB
+
+    %% ====== ROW 3 — RECOMMENDED ======
+    R3A["t3.medium"]:::recommended --- R3B["4 GB"]:::recommended --- R3C["2 vCPU"]:::recommended --- R3D["40%"]:::recommended --- R3E["~$15"]:::recommended --- R3F["Ideal for BAU; stable under multi-service load"]:::recommended
+```
+
+```
+📌 Footnotes
+* Costs are approximate on-demand pricing for us-east-1 and may vary slightly by region.
+CPU Baseline % refers to the guaranteed CPU performance before burst credits are used.
+Unlimited Mode allows instances to exceed baseline without throttling, with small overage charges.
+```
 
 ### How to Scale
 
@@ -636,7 +810,7 @@ Look for:
 
 - Returns 200 OK if the service is alive
 - No dependency checks
-- 
+
 ### /ready
 
 Confirms:
@@ -667,7 +841,7 @@ proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
 - Request ID
 - Tenant
 - User
-- 
+
 ### Docker Log Access
 
 ```
@@ -809,54 +983,31 @@ for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
 - DB connection status
 - Secrets load status
 - Version/build info
-- 
+
 ### Logs Viewer
 
 - Tail 100 logs
 - Filter by service
 - Search
 - Auto-refresh
-- 
+
 ### Environment Panel
 
 - ASPNETCORE_ENVIRONMENT
 - Loaded secrets
 - Connection strings
 - ConfigLoader status
-- 
+
 ### Crash Test Tools
 
 - Restart a service
 - Check DB health
 - Check secrets health
 - Check Nginx health
-- 
+
 ### Metrics
 
 - Requests per minute
 - Error rate
 - Circuit disconnects
 - SQL latency
-
-```mermaid
-flowchart TB
-    subgraph VPC["VPC (10.0.0.0/16)"]
-        
-        subgraph Public_Subnet["Public Subnet (10.0.1.0/24)"]
-            EC2[EC2 Instance<br/>Docker + ASP.NET Core]
-            IGW[Internet Gateway]
-            RT_Public[Public Route Table<br/>0.0.0.0/0 → IGW]
-        end
-
-        subgraph Private_Subnet["Private Subnet (10.0.2.0/24)"]
-            RDS[(RDS Database)]
-            RT_Private[Private Route Table<br/>No Internet Route]
-        end
-    end
-
-    EC2 --> RT_Public
-    RT_Public --> IGW
-
-    EC2 --> RDS
-    RDS --> RT_Private
-```
