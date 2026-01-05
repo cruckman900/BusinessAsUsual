@@ -110,24 +110,44 @@ Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)
 - HTTPS via **AWS Certificate Manager (ACM)**
 - No NAT Gateway, no load balancer, no surprise billing
 
+```mermaid
 flowchart LR
     A[Client / Browser] --> B[HTTPS Request]
-    B --> C[NGINX Reverse Proxy<br/>inside Docker Container]
-    C --> D[ASP.NET Core Application<br/>inside Docker Container]
+    B --> C[NGINX Reverse Proxy]
+    C --> D[ASP.NET Core Application]
     D --> E[(RDS: SQL Server or PostgreSQL)]
 
-    subgraph EC2 Instance
+    subgraph EC2_Instance
         C
         D
     end
 
-    subgraph AWS Cloud
+    subgraph AWS_Cloud
         EC2[EC2 Instance]
         E
     end
 
     C -->|Static Assets| C
     D -->|EF Core Queries| E
+```
+
+```mermaid
+flowchart TB
+    subgraph VPC["AWS VPC (10.0.0.0/16)"]
+        
+        subgraph Public_Subnet["Public Subnet (10.0.1.0/24)"]
+            IGW[Internet Gateway]
+            EC2[EC2 Instance<br/>Docker + ASP.NET Core]
+        end
+
+        subgraph Private_Subnet["Private Subnet (10.0.2.0/24)"]
+            RDS[(RDS Database<br/>PostgreSQL or SQL Server)]
+        end
+    end
+
+    IGW --> EC2
+    EC2 --> RDS
+```
 
 This document captures the exact steps taken to stand up the environment.
 
@@ -242,6 +262,22 @@ curl http://localhost
 
 To ensure a stable public endpoint for the application, an Elastic IP is attached to the EC2 instance and mapped to the custom domain via Route 53.
 
+```mermaid
+sequenceDiagram
+    participant User as User Browser
+    participant DNS as Route 53 DNS
+    participant EC2 as EC2 Instance<br/>Docker + ASP.NET Core
+    participant DB as RDS Database
+
+    User->>DNS: Resolve businessasusual.work
+    DNS-->>User: Return EC2 Public IP
+    User->>EC2: HTTPS Request
+    EC2->>EC2: NGINX routes to ASP.NET Core
+    EC2->>DB: EF Core Query
+    DB-->>EC2: Query Result
+    EC2-->>User: JSON/HTML Response
+```
+
 ### 6.1. Allocate and associate an Elastic IP
 
 1. Open the **EC2** console.
@@ -331,6 +367,28 @@ sudo systemctl reload nginx
 ```
 
 ### 7.3. Install Certbot (Let’s Encrypt)
+
+```mermaid
+sequenceDiagram
+    participant User as User Browser
+    participant NGINX as NGINX on EC2
+    participant Certbot as Certbot (cron)
+    participant ACME as Let's Encrypt ACME Server
+
+    User->>NGINX: HTTPS Request
+    NGINX-->>User: Serve Content (TLS Terminated)
+
+    Note over Certbot: Nightly cron job<br/>runs certbot renew
+
+    Certbot->>NGINX: Check certificate expiry
+    Certbot->>ACME: Request renewal challenge
+    ACME-->>Certbot: HTTP-01 challenge token
+    Certbot->>NGINX: Place challenge file in /.well-known/acme-challenge
+    ACME->>NGINX: Validate challenge
+    NGINX-->>ACME: Serve challenge file
+    ACME-->>Certbot: Issue renewed certificate
+    Certbot->>NGINX: Reload NGINX with new cert
+```
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
@@ -779,3 +837,26 @@ for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
 - Error rate
 - Circuit disconnects
 - SQL latency
+
+```mermaid
+flowchart TB
+    subgraph VPC["VPC (10.0.0.0/16)"]
+        
+        subgraph Public_Subnet["Public Subnet (10.0.1.0/24)"]
+            EC2[EC2 Instance<br/>Docker + ASP.NET Core]
+            IGW[Internet Gateway]
+            RT_Public[Public Route Table<br/>0.0.0.0/0 → IGW]
+        end
+
+        subgraph Private_Subnet["Private Subnet (10.0.2.0/24)"]
+            RDS[(RDS Database)]
+            RT_Private[Private Route Table<br/>No Internet Route]
+        end
+    end
+
+    EC2 --> RT_Public
+    RT_Public --> IGW
+
+    EC2 --> RDS
+    RDS --> RT_Private
+```
