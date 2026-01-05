@@ -1,7 +1,34 @@
-```md
-BUSINESS AS USUAL
-POWERED BY LINEAR DESCENT 
-AWS • DOCKER • NGINX • HTTPS • SECRETS MANAGER
+<a id="top"></a>
+
+```mermaid
+flowchart TB
+    %% ====== STYLES ======
+    classDef title fill:#0a84ff,stroke:#0a84ff,color:white,font-size:22px,font-weight:bold;
+    classDef subtitle fill:#333,stroke:#333,color:white,font-size:16px,font-weight:bold;
+    classDef tech fill:#f7f7f7,stroke:#0a84ff,color:#0a84ff,font-size:14px,font-weight:bold;
+
+    %% ====== TOP ROW ======
+    A["BUSINESS AS USUAL"]:::title
+    B["POWERED BY LINEAR DESCENT"]:::subtitle
+
+    A --> B
+
+    %% ====== TECH STACK ROW (HORIZONTAL) ======
+    subgraph STACK[" "]
+        direction LR
+        C1["AWS"]:::tech
+        C2["Docker"]:::tech
+        C3["Nginx"]:::tech
+        C4["HTTPS"]:::tech
+        C5["Secrets Manager"]:::tech
+    end
+
+    %% ====== BRANCHES FLOWING UP TO 'POWERED BY' ======
+    C1 --> B
+    C2 --> B
+    C3 --> B
+    C4 --> B
+    C5 --> B
 ```
 
 ![Status](https://img.shields.io/badge/Status-Production-green?style=for-the-badge)
@@ -1053,3 +1080,19 @@ for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
 - Error rate
 - Circuit disconnects
 - SQL latency
+
+<div style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #0a84ff;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 9999;
+">
+  <a href="#top" style="color: white; text-decoration: none;">⬆ Back to Top</a>
+</div>
