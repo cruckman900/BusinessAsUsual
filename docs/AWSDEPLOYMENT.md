@@ -4,11 +4,148 @@ POWERED BY LINEAR DESCENT
 AWS • DOCKER • NGINX • HTTPS • SECRETS MANAGER
 ```
 
+![Status](https://img.shields.io/badge/Status-Production-green?style=for-the-badge)
+![Dockerized](https://img.shields.io/badge/Docker-Multi--Service-blue?style=for-the-badge&logo=docker)
+![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20Secrets%20Manager%20%7C%20Route53-orange?style=for-the-badge&logo=amazonaws)
+![HTTPS](https://img.shields.io/badge/Security-HTTPS%20Enabled-brightgreen?style=for-the-badge&logo=letsencrypt)
+![Architecture](https://img.shields.io/badge/Architecture-Multi--Tenant-purple?style=for-the-badge)
+![Logging](https://img.shields.io/badge/Logging-Serilog-blueviolet?style=for-the-badge)
+![Monitoring](https://img.shields.io/badge/Monitoring-Admin%20Dashboard-lightgrey?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Business%20As%20Usual-black?style=for-the-badge)
+![Docs](https://img.shields.io/badge/Documentation-Enterprise%20Grade-0a84ff?style=for-the-badge)
+
+# Table of Contents
+
+<details>
+<summary><strong>📘 Table of Contents</strong></summary>
+
+## 0. Overview
+- [🏢 Business As Usual — Production Deployment & Operations Guide](#-business-as-usual--production-deployment--operations-guide)
+- [Prerequisites](#prerequisites)
+
+## 1. Core Deployment
+1. [Goal](#1-goal)
+2. [Account and region](#2-account-and-region)
+
+## 2. Architecture Deep Dive
+3. [SECTION 1 — VPC, Subnets, and Routing Tables](#-section-1--vpc-subnets-and-routing-tables)
+   - 3.1. Understanding the Network Layout  
+   - 3.2. Public Subnet (10.0.1.0/24)  
+   - 3.3. Private Subnet (10.0.2.0/24)  
+   - 3.4. Why This Matters  
+
+4. [SECTION 2 — DNS → EC2 → Application → Database Request Path](#-section-2--dns--ec2--application--database-request-path)
+   - 4.1. Route 53 Resolves the Domain  
+   - 4.2. Browser Sends HTTPS Request  
+   - 4.3. NGINX Terminates TLS  
+   - 4.4. ASP.NET Core Handles Logic  
+   - 4.5. EF Core Communicates with RDS  
+   - 4.6. Response Returns to User  
+
+5. [SECTION 3 — HTTPS, Certbot, and Auto‑Renewal Lifecycle](#-section-3--https-certbot-and-auto-renewal-lifecycle)
+   - 5.1. Initial Certificate Issuance  
+   - 5.2. Automatic Renewal  
+   - 5.3. Zero Downtime  
+
+## 3. Deployment Steps
+6. [EC2 instance provisioning](#3-ec2-instance-provisioning)
+   - 6.1. Instance details  
+   - 6.2. SSH access  
+
+7. [Install Docker and Docker Compose](#4-install-docker-and-docker-compose)
+   - 7.1. Update system packages  
+   - 7.2. Install Docker Engine  
+   - 7.3. Verify Docker  
+   - 7.4. Install Docker Compose  
+   - 7.5. Confirm Installation  
+
+8. [Deploying Business As Usual on EC2](#5-deploying-business-as-usual-on-ec2)
+   - 8.1. Clone the repository  
+   - 8.2. Environment configuration  
+   - 8.3. Test the application  
+
+9. [Assign Elastic IP and configure DNS](#6-assign-elastic-ip-and-configure-dns-route-53)
+   - 9.1. Allocate Elastic IP  
+   - 9.2. Configure Route 53  
+   - 9.3. Verify DNS  
+
+10. [Enable HTTPS](#7-enable-https-for-business-as-usual)
+    - 10.1. Install Nginx  
+    - 10.2. Configure reverse proxy  
+    - 10.3. Install Certbot  
+    - 10.4. Obtain certificate  
+    - 10.5. Verify HTTPS  
+
+11. [RDS-ready configuration](#8-rds-ready-configuration-future-migration)
+    - 11.1. Environment variable strategy  
+    - 11.2. Local Docker DB  
+    - 11.3. RDS template  
+
+12. [Cost-conscious design notes](#9-cost-conscious-design-notes)
+
+13. [Future enhancements & Phase 2 plan](#10-future-enhancements-and-phase-2-plan)
+
+14. [Résumé & portfolio summary](#11-résumé-and-portfolio-summary)
+
+## 4. Operations & Maintenance
+15. [Scaling the EC2 Instance](#-scaling-the-ec2-instance)
+    - 15.1. When to Scale  
+    - 15.2. Recommended Instance Types  
+    - 15.3. How to Scale  
+    - 15.4. Cost Breakdown  
+
+16. [AWS Secrets Manager Setup](#-aws-secrets-manager-setup)
+    - 16.1. Secret Name  
+    - 16.2. Required Keys  
+    - 16.3. IAM Policy  
+    - 16.4. Testing Secret Loading  
+
+17. [Health Endpoints](#-health-endpoints)
+    - 17.1. /health  
+    - 17.2. /ready  
+    - 17.3. Nginx Upstream Health Checks  
+
+18. [Logging & Monitoring](#-logging--monitoring)
+    - 18.1. Serilog Setup  
+    - 18.2. Docker Log Access  
+    - 18.3. Optional: Seq  
+    - 18.4. Admin Dashboard Integration  
+
+19. [Snapshotting the Environment (AMI)](#-snapshotting-the-environment-ami)
+    - 19.1. When to Snapshot  
+    - 19.2. How to Snapshot  
+    - 19.3. Restoring  
+
+20. [EC2 Update Playbook](#-ec2-update-playbook)
+    - 20.1. Pull Latest Code  
+    - 20.2. Rebuild Containers  
+    - 20.3. Validate  
+    - 20.4. Check Logs  
+
+21. [Crash Testing Procedures](#-crash-testing-procedures)
+    - 21.1. Rapid Restart  
+    - 21.2. SQL Server Cold Start  
+    - 21.3. CPU Spike  
+    - 21.4. Memory Pressure  
+    - 21.5. Nginx Routing Test  
+    - 21.6. Blazor Circuit Stability  
+
+22. [Admin Site Enhancements (Planned)](#-admin-site-enhancements-planned)
+    - 22.1. System Health Dashboard  
+    - 22.2. Logs Viewer  
+    - 22.3. Environment Panel  
+    - 22.4. Crash Test Tools  
+    - 22.5. Metrics  
+
+</details>
+
 ---
 
 # 🏢 Business As Usual — Production Deployment & Operations Guide
+
 A fully containerized, multi‑tenant SaaS platform deployed on AWS EC2 with Nginx, HTTPS, Docker Compose, and AWS Secrets Manager.
 Designed for production reliability, contributor‑proof onboarding, and enterprise‑grade observability
+
 This guide documents the production‑grade deployment pipeline, scaling strategy, observability stack, and operational playbooks that power the BAU platform.
 
 Designed for:
@@ -34,66 +171,36 @@ Designed for:
        _/m/'
 ```
 
-![Status](https://img.shields.io/badge/Status-Production-green?style=for-the-badge)
-![Dockerized](https://img.shields.io/badge/Docker-Multi--Service-blue?style=for-the-badge&logo=docker)
-![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20Secrets%20Manager%20%7C%20Route53-orange?style=for-the-badge&logo=amazonaws)
-![HTTPS](https://img.shields.io/badge/Security-HTTPS%20Enabled-brightgreen?style=for-the-badge&logo=letsencrypt)
-![Architecture](https://img.shields.io/badge/Architecture-Multi--Tenant-purple?style=for-the-badge)
-![Logging](https://img.shields.io/badge/Logging-Serilog-blueviolet?style=for-the-badge)
-![Monitoring](https://img.shields.io/badge/Monitoring-Admin%20Dashboard-lightgrey?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Business%20As%20Usual-black?style=for-the-badge)
-![Docs](https://img.shields.io/badge/Documentation-Enterprise%20Grade-0a84ff?style=for-the-badge)
+## Prerequisites
 
-# Table of Contents (TODO: this TOC starts close to the bottom of the document. fill in the top portion)
+- AWS account
+- Domain purchased
+- Basic Linux familiarity
+- Git installed
+- SSH key pair
 
-- [Scaling the EC2 Instance](#-scaling-the-ec2-instance)
-  - [When to Scale](#when-to-scale)
-  - [Recommended Instance Types](#recommended-instance-types)
-  - [How to Scale](#how-to-scale)
-  - [Cost Breakdown](#cost-breakdown)
+## 1. Goal
 
-- [AWS Secrets Manager Setup](#-aws-secrets-manager-setup)
-  - [Secret Name](#secret-name)
-  - [Required Keys](#required-keys)
-  - [IAM Policy](#iam-policy)
-  - [Testing Secret Loading](#testing-secret-loading)
+Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)** using a cost-conscious, résumé-ready architecture:
 
-- [Health Endpoints](#-health-endpoints)
-  - [/health](#health)
-  - [/ready](#ready)
-  - [Nginx Upstream Health Checks](#nginx-upstream-health-checks)
+- Single **EC2 t3.micro** instance
+- Docker + docker-compose
+- Domain: `https://businessasusual.work`
+- DNS via **Route 53**
+- HTTPS via **AWS Certificate Manager (ACM)**
+- No NAT Gateway, no load balancer, no surprise billing
 
-- [Logging & Monitoring](#-logging--monitoring)
-  - [Serilog Setup](#serilog-setup)
-  - [Docker Log Access](#docker-log-access)
-  - [Optional: Seq Container](#optional-seq-container)
-  - [Admin Dashboard Integration](#admin-dashboard-integration)
+This document captures the exact steps taken to stand up the environment.
 
-- [Snapshotting the Environment (AMI)](#-snapshotting-the-environment-ami)
-  - [When to Snapshot](#when-to-snapshot)
-  - [How to Snapshot](#how-to-snapshot)
-  - [Restoring](#restoring)
+---
 
-- [EC2 Update Playbook](#-ec2-update-playbook)
-  - [Pull Latest Code](#pull-latest-code)
-  - [Rebuild Containers](#rebuild-containers)
-  - [Validate](#validate)
-  - [Check Logs](#check-logs)
+## 2. Account and region
 
-- [Crash Testing Procedures](#-crash-testing-procedures)
-  - [Rapid Restart](#rapid-restart)
-  - [SQL Server Cold Start](#sql-server-cold-start)
-  - [CPU Spike](#cpu-spike)
-  - [Memory Pressure](#memory-pressure)
-  - [Nginx Routing Test](#nginx-routing-test)
-  - [Blazor Circuit Stability](#blazor-circuit-stability)
+- **AWS Account ID:** 283784618079
+- **Plan:** Upgraded from free tier to paid
+- **Region:** `us-east-1` (N. Virginia) (chosen for low latency and broad service support)
 
-- [Admin Site Enhancements (Planned)](#-admin-site-enhancements-planned)
-  - [System Health Dashboard](#system-health-dashboard)
-  - [Logs Viewer](#logs-viewer)
-  - [Environment Panel](#environment-panel)
-  - [Crash Test Tools](#crash-test-tools)
-  - [Metrics](#metrics)
+---
 
 # ✅ SECTION 1 — VPC, Subnets, and Routing Tables
 
@@ -272,49 +379,6 @@ NGINX reloads gracefully, ensuring:
 - No dropped connections
 - No downtime
 - Seamless certificate rotation
-
----
-
-# Business As Usual – AWS Deployment Log
-
-## 1. Goal
-
-Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)** using a cost-conscious, résumé-ready architecture:
-
-- Single **EC2 t3.micro** instance
-- Docker + docker-compose
-- Domain: `https://businessasusual.work`
-- DNS via **Route 53**
-- HTTPS via **AWS Certificate Manager (ACM)**
-- No NAT Gateway, no load balancer, no surprise billing
-
-```mermaid
-flowchart TB
-    subgraph VPC["AWS VPC (10.0.0.0/16)"]
-        
-        subgraph Public_Subnet["Public Subnet (10.0.1.0/24)"]
-            IGW[Internet Gateway]
-            EC2[EC2 Instance<br/>Docker + ASP.NET Core]
-        end
-
-        subgraph Private_Subnet["Private Subnet (10.0.2.0/24)"]
-            RDS[(RDS Database<br/>PostgreSQL or SQL Server)]
-        end
-    end
-
-    IGW --> EC2
-    EC2 --> RDS
-```
-
-This document captures the exact steps taken to stand up the environment.
-
----
-
-## 2. Account and region
-
-- **AWS Account ID:** 283784618079
-- **Plan:** Upgraded from free tier to paid
-- **Region:** `us-east-1` (N. Virginia) (chosen for low latency and broad service support)
 
 ---
 
@@ -524,28 +588,6 @@ sudo systemctl reload nginx
 ```
 
 ### 7.3. Install Certbot (Let’s Encrypt)
-
-```mermaid
-sequenceDiagram
-    participant User as User Browser
-    participant NGINX as NGINX on EC2
-    participant Certbot as Certbot (cron)
-    participant ACME as Let's Encrypt ACME Server
-
-    User->>NGINX: HTTPS Request
-    NGINX-->>User: Serve Content (TLS Terminated)
-
-    Note over Certbot: Nightly cron job<br/>runs certbot renew
-
-    Certbot->>NGINX: Check certificate expiry
-    Certbot->>ACME: Request renewal challenge
-    ACME-->>Certbot: HTTP-01 challenge token
-    Certbot->>NGINX: Place challenge file in /.well-known/acme-challenge
-    ACME->>NGINX: Validate challenge
-    NGINX-->>ACME: Serve challenge file
-    ACME-->>Certbot: Issue renewed certificate
-    Certbot->>NGINX: Reload NGINX with new cert
-```
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
