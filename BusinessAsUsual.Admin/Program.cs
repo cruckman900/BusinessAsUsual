@@ -1,114 +1,194 @@
 ﻿using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
+using BusinessAsUsual.Admin.Logging;
 using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure;
+using CorrelationId;
+using CorrelationId.DependencyInjection;
 using DotNetEnv;
-using Microsoft.EntityFrameworkCore;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Serilog;
 
 namespace BusinessAsUsual.Admin
 {
     /// <summary>
-    /// BusinessAsUsual.Admin project Program.cs
+    /// Provides the entry point and startup configuration for the BusinessAsUsual.Admin web application.
     /// </summary>
+    /// <remarks>This class is not intended to be instantiated. It configures application services, logging,
+    /// database connectivity, and middleware, and then starts the web host. The configuration includes loading
+    /// environment variables, setting up dependency injection, and initializing Serilog for structured logging. The
+    /// class follows the standard ASP.NET Core application startup pattern.</remarks>
 #pragma warning disable S1118 // Utility classes should not have public constructors
     public class Program
 #pragma warning restore S1118 // Utility classes should not have public constructors
     {
+
         /// <summary>
-        /// Entry point of BusinessAsUsual.Admin
+        /// Configures and runs the BusinessAsUsual.Admin web application host using the specified command-line
+        /// arguments.
         /// </summary>
-        /// <param name="args"></param>
+        /// <remarks>This method initializes logging, loads configuration and environment variables, sets
+        /// up required services, and starts the ASP.NET Core web host. It also performs readiness checks for the SQL
+        /// Server database before starting the application. If an unhandled exception occurs during startup, it is
+        /// logged as a fatal error. This method is intended to be used as the application's entry point.</remarks>
+        /// <param name="args">An array of command-line arguments to configure the web host.</param>
+        /// <returns>A task that represents the asynchronous operation of running the web application.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0014:Suggest using top level route registrations", Justification = "<Pending>")]
         public static async Task Main(string[] args)
         {
-            // Load environment variables from .env
-            await ConfigLoader.LoadEnvironmentVariables();
-            Env.Load();
+            SerilogBootstrapper.Initialize();
 
-            var connString = ConfigLoader.Get("AWS_SQL_CONNECTION_STRING");
-
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages();
-            builder.Services.AddSignalR();
-            builder.Services.AddDbContext<AdminDbContext>(options =>
-                options.UseSqlServer(connString));
-            builder.Logging.ClearProviders();
-            builder.Logging.AddConsole();
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
-
-            // Register your services
-            builder.Services.AddBusinessAsUsualServices();
-
-            if (string.IsNullOrWhiteSpace(connString))
+            try
             {
-                Console.WriteLine("❌ AWS_SQL_CONNECTION_STRING is missing or empty.");
-            }
-            else
-            {
-                var retries = 10;
-                while (retries > 0)
+                Log.Information("Starting BusinessAsUsual.Admin web host");
+
+                // Load environment variables from .env
+                await ConfigLoader.LoadEnvironmentVariables();
+                Env.Load();
+
+                var connString = ConfigLoader.Get("AWS_SQL_CONNECTION_STRING");
+
+                var builder = WebApplication.CreateBuilder(args);
+
+                builder.Host.UseSerilog();
+
+                // Add services to the container.
+                builder.Services.AddControllersWithViews();
+                builder.Services.AddRazorPages();
+                builder.Services.AddSignalR();
+                builder.Services.AddDbContext<AdminDbContext>(options =>
+                    options.UseSqlServer(connString));
+                builder.Logging.ClearProviders();
+                builder.Logging.AddConsole();
+                builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+                builder.Services.AddDefaultCorrelationId(options =>
                 {
-                    try
+                    options.AddToLoggingScope = true;
+                    options.UpdateTraceIdentifier = true;
+                    options.RequestHeader = "X-Correlation-ID";
+                    options.ResponseHeader = "X-Correlation-ID";
+                });
+                builder.Services.AddHttpContextAccessor();
+                builder.Services.AddHealthChecks()
+                    .AddProcessAllocatedMemoryHealthCheck(512) // MB threshold
+                    .AddWorkingSetHealthCheck(1024) // MB threshold
+                    .AddDiskStorageHealthCheck(opt =>
                     {
-                        using var conn = new SqlConnection(connString);
-                        await conn.OpenAsync();
-                        Console.WriteLine("✅ SQL Server is ready.");
-                        break;
+                        opt.AddDrive("C:\\", 1024); // 1GB minimum free
+                    })
+                    .AddSqlServer(
+                        connectionString: connString,
+                        name: "Database",
+                        failureStatus: HealthStatus.Unhealthy,
+                        tags: new[] { "db", "sql" }
+                    )
+                    .AddCheck("Self", () => HealthCheckResult.Healthy());
+                builder.Services.AddSingleton<LogQueryService>();
+                builder.Services.AddSingleton<EnvironmentService>();
+
+                // Initialize Serilog AFTER configuration is loaded
+                SerilogBootstrapper.Initialize();
+
+                // Register your services
+                builder.Services.AddBusinessAsUsualServices();
+
+                if (string.IsNullOrWhiteSpace(connString))
+                {
+                    Console.WriteLine("❌ AWS_SQL_CONNECTION_STRING is missing or empty.");
+                }
+                else
+                {
+                    var retries = 10;
+                    while (retries > 0)
+                    {
+                        try
+                        {
+                            using var conn = new SqlConnection(connString);
+                            await conn.OpenAsync();
+                            Console.WriteLine("✅ SQL Server is ready.");
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"⏳ Waiting for SQL Server... {ex.Message}");
+                            Thread.Sleep(2000);
+                            retries--;
+                        }
                     }
-                    catch (Exception ex)
+
+                    if (retries == 0)
                     {
-                        Console.WriteLine($"⏳ Waiting for SQL Server... {ex.Message}");
-                        Thread.Sleep(2000);
-                        retries--;
+                        Console.WriteLine("❌ SQL Server did not become ready in time.");
                     }
                 }
 
-                if (retries == 0)
+                var app = builder.Build();
+
+                // Configure the HTTP request pipeline.
+                if (!app.Environment.IsDevelopment())
                 {
-                    Console.WriteLine("❌ SQL Server did not become ready in time.");
+                    app.UseExceptionHandler("/Error");
+                    app.UseHsts();
                 }
+
+                app.UseStaticFiles();
+                app.UseHttpsRedirection();
+                app.UseRouting();
+                app.UseAuthorization();
+                app.UseDeveloperExceptionPage();
+                app.UseCorrelationId();
+
+                app.MapHub<ProvisioningHub>("/provisioningHub");
+                app.MapHub<SmartCommitHub>("/smartCommitHub");
+
+                app.MapDefaultControllerRoute();
+
+                // Default route for non-area controllers
+                app.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
+
+                // Admin area route
+                app.MapControllerRoute(
+                    name: "Admin",
+                    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
+                );
+
+                app.UseEndpoints(static endpoints =>
+                {
+                    endpoints.MapHub<ProvisioningHub>("/provisioningHub");
+                });
+
+                app.MapStaticAssets();
+                app.MapRazorPages().WithStaticAssets();
+
+                app.UseSerilogRequestLogging(options =>
+                {
+                    options.MessageTemplate = "Handled {RequestPath} in {Elapsed:0.0000} ms";
+                });
+
+                app.MapHealthChecks("/health", new HealthCheckOptions
+                {
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
+
+                await app.RunAsync();
             }
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+            catch (Exception ex)
             {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
+                Log.Fatal(ex, "BAU Admin terminated unexpectedly");
             }
-
-            app.UseStaticFiles();
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthorization();
-            app.UseDeveloperExceptionPage();
-
-            app.MapHub<ProvisioningHub>("/provisioningHub");
-            app.MapHub<SmartCommitHub>("/smartCommitHub");
-
-            app.MapDefaultControllerRoute();
-
-            app.MapControllerRoute(
-                name: "admin_default",
-                pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}"
-            );
-
-#pragma warning disable ASP0014
-            app.UseEndpoints(static endpoints =>
+            finally
             {
-                endpoints.MapHub<ProvisioningHub>("/provisioningHub");
-            });
-#pragma warning restore ASP0014
-
-            app.MapStaticAssets();
-            app.MapRazorPages().WithStaticAssets();
-
-            await app.RunAsync();
+                Log.CloseAndFlush();
+            }
         }
     }
 }

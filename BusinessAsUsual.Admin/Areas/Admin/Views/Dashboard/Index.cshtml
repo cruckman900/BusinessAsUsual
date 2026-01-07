@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>System Health</h2>
+
+<div id="health-cards" class="row"></div>
+
+<script>
+    async function loadHealth() {
+        const health = await fetch('/health').then(res => res.json());
+        const stats = await fetch('/health/stats').then(res => res.json());
+
+        const html = `
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <h5>CPU</h5><p>${stats.cpu}%</p>
+            </div></div></div>
+
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <h5>Memory</h5><p>${stats.memory.used} / ${stats.memory.total} MB</p>
+            </div></div></div>
+
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <h5>Disk</h5><p>${stats.disk.used} / ${stats.disk.total} GB</p>
+            </div></div></div>
+
+            <div class="col-md-3"><div class="card"><div class="card-body">
+                <h5>Uptime</h5><p>${stats.uptime}</p>
+            </div></div></div>
+        `;
+
+        document.getElementById('health-cards').innerHTML = html;
+    }
+
+    loadHealth();
+</script>
