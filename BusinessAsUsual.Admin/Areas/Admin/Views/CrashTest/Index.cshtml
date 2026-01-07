@@ -1,0 +1,16 @@
+﻿<h2>Crash Test Tools</h2>
+
+<button class="btn btn-danger" onclick="trigger('handled-exception')">Handled Exception</button>
+<button class="btn btn-danger" onclick="trigger('unhandled-exception')">Unhandled Exception</button>
+<button class="btn btn-warning" onclick="trigger('500')">Force 500</button>
+<button class="btn btn-warning" onclick="trigger('timeout')">Timeout</button>
+<button class="btn btn-warning" onclick="trigger('dependency-failure')">Dependency Failure</button>
+<button class="btn btn-secondary" onclick="trigger('validation-failure')">Validation Failure</button>
+<button class="btn btn-secondary" onclick="trigger('log-error')">Log Error</button>
+
+<script>
+    async function trigger(type) {
+        await fetch(`/admin/test/${type}`, { method: 'POST' });
+        alert(`${type} triggered`);
+    }
+</script>

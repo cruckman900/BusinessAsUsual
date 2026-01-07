@@ -13,6 +13,16 @@ COPY BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj Busine
 # COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 # COPY BusinessAsUsual.Shared/BusinessAsUsual.Shared.csproj BusinessAsUsual.Shared/
 
+# Remove GitInfo from global NuGet cache
+RUN rm -rf /root/.nuget/packages/gitinfo
+RUN rm -rf /root/.nuget/packages/gitinfo*
+RUN rm -rf /usr/share/dotnet/sdk/*/Sdks/*/analyzers/*/GitInfo*
+RUN rm -rf /usr/share/dotnet/sdk/*/Roslyn/bincore/GitInfo*
+# RUN find /root/.nuget/packages -maxdepth 2 -type d -name "gitinfo" -exec rm -rf {} +
+
+# Remove GitInfo from the project
+# RUN dotnet remove BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj package GitInfo
+
 # Restore dependencies
 RUN dotnet restore BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj
 
@@ -21,6 +31,8 @@ COPY . .
 COPY .env /app/.env
 # Optional: validate env vars (SmartEnvValidator hook)
 # RUN ./scripts/validate-env.sh || echo "Skipping env validation in build stage"
+
+ENV GitInfoSkip=true
 
 # Build and publish
 WORKDIR /src/BusinessAsUsual.Admin
