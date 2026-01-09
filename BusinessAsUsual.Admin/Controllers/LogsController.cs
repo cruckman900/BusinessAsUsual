@@ -55,7 +55,7 @@ namespace BusinessAsUsual.Admin.Controllers
         [HttpGet("download")]
         public IActionResult Download()
         {
-            var file = Directory.GetFiles("logs", "*.log")
+            var file = Directory.GetFiles("Logs", "*.log")
                 .OrderByDescending(f => f)
                 .First();
 

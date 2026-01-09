@@ -63,7 +63,7 @@ namespace BusinessAsUsual.Admin.Logging
                         formatter: new Serilog.Formatting.Compact.RenderedCompactJsonFormatter()
                     ))
                     .WriteTo.Async(a => a.File(
-                        path: "logs/bau.log",
+                        path: "Logs/bau.log",
                         rollingInterval: RollingInterval.Day,
                         retainedFileCountLimit: 7,
                         shared: true,

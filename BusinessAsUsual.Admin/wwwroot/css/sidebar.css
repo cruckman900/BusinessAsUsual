@@ -2,29 +2,40 @@
 
 .sidebar {
     background-color: var(--sidebar-bg);
-    padding: 1rem;
+    padding: 0.25rem;
     border-right: 2px solid var(--sidebar-border);
     height: 100%;
     align-self: start;
 }
 
-.sidebar h3 {
-    font-size: 1.2rem;
-    color: var(--sidebar-heading);
-    margin-bottom: 1rem;
-}
+    .sidebar h3 {
+        font-size: 1.2rem;
+        color: var(--sidebar-heading);
+        margin-bottom: 1rem;
+    }
 
-.sidebar ul {
-    list-style: none;
-}
+    .sidebar ul {
+        list-style: none;
+        background-color: var(--sidebar-bg);
+    }
 
-.sidebar a {
-    display: block;
-    margin: 0.5rem 0;
-    color: var(--sidebar-link);
-    text-decoration: none;
-}
+    .sidebar a {
+        display: block;
+        margin: 0.5rem 0;
+        color: var(--sidebar-link);
+        text-decoration: none;
+    }
 
-.sidebar a:hover {
-    text-decoration: underline;
-}
+        .sidebar a:hover {
+            text-decoration: underline;
+        }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+    }
+
+    .sidebar-toggle {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }

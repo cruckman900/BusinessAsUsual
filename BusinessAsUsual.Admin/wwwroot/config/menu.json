@@ -58,5 +58,39 @@
         "icon": "fas fa-user-cog"
       }
     ]
+  },
+  "Health & Diagnostics": {
+    "id": "nav-health",
+    "icon": "fas fa-heartbeat",
+    "items": [
+      {
+        "id": "menu-health-dashboard",
+        "label": "Dashboard",
+        "route": "/admin/dashboard",
+        "description": "System overview and live stats",
+        "icon": "fas fa-tachometer-alt"
+      },
+      {
+        "id": "menu-health-logs",
+        "label": "Logs",
+        "route": "/admin/logs",
+        "description": "View application and system logs",
+        "icon": "fas fa-scroll"
+      },
+      {
+        "id": "menu-health-metrics",
+        "label": "Metrics",
+        "route": "/admin/metrics",
+        "description": "Charts and performance trends",
+        "icon": "fas fa-chart-line"
+      },
+      {
+        "id": "menu-health-settings",
+        "label": "Settings",
+        "route": "/admin/health/settings",
+        "description": "Configure health and diagnostics",
+        "icon": "fas fa-sliders-h"
+      }
+    ]
   }
 }

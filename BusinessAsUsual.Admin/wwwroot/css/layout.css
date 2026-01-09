@@ -12,7 +12,7 @@ body {
     flex-grow: 1;
     gap: 1rem;
     padding: 1rem;
-    overflow-y: scroll;
+    overflow-y: hidden;
 }
 
 /* Sticky header + footer */
