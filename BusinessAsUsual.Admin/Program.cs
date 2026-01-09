@@ -1,8 +1,11 @@
-﻿using BusinessAsUsual.Admin.Data;
+﻿using Amazon.CloudWatchLogs;
+using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
 using BusinessAsUsual.Admin.Services;
+using BusinessAsUsual.Admin.Services.Health;
+using BusinessAsUsual.Admin.Services.Logs;
 using BusinessAsUsual.Infrastructure;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
@@ -13,6 +16,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using Amazon.Extensions.NETCore.Setup;
 
 namespace BusinessAsUsual.Admin
 {
@@ -90,7 +94,32 @@ namespace BusinessAsUsual.Admin
                     )
                     .AddCheck("Self", () => HealthCheckResult.Healthy());
                 builder.Services.AddSingleton<LogQueryService>();
+
+                if (builder.Environment.IsDevelopment())
+                {
+                    builder.Services.AddSingleton<ILogReader, LocalLogReader>();
+                }
+                else
+                {
+                    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+                    builder.Services.AddAWSService<IAmazonCloudWatchLogs>();
+                    builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
+                }
+
                 builder.Services.AddSingleton<EnvironmentService>();
+
+                if (OperatingSystem.IsWindows())
+                {
+                    builder.Services.AddSingleton<IHealthMetricsProvider, WindowsHealthMetricsProvider>();
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    builder.Services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
+                }
+                else
+                {
+                    builder.Services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
+                }
 
                 // Initialize Serilog AFTER configuration is loaded
                 SerilogBootstrapper.Initialize();
@@ -149,16 +178,23 @@ namespace BusinessAsUsual.Admin
 
                 app.MapDefaultControllerRoute();
 
-                // Default route for non-area controllers
+                // Root landing page
                 app.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                    name: "root",
+                    pattern: "",
+                    defaults: new { controller = "Home", action = "Index" }
                 );
 
                 // Admin area route
                 app.MapControllerRoute(
                     name: "Admin",
                     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
+                );
+
+                // Default route for non-area controllers
+                app.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
                 );
 
                 app.UseEndpoints(static endpoints =>

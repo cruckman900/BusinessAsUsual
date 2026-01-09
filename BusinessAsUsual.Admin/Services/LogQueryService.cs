@@ -14,7 +14,7 @@ namespace BusinessAsUsual.Admin.Services
     /// if required.</remarks>
     public class LogQueryService
     {
-        private readonly string _logDirectory = "logs";
+        private readonly string _logDirectory = "Logs";
 
         /// <summary>
         /// Queries log entries from the log directory, applying optional filters for log level, service name, and

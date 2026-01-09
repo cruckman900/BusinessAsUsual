@@ -1,0 +1,159 @@
+﻿@{
+    ViewData["Title"] = "Logs";
+}
+
+<div class="log">
+    <h2 class="mb-3">Logs</h2>
+
+    <div class="card mb-3">
+        <div class="card-body d-flex gap-3 align-items-end">
+            <div>
+                <label class="form-label">Level</label>
+                <select id="log-level" class="form-select">
+                    <option value="">All</option>
+                    <option>DEBUG</option>
+                    <option>INFO</option>
+                    <option>WARN</option>
+                    <option>ERROR</option>
+                    <option>FATAL</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label">Search</label>
+                <input id="log-search" class="form-control" placeholder="Search logs..." />
+            </div>
+
+            <div>
+                <label class="form-label">Auto Refresh</label>
+                <input type="checkbox" id="log-auto" class="form-check-input ms-2" />
+            </div>
+
+            <button id="log-refresh" class="btn btn-primary ms-auto">
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mb-3">
+        <label>Page Size</label>
+        <select id="log-page-size" class="form-select" style="width: 100px;">
+            <option>50</option>
+            <option>100</option>
+            <option selected>200</option>
+            <option>500</option>
+        </select>
+
+        <button id="log-prev" class="btn btn-secondary">Prev</button>
+        <button id="log-next" class="btn btn-secondary">Next</button>
+
+        <span id="log-page-info" class="ms-3"></span>
+    </div>
+
+    <div id="log-container" class="log-window"></div>
+</div>
+
+<style>
+    .log {
+        /* height: calc(100vh - 200px); */
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .log-window {
+        background: #111;
+        color: #eee;
+        padding: 1rem;
+        border-radius: 8px;
+        /* height: 600px; */
+        /* height: 100%; */
+        overflow-y: auto;
+        font-family: Consolas, monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+    }
+
+    .log-entry {
+        cursor: pointer;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #333;
+    }
+
+    .log-entry .ts { color: #888; }
+    .log-entry .lvl-debug { color: #6ee7b7; }
+    .log-entry .lvl-info { color: #93c5fd; }
+    .log-entry .lvl-warn { color: #facc15; }
+    .log-entry .lvl-error { color: #f87171; }
+    .log-entry .lvl-fatal { color: #fb4141; }
+
+    .exception-block {
+        display: none;
+        background: #222;
+        color: #f88;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        border-left: 3px solid #f44;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+    }
+
+    .log-entry.expanded .exception-block {
+        display: block;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+
+        async function loadLogs() {
+            const level = document.getElementById("log-level");
+            const search = document.getElementById("log-search");
+            const pageSize = parseInt(document.getElementById("log-page-size").value);
+
+            const url = `/Admin/logs/data?level=${level.value}&search=${search.value}&limit=${pageSize}&pageXOffset=${currentPage}`;
+            const logs = await fetch(url).then(res => res.json());
+
+            renderLogs(logs);
+            document.getElementById("log-page-info").SVGTextContentElement = `PageTransitionEvent ${currentPage}`;
+
+            document.getElementById("log-prev").onclick = () => {
+                if (currentPage > 0) {
+                    currentPage--;
+                    loadLogs();
+                }
+            };
+
+            document.getElementById("log-next").onclick = () => {
+                currentPage++;
+                loadLogs();
+            };
+
+            document.getElementById("log-page-size").onchange = () => {
+                currentPage = 1;
+                loadLogs();
+            };
+        }
+
+        async function renderLogs(logs) {
+            const container = document.getElementById("log-container");
+            container.innerHTML = logs.map(l => `<div class="log-entry" onclick="this.classList.toggle('expanded')">
+                    <div class="log-line"><span class="ts">[${l.timestamp}]</span> <span class="lvl-${l.level.toLowerCase()}">[${l.level}]</span> <span class="message">${l.message}</span></div>
+                    ${l.exception ? `<pre class="exception-block">${l.exception}</pre>` : ""}
+                </div>`.trim()).join("");
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById("log-refresh").onclick = loadLogs;
+        document.getElementById("log-search").oninput = loadLogs;
+        document.getElementById("log-level").onchange = loadLogs;
+
+        setInterval(() => {
+            if (document.getElementById("log-auto").checked) loadLogs();
+        }, 3000);
+
+        loadLogs();
+    </script>
+}

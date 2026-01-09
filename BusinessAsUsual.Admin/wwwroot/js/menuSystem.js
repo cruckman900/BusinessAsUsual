@@ -35,9 +35,14 @@ globalThis.resolveSidebarSection = function () {
     const path = globalThis.location.pathname.toLowerCase();
 
     if (path.includes("/admin/company")) return "Companies";
-    if (path.includes("/admin/provision")) return "Provisioning";
     if (path.includes("/admin/user")) return "Users";
     if (path.includes("/admin/settings")) return "Settings";
+
+    // ⭐ NEW: Health & Diagnostics category
+    if (path.includes("/admin/dashboard")) return "Health & Diagnostics";
+    if (path.includes("/admin/logs")) return "Health & Diagnostics";
+    if (path.includes("/admin/metrics")) return "Health & Diagnostics";
+    if (path.includes("/admin/health")) return "Health & Diagnostics";
 
     return "Home";
 };
@@ -80,6 +85,7 @@ globalThis.renderNavbar = async function () {
                 globalThis.menuState.sidebarWasTriggeredByNavbar = true;
                 globalThis.renderSidebar(category);
                 globalThis.renderNavbar(); // ✅ re-render navbar to reflect active state
+                document.documentElement.style.setProperty('--sidebar-width', '250px');
             } else {
                 console.log(`[SmartCommit] Redirecting to ${route} via ${id}`);
                 globalThis.menuState.sidebarWasTriggeredByNavbar = true;
@@ -87,6 +93,7 @@ globalThis.renderNavbar = async function () {
                 globalThis.renderSidebar(category);
                 globalThis.renderNavbar(); // ✅ re-render before navigation
                 globalThis.location.href = route;
+                document.documentElement.style.setProperty('--sidebar-width', '250px');
             }
         });
 
@@ -119,11 +126,13 @@ globalThis.renderSidebar = function (category) {
         sidebar.classList.remove("collapsed");
         sidebar.classList.add("expanded");
         globalThis.menuState.sidebarIsExpanded = true;
+        document.documentElement.style.setProperty('--sidebar-width', '250px');
     }
 
     if (globalThis.menuState.sidebarIsExpanded) {
         sidebar.classList.remove("collapsed");
         sidebar.classList.add("expanded");
+        document.documentElement.style.setProperty('--sidebar-width', '250px');
     }
 
     sidebarTitle.textContent = category;
