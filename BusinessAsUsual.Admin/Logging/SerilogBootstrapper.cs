@@ -31,25 +31,7 @@ namespace BusinessAsUsual.Admin.Logging
                 var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
                 var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
 
-                // If AWS is not configured, skip CloudWatch entirely
-                if (string.IsNullOrWhiteSpace(region) ||
-                    string.IsNullOrWhiteSpace(accessKey) ||
-                    string.IsNullOrWhiteSpace(secretKey))
-                {
-                    Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Console()
-                        .CreateLogger();
-
-                    return;
-                }
-
-                var client = new AmazonCloudWatchLogsClient(
-                    new BasicAWSCredentials(accessKey, secretKey),
-                    RegionEndpoint.GetBySystemName(region)
-                );
-
-                // Configure Serilog
-                Log.Logger = new LoggerConfiguration()
+                var config = new LoggerConfiguration()
                     .MinimumLevel.Information()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
@@ -68,10 +50,21 @@ namespace BusinessAsUsual.Admin.Logging
                         retainedFileCountLimit: 7,
                         shared: true,
                         restrictedToMinimumLevel: LogEventLevel.Information
-                    ))
-                    .WriteTo.Seq("http://localhost:5341") // Example Seq server URL; adjust as needed
-                    .WriteTo.Console()
-                    .WriteTo.AmazonCloudWatch(
+                    ));
+
+                // Optional: Seq only when running locally
+                config = config.WriteTo.Seq("http://localhost:5341");
+
+                // Only add CloudWatch if AWS is configured
+                if (!string.IsNullOrWhiteSpace(accessKey) &&
+                    !string.IsNullOrWhiteSpace(secretKey))
+                {
+                    var client = new AmazonCloudWatchLogsClient(
+                        new BasicAWSCredentials(accessKey, secretKey),
+                        RegionEndpoint.GetBySystemName(region)
+                    );
+
+                    config = config.WriteTo.AmazonCloudWatch(
                         new CloudWatchSinkOptions
                         {
                             LogGroupName = "BAU-Admin",
@@ -79,20 +72,21 @@ namespace BusinessAsUsual.Admin.Logging
                             MinimumLogEventLevel = LogEventLevel.Information,
                         },
                         client
-                    )
-                    .CreateLogger();
+                    );
+                }
+
+                Log.Logger = config.CreateLogger();
             }
             catch (Exception ex)
             {
-                // Fallback to console logging
                 Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console()
                     .CreateLogger();
 
-                Log.Error(ex, "Failed to initialize CloudWatch logging");
+                Log.Error(ex, "Failed to initialize logging");
             }
-
-            // If you want to run Seq locally, you can use Docker: docker run -d --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq
         }
+
+        // If you want to run Seq locally, you can use Docker: docker run -d --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq
     }
 }

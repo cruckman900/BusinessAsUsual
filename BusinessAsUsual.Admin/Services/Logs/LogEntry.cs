@@ -32,4 +32,9 @@ public class LogEntry
     /// Gets or sets the source identifier associated with the object.
     /// </summary>
     public string? Source { get; set; }
+
+    /// <summary>
+    /// Gets the timestamp as a formatted string in the "yyyy-MM-dd HH:mm:ss.fff" pattern.
+    /// </summary>
+    public string TimestampFormatted => Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
 }

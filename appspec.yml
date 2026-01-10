@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/BusinessAsUsual
+hooks:
+  BeforeInstall:
+    - location: scripts/stop_service.sh
+      timeout: 60
+  AfterInstall:
+    - location: scripts/start_service.sh
+      timeout: 60

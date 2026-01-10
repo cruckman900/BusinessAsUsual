@@ -32,13 +32,16 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         public IActionResult Index() => View();
 
         /// <summary>
-        /// Retrieves a collection of log entries filtered by log level, search term, and result limit.
+        /// Retrieves a paginated list of log entries filtered by log level and search criteria.
         /// </summary>
         /// <param name="level">The log level to filter by (for example, "Error", "Warning", or "Information"). If null, logs of all levels
         /// are included.</param>
-        /// <param name="search">A search term to filter log messages. If null or empty, no search filtering is applied.</param>
-        /// <param name="limit">The maximum number of log entries to return. Must be a positive integer. The default is 200.</param>
-        /// <returns>An <see cref="IActionResult"/> containing the filtered log entries in JSON format.</returns>
+        /// <param name="search">A search term to filter log messages. Only logs containing this term are returned. If null, no search
+        /// filtering is applied.</param>
+        /// <param name="limit">The maximum number of log entries to return per page. Must be a positive integer. The default is 200.</param>
+        /// <param name="page">The page number of results to retrieve. Must be a positive integer. The default is 1.</param>
+        /// <returns>An <see cref="IActionResult"/> containing a JSON-formatted list of log entries that match the specified
+        /// filters and pagination settings.</returns>
         [HttpGet("data")]
         public async Task<IActionResult> GetLogs(
             string? level, string? search, int limit = 200, int page = 1
@@ -53,7 +56,13 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
             };
 
             var logs = await _logReader.GetLogsAsync(query);
-            return Json(logs);
+
+            return Json(logs.Select(e => new {
+                timestamp = e.TimestampFormatted,
+                level = e.Level,
+                message = e.Message,
+                exception = e.Exception
+            }));
         }
     }
 }
