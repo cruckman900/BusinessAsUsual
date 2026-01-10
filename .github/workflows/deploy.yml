@@ -23,8 +23,8 @@ jobs:
             - name: Prepare deployment package
               run: |
                   mkdir deploy
-                  cp appspec.yml deploy/
-                  cp -r scripts deploy/
+                  cp BusinessAsUsual.Admin/appspec.yml deploy/
+                  cp -r BusinessAsUsual.Admin/scripts deploy/
                   dotnet publish BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj -c Release -o deploy/published
                   cd deploy
                   zip -r ../bau-admin.zip .
