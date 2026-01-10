@@ -18,7 +18,12 @@ jobs:
               run: |
                   cd BusinessAsUsual.Admin
                   ls -R .
-                  zip -r ../bau-admin.zip .
+                  zip -r $GITHUB_WORKSPACE/bau-admin.zip .
+
+            - name: Show where ZIP ended up
+              run: |
+                  echo "Searching for bau-admin.zip..."
+                  find . -name "bau-admin.zip" -type f -print
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v2
