@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace BusinessAsUsual.Admin.Services.Logs;
 
@@ -47,35 +48,56 @@ public class LocalLogReader : ILogReader
 
         foreach (var file in files)
         {
-            var lines = await File.ReadAllLinesAsync(file);
-            foreach (var line in lines.Reverse())
+            var lines = await ReadAllLinesSharedAsync(file);
+
+            foreach (var line in lines)
             {
-                var match = Regex.Match(line,
-                    @"^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) (?<offset>[-+]\d{2}:\d{2}) \[(?<lvl>[A-Z]+)\] (?<msg>.*)$");
+                LogEntry? newEntry = null;
 
-                if (match.Success)
+                if (IsJsonLine(line))
                 {
-                    entry = new LogEntry
-                    {
-                        Timestamp = DateTime.Parse(match.Groups["ts"].Value),
-                        Level = NormalizeLevel(match.Groups["lvl"].Value),
-                        Message = match.Groups["msg"].Value,
-                        Exception = ""
-                    };
+                    newEntry = ParseJson(line);
+                }
+                else
+                {
+                    var match = Regex.Match(line,
+                        @"^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) (?<offset>[-+]\d{2}:\d{2}) \[(?<lvl>[A-Z]+)\] (?<msg>.*)$");
 
-                    if (query.Level != null && entry.Level != query.Level)
+                    if (match.Success)
+                    {
+                        newEntry = new LogEntry
+                        {
+                            Timestamp = DateTime.Parse(match.Groups["ts"].Value),
+                            Level = NormalizeLevel(match.Groups["lvl"].Value),
+                            Message = match.Groups["msg"].Value,
+                            Exception = ""
+                        };
+                    }
+                }
+
+                if (newEntry != null)
+                {
+                    // Apply filters BEFORE adding
+                    if (query.Level != null && newEntry.Level != query.Level)
                         continue;
 
                     if (query.Search != null &&
-                        !entry.Message.Contains(query.Search, StringComparison.OrdinalIgnoreCase))
+                        !newEntry.Message.Contains(query.Search, StringComparison.OrdinalIgnoreCase) &&
+                        (newEntry.Exception == null || !newEntry.Exception.Contains(query.Search, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
-                    entries.Add(entry);
+                    entries.Add(newEntry);
+                    entry = newEntry; // set current entry
+                    continue;
                 }
 
-                if (entry != null)
+                // Continuation line (stack trace)
+                if (entry != null && !IsJsonLine(line))
                 {
-                    entry.Exception += line + "\n";
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        entry.Exception += line.TrimEnd() + "\n";
+                    }
                 }
 
                 if (entries.Count >= query.Limit)
@@ -84,9 +106,58 @@ public class LocalLogReader : ILogReader
                     return entries.Skip(skip).Take(query.Limit);
                 }
             }
+
+            entries.Reverse();
         }
 
         return entries;
+    }
+
+    private static bool IsJsonLine(string line)
+    {
+        return line.StartsWith("{") && line.EndsWith("}");
+    }
+
+    private LogEntry? ParseJson(string line)
+    {
+        try
+        {
+            var raw = JsonSerializer.Deserialize<SerilogJson>(line);
+            if (raw == null) return null;
+
+            return new LogEntry
+            {
+                Timestamp = raw.@t,
+                Level = NormalizeLevel(raw.@l ?? "INFO"),
+                Message = raw.@m,
+                Exception = raw.@x
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task<string[]> ReadAllLinesSharedAsync(string path)
+    {
+        var lines = new List<string>();
+
+        using var fs = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite); // ← key change
+
+        using var sr = new StreamReader(fs);
+
+        string? line;
+        while ((line = await sr.ReadLineAsync()) != null)
+        {
+            lines.Add(line);
+        }
+
+        return lines.ToArray();
     }
 
     private static string NormalizeLevel(string lvl)
