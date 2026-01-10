@@ -11,10 +11,15 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Debug folder structure
+              run: ls -R .
+
             - name: Zip artifact
               run: |
+                  ls -R .
                   cd BusinessAsUsual.Admin
-                  zip -r bau-admin.zip .
+                  ls -R .
+                  zip -r ../bau-admin.zip .
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v2
