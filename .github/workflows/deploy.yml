@@ -19,9 +19,9 @@ jobs:
                   mkdir deploy
                   cp BusinessAsUsual.Admin/appspec.yml deploy/
                   cp -r BusinessAsUsual.Admin/scripts deploy/
+                  chmod +x BusinessAsUsual.Admin/scripts/*.sh
                   dotnet publish BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj -c Release -o deploy/published
                   cd deploy
-                  chmod +x BusinessAsUsual.Admin/scripts/*.sh
                   zip -r ../bau-admin.zip .
 
             - name: Show where ZIP ended up
