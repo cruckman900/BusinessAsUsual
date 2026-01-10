@@ -14,11 +14,20 @@ jobs:
             - name: Debug folder structure
               run: ls -R .
 
-            - name: Zip artifact
+            # - name: Zip artifact
+            #   run: |
+            #       cd BusinessAsUsual.Admin
+            #       ls -R .
+            #       zip -r $GITHUB_WORKSPACE/bau-admin.zip .
+
+            - name: Prepare deployment package
               run: |
-                  cd BusinessAsUsual.Admin
-                  ls -R .
-                  zip -r $GITHUB_WORKSPACE/bau-admin.zip .
+                  mkdir deploy
+                  cp appspec.yml deploy/
+                  cp -r scripts deploy/
+                  dotnet publish BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj -c Release -o deploy/published
+                  cd deploy
+                  zip -r ../bau-admin.zip .
 
             - name: Show where ZIP ended up
               run: |
