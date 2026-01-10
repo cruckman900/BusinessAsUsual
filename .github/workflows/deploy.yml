@@ -14,12 +14,6 @@ jobs:
             - name: Debug folder structure
               run: ls -R .
 
-            # - name: Zip artifact
-            #   run: |
-            #       cd BusinessAsUsual.Admin
-            #       ls -R .
-            #       zip -r $GITHUB_WORKSPACE/bau-admin.zip .
-
             - name: Prepare deployment package
               run: |
                   mkdir deploy
