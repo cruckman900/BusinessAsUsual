@@ -16,7 +16,6 @@ jobs:
 
             - name: Zip artifact
               run: |
-                  ls -R .
                   cd BusinessAsUsual.Admin
                   ls -R .
                   zip -r ../bau-admin.zip .
