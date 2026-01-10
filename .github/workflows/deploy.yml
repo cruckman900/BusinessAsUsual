@@ -33,7 +33,7 @@ jobs:
                   aws-region: us-east-1
 
             - name: Upload ZIP to S3
-              run: aws s3 cp bau-admin.zip s3://business-as-usual-deployments/bau-admin.zip
+              run: aws s3 cp $GITHUB_WORKSPACE/bau-admin.zip s3://business-as-usual-deployments/bau-admin.zip
 
             - name: Trigger CodeDeploy
               run: |
