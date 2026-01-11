@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo systemctl stop bau-admin || true
+sudo systemctl stop bau-admin.service || true
