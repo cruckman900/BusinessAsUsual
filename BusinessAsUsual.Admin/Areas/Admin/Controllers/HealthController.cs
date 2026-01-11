@@ -1,6 +1,7 @@
 ﻿using BusinessAsUsual.Admin.Services.Health;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 {
@@ -16,14 +17,18 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     public class HealthController : Controller
     {
         private readonly IHealthMetricsProvider _metrics;
+        private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the HealthController class using the specified health metrics provider.
+        /// Initializes a new instance of the HealthController class with the specified health metrics provider and
+        /// logger.
         /// </summary>
-        /// <param name="metrics">The health metrics provider used to supply health data for this controller. Cannot be null.</param>
-        public HealthController(IHealthMetricsProvider metrics)
+        /// <param name="metrics">The provider used to retrieve health metrics for the application. Cannot be null.</param>
+        /// <param name="logger">The logger used to record diagnostic and operational information. Cannot be null.</param>
+        public HealthController(IHealthMetricsProvider metrics, ILogger logger)
         {
             _metrics = metrics;
+            _logger = logger;
         }
 
         /// <summary>
@@ -47,6 +52,19 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         public IActionResult GetStats()
         {
             return Json(_metrics.GetStats());
+        }
+
+        /// <summary>
+        /// Handles a test request that writes an informational log entry to verify logging functionality.
+        /// </summary>
+        /// <remarks>Use this endpoint to confirm that the application's logging infrastructure is
+        /// operational. No data is returned to the client.</remarks>
+        /// <returns>An <see cref="IActionResult"/> indicating the result of the test log operation.</returns>
+        [HttpGet("test-logs")]
+        public IActionResult TestLogs()
+        {
+            _logger.LogInformation("This is a test log entry from HealthController.TestLogs at {Time}", DateTime.UtcNow);
+            return Ok();
         }
     }
 }
