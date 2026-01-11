@@ -40,4 +40,4 @@ jobs:
                   aws deploy create-deployment \
                     --application-name BAU-Main \
                     --deployment-group-name BAU-Main-Group \
-                    --s3-location bucket=bau-deployments,bundleType=zip,key=main/deployment.zip
+                    --s3-location bucket=business-as-usual-deployments,bundleType=zip,key=main/deployment.zip
