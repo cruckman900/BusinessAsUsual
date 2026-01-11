@@ -1,7 +1,6 @@
 ﻿using BusinessAsUsual.Admin.Services.Health;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
-using ILogger = Serilog.ILogger;
+using Serilog.Core;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 {
@@ -17,7 +16,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     public class HealthController : Controller
     {
         private readonly IHealthMetricsProvider _metrics;
-        private readonly ILogger _logger;
+        private readonly Logger _logger;
 
         /// <summary>
         /// Initializes a new instance of the HealthController class with the specified health metrics provider and
@@ -25,7 +24,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// </summary>
         /// <param name="metrics">The provider used to retrieve health metrics for the application. Cannot be null.</param>
         /// <param name="logger">The logger used to record diagnostic and operational information. Cannot be null.</param>
-        public HealthController(IHealthMetricsProvider metrics, ILogger logger)
+        public HealthController(IHealthMetricsProvider metrics, Logger logger)
         {
             _metrics = metrics;
             _logger = logger;
@@ -63,7 +62,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         [HttpGet("test-logs")]
         public IActionResult TestLogs()
         {
-            _logger.LogInformation("This is a test log entry from HealthController.TestLogs at {Time}", DateTime.UtcNow);
+            _logger.Information("This is a test log entry from HealthController.TestLogs at {Time}", DateTime.UtcNow);
             return Ok();
         }
     }
