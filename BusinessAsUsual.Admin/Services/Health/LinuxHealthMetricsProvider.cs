@@ -55,9 +55,12 @@
 
         private DiskStats GetDisk()
         {
-            var drive = DriveInfo.GetDrives().First(d => d.IsReady);
+            var drive = DriveInfo.GetDrives()
+                .First(d => d.Name == "/");
+
             var total = drive.TotalSize / 1024d / 1024d / 1024d;
             var used = (drive.TotalSize - drive.TotalFreeSpace) / 1024d / 1024d / 1024d;
+
             return new DiskStats { Used = used, Total = total };
         }
 
