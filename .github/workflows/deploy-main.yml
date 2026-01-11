@@ -33,7 +33,7 @@ jobs:
                   aws-region: us-east-1
 
             - name: Upload Artifact to S3
-              run: aws s3 cp deployment.zip s3://bau-deployments/main/deployment.zip
+              run: aws s3 cp deployment.zip s3://business-as-usual-deployments/main/deployment.zip
 
             - name: Trigger CodeDeploy
               run: |
