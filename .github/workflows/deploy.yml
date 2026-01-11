@@ -29,6 +29,11 @@ jobs:
                   echo "Searching for bau-admin.zip..."
                   find . -name "bau-admin.zip" -type f -print
 
+            - name: Show final ZIP contents
+              run: |
+                  echo "Contents of bau-admin.zip:"
+                  unzip -l $GITHUB_WORKSPACE/bau-admin.zip
+
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v2
               with:
