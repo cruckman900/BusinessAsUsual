@@ -43,7 +43,7 @@ jobs:
 
             - name: Upload ZIP to S3
               run: |
-                  aws s3 cp $GITHUB_WORKSPACE/bau-admin.zip s3://business-as-usual-deployments/bau-admin.zip --no-cache
+                  aws s3 cp $GITHUB_WORKSPACE/bau-admin.zip s3://business-as-usual-deployments/bau-admin.zip
                   aws s3api put-object --bucket business-as-usual-deployments --key bau-admin.zip --body $GITHUB_WORKSPACE/bau-admin.zip
 
             - name: Trigger CodeDeploy
