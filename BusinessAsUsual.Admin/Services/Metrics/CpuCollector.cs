@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Admin.Services.Metrics
@@ -23,6 +24,12 @@ namespace BusinessAsUsual.Admin.Services.Metrics
         /// determined.</returns>
         public async Task<double> GetCpuUsageAsync()
         {
+            // If not Linux, return empty values
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return 0;
+            }
+
             var cpuLine1 = File.ReadLines("/proc/stat")
                 .First(l => l.StartsWith("cpu "));
 

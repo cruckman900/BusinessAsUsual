@@ -11,7 +11,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     /// system performance data is required. All endpoints are grouped under the "metrics" area.</remarks>
     [ApiController]
     [Area("Admin")]
-    [Route("admin/metrics")]
+    [Route("Admin/[controller]")]
     public class MetricsApiController : ControllerBase
     {
         private readonly CpuCollector _cpu;
@@ -48,17 +48,17 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         {
             var cpuPercent = await _cpu.GetCpuUsageAsync();
             var memory = await _memory.GetMemoryAsync();
-            var disk = await _disk.GetDiskAsync();
-            var network = await _network.GetNetworkAsync();
-            var uptime = await _uptime.GetUptimeAsync();
+            //var disk = await _disk.GetDiskAsync();
+            //var network = await _network.GetNetworkAsync();
+            //var uptime = await _uptime.GetUptimeAsync();
 
             return Ok(new SystemMetrics
             {
                 Cpu = new CpuStats { Percent = cpuPercent },
                 Memory = memory,
-                Disk = disk,
-                Network = network,
-                Uptime = uptime
+                //Disk = disk,
+                //Network = network,
+                //Uptime = uptime
             });
         }
     }

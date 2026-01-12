@@ -1,6 +1,9 @@
 ﻿async function pollMetrics() {
-    const res = await fetch("/admin/metrics/system");
+    console.log("hello world");
+    const res = await fetch("/Admin/MetricsApi/system");
     const data = await res.json();
+
+    console.log("data", data);
 
     updateCpu(data.cpu.percent);
     updateMemory(data.memory);
@@ -28,7 +31,7 @@ function updateMemory(memory) {
     const percent = (used / total) * 100;
 
     bar.style.width = percent + "%";
-    value.textContent = `${used.toFixed(1)} / ${total.toFixed(i)} GB`;
+    value.textContent = `${used.toFixed(1)} / ${total.toFixed(1)} GB`;
 }
 
 setInterval(pollMetrics, 5000);

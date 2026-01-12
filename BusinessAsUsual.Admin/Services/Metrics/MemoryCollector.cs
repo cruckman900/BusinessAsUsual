@@ -3,6 +3,7 @@ using Sprache;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Admin.Services.Metrics
@@ -24,9 +25,19 @@ namespace BusinessAsUsual.Admin.Services.Metrics
         /// object with the total and used memory, measured in gigabytes.</returns>
         public Task<MemoryStats> GetMemoryAsync()
         {
+            // If not Linux, return empty values
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Task.FromResult(new MemoryStats
+                {
+                    Total = 0,
+                    Used = 0
+                });
+            }
+
             var lines = File.ReadAllLines("/proc/meminfo");
 
-            long total = Parse(lines, "MemTtotal");
+            long total = Parse(lines, "MemTotal");
             long available = Parse(lines, "MemAvailable");
 
             long used = total - available;
