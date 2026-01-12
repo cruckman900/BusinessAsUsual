@@ -1,4 +1,4 @@
-﻿using BusinessAsUsual.Admin.Models;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Microsoft.Extensions.Configuration;

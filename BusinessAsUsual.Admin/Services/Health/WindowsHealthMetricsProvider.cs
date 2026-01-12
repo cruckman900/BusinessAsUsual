@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using System.Diagnostics;
 
 namespace BusinessAsUsual.Admin.Services.Health
 {

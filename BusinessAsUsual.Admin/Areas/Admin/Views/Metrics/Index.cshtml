@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "System Metrics";
+}
+
+<link rel="stylesheet" href="~/css/admin-metrics.css" />
+
+<div class="metrics-grid">
+    <partial name="_CpuCard" />
+    <partial name="_MemoryCard" />
+    <partial name="_DiskCard" />
+    <partial name="_NetworkCard" />
+    <partial name="_UptimeCard" />
+</div>
+
+<script src="~/js/admin-metrics.js"></script>

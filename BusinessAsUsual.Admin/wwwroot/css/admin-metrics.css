@@ -1,0 +1,55 @@
+﻿.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fix, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.metric-card {
+    background: #111;
+    border-radius: 12px;
+    padding: 20px;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.metric-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.metric-value {
+    margin-top: 12px;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.cpu-gauge {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#333 0deg, #222 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.memory-bar-container {
+    width: 100%;
+    height: 20px;
+    background: ##222;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.memory-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    transition: width 0.4s ease;
+}
