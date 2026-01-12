@@ -95,16 +95,19 @@ namespace BusinessAsUsual.Admin
                     .AddCheck("Self", () => HealthCheckResult.Healthy());
                 builder.Services.AddSingleton<LogQueryService>();
 
-                if (builder.Environment.IsDevelopment())
-                {
-                    builder.Services.AddSingleton<ILogReader, LocalLogReader>();
-                }
-                else
-                {
-                    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-                    builder.Services.AddAWSService<IAmazonCloudWatchLogs>();
-                    builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
-                }
+                //if (builder.Environment.IsDevelopment())
+                //{
+                //    builder.Services.AddSingleton<ILogReader, LocalLogReader>();
+                //}
+                //else
+                //{
+                //    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+                //    builder.Services.AddAWSService<IAmazonCloudWatchLogs>();
+                //    builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
+                //}
+                // TEMPORARY: Always use LocalLogReader
+                builder.Services.AddSingleton<LocalLogReader>();
+                builder.Services.AddSingleton<CloudWatchLogReader>();
 
                 builder.Services.AddSingleton<EnvironmentService>();
 
