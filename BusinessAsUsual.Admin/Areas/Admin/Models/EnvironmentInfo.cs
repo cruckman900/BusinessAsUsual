@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Models
+﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
 {
     /// <summary>
     /// Represents metadata and configuration details about the current application environment, including versioning,

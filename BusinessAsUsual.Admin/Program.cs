@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using Amazon.Extensions.NETCore.Setup;
+using BusinessAsUsual.Admin.Services.Metrics;
 
 namespace BusinessAsUsual.Admin
 {
@@ -123,6 +124,12 @@ namespace BusinessAsUsual.Admin
                 {
                     builder.Services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
                 }
+
+                builder.Services.AddSingleton<CpuCollector>();
+                builder.Services.AddSingleton<MemoryCollector>();
+                builder.Services.AddSingleton<DiskCollector>();
+                builder.Services.AddSingleton<NetworkCollector>();
+                builder.Services.AddSingleton<UptimeCollector>();
 
                 // Initialize Serilog AFTER configuration is loaded
                 SerilogBootstrapper.Initialize();

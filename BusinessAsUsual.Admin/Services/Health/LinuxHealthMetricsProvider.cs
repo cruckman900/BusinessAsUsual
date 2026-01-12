@@ -1,4 +1,6 @@
-﻿namespace BusinessAsUsual.Admin.Services.Health
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+
+namespace BusinessAsUsual.Admin.Services.Health
 {
     /// <summary>
     /// Provides health metrics for a Linux system, including CPU, memory, disk usage, and uptime information.

@@ -1,4 +1,6 @@
-﻿namespace BusinessAsUsual.Admin.Services.Health
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+
+namespace BusinessAsUsual.Admin.Services.Health
 {
     /// <summary>
     /// Defines a contract for retrieving health metrics for a system or component.
