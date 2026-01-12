@@ -107,7 +107,7 @@ namespace BusinessAsUsual.Admin
                 //}
                 // TEMPORARY: Always use LocalLogReader
                 builder.Services.AddSingleton<ILogReader, LocalLogReader>();
-                builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
+                //builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
 
                 builder.Services.AddSingleton<EnvironmentService>();
 
