@@ -43,7 +43,7 @@ namespace BusinessAsUsual.Admin.Services.Metrics
                 .Select(long.Parse)
                 .ToArray();
 
-            var parts2 = cpuLine1.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            var parts2 = cpuLine2.Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Skip(1)
                 .Select(long.Parse)
                 .ToArray();
