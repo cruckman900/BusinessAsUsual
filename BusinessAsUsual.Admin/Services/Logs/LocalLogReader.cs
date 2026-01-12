@@ -14,7 +14,6 @@ namespace BusinessAsUsual.Admin.Services.Logs;
 public class LocalLogReader : ILogReader
 {
     private readonly string _logDirectory;
-    private readonly ILogger<LocalLogReader> _logger;
 
     /// <summary>
     /// Initializes a new instance of the LocalLogReader class using the specified web host environment.
@@ -23,10 +22,9 @@ public class LocalLogReader : ILogReader
     /// path. Ensure that the environment provides a valid content root path and that the application has permission to
     /// access the log directory.</remarks>
     /// <param name="env">The web host environment that provides access to the application's content root path.</param>
-    public LocalLogReader(IWebHostEnvironment env, ILogger<LocalLogReader> logger)
+    public LocalLogReader(IWebHostEnvironment env)
     {
         _logDirectory = Path.Combine(env.ContentRootPath, "Logs");
-        _logger = logger;
     }
 
     /// <summary>
@@ -40,13 +38,10 @@ public class LocalLogReader : ILogReader
     /// the query. The collection may be empty if no entries are found.</returns>
     public async Task<IEnumerable<LogEntry>> GetLogsAsync(LogQuery query)
     {
-        var files = Directory.GetFiles(_logDirectory, "*.*");
-        _logger.LogInformation("Found log files: " + string.Join(", ", files));
-
         Console.WriteLine("LocalLogReader: Reading logs from " + _logDirectory);
-        //var files = Directory.GetFiles(_logDirectory, "*.log")
-        //                     .OrderByDescending(f => f)
-        //                     .Take(3); // read last 3 files
+        var files = Directory.GetFiles(_logDirectory, "*.log")
+                             .OrderByDescending(f => f)
+                             .Take(3); // read last 3 files
 
         var entries = new List<LogEntry>();
         LogEntry? entry = null;
