@@ -36,13 +36,13 @@ globalThis.resolveSidebarSection = function () {
 
     if (path.includes("/admin/company")) return "Companies";
     if (path.includes("/admin/user")) return "Users";
-    if (path.includes("/admin/settings")) return "Settings";
+    //if (path.includes("/admin/settings")) return "Settings";
 
-    // ⭐ NEW: Health & Diagnostics category
+    // Health & Diagnostics category
     if (path.includes("/admin/dashboard")) return "Health & Diagnostics";
     if (path.includes("/admin/logs")) return "Health & Diagnostics";
     if (path.includes("/admin/metrics")) return "Health & Diagnostics";
-    if (path.includes("/admin/health")) return "Health & Diagnostics";
+    if (path.includes("/admin/settings")) return "Health & Diagnostics";
 
     return "Home";
 };

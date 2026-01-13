@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+}
+
+<h2 class="mb-3">Settings</h2>
+
+<div class="row g-3">
+
+    <!-- Polling & Refresh -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-rotate me-1"></i> Polling & Refresh
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="metricsPollingInterval" class="form-label">Metrics polling interval (seconds)</label>
+                    <input type="number" class="form-control" id="metricsPollingInterval" min="1" max="300">
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="autoRefreshMetrics">
+                    <label class="form-check-label" for="autoRefreshMetrics">Auto-refresh metrics</label>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="autoRefreshLogs">
+                    <label class="form-check-label" for="autoRefreshLogs">Auto-refresh logs</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Engine -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-gauge-high me-1"></i> Metrics Engine
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableCpu">
+                    <label class="form-check-label" for="enableCpu">Enable CPU metrics</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableMemory">
+                    <label class="form-check-label" for="enableMemory">Enable Memory metrics</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableDisk">
+                    <label class="form-check-label" for="enableDisk">Enable Disk metrics</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableNetwork">
+                    <label class="form-check-label" for="enableNetwork">Enable Network metrics</label>
+                </div>
+
+                <div class="mb-3 mt-2">
+                    <label for="chartHistoryLength" class="form-label">Chart history length (points)</label>
+                    <input type="number" class="form-control" id="chartHistoryLength" min="10" max="200">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-3 mt-2">
+
+    <!-- Logs -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-file-alt me-1"></i> Logs
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="logRetentionDays" class="form-label">Log retention (days)</label>
+                    <input type="number" class="form-control" id="logRetentionDays" min="1" max="365">
+                </div>
+
+                <div class="mb-3">
+                    <label for="defaultLogLevel" class="form-label">Default log level</label>
+                    <select class="form-select" id="defaultLogLevel">
+                        <option value="Information">Information</option>
+                        <option value="Warning">Warning</option>
+                        <option value="Error">Error</option>
+                        <option value="Debug">Debug</option>
+                        <option value="Trace">Trace</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableCloudWatch">
+                    <label class="form-check-label" for="enableCloudWatch">Enable CloudWatch logging</label>
+                </div>
+
+                <div class="mb-3">
+                    <label for="cloudWatchLogGroup" class="form-label">CloudWatch log group</label>
+                    <input type="text" class="form-control" id="cloudWatchLogGroup">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI & System Behavior -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-sliders-h me-1"></i> UI & System Behavior
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="themeMode" class="form-label">Theme</label>
+                    <select class="form-select" id="themeMode">
+                        <option value="System">System default</option>
+                        <option value="Light">Light</option>
+                        <option value="Dark">Dark</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="rememberSidebarState">
+                    <label class="form-check-label" for="rememberSidebarState">Remember sidebar state</label>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableDebugMode">
+                    <label class="form-check-label" for="enableDebugMode">Enable debug mode</label>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="showDangerTools">
+                    <label class="form-check-label" for="showDangerTools">Show crash / stress test tools</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-3 d-flex gap-2">
+    <button id="saveSettingsBtn" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Save Settings
+    </button>
+    <button id="resetSettingsBtn" class="btn btn-outline-secondary">
+        <i class="fas fa-undo me-1"></i> Reset to Defaults
+    </button>
+</div>
+
+<div id="settingsToast" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1080;">
+    <div class="d-flex">
+        <div class="toast-body">
+            Settings saved successfully.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-settings.js"></script>
+}
