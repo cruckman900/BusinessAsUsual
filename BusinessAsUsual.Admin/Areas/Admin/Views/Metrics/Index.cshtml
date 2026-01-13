@@ -7,11 +7,17 @@
 <h2 class="mb-3">Metrics</h2>
 
 <div class="metrics-grid">
-    <partial name="_CpuCard" />
-    <partial name="_MemoryCard" />
-    <partial name="_DiskCard" />
-    <partial name="_NetworkCard" />
-    <partial name="_UptimeCard" />
+    <div class="row g-3">
+        <partial name="_CpuCard" />
+        <partial name="_MemoryCard" />
+        <partial name="_DiskCard" />
+    </div>
+
+    <div class="row g-3 mt-2">
+        <partial name="_NetworkCard" />
+        <partial name="_UptimeCard" />
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="~/js/admin-metrics.js"></script>

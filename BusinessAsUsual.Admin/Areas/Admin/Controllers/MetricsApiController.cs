@@ -49,16 +49,16 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
             var cpuPercent = await _cpu.GetCpuUsageAsync();
             var memory = await _memory.GetMemoryAsync();
             var disk = await _disk.GetDiskAsync();
-            //var network = await _network.GetNetworkAsync();
-            //var uptime = await _uptime.GetUptimeAsync();
+            var network = await _network.GetNetworkAsync();
+            var uptime = await _uptime.GetUptimeAsync();
 
             return Ok(new SystemMetrics
             {
                 Cpu = new CpuStats { Percent = cpuPercent },
                 Memory = memory,
                 Disk = disk,
-                //Network = network,
-                //Uptime = uptime
+                Network = network,
+                Uptime = uptime
             });
         }
     }
