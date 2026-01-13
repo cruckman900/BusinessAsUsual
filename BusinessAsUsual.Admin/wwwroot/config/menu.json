@@ -87,7 +87,7 @@
       {
         "id": "menu-health-settings",
         "label": "Settings",
-        "route": "/admin/health/settings",
+        "route": "/admin/settings",
         "description": "Configure health and diagnostics",
         "icon": "fas fa-sliders-h"
       }
