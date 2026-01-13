@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Admin.Services.Metrics
@@ -24,6 +25,16 @@ namespace BusinessAsUsual.Admin.Services.Metrics
         /// not ready, both values are set to 0.</returns>
         public Task<DiskStats> GetDiskAsync()
         {
+            // If not Linux, return zeros
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Task.FromResult(new DiskStats
+                {
+                    Total = 0,
+                    Used = 0
+                });
+            }
+
             // On Linux, "/" is always the root filesystem
             var drive = DriveInfo.GetDrives()
                 .FirstOrDefault(d => d.Name == "/");
