@@ -1,6 +1,7 @@
 ﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Admin.Services.Metrics
@@ -24,6 +25,16 @@ namespace BusinessAsUsual.Admin.Services.Metrics
         /// object with the system's uptime information.</returns>
         public Task<UptimeStats> GetUptimeAsync()
         {
+            // If not Linux, return zeros
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Task.FromResult(new UptimeStats
+                {
+                    Seconds = 0,
+                    HumanReadable = null
+                });
+            }
+
             // /proc/uptime returns: "<seconds> <idle_seconds>"
             var parts = File.ReadAllText("/proc/uptime")
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);

@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Admin.Services.Metrics
@@ -33,6 +34,16 @@ namespace BusinessAsUsual.Admin.Services.Metrics
         /// both values are zero.</returns>
         public Task<NetworkStats> GetNetworkAsync()
         {
+            // If not Linux, return zeros
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Task.FromResult(new NetworkStats
+                {
+                    BytesIn = 0,
+                    BytesOut = 0
+                });
+            }
+
             // Read from /proc/net/dev - Linux network counters
             var lines = File.ReadAllLines("/proc/net/dev")
                 .Skip(2) // Skip headers
