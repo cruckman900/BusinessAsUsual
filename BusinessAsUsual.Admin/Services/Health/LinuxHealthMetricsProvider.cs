@@ -50,9 +50,17 @@ namespace BusinessAsUsual.Admin.Services.Health
         private MemoryStats GetMemory()
         {
             var lines = File.ReadAllLines("/proc/meminfo");
-            var total = double.Parse(lines[0].Split(':')[1].Trim().Split(' ')[0]) / 1024;
-            var free = double.Parse(lines[1].Split(':')[1].Trim().Split(' ')[0]) / 1024;
-            return new MemoryStats { Used = total - free, Total = total };
+
+            long total = Parse(lines, "MemTotal");
+            long available = Parse(lines, "MemAvailable");
+
+            long used = total - available;
+
+            return new MemoryStats
+            {
+                Total = Math.Round(total / 1024.0 / 1024.0, 2),
+                Used = Math.Round(used / 1024.0 / 1024.0, 2)
+            };
         }
 
         private DiskStats GetDisk()
@@ -70,6 +78,16 @@ namespace BusinessAsUsual.Admin.Services.Health
         {
             var uptimeSeconds = double.Parse(File.ReadAllText("/proc/uptime").Split(' ')[0]);
             return TimeSpan.FromSeconds(uptimeSeconds).ToString(@"dd\.hh\:mm\:ss");
+        }
+
+        private long Parse(string[] lines, string key)
+        {
+            return long.Parse(
+                lines.First(l => l.StartsWith(key))
+                     .Split(':')[1]
+                     .Trim()
+                     .Split(' ')[0]
+            ) * 1024;
         }
     }
 }
