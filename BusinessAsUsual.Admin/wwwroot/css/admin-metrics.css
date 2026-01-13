@@ -1,3 +1,8 @@
 ﻿.chart-container {
     height: 200px !important;
 }
+
+.uptime-label {
+    position: relative;
+    top: -1rem;
+}
