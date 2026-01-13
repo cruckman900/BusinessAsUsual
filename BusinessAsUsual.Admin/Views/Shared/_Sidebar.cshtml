@@ -1,6 +1,6 @@
 ﻿<aside id="sidebar" class="sidebar collapsed" role="complementary" aria-label="Sidebar menu">
     <button onclick="toggleSidebar()" aria-label="Toggle sidebar" class="sidebar-toggle btn btn-outline-secondary">
-        <span id="sidebar-toggle-icon">→</span>
+        <span id="sidebar-toggle-icon"><i class="fa-solid fa-arrow-left-long"></i></span>
     </button>
 
     <h3 id="sidebar-title"></h3>
@@ -9,47 +9,60 @@
 
 <script>
     function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      const icon = document.getElementById("sidebar-toggle-icon");
-      const isCollapsed = sidebar.classList.contains("collapsed");
+        const sidebar = document.getElementById("sidebar");
+        const icon = document.querySelector("#sidebar-toggle-icon i");
+        const isCollapsed = sidebar.classList.contains("collapsed");
 
-      if (isCollapsed) {
-        sidebar.classList.remove("collapsed");
-        sidebar.classList.add("expanded");
-        icon.textContent = "←"; // collapse icon
-        localStorage.setItem("sidebarState", "expanded");
-      } else {
-        sidebar.classList.add("collapsed");
-        sidebar.classList.remove("expanded");
-        icon.textContent = "→"; // expand icon
-        localStorage.setItem("sidebarState", "collapsed");
-      }
+        if (isCollapsed) {
+            sidebar.classList.remove("collapsed");
+            sidebar.classList.add("expanded");
+
+            icon.classList.remove("fa-arrow-right-long");
+            icon.classList.add("fa-arrow-left-long");
+
+            localStorage.setItem("sidebarState", "expanded");
+        } else {
+            sidebar.classList.add("collapsed");
+            sidebar.classList.remove("expanded");
+
+            icon.classList.remove("fa-arrow-left-long");
+            icon.classList.add("fa-arrow-right-long");
+
+            localStorage.setItem("sidebarState", "collapsed");
+        }
     }
 
     globalThis.addEventListener("DOMContentLoaded", () => {
-      const sidebar = document.getElementById("sidebar");
-      const icon = document.getElementById("sidebar-toggle-icon");
-      const savedState = localStorage.getItem("sidebarState");
+        const sidebar = document.getElementById("sidebar");
+        const icon = document.querySelector("#sidebar-toggle-icon i");
+        const savedState = localStorage.getItem("sidebarState");
 
-      // Apply saved state
-      if (savedState === "expanded") {
-        sidebar.classList.remove("collapsed");
-        sidebar.classList.add("expanded");
-      } else {
-        sidebar.classList.add("collapsed");
-        sidebar.classList.remove("expanded");
-      }
+        // Apply saved state
+        if (savedState === "expanded") {
+            sidebar.classList.remove("collapsed");
+            sidebar.classList.add("expanded");
+        } else {
+            sidebar.classList.add("collapsed");
+            sidebar.classList.remove("expanded");
+        }
 
-      // ✅ Now check actual class and set icon accordingly
-      const isCollapsed = sidebar.classList.contains("collapsed") || savedState == "collapsed";
-      icon.textContent = isCollapsed ? "→" : "←";
+        // ✅ Now check actual class and set icon accordingly
+        const isCollapsed = sidebar.classList.contains("collapsed") || savedState == "collapsed";
+
+        if (isCollapsed) {
+            icon.classList.remove("fa-arrow-left-long");
+            icon.classList.add("fa-arrow-right-long");
+        } else {
+            icon.classList.remove("fa-arrow-right-long");
+            icon.classList.add("fa-arrow-left-long");
+        }
     });
 </script>
 
 <script>
     globalThis.addEventListener("DOMContentLoaded", () => {
-      requestAnimationFrame(() => {
-        globalThis.initializeSidebar();
-      });
+        requestAnimationFrame(() => {
+            globalThis.initializeSidebar();
+        });
     });
 </script>
