@@ -48,7 +48,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         {
             var cpuPercent = await _cpu.GetCpuUsageAsync();
             var memory = await _memory.GetMemoryAsync();
-            //var disk = await _disk.GetDiskAsync();
+            var disk = await _disk.GetDiskAsync();
             //var network = await _network.GetNetworkAsync();
             //var uptime = await _uptime.GetUptimeAsync();
 
@@ -56,7 +56,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
             {
                 Cpu = new CpuStats { Percent = cpuPercent },
                 Memory = memory,
-                //Disk = disk,
+                Disk = disk,
                 //Network = network,
                 //Uptime = uptime
             });
