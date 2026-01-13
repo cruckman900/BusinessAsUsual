@@ -7,6 +7,7 @@
 
     updateCpu(data.cpu.percent);
     updateMemory(data.memory);
+    updateDisk(data.disk);
 }
 
 function updateCpu(percent) {
@@ -27,6 +28,25 @@ function updateMemory(memory) {
 
     const used = memory.used;
     const total = memory.total;
+
+    const percent = (used / total) * 100;
+
+    bar.style.width = percent + "%";
+    value.textContent = `${used.toFixed(1)} / ${total.toFixed(1)} GB`;
+}
+
+function updateDisk(disk) {
+    const bar = document.getElementById("diskBar");
+    const value = document.getElementById("diskValue");
+
+    const used = disk.used;
+    const total = disk.total;
+
+    if (total === 0) {
+        bar.style.width = "0%";
+        value.textContent = "-- / -- GB";
+        return;
+    }
 
     const percent = (used / total) * 100;
 
