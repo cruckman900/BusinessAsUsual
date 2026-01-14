@@ -104,13 +104,11 @@ The system is designed to support:
 
 🧱 UI Shell Architecture (High‑Level Overview)
 The frontend layout is documented in detail in  (frontend section), but here’s the backend‑relevant summary:
-+----------------------+------------------------------+
+
 |       Top Bar        | Tenant, Search, Profile      |
-+----------------------+------------------------------+
+|----------------------|------------------------------|
 |       Sidebar        | Module Navigation            |
-+----------------------+------------------------------+
 |     Main Content     | Module Pages & Workflows     |
-+-----------------------------------------------------+
 
 Backend modules expose endpoints that map cleanly to this UI structure.
 
