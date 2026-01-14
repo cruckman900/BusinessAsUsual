@@ -2,7 +2,6 @@
 ![Proprietary](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual?style=for-the-badge)
 ![CI Build](https://github.com/cruckman900/BusinessAsUsual/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/github/license/cruckman900/BusinessAsUsual)
 ![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual)
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual)
 
