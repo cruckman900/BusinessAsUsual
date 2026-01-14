@@ -200,14 +200,12 @@ This backend follows a layered, modular structure:
 - **Infrastructure Layer** implements persistence and external integrations.
 
 📦 Layer Responsibilities Table
-+----------------+----------------------------------------------+-----------------------------------------------+
 | Layer          | Responsibilities                             | Examples                                      |
 |----------------|----------------------------------------------|-----------------------------------------------|
 | API            | Routing, request/response shaping            | Controllers, DTOs                             |
 | Application    | Use cases, orchestration, validation         | UseCase classes, service coordinations        |
 | Domain         | Pure business logic, entities, value objects | Entities, aggregates, domain services         |
 | Infrastructure | Persistence, external APIs, adapters         | Repositories, DB clients, email/SMS providers |
-+----------------+----------------------------------------------+-----------------------------------------------+
 
 🏢 Multi-Tenant Lifecycle
 
