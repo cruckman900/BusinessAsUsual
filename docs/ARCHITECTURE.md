@@ -127,6 +127,7 @@ Backend modules expose endpoints that map cleanly to this UI structure.
 - Sync with frontend via shared DTOs or API contracts
 - Keep modules isolated and follow Clean Architecture boundaries
 
+```mermaid
 flowchart TD
     Client[Browser / Mobile App] --> API[HTTP API Layer]
     API --> Controller[Controller]
@@ -136,8 +137,11 @@ flowchart TD
     Repo --> Infra[Infrastructure Implementation]
     Infra --> DB[(Database)]
     Infra --> External[External Services]
+```
 
 🔄 Request Lifecycle
+
+```mermaid
 sequenceDiagram
     participant C as Client
     participant A as API
@@ -156,14 +160,18 @@ sequenceDiagram
     D-->>UC: Domain Result
     UC-->>A: Response Model
     A-->>C: HTTP Response
+```
 
 🏢 Multi‑Tenant Lifecycle
+
+```mermaid
 flowchart LR
     Create[Create Tenant] --> Provision[Provision Resources]
     Provision --> Route[Assign Routing Rules]
     Route --> Scope[Scope Requests by Tenant]
     Scope --> Operate[Normal Operation]
     Operate --> Teardown[Teardown / Archive]
+```
 
 🧭 “How to Read This Architecture” (Contributor Quickstart)
 ### How This Architecture Works
@@ -204,12 +212,15 @@ This backend follows a layered, modular structure:
 +----------------+----------------------------------------------+-----------------------------------------------+
 
 🏢 Multi-Tenant Lifecycle
+
+```mermaid
 flowchart LR
     Create[Create Tenant] --> Provision[Provision Resources]
     Provision --> Route[Assign Routing Rules]
     Route --> Scope[Scope Requests by Tenant]
     Scope --> Operate[Normal Operation]
     Operate --> Teardown[Teardown / Archive]
+```
 
 🧭 “How to Read This Architecture” (Contributor Quickstart)
 ### How This Architecture Works
