@@ -204,7 +204,7 @@ This backend follows a layered, modular structure:
 📦 Layer Responsibilities Table
 +----------------+----------------------------------------------+-----------------------------------------------+
 | Layer          | Responsibilities                             | Examples                                      |
-+----------------+----------------------------------------------+-----------------------------------------------+
+|----------------|----------------------------------------------|-----------------------------------------------|
 | API            | Routing, request/response shaping            | Controllers, DTOs                             |
 | Application    | Use cases, orchestration, validation         | UseCase classes, service coordinations        |
 | Domain         | Pure business logic, entities, value objects | Entities, aggregates, domain services         |
