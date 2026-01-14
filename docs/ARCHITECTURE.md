@@ -73,9 +73,11 @@ Determines the active tenant based on domain, header, or token.
 Ensures each request uses the correct tenant database.
 This approach provides strong isolation and predictable scaling.
 
-🐳 Dockerized Flow
+# 🐳 Dockerized Flow
+
 The backend is fully containerized for local development and production deployment.
 Docker Highlights
+
 • 	Each layer lives in its own project folder
 • 	Dockerfile builds the API with environment‑specific configs
 • 	Health endpoints (, ) confirm readiness
@@ -83,27 +85,36 @@ Docker Highlights
 • 	Works seamlessly with docker‑compose for local dev
 This ensures consistent environments across contributors and servers.
 
-🧠 Design Principles
+# 🧠 Design Principles
+
 The architecture is guided by a few core principles:
-Clean Architecture
+
+## Clean Architecture
+
 • 	Dependency inversion
 • 	Separation of concerns
 • 	Testability
 • 	Framework independence
-SOLID
+
+## SOLID
+
 • 	Single Responsibility
 • 	Interface Segregation
 • 	Dependency Inversion
-Future‑Proofing
+
+## Future‑Proofing
+
 The system is designed to support:
+
 • 	Additional modules
 • 	Mobile app integration
 • 	Multi‑tenant scaling
 • 	Cloud‑native deployments
 • 	Event‑driven workflows
 
-🧱 UI Shell Architecture (High‑Level Overview)
-The frontend layout is documented in detail in  (frontend section), but here’s the backend‑relevant summary:
+# 🧱 UI Shell Architecture (High‑Level Overview)
+
+### The frontend layout is documented in detail in  (frontend section), but here’s the backend‑relevant summary:
 
 |       Top Bar        | Tenant, Search, Profile      |
 |----------------------|------------------------------|
@@ -112,14 +123,16 @@ The frontend layout is documented in detail in  (frontend section), but here’s
 
 Backend modules expose endpoints that map cleanly to this UI structure.
 
-📁 Related Documentation
+# 📁 Related Documentation
+
 - Theme System: /docs/Themes/README.md
 - Branding: /docs/BRANDING.md
 - Metadata: /docs/METADATA.md
 - Onboarding: /docs/ONBOARDING.md
 - Changelog: /docs/CHANGELOG.md
 
-📓 Contributor Notes
+# 📓 Contributor Notes
+
 - Log architecture changes in CHANGELOG.md
 - Reference LICENSE.md for backend protection
 - Sync with frontend via shared DTOs or API contracts
@@ -137,7 +150,7 @@ flowchart TD
     Infra --> External[External Services]
 ```
 
-🔄 Request Lifecycle
+# 🔄 Request Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -160,7 +173,7 @@ sequenceDiagram
     A-->>C: HTTP Response
 ```
 
-🏢 Multi‑Tenant Lifecycle
+# 🏢 Multi‑Tenant Lifecycle
 
 ```mermaid
 flowchart LR
@@ -171,7 +184,8 @@ flowchart LR
     Operate --> Teardown[Teardown / Archive]
 ```
 
-🧭 “How to Read This Architecture” (Contributor Quickstart)
+# 🧭 “How to Read This Architecture” (Contributor Quickstart)
+
 ### How This Architecture Works
 
 This backend follows a layered, modular structure:
@@ -188,16 +202,6 @@ Each module follows the same pattern:
   /Infrastructure
   /API
 This makes the system predictable, testable, and easy to extend.
-
-🧭 “How to Read This Architecture” (Contributor Quickstart)
-### How This Architecture Works
-
-This backend follows a layered, modular structure:
-
-- **API Layer** handles HTTP and shapes input/output.
-- **Application Layer** coordinates use cases and enforces workflows.
-- **Domain Layer** contains pure business logic with no framework dependencies.
-- **Infrastructure Layer** implements persistence and external integrations.
 
 📦 Layer Responsibilities Table
 | Layer          | Responsibilities                             | Examples                                      |
@@ -217,20 +221,3 @@ flowchart LR
     Scope --> Operate[Normal Operation]
     Operate --> Teardown[Teardown / Archive]
 ```
-
-🧭 “How to Read This Architecture” (Contributor Quickstart)
-### How This Architecture Works
-
-This backend follows a layered, modular structure:
-
-- **API Layer** handles HTTP and shapes input/output.
-- **Application Layer** coordinates use cases and enforces workflows.
-- **Domain Layer** contains pure business logic with no framework dependencies.
-- **Infrastructure Layer** implements persistence and external integrations.
-
-Each module follows the same pattern:
-/ModuleName
-  /Domain
-  /Application
-  /Infrastructure
-  /API
