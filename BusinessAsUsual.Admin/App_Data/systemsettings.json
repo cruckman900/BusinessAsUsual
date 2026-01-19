@@ -1,0 +1,18 @@
+{
+  "MetricsPollingIntervalSeconds": 5,
+  "AutoRefreshMetrics": true,
+  "AutoRefreshLogs": true,
+  "EnableCpu": true,
+  "EnableMemory": true,
+  "EnableDisk": true,
+  "EnableNetwork": true,
+  "ChartHistoryLength": 20,
+  "logRetentionDays": 7,
+  "DefaultLogLevel": "Information",
+  "EnableCloudWatch": false,
+  "CloudWatchLogGroup": "",
+  "ThemeMode": "Dark",
+  "RememberSidebarState": true,
+  "EnableDebugMode": false,
+  "ShowDangerTools": false
+}

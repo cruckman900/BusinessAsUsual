@@ -1,4 +1,19 @@
-﻿// ===============================
+﻿let metricsInterval = null;
+
+function applySettingsToMetrics(settings) {
+    if (metricsInterval) clearInterval(metricsInterval);
+
+    if (settings.autoRefreshMetrics) {
+        metricsInterval = setInterval(pollMetrics, settings.metricsPollingIntervalSeconds * 1000);
+    }
+}
+
+window.addEventListener("settingsLoaded", (e) => {
+    window.currentSettings = e.detail;
+    applySettingsToMetrics(e.detail);
+}
+
+// ===============================
 //  GLOBAL CHART REFERENCES
 // ===============================
 let cpuChart, memoryChart, diskChart, networkChart, uptimeChart;
@@ -129,7 +144,9 @@ function updateCpu(percent) {
     cpuChart.data.labels.push(now);
     cpuChart.data.datasets[0].data.push(percent);
 
-    if (cpuChart.data.labels.length > 20) {
+    const max = window.currentSettings?.chartHistoryLength || 20;
+
+    if (cpuChart.data.labels.length > max) {
         cpuChart.data.labels.shift();
         cpuChart.data.datasets[0].data.shift();
     }
@@ -162,7 +179,9 @@ function updateNetwork(network) {
     networkChart.data.datasets[0].data.push(network.bytesIn);
     networkChart.data.datasets[1].data.push(network.bytesOut);
 
-    if (networkChart.data.labels.length > 20) {
+    const max = window.currentSettings?.chartHistoryLength || 20;
+
+    if (networkChart.data.labels.length > max) {
         networkChart.data.labels.shift();
         networkChart.data.datasets[0].data.shift();
         networkChart.data.datasets[1].data.shift();
@@ -193,6 +212,7 @@ async function pollMetrics() {
 // ===============================
 //  BOOTSTRAP
 // ===============================
+
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
     pollMetrics();
