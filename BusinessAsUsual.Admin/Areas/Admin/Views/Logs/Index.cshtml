@@ -150,9 +150,23 @@
         document.getElementById("log-search").oninput = loadLogs;
         document.getElementById("log-level").onchange = loadLogs;
 
-        setInterval(() => {
-            if (document.getElementById("log-auto").checked) loadLogs();
-        }, 3000);
+        // setInterval(() => {
+        //     if (document.getElementById("log-auto").checked) loadLogs();
+        // }, 3000);
+
+        let logInterval = null;
+
+        function applySettingsToLogs(settings) {
+            if (logInterval) clearInterval(logInterval);
+
+            if (settings.autoRefreshLogs) {
+                logInterval = setInterval(loadLogs, 5000);
+            }
+        }
+
+        window.addEventListener("settingsLoaded", e => {
+            applySettingsToLogs(e.detail);
+        });
 
         loadLogs();
     </script>

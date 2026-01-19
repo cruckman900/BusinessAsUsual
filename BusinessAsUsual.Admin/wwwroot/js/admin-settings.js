@@ -18,10 +18,13 @@
     document.getElementById("enableCloudWatch").checked = s.enableCloudWatch;
     document.getElementById("cloudWatchLogGroup").value = s.cloudWatchLogGroup;
 
-    document.getElementById("themeMode").value = s.themeMode;
-    document.getElementById("rememberSidebarState").checked = s.rememberSidebarState;
+    //document.getElementById("themeMode").value = s.themeMode;
+    //document.getElementById("rememberSidebarState").checked = s.rememberSidebarState;
     document.getElementById("enableDebugMode").checked = s.enableDebugMode;
     document.getElementById("showDangerTools").checked = s.showDangerTools;
+
+    // broadcast settings to other modules
+    window.dispatchEvent(new CustomEvent("settingsLoaded", { detail: s }));
 }
 
 async function saveSettings() {
@@ -41,8 +44,8 @@ async function saveSettings() {
         enableCloudWatch: document.getElementById("enableCloudWatch").checked,
         cloudWatchLogGroup: document.getElementById("cloudWatchLogGroup").value,
 
-        themeMode: document.getElementById("themeMode").value,
-        rememberSidebarState: document.getElementById("rememberSidebarState").checked,
+        //themeMode: document.getElementById("themeMode").value,
+        //rememberSidebarState: document.getElementById("rememberSidebarState").checked,
         enableDebugMode: document.getElementById("enableDebugMode").checked,
         showDangerTools: document.getElementById("showDangerTools").checked
     };
@@ -58,6 +61,31 @@ async function saveSettings() {
         new bootstrap.Toast(toastEl).show();
     }
 }
+
+function applyDebugMode(settings) {
+    if (settings.enableDebugMode) {
+        document.body.classList.add("debug-mode");
+        console.debug("Debug mode enabled");
+    } else {
+        document.body.classList.remove("debug-mode");
+    }
+}
+
+function applyDangerTools(settings) {
+    const tools = document.querySelectorAll(".danger-tool");
+    tools.forEach(t => {
+        t.style.display = settings.showDangerTools ? "block" : "none";
+    });
+}
+
+// ===============================
+//  EVENT LISTENERS
+// ===============================
+
+window.addEventListener("settingsLoaded", (e) => {
+    applyDebugMode(e.detail);
+    applyDangerTools(e.detail);
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     loadSettings();

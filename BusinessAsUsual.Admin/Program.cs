@@ -131,6 +131,8 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddSingleton<NetworkCollector>();
                 builder.Services.AddSingleton<UptimeCollector>();
 
+                builder.Services.AddSingleton<SystemSettingsService>();
+
                 // Initialize Serilog AFTER configuration is loaded
                 SerilogBootstrapper.Initialize();
 
