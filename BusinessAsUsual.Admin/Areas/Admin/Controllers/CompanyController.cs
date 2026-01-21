@@ -58,11 +58,15 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         }
 
         /// <summary>
-        /// Handles form submission, validates input, and triggers provisioning.
-        /// On success, logs Smart Commit and redirects to success view.
+        /// Handles the HTTP POST request to provision a new company tenant based on the provided view model.
         /// </summary>
-        /// <param name="company">Form-bound company data.</param>
-        /// <returns>Redirect to success view or redisplay form with errors.</returns>
+        /// <remarks>If the model state is invalid or provisioning fails, the method returns the same view
+        /// with error messages. On successful provisioning, the user is redirected to a confirmation page. This action
+        /// expects to be called from a form submission.</remarks>
+        /// <param name="vm">The view model containing the company details and provisioning options to be used for tenant creation. Must
+        /// not be null and must contain valid data.</param>
+        /// <returns>An <see cref="IActionResult"/> that renders the provisioning view with validation errors if the input is
+        /// invalid or provisioning fails; otherwise, a redirect to the provisioning success page.</returns>
         [HttpPost("provision")]
         public async Task<IActionResult> ProvisionCompany(ProvisionCompanyViewModel vm)
         {
