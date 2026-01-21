@@ -1,86 +1,83 @@
 ﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
 using BusinessAsUsual.Admin.Database;
 using BusinessAsUsual.Admin.Services;
-using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace BusinessAsUsual.Tests.Unit
 {
-    /// Hello world
     /// <summary>
-    /// Tests for the ProvisioningService class.
+    /// Contains unit tests for the ProvisioningService, verifying tenant provisioning scenarios and expected outcomes.
     /// </summary>
+    /// <remarks>This test class uses xUnit and Moq to validate the behavior of ProvisioningService methods
+    /// under various conditions. Tests are categorized as unit tests and are intended to ensure that tenant
+    /// provisioning succeeds when all required steps complete successfully.</remarks>
     public class ProvisioningServiceTests
     {
         /// <summary>
-        /// Test if ProvisionTenantAsync returns true after attempting to provision company.
+        /// Verifies that ProvisionTenantAsync returns a successful result when all provisioning steps complete without
+        /// errors.
         /// </summary>
+        /// <remarks>This test ensures that the tenant provisioning workflow completes successfully and
+        /// that all required database operations are invoked exactly once. It validates that the result contains a
+        /// non-null company ID and tenant database name, indicating successful provisioning.</remarks>
+        /// <returns>A task that represents the asynchronous test operation.</returns>
         [Trait("Category", "Unit")]
         [Fact]
-        public async Task ProvisionTenantAsync_ReturnsTrue_WhenProvisioningSucceeds()
+        public async Task ProvisionTenantAsync_ReturnsSuccess_WhenAllStepsSucceed()
         {
-            // 🧪 Set environment variable for connection string
-            Environment.SetEnvironmentVariable("AWS_SQL_CONNECTION_STRING", "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;");
+            // Arrange
+            Environment.SetEnvironmentVariable(
+                "AWS_SQL_CONNECTION_STRING",
+                "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;"
+            );
 
-            // 🧪 Mock SignalR hub
-            var mockClients = new Mock<IHubClients>();
-            var mockClientProxy = new Mock<IClientProxy>();
-
-            mockClients.Setup(c => c.All).Returns(mockClientProxy.Object);
-            mockClientProxy
-                .Setup(c => c.SendCoreAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<object[]>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
-            var hub = new Mock<IHubContext<ProvisioningHub>>();
-            hub.Setup(h => h.Clients).Returns(mockClients.Object);
-
-            // 🧪 Mock environment and logger
-            var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<ProvisioningService>>();
-
+            var env = new Mock<IWebHostEnvironment>();
             env.Setup(e => e.ContentRootPath).Returns("/fake/path");
 
-            // 🧪 Mock metadata service
-            var metadata = new Mock<TenantMetadataService>();
+            // Mock ProvisioningDb
+            var mockDb = new Mock<ProvisioningDb>();
 
-            metadata.Setup(m => m.GetProvisioningLogScript())
-                    .Returns("CREATE TABLE ProvisioningLog (...)");
+            mockDb.Setup(d => d.EnsureMasterDatabaseExistsAsync())
+                  .Returns(Task.CompletedTask);
 
-            metadata.Setup(m => m.GetCompanyRegistryScript())
-                    .Returns("CREATE TABLE Companies (...)");
+            mockDb.Setup(d => d.ApplyMasterSchemaAsync(It.IsAny<string>()))
+                  .Returns(Task.CompletedTask);
 
-            metadata.Setup(m => m.GetCreateScript(env.Object, "TestCo"))
-                    .Returns("CREATE TABLE CompanySettings (...)");
+            mockDb.Setup(d => d.SaveCompanyInfoAsync(It.IsAny<Company>()))
+                  .Returns(Task.CompletedTask);
 
-            // 🧪 Mock ProvisioningDb using env-based ConfigLoader
-            var provDb = new Mock<ProvisioningDb>();
-            provDb.Setup(d => d.ApplySchemaAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            provDb.Setup(d => d.CreateDatabaseAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-            provDb.Setup(d => d.SaveCompanyInfoAsync(It.IsAny<Company>())).Returns(Task.CompletedTask);
+            mockDb.Setup(d => d.CreateTenantDatabaseAsync(It.IsAny<string>()))
+                  .Returns(Task.CompletedTask);
 
-            // 🧪 Mock ProvisioningLogger
-            var provLogger = new Mock<ProvisioningLogger>(hub.Object);
-            provLogger.Setup(l => l.LogStepAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                      .Returns(Task.CompletedTask);
+            mockDb.Setup(d => d.ApplyTenantSchemaAsync(It.IsAny<string>(), It.IsAny<string>()))
+                  .Returns(Task.CompletedTask);
 
-            // 🧪 Create provisioner with mocks
-            var provisioner = new ProvisioningService(
-                env.Object,
-                metadata.Object,
-                logger.Object,
-                provDb.Object,
-                provLogger.Object);
+            // Create service
+            var service = new ProvisioningService(mockDb.Object, env.Object);
 
-            // 🧪 Execute provisioning logic
-            var result = await provisioner.ProvisionTenantAsync("TestCo", "admin@testco.com", "standard", new[] { "Billing", "Inventory" });
+            var request = new ProvisioningRequest
+            {
+                CompanyName = "TestCo",
+                AdminEmail = "admin@testco.com",
+                BillingPlan = "standard",
+                Modules = new[] { "Billing", "Inventory" }
+            };
 
-            // ✅ Assert success
-            Assert.True(result);
+            // Act
+            var result = await service.ProvisionTenantAsync(request);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.NotNull(result.CompanyId);
+            Assert.NotNull(result.TenantDbName);
+
+            // Verify calls
+            mockDb.Verify(d => d.EnsureMasterDatabaseExistsAsync(), Times.Once);
+            mockDb.Verify(d => d.SaveCompanyInfoAsync(It.IsAny<Company>()), Times.Once);
+            mockDb.Verify(d => d.CreateTenantDatabaseAsync(It.IsAny<string>()), Times.Once);
+            mockDb.Verify(d => d.ApplyTenantSchemaAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
     }
 }

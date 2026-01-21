@@ -1,39 +1,42 @@
 ﻿/* === sidebar.css — Left Sidebar === */
 
 .sidebar {
-    background-color: var(--sidebar-bg);
+/*    background-color: var(--navbar-bg);*/
+    background: var(--gradient-soft);
+    margin: 0;
     padding: 0.25rem;
-    border-right: 2px solid var(--sidebar-border);
+    border-right: 2px solid var(--border);
     height: 100%;
     align-self: start;
 }
 
     .sidebar h3 {
         font-size: 1.2rem;
-        color: var(--sidebar-heading);
+        color: var(--content-text);
         margin-bottom: 1rem;
     }
 
     .sidebar ul {
         list-style: none;
-        background-color: var(--sidebar-bg);
+/*        background-color: var(--navbar-bg);*/
     }
 
     .sidebar a {
         display: block;
         margin: 0.5rem 0;
-        color: var(--sidebar-link);
+        color: var(--link);
         text-decoration: none;
     }
 
         .sidebar a:hover {
-            text-decoration: underline;
+            color: var(--link-hover);
+            font-weight: bold;
         }
 
-    .sidebar .list-group-item {
+/*    .sidebar .list-group-item {
         background-color: transparent;
     }
-
+*/
     .sidebar-toggle {
         margin: 0;
         padding: 0;

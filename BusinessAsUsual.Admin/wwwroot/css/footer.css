@@ -1,8 +1,11 @@
 ﻿.footer {
-    background-color: var(--footer-bg);
-    color: var(--footer-text);
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
     text-align: center;
-    padding: 1rem;
-    margin-top: 2rem;
-    border-top: 1px solid var(--sidebar-border);
+    border-top: 1px solid var(--border);
+
+    display: flex;
+    align-items: center; /* vertical centering */
+    justify-content: center; /* horizontal centering */
+    min-height: 50px; /* pick a height that feels right */
 }

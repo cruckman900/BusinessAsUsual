@@ -1,8 +1,9 @@
 ﻿/* === header.css — Top Branding & Signature === */
 
 .header-branding {
-    background-color: var(--brand-bg);
-    color: var(--brand-text);
+/*    background-color: var(--navbar-bg);*/
+    background: var(--gradient-primary);
+    color: var(--navbar-text);
     padding: 1rem 1.5rem;
     font-size: 1.5rem;
     font-weight: bold;
