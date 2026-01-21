@@ -11,7 +11,7 @@ function applySettingsToMetrics(settings) {
 window.addEventListener("settingsLoaded", (e) => {
     window.currentSettings = e.detail;
     applySettingsToMetrics(e.detail);
-}
+});
 
 // ===============================
 //  GLOBAL CHART REFERENCES
