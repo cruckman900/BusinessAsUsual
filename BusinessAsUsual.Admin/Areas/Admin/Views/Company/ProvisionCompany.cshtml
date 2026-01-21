@@ -75,6 +75,7 @@
 
                                                     <input type="checkbox"
                                                            class="form-check-input me-2 module-checkbox"
+                                                           data-module="@module.Key"
                                                            value="@module.Key"
                                                            id="chk-@module.Key" />
 
@@ -100,7 +101,7 @@
                                                         <div class="form-check mb-1 ms-4">
                                                             <input type="checkbox"
                                                                    class="form-check-input submodule-checkbox"
-                                                                   data-module="@module.Key"
+                                                                   data-parent="@module.Key"
                                                                    value="@sub.Key"
                                                                    id="sub-@sub.Key" />
 
@@ -200,27 +201,260 @@
 @section Scripts {
     <script>
         const businessTypeModules = {
-            Retail: ["Products", "Inventory", "Orders", "POS", "Accounting"],
-            Manufacturing: ["Production", "Inventory", "Equipment", "Maintenance", "Accounting"],
-            Services: ["Scheduling", "Timekeeping", "Contracts", "Billing", "Accounting"],
-            Mining: ["Equipment", "Maintenance", "Safety", "Production", "Logistics"],
-            Restaurant: ["Menu", "Orders", "Inventory", "Staffing", "Accounting"],
-            Construction: ["Projects", "Equipment", "Timekeeping", "Contracts", "Accounting"]
+
+            // ============================================================
+            // RETAIL
+            // ============================================================
+            Retail: [
+                "Products",
+                "Inventory",
+                "Orders",
+                "POS",
+                "Customers",
+                "Suppliers",
+                "Purchasing",
+                "Warehousing",
+                "Payments",
+                "Billing",
+                "Invoicing",
+                "Accounting",
+                "Reporting",
+                "Staff",
+                "Timekeeping",
+                "HR"
+            ],
+
+            // ============================================================
+            // MANUFACTURING
+            // ============================================================
+            Manufacturing: [
+                "Products",
+                "Inventory",
+                "Warehousing",
+                "Equipment",
+                "Maintenance",
+                "QualityControl",
+                "Replenishment",
+                "Forecasting",
+                "Procurement",
+                "Purchasing",
+                "Suppliers",
+                "Projects",
+                "Tasks",
+                "Workflows",
+                "Scheduling",
+                "AssetManagement",
+                "Compliance",
+                "Accounting",
+                "GeneralLedger",
+                "Reporting",
+                "Staff",
+                "Timekeeping",
+                "HR"
+            ],
+
+            // ============================================================
+            // MINING / DRILLING
+            // ============================================================
+            Mining: [
+                "Equipment",
+                "Maintenance",
+                "Safety",
+                "Compliance",
+                "Vehicles",
+                "FleetManagement",
+                "Logistics",
+                "Routing",
+                "Projects",
+                "Tasks",
+                "Documents",
+                "Reporting",
+                "Staff",
+                "Timekeeping",
+                "HR",
+                "Accounting"
+            ],
+
+            // ============================================================
+            // LOGISTICS / TRANSPORT
+            // ============================================================
+            Logistics: [
+                "Vehicles",
+                "FleetManagement",
+                "Routing",
+                "Dispatch",
+                "Logistics",
+                "Warehousing",
+                "Inventory",
+                "Orders",
+                "Customers",
+                "Suppliers",
+                "Scheduling",
+                "Messaging",
+                "Reporting",
+                "Accounting",
+                "Staff",
+                "Timekeeping",
+                "HR"
+            ],
+
+            // ============================================================
+            // HEALTHCARE
+            // ============================================================
+            Healthcare: [
+                "Patients",
+                "ClinicalNotes",
+                "Scheduling",
+                "Billing",
+                "Invoicing",
+                "Documents",
+                "Messaging",
+                "Inventory",
+                "Equipment",
+                "Compliance",
+                "Reporting",
+                "Staff",
+                "Timekeeping",
+                "HR",
+                "Accounting"
+            ],
+
+            // ============================================================
+            // HOSPITALITY
+            // ============================================================
+            Hospitality: [
+                "Menu",
+                "Orders",
+                "Reservations",
+                "Events",
+                "Customers",
+                "Staff",
+                "Scheduling",
+                "Inventory",
+                "Purchasing",
+                "Payments",
+                "Billing",
+                "Invoicing",
+                "Messaging",
+                "Reporting",
+                "Timekeeping",
+                "HR",
+                "Accounting"
+            ],
+
+            // ============================================================
+            // PROFESSIONAL SERVICES
+            // ============================================================
+            ProfessionalServices: [
+                "Contracts",
+                "Projects",
+                "Tasks",
+                "FieldService",
+                "Services",
+                "Documents",
+                "Messaging",
+                "Customers",
+                "Quotes",
+                "Billing",
+                "Invoicing",
+                "Reporting",
+                "Staff",
+                "Timekeeping",
+                "HR",
+                "Accounting"
+            ]
         };
+
+        function resetAllModules() {
+            // Uncheck all module checkboxes
+            document.querySelectorAll(".module-checkbox").forEach(cb => {
+                cb.checked = false;
+            });
+
+            // Uncheck all submodule checkboxes
+            document.querySelectorAll(".submodule-checkbox").forEach(cb => {
+                cb.checked = false;
+            });
+
+            // Collapse all accordion panels
+            document.querySelectorAll(".accordion-collapse.show").forEach(panel => {
+                panel.classList.remove("show");
+            });
+
+            // Also collapse any that are "collapsing" mid-animation
+            document.querySelectorAll(".accordion-collapse.collapsing").forEach(panel => {
+                panel.classList.remove("collapsing");
+                panel.classList.remove("show");
+            });
+
+            // Reset all accordion buttons to collapsed state
+            document.querySelectorAll(".accordion-button").forEach(btn => {
+                btn.classList.add("collapsed");
+                btn.setAttribute("aria-expanded", "false");
+            });
+
+            // 🔥 Clear hidden fields
+            document.getElementById("ModulesEnabled").value = "";
+            document.getElementById("SubmodulesEnabled").value = "";
+        }
+
+        function updateHiddenFields() {
+            const modules = [...document.querySelectorAll(".module-checkbox:checked")]
+                .map(cb => cb.dataset.module);
+
+            const submodules = [...document.querySelectorAll(".submodule-checkbox:checked")]
+                .map(cb => cb.value);
+
+            document.getElementById("ModulesEnabled").value = modules.join(",");
+            document.getElementById("SubmodulesEnabled").value = submodules.join(",");
+        }
+
+        // BUSINESS TYPE CHANGE
         document.getElementById("BusinessType").addEventListener("change", function () {
-            alert(this.value);
             const selected = this.value;
+
+            // 1. Reset everything
+            resetAllModules();
+
+            // 2. Apply defaults
             const modules = businessTypeModules[selected] || [];
 
             document.querySelectorAll(".module-checkbox").forEach(cb => {
-                cb.checked = modules.includes(cb.dataset.module);
+                const moduleKey = cb.dataset.module;
+
+                if (modules.includes(moduleKey)) {
+                    cb.checked = true;
+                    cb.dispatchEvent(new Event("change")); // triggers unified logic
+                }
             });
+
+            updateHiddenFields();
         });
+
+
+        // UNIFIED MODULE CHECKBOX LOGIC
         document.querySelectorAll(".module-checkbox").forEach(cb => {
             cb.addEventListener("change", function () {
-                const panel = document.querySelector(`button[data-module="${this.dataset.module}"]`);
-                if (panel && this.checked) panel.click();
+                const moduleKey = this.dataset.module;
+
+                // Auto-select submodules
+                const submodules = document.querySelectorAll(`.submodule-checkbox[data-parent="${moduleKey}"]`);
+                submodules.forEach(sm => sm.checked = this.checked);
+
+                // Auto-expand accordion
+                if (this.checked) {
+                    const btn = document.querySelector(`button[data-bs-target="#collapse-${moduleKey}"]`);
+                    if (btn) btn.click();
+                }
+
+                updateHiddenFields();
             });
+        });
+
+
+        // SUBMODULE CHECKBOXES UPDATE HIDDEN FIELDS
+        document.querySelectorAll(".submodule-checkbox").forEach(sm => {
+            sm.addEventListener("change", updateHiddenFields);
         });
     </script>
 

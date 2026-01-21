@@ -1,389 +1,443 @@
-﻿namespace BusinessAsUsual.Core.Modules;
+﻿using System.Collections.Generic;
 
-public static class ModuleCatalog
+namespace BusinessAsUsual.Core.Modules
 {
-    public static IReadOnlyList<ModuleDefinition> AllModules { get; } =
-        new List<ModuleDefinition>
+    public static class ModuleCatalog
+    {
+        public static IReadOnlyList<ModuleDefinition> AllModules => new List<ModuleDefinition>
         {
-            new ModuleDefinition("Core", "Admin", "Admin", new []
+            // ============================================================
+            // PLATFORM (System-level, cross-cutting)
+            // ============================================================
+            new("Platform", "UserManagement", "User Management", new []
             {
-                new SubmoduleDefinition("ADM_CompSettings", "Company Settings"),
-                new SubmoduleDefinition("ADM_UsrMgmt", "User Management"),
-                new SubmoduleDefinition("ADM_RolesPerms", "Roles & Permissions"),
-                new SubmoduleDefinition("ADM_TenantConfig", "Tenant Configuration"),
-                new SubmoduleDefinition("ADM_Audit", "Audit Logs"),
-                new SubmoduleDefinition("ADM_Brand", "Branding & Theme"),
-                new SubmoduleDefinition("ADM_APIInt", "API Keys / Integration")
+                new SubmoduleDefinition("Users", "Users"),
+                new SubmoduleDefinition("Roles", "Roles"),
+                new SubmoduleDefinition("Permissions", "Permissions")
             }),
 
-            new ModuleDefinition("Core", "HR", "Human Resources", new []
+            new("Platform", "AuditLogs", "Audit Logs", new []
             {
-                new SubmoduleDefinition("HR_Employees", "Employee Records"),
-                new SubmoduleDefinition("HR_OnboardingDocs", "Onboarding Documents"),
-                new SubmoduleDefinition("HR_PTO", "PTO / Leave Management"),
-                new SubmoduleDefinition("HR_Payroll", "Payroll Integration"),
-                new SubmoduleDefinition("HR_Training", "Certifications & Training"),
-                new SubmoduleDefinition("HR_Performance", "Performance Reviews"),
-                new SubmoduleDefinition("HR_BenefitsComp", "Benefits & Compensation"),
-                new SubmoduleDefinition("HR_Compliance", "Compliance (I-9, W-4, OSHA, etc.")
+                new SubmoduleDefinition("SystemEvents", "System Events"),
+                new SubmoduleDefinition("SecurityEvents", "Security Events")
             }),
 
-            new ModuleDefinition("Core", "Finance", "Finance", new []
+            new("Platform", "Notifications", "Notifications", new []
             {
-                new SubmoduleDefinition("FIN_GL", "General Ledger"),
-                new SubmoduleDefinition("FIN_AR", "Accounts Receivable"),
-                new SubmoduleDefinition("FIN_AP", "Accounts Payable"),
-                new SubmoduleDefinition("FIN_Budget", "Budgeting"),
-                new SubmoduleDefinition("FIN_ExpenseMgmt", "Expense Management"),
-                new SubmoduleDefinition("FIN_Reports", "Financial Reporting"),
-                new SubmoduleDefinition("FIN_BankReconcile", "Bank Reconciliation"),
-                new SubmoduleDefinition("FIN_TaxCfg", "Tax Configuration"),
-                new SubmoduleDefinition("FIN_Currency", "Multi-Currency Support")
+                new SubmoduleDefinition("Email", "Email"),
+                new SubmoduleDefinition("SMS", "SMS"),
+                new SubmoduleDefinition("Push", "Push Notifications")
             }),
 
-            new ModuleDefinition("Core", "CRM", "CRM", new []
+            new("Platform", "Reporting", "Reporting & Analytics", new []
             {
-                new SubmoduleDefinition("CRM_Leads", "Leads"),
-                new SubmoduleDefinition("CRM_Opps", "Opportunities"),
-                new SubmoduleDefinition("CRM_Pipelines", "Pipelines"),
-                new SubmoduleDefinition("CRM_AcctContacts", "Accounts & Contacts"),
-                new SubmoduleDefinition("CRM_ActNote", "Activities & Notes"),
-                new SubmoduleDefinition("CRM_EmailInt", "Email Integration"),
-                new SubmoduleDefinition("CRM_SalesFcst", "Sales Forcasting"),
-                new SubmoduleDefinition("CRM_CustSeg", "Customer Segmentation")
+                new SubmoduleDefinition("Dashboards", "Dashboards"),
+                new SubmoduleDefinition("Exports", "Exports"),
+                new SubmoduleDefinition("KPIs", "KPIs")
             }),
 
-            new ModuleDefinition("Core", "Inventory", "Inventory", new []
+            new("Platform", "Integrations", "Integrations", new []
             {
-                new SubmoduleDefinition("INV_StockLvls", "Stock Levels"),
-                new SubmoduleDefinition("INV_Warehouses", "Warehouses"),
-                new SubmoduleDefinition("INV_POs", "Purchase Orders"),
-                new SubmoduleDefinition("INV_Rec", "Receiving"),
-                new SubmoduleDefinition("INV_Transfers", "Transfers"),
-                new SubmoduleDefinition("INV_Adj", "Adjustments"),
-                new SubmoduleDefinition("INV_LSTracking", "Lot/Serial Tracking"),
-                new SubmoduleDefinition("INV_ReorderRules", "Reorder Rules"),
-                new SubmoduleDefinition("INV_VendorMgmt", "Vendor Management")
+                new SubmoduleDefinition("APIKeys", "API Keys"),
+                new SubmoduleDefinition("Webhooks", "Webhooks"),
+                new SubmoduleDefinition("Connectors", "Connectors")
             }),
 
-            new ModuleDefinition("Core", "Timekeeping", "Timekeeping", new []
+            new("Platform", "Settings", "System Settings", new []
             {
-                new SubmoduleDefinition("TK_Timesheets", "Timesheets"),
-                new SubmoduleDefinition("TK_JobCosting", "Job Costing"),
-                new SubmoduleDefinition("TK_LaborCats", "Labor Categories"),
-                new SubmoduleDefinition("TK_OTRules", "Overtime Rules"),
-                new SubmoduleDefinition("TK_Approvals", "Approvals"),
-                new SubmoduleDefinition("TK_Export", "Payroll Export")
+                new SubmoduleDefinition("CompanyProfile", "Company Profile"),
+                new SubmoduleDefinition("Preferences", "Preferences")
             }),
 
-            new ModuleDefinition("Core", "A&C", "Audit & Compliance", new []
+            new("Platform", "Localization", "Localization", new []
             {
-                new SubmoduleDefinition("AC_ContractAudit", "Contract Audit"),
-                new SubmoduleDefinition("AC_DocComp", "Document Compliance"),
-                new SubmoduleDefinition("AC_Certs", "Certifications"),
-                new SubmoduleDefinition("AC_PolicyAck", "Policy Acknowledgements"),
-                new SubmoduleDefinition("AC_InternalCtrls", "Internal Controls"),
-                new SubmoduleDefinition("AC_RiskReg", "Risk Register")
+                new SubmoduleDefinition("Languages", "Languages"),
+                new SubmoduleDefinition("Regions", "Regions")
             }),
 
-            new ModuleDefinition("Retail", "POS", "Point of Sale (POS)", new []
+            // ============================================================
+            // FINANCIAL
+            // ============================================================
+            new("Financial", "Accounting", "Accounting", new []
             {
-                new SubmoduleDefinition("POS_RegMgmt", "Register Management"),
-                new SubmoduleDefinition("POS_BarcodeScan", "Barcode Scanning"),
-                new SubmoduleDefinition("POS_CashDrawer", "Cash Drawer"),
-                new SubmoduleDefinition("POS_RtnsExch", "Returns & Exchanges"),
-                new SubmoduleDefinition("POS_ReceiptPrint", "Receipt Printing")
+                new SubmoduleDefinition("ChartOfAccounts", "Chart of Accounts"),
+                new SubmoduleDefinition("JournalEntries", "Journal Entries")
             }),
 
-            new ModuleDefinition("Retail", "Products", "Product Catalog", new []
+            new("Financial", "GeneralLedger", "General Ledger", new []
             {
-                new SubmoduleDefinition("PC_SKUs", "SKUs"),
-                new SubmoduleDefinition("PC_Variants", "Variants"),
-                new SubmoduleDefinition("PC_Categories", "Categories"),
-                new SubmoduleDefinition("PC_PricingRules", "Pricing Rules"),
-                new SubmoduleDefinition("PC_ImgDesc", "Images & Descriptions")
+                new SubmoduleDefinition("Ledgers", "Ledgers"),
+                new SubmoduleDefinition("Reconciliation", "Reconciliation")
             }),
 
-            new ModuleDefinition("Retail", "Promotions", "Promotions", new []
+            new("Financial", "AccountsReceivable", "Accounts Receivable", new []
             {
-                new SubmoduleDefinition("PRO_Discounts", "Discounts"),
-                new SubmoduleDefinition("PRO_Coupons", "Coupons"),
-                new SubmoduleDefinition("PRO_BOGO", "BOGO"),
-                new SubmoduleDefinition("PRO_SchedPromo", "Scheduled Promotions")
+                new SubmoduleDefinition("Invoices", "Invoices"),
+                new SubmoduleDefinition("Collections", "Collections")
             }),
 
-            new ModuleDefinition("Retail", "Loyalty", "Loyalty", new []
+            new("Financial", "AccountsPayable", "Accounts Payable", new []
             {
-                new SubmoduleDefinition("LOY_Points", "Points"),
-                new SubmoduleDefinition("LOY_Rewards", "Rewards"),
-                new SubmoduleDefinition("LOY_CustTiers", "Customer Tiers"),
-                new SubmoduleDefinition("LOY_RedeemRules", "Redemption Rules")
+                new SubmoduleDefinition("Bills", "Bills"),
+                new SubmoduleDefinition("VendorPayments", "Vendor Payments")
             }),
 
-            new ModuleDefinition("Manufacturing", "Production", "Production", new []
+            new("Financial", "Billing", "Billing", new []
             {
-                new SubmoduleDefinition("MAN_WorkCenters", "Work Centers"),
-                new SubmoduleDefinition("MAN_ProdSched", "Production Schedules"),
-                new SubmoduleDefinition("MAN_MatReq", "Material Requirements"),
-                new SubmoduleDefinition("MAN_CapPlan", "Capacity Planning"),
-                new SubmoduleDefinition("MAN_ProdOrders", "Production Orders"),
-                new SubmoduleDefinition("MAN_ShopFlExec", "Shop Floor Execution")
+                new SubmoduleDefinition("Recurring", "Recurring Billing"),
+                new SubmoduleDefinition("OneTime", "One-Time Billing")
             }),
 
-            new ModuleDefinition("Manufacturing", "WO", "Work Orders", new []
+            new("Financial", "Invoicing", "Invoicing", new []
             {
-                new SubmoduleDefinition("WO_WOCreation", "Work Order Creation"),
-                new SubmoduleDefinition("WO_RoutingSteps", "Routing Steps"),
-                new SubmoduleDefinition("WO_LaborTrack", "Labor Tracking"),
-                new SubmoduleDefinition("WO_MatConsum", "Material Consumption"),
-                new SubmoduleDefinition("WO_CompScrap", "Completion & Scrap")
+                new SubmoduleDefinition("Templates", "Templates"),
+                new SubmoduleDefinition("Delivery", "Delivery")
             }),
 
-            new ModuleDefinition("Manufacturing", "BOM", "Bill of Materials (BOM)", new []
+            new("Financial", "Payments", "Payments", new []
             {
-                new SubmoduleDefinition("BOM_MultiLovel", "Multi-Level BOM"),
-                new SubmoduleDefinition("BOM_CompSubs", "Component Substitutions"),
-                new SubmoduleDefinition("BOM_CostRollups", "Cost Rollups"),
-                new SubmoduleDefinition("BOM_RevControl", "Revision Control")
-            }), 
-
-            new ModuleDefinition("Manufacturing", "Routing", "Routing", new []
-            {
-                new SubmoduleDefinition("RTE_OpSteps", "Operation Steps"),
-                new SubmoduleDefinition("RTE_SetupRuntimes", "Setup & Run Times"),
-                new SubmoduleDefinition("RTE_WCAssign", "Work Center Assignments"),
-                new SubmoduleDefinition("RTE_EfficTrack", "Efficiency Tracking")
+                new SubmoduleDefinition("Gateways", "Gateways"),
+                new SubmoduleDefinition("Reconciliation", "Reconciliation")
             }),
 
-            new ModuleDefinition("Manufacturing", "MRP", "Material Requirements Planning", new []
+            new("Financial", "Payroll", "Payroll", new []
             {
-                new SubmoduleDefinition("MRP_DemandFC", "Demand Forecasting"),
-                new SubmoduleDefinition("MRP_SupplyPlan", "Supply Planning"),
-                new SubmoduleDefinition("MRP_ShortAnalysis", "Shortage Analysis"),
-                new SubmoduleDefinition("MRP_SugPO", "Suggested Purchase Orders")
+                new SubmoduleDefinition("PayRuns", "Pay Runs"),
+                new SubmoduleDefinition("Deductions", "Deductions")
             }),
 
-            new ModuleDefinition("Manufacturing", "QA", "Quality Assurance", new []
+            new("Financial", "Banking", "Banking", new []
             {
-                new SubmoduleDefinition("QA_Inpections", "Inspections"),
-                new SubmoduleDefinition("QA_NonConfReports", "Non-Conformance Reports"),
-                new SubmoduleDefinition("QA_CorrectiveActions", "Corrective Actions"),
-                new SubmoduleDefinition("QA_SamplingPlans", "Sampling Plans")
+                new SubmoduleDefinition("Accounts", "Bank Accounts"),
+                new SubmoduleDefinition("Transactions", "Transactions")
             }),
 
-            new ModuleDefinition("Mining / Drilling", "EquipMaint", "Equipment Maintenance", new []
+            new("Financial", "Budgeting", "Budgeting", new []
             {
-                new SubmoduleDefinition("EM_PrevMaint", "Preventive Maintenance"),
-                new SubmoduleDefinition("EM_WO", "Work Orders"),
-                new SubmoduleDefinition("EM_PartsInv", "Parts Inventory"),
-                new SubmoduleDefinition("EM_MaintLogs", "Maintenance Logs")
+                new SubmoduleDefinition("Forecasts", "Forecasts"),
+                new SubmoduleDefinition("Allocations", "Allocations")
             }),
 
-            new ModuleDefinition("Mining / Drilling", "FieldOps", "Field Operations", new []
+            new("Financial", "Taxation", "Taxation", new []
             {
-                new SubmoduleDefinition("FO_Tickets", "Field Tickets"),
-                new SubmoduleDefinition("FO_CrewAssn", "Crew Assignments"),
-                new SubmoduleDefinition("FO_JobSites", "Job Sites"),
-                new SubmoduleDefinition("FO_DAL", "Daily Activity Logs")
+                new SubmoduleDefinition("Rates", "Tax Rates"),
+                new SubmoduleDefinition("Filings", "Filings")
             }),
 
-            new ModuleDefinition("Mining / Drilling", "SafetyCompliance", "Safety & Compliance", new []
+            // ============================================================
+            // SALES & CRM
+            // ============================================================
+            new("Sales", "CRM", "CRM", new []
             {
-                new SubmoduleDefinition("SC_SafetyInc", "Safety Incidents"),
-                new SubmoduleDefinition("SC_TrainingRecs", "Training Records"),
-                new SubmoduleDefinition("SC_OSHALogs", "OSHA Logs"),
-                new SubmoduleDefinition("SC_PPETracking", "PPE Tracking")
+                new SubmoduleDefinition("Leads", "Leads"),
+                new SubmoduleDefinition("Opportunities", "Opportunities")
             }),
 
-            new ModuleDefinition("Mining / Drilling", "ExtractionTracking", "Extraction Tracking", new []
+            new("Sales", "Customers", "Customers", new []
             {
-                new SubmoduleDefinition("ET_ProdLogs", "Production Logs"),
-                new SubmoduleDefinition("ET_ResYield", "Resource Yield"),
-                new SubmoduleDefinition("ET_SiteReporting", "Site Reporting"),
-                new SubmoduleDefinition("ET_EnvMetrics", "Environmental Metrics")
+                new SubmoduleDefinition("Profiles", "Profiles"),
+                new SubmoduleDefinition("History", "History")
             }),
 
-            new ModuleDefinition("Logistics", "FleetMgmt", "Fleet Management", new []
+            new("Sales", "Quotes", "Quotes & Estimates", new []
             {
-                new SubmoduleDefinition("FM_Vehicles", "Vehicles"),
-                new SubmoduleDefinition("FM_Maint", "Maintenance"),
-                new SubmoduleDefinition("FM_FuelLogs", "Fuel Logs"),
-                new SubmoduleDefinition("FM_GPSTracking", "GPS Tracking")
+                new SubmoduleDefinition("Drafts", "Drafts"),
+                new SubmoduleDefinition("Approvals", "Approvals")
             }),
 
-            new ModuleDefinition("Logistics", "Dispatch", "Dispatch", new []
+            new("Sales", "Orders", "Orders", new []
             {
-                new SubmoduleDefinition("DIS_RoutePlanning", "Route Planning"),
-                new SubmoduleDefinition("DIS_DriverAssn", "Driver Assignments"),
-                new SubmoduleDefinition("DIS_LoadMgmt", "Load Management"),
-                new SubmoduleDefinition("DIS_DeliveryWindows", "Delivery Windows")
+                new SubmoduleDefinition("SalesOrders", "Sales Orders"),
+                new SubmoduleDefinition("Fulfillment", "Fulfillment")
             }),
 
-            new ModuleDefinition("Logistics", "ShipmentTracking", "Shipment Tracking", new []
+            new("Sales", "Subscriptions", "Subscriptions", new []
             {
-                new SubmoduleDefinition("ST_TrkNumbers", "Tracking Numbers"),
-                new SubmoduleDefinition("ST_StatusUpdates", "Status Updates"),
-                new SubmoduleDefinition("ST_POD", "Proof of Delivery"),
-                new SubmoduleDefinition("ST_CarrierInt", "Carrier Integrations")
+                new SubmoduleDefinition("Plans", "Plans"),
+                new SubmoduleDefinition("Renewals", "Renewals")
             }),
 
-            new ModuleDefinition("Logistics", "CarrierMgmt", "Carrier Management", new []
+            new("Sales", "POS", "Point of Sale", new []
             {
-                new SubmoduleDefinition("CM_Profiles", "Carrier Profiles"),
-                new SubmoduleDefinition("CM_Rates", "Rates"),
-                new SubmoduleDefinition("CM_Contracts", "Contracts"),
-                new SubmoduleDefinition("CM_PerfMetrics", "Performance Metrics")
+                new SubmoduleDefinition("Registers", "Registers"),
+                new SubmoduleDefinition("Receipts", "Receipts")
             }),
 
-            new ModuleDefinition("Healthcare", "PatientMgmt", "Patient Management", new []
+            new("Sales", "Products", "Products", new []
             {
-                new SubmoduleDefinition("PM_PatientRecords", "Patient Records"),
-                new SubmoduleDefinition("PM_Insurance", "Insurance"),
-                new SubmoduleDefinition("PM_Demographics", "Demographics"),
-                new SubmoduleDefinition("PM_MedHistory", "Medical History")
+                new SubmoduleDefinition("Catalog", "Catalog"),
+                new SubmoduleDefinition("Variants", "Variants")
             }),
 
-            new ModuleDefinition("Healthcare", "Appointments", "Appointments", new []
+            new("Sales", "Menu", "Menu Management", new []
             {
-                new SubmoduleDefinition("APPT_Scheduling", "Scheduling"),
-                new SubmoduleDefinition("APPT_Reminders", "Reminders"),
-                new SubmoduleDefinition("APPT_ProvAvail", "Provider Availability"),
-                new SubmoduleDefinition("APPT_CheckIn", "Check-In")
+                new SubmoduleDefinition("Items", "Items"),
+                new SubmoduleDefinition("Categories", "Categories")
             }),
 
-            new ModuleDefinition("Healthcare", "ProviderScheduling", "Provider Scheduling", new []
+            new("Sales", "CustomerPortal", "Customer Portal", new []
             {
-                new SubmoduleDefinition("PS_Rotations", "Rotations"),
-                new SubmoduleDefinition("PS_ShiftAssign", "Shift Assignments"),
-                new SubmoduleDefinition("PS_Credentialing", "Credentialing")
+                new SubmoduleDefinition("Access", "Access"),
+                new SubmoduleDefinition("SelfService", "Self Service")
             }),
 
-            new ModuleDefinition("Healthcare", "Compliance", "Compliance", new []
+            // ============================================================
+            // OPERATIONS
+            // ============================================================
+            new("Operations", "Inventory", "Inventory", new []
             {
-                new SubmoduleDefinition("COMP_HIPPADocs", "HIPAA Documents"),
-                new SubmoduleDefinition("COMP_AccessLogs", "Access Logs"),
-                new SubmoduleDefinition("COMP_Training", "Training"),
-                new SubmoduleDefinition("COMP_IncidentReporting", "Incident Reporting")
+                new SubmoduleDefinition("StockLevels", "Stock Levels"),
+                new SubmoduleDefinition("Adjustments", "Adjustments")
             }),
 
-            new ModuleDefinition("Hospitality", "Reservations", "Reservations", new []
+            new("Operations", "Warehousing", "Warehousing", new []
             {
-                new SubmoduleDefinition("RES_BookEngine", "Booking Engine"),
-                new SubmoduleDefinition("RES_AvailCal", "Availabiltiy Calendar"),
-                new SubmoduleDefinition("RES_RatePlans", "Rate Plans"),
-                new SubmoduleDefinition("RES_Deposits", "Deposits")
+                new SubmoduleDefinition("Bins", "Bins"),
+                new SubmoduleDefinition("Transfers", "Transfers")
             }),
 
-            new ModuleDefinition("Hospitality", "GuestServices", "Guest Services", new []
+            new("Operations", "Purchasing", "Purchasing", new []
             {
-                new SubmoduleDefinition("GS_Requests", "Requests"),
-                new SubmoduleDefinition("GS_Housekeeping", "Housekeeping"),
-                new SubmoduleDefinition("GS_RoomService", "Room Service"),
-                new SubmoduleDefinition("GS_Amenities", "Amenities")
+                new SubmoduleDefinition("PurchaseOrders", "Purchase Orders"),
+                new SubmoduleDefinition("Receipts", "Receipts")
             }),
 
-            new ModuleDefinition("Hospitality", "EventScheduling", "Event Scheduling", new []
+            new("Operations", "Procurement", "Procurement", new []
             {
-                new SubmoduleDefinition("ES_Venues", "Venues"),
-                new SubmoduleDefinition("ES_Catering", "Catering"),
-                new SubmoduleDefinition("ES_StaffAssign", "Staff Assignments"),
-                new SubmoduleDefinition("ES_Billing", "Billing")
+                new SubmoduleDefinition("Vendors", "Vendors"),
+                new SubmoduleDefinition("Contracts", "Contracts")
             }),
 
-            new ModuleDefinition("Professional Services", "ProjectManagement", "Project Management", new []
+            new("Operations", "Suppliers", "Suppliers", new []
             {
-                new SubmoduleDefinition("PM_Tasks", "Tasks"),
-                new SubmoduleDefinition("PM_Milestones", "Milestones"),
-                new SubmoduleDefinition("PM_Gantt", "Gantt"),
-                new SubmoduleDefinition("PM_Dependencies", "Dependencies")
+                new SubmoduleDefinition("Profiles", "Profiles"),
+                new SubmoduleDefinition("Ratings", "Ratings")
             }),
 
-            new ModuleDefinition("Professional Services", "BillingInvoicing", "Billing & Invoicing", new []
+            new("Operations", "Equipment", "Equipment", new []
             {
-                new SubmoduleDefinition("BI_TimeMats", "Time & Materials"),
-                new SubmoduleDefinition("BI_FixedFee", "Fixed Fee"),
-                new SubmoduleDefinition("BI_Retainers", "Retainers"),
-                new SubmoduleDefinition("BI_InvoiceTemplates", "Invoice Templates")
+                new SubmoduleDefinition("Assets", "Assets"),
+                new SubmoduleDefinition("Maintenance", "Maintenance")
             }),
 
-            new ModuleDefinition("Professional Services", "ContractManagement", "Contract Management", new []
+            new("Operations", "Maintenance", "Maintenance", new []
             {
-                new SubmoduleDefinition("CM_ContractTempl", "Contract Templates"),
-                new SubmoduleDefinition("CM_Renewals", "Renewals"),
-                new SubmoduleDefinition("CM_Amendments", "Amendments"),
-                new SubmoduleDefinition("CM_Approvals", "Approvals")
+                new SubmoduleDefinition("Schedules", "Schedules"),
+                new SubmoduleDefinition("WorkOrders", "Work Orders")
             }),
 
-            new ModuleDefinition("Professional Services", "ResourceAllocation", "Resource Allocation", new []
+            new("Operations", "Vehicles", "Vehicles", new []
             {
-                new SubmoduleDefinition("RA_Staffing", "Staffing"),
-                new SubmoduleDefinition("RA_Utilization", "Utilization"),
-                new SubmoduleDefinition("RA_SkillsMatrix", "Skills Matrix"),
-                new SubmoduleDefinition("RA_Forecasting", "Forecasting")
+                new SubmoduleDefinition("Fleet", "Fleet"),
+                new SubmoduleDefinition("Maintenance", "Maintenance")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "AssetManagement", "Asset Management", new []
+            new("Operations", "FleetManagement", "Fleet Management", new []
             {
-                new SubmoduleDefinition("AM_AssetReg", "Asset Register"),
-                new SubmoduleDefinition("AM_Depr", "Depreciation"),
-                new SubmoduleDefinition("AM_Maint", "Maintenance"),
-                new SubmoduleDefinition("AM_WarrantTrack", "Warranty Tracking")
+                new SubmoduleDefinition("Dispatch", "Dispatch"),
+                new SubmoduleDefinition("Tracking", "Tracking")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "ServiceContracts", "Service Contract", new []
+            new("Operations", "Logistics", "Logistics", new []
             {
-                new SubmoduleDefinition("SC_SLAs", "SLAs"),
-                new SubmoduleDefinition("SC_Renewals", "Renewals"),
-                new SubmoduleDefinition("SC_ContractBilling", "Contract Billing"),
-                new SubmoduleDefinition("SC_Entitlements", "Entitlements")
+                new SubmoduleDefinition("Shipments", "Shipments"),
+                new SubmoduleDefinition("Carriers", "Carriers")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "DocumentManagement", "Document Management", new []
+            new("Operations", "Routing", "Routing", new []
             {
-                new SubmoduleDefinition("DM_FileStore", "File Storage"),
-                new SubmoduleDefinition("DM_Versioning", "Versioning"),
-                new SubmoduleDefinition("DM_Tagging", "Tagging"),
-                new SubmoduleDefinition("DM_AccessCtrl", "Access Control")
+                new SubmoduleDefinition("Routes", "Routes"),
+                new SubmoduleDefinition("Optimization", "Optimization")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "AnalyticsBI", "Analytics & BI", new []
+            new("Operations", "Scheduling", "Scheduling", new []
             {
-                new SubmoduleDefinition("ABI_Dashboards", "Dashboards"),
-                new SubmoduleDefinition("ABI_KPIs", "KPIs"),
-                new SubmoduleDefinition("API_Forecasting", "Forecasting"),
-                new SubmoduleDefinition("ABI_DataWHConn", "Data Warehouse Connectors")
+                new SubmoduleDefinition("Calendar", "Calendar"),
+                new SubmoduleDefinition("Assignments", "Assignments")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "WorkflowAutomation", "Workflow Automation", new []
+            new("Operations", "Projects", "Projects", new []
             {
-                new SubmoduleDefinition("WA_Triggers", "Triggers"),
-                new SubmoduleDefinition("WA_Approvals", "Approvals"),
-                new SubmoduleDefinition("WA_CustomFlows", "Custom Flows"),
-                new SubmoduleDefinition("WA_Notification", "Notifications")
+                new SubmoduleDefinition("Phases", "Phases"),
+                new SubmoduleDefinition("Milestones", "Milestones")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "Procurement", "Procurement", new []
+            new("Operations", "Tasks", "Tasks", new []
             {
-                new SubmoduleDefinition("WA_RFQs", "RFQs"),
-                new SubmoduleDefinition("WA_VendorQuotes", "Vendor Quotes"),
-                new SubmoduleDefinition("WA_PurchaseAppr", "Purchase Approvals"),
-                new SubmoduleDefinition("WA_ContractedPricing", "Contracted Pricing")
+                new SubmoduleDefinition("Boards", "Boards"),
+                new SubmoduleDefinition("Assignments", "Assignments")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "ECommerce", "E-Commerce", new []
+            new("Operations", "Jobs", "Work Orders", new []
             {
-                new SubmoduleDefinition("EC_Storefront", "Storefront"),
-                new SubmoduleDefinition("EC_Cart", "Cart"),
-                new SubmoduleDefinition("EC_Checkout", "Checkout"),
-                new SubmoduleDefinition("EC_OrderSync", "Order Sync")
+                new SubmoduleDefinition("Dispatch", "Dispatch"),
+                new SubmoduleDefinition("Completion", "Completion")
             }),
 
-            new ModuleDefinition("Cross-Industry Power Modules", "FieldService", "Field Service", new []
+            new("Operations", "Services", "Services", new []
             {
-                new SubmoduleDefinition("FS_Technicians", "Technicians"),
-                new SubmoduleDefinition("FS_Dispatch", "Dispatch"),
-                new SubmoduleDefinition("FS_ServiceTickets", "Service Tickets"),
-                new SubmoduleDefinition("FS_PartsUsed", "Parts Used")
+                new SubmoduleDefinition("Catalog", "Catalog"),
+                new SubmoduleDefinition("Pricing", "Pricing")
+            }),
+
+            new("Operations", "Workflows", "Workflows", new []
+            {
+                new SubmoduleDefinition("Automation", "Automation"),
+                new SubmoduleDefinition("Triggers", "Triggers")
+            }),
+
+            new("Operations", "Replenishment", "Replenishment", new []
+            {
+                new SubmoduleDefinition("Rules", "Rules"),
+                new SubmoduleDefinition("Forecasts", "Forecasts")
+            }),
+
+            new("Operations", "Forecasting", "Forecasting", new []
+            {
+                new SubmoduleDefinition("Demand", "Demand"),
+                new SubmoduleDefinition("Supply", "Supply")
+            }),
+
+            new("Operations", "QualityControl", "Quality Control", new []
+            {
+                new SubmoduleDefinition("Inspections", "Inspections"),
+                new SubmoduleDefinition("NonConformance", "Non-Conformance")
+            }),
+
+            new("Operations", "Compliance", "Compliance", new []
+            {
+                new SubmoduleDefinition("Policies", "Policies"),
+                new SubmoduleDefinition("Audits", "Audits")
+            }),
+
+            new("Operations", "AssetManagement", "Asset Management", new []
+            {
+                new SubmoduleDefinition("Tracking", "Tracking"),
+                new SubmoduleDefinition("Depreciation", "Depreciation")
+            }),
+
+            // ============================================================
+            // HR & PEOPLE
+            // ============================================================
+            new("HR", "HR", "Human Resources", new []
+            {
+                new SubmoduleDefinition("Records", "Employee Records"),
+                new SubmoduleDefinition("Benefits", "Benefits")
+            }),
+
+            new("HR", "Staff", "Staff Management", new []
+            {
+                new SubmoduleDefinition("Profiles", "Profiles"),
+                new SubmoduleDefinition("Roles", "Roles")
+            }),
+
+            new("HR", "Recruiting", "Recruiting", new []
+            {
+                new SubmoduleDefinition("Applicants", "Applicants"),
+                new SubmoduleDefinition("Interviews", "Interviews")
+            }),
+
+            new("HR", "Onboarding", "Onboarding", new []
+            {
+                new SubmoduleDefinition("Checklists", "Checklists"),
+                new SubmoduleDefinition("Training", "Training")
+            }),
+
+            new("HR", "Performance", "Performance", new []
+            {
+                new SubmoduleDefinition("Reviews", "Reviews"),
+                new SubmoduleDefinition("Goals", "Goals")
+            }),
+
+            new("HR", "Training", "Training", new []
+            {
+                new SubmoduleDefinition("Courses", "Courses"),
+                new SubmoduleDefinition("Certifications", "Certifications")
+            }),
+
+            new("HR", "Timekeeping", "Timekeeping", new []
+            {
+                new SubmoduleDefinition("Timesheets", "Timesheets"),
+                new SubmoduleDefinition("Approvals", "Approvals")
+            }),
+
+            // ============================================================
+            // DOCUMENTS & COMMUNICATION
+            // ============================================================
+            new("Documents", "Documents", "Document Management", new []
+            {
+                new SubmoduleDefinition("Storage", "Storage"),
+                new SubmoduleDefinition("Sharing", "Sharing")
+            }),
+
+            new("Documents", "Messaging", "Messaging", new []
+            {
+                new SubmoduleDefinition("Conversations", "Conversations"),
+                new SubmoduleDefinition("Channels", "Channels")
+            }),
+
+            new("Documents", "KnowledgeBase", "Knowledge Base", new []
+            {
+                new SubmoduleDefinition("Articles", "Articles"),
+                new SubmoduleDefinition("Categories", "Categories")
+            }),
+
+            new("Documents", "FileStorage", "File Storage", new []
+            {
+                new SubmoduleDefinition("Uploads", "Uploads"),
+                new SubmoduleDefinition("Folders", "Folders")
+            }),
+
+            // ============================================================
+            // INDUSTRY-SPECIFIC
+            // ============================================================
+            new("Healthcare", "Patients", "Patients", new []
+            {
+                new SubmoduleDefinition("Records", "Records"),
+                new SubmoduleDefinition("Visits", "Visits")
+            }),
+
+            new("Healthcare", "ClinicalNotes", "Clinical Notes", new []
+            {
+                new SubmoduleDefinition("SOAP", "SOAP Notes"),
+                new SubmoduleDefinition("Charts", "Charts")
+            }),
+
+            new("Hospitality", "Reservations", "Reservations", new []
+            {
+                new SubmoduleDefinition("Bookings", "Bookings"),
+                new SubmoduleDefinition("Calendar", "Calendar")
+            }),
+
+            new("Hospitality", "Events", "Events", new []
+            {
+                new SubmoduleDefinition("Planning", "Planning"),
+                new SubmoduleDefinition("Staffing", "Staffing")
+            }),
+
+            new("Mining", "Safety", "Safety", new []
+            {
+                new SubmoduleDefinition("Incidents", "Incidents"),
+                new SubmoduleDefinition("Training", "Training")
+            }),
+
+            new("Logistics", "Dispatch", "Dispatch", new []
+            {
+                new SubmoduleDefinition("Assignments", "Assignments"),
+                new SubmoduleDefinition("Tracking", "Tracking")
+            }),
+
+            new("ProfessionalServices", "Contracts", "Contracts", new []
+            {
+                new SubmoduleDefinition("Templates", "Templates"),
+                new SubmoduleDefinition("Approvals", "Approvals")
+            }),
+
+            new("ProfessionalServices", "FieldService", "Field Service", new []
+            {
+                new SubmoduleDefinition("Visits", "Visits"),
+                new SubmoduleDefinition("Reports", "Reports")
             })
         };
+    }
 }
