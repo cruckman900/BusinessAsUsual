@@ -18,6 +18,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using Amazon.Extensions.NETCore.Setup;
 using BusinessAsUsual.Admin.Services.Metrics;
+using BusinessAsUsual.Admin.Database;
 
 namespace BusinessAsUsual.Admin
 {
@@ -71,6 +72,9 @@ namespace BusinessAsUsual.Admin
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+                builder.Services.AddSingleton<ProvisioningDb>();
+                builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 
                 builder.Services.AddDefaultCorrelationId(options =>
                 {

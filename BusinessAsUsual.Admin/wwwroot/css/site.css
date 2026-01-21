@@ -15,7 +15,7 @@ html, body {
     height: 100%;
     font-family: 'Segoe UI', sans-serif;
     background-color: var(--body-bg);
-    color: #333;
+    color: var(--content-text);
     line-height: 1.6;
     overflow: hidden;
 }
@@ -72,9 +72,9 @@ html, body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: #1e1e1e;
-    color: #f5f5f5;
-    border-bottom: 2px solid #444;
+/*    background-color: #1e1e1e;*/
+/*    color: #f5f5f5;*/
+    border-bottom: 2px solid var(--border);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -117,13 +117,13 @@ html, body {
 */
 .main-content {
     flex-grow: 1;
-    min-height: 100%;
+/*    min-height: 100%;*/
     height: auto;
     overflow-y: auto;
 
     transition: margin-left 0.3s ease;
     padding: 1rem;
-    background-color: var(--content-bg);
+    background-color: var(--body-bg);
     color: var(--content-text);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -146,7 +146,7 @@ dl {
 
 dt {
     font-weight: bold;
-    color: var(--sidebar-heading);
+    color: var(--navbar-text);
     margin-top: 1rem;
 }
 
@@ -158,8 +158,8 @@ dd {
 
 /* === Navbar === */
 .navbar {
-    background-color: #2c3e50;
-    color: white;
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
     padding: 1rem;
 }
 
@@ -181,7 +181,7 @@ dd {
 
 .nav-item-active {
     font-weight: bold;
-    color: var(--accent-color);
+    color: var(--success);
     background-color: var(--highlight-bg);
 }
 
@@ -247,7 +247,7 @@ dd {
 .sidebar a {
     display: block;
     margin: 0.5rem 0;
-    color: #2c3e50;
+    color: var(--link);
     text-decoration: none;
 }
 
@@ -255,12 +255,12 @@ dd {
     text-decoration: underline;
 }
 
-.sidebar-item-active {
+/*.sidebar-item-active {
     font-weight: bold;
-    color: var(--accent-color);
-    background-color: var(--highlight-bg);
+    color: var(--link-hover);
+    background-color: transparent;
 }
-
+*/
 /* === Form Styling === */
 form input, form button {
     display: block;
@@ -321,17 +321,6 @@ select:disabled {
     border: none;
 }
 
-/* === Footer === */
-.footer {
-    text-align: center;
-    padding: 1rem;
-    background-color: #2c3e50;
-    color: white;
-    margin-top: 2rem;
-    border-top: 1px solid #bdc3c7;
-}
-
-/* === Utility Classes === */
 .text-center {
     text-align: center;
 }

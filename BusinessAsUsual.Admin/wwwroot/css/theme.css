@@ -1,108 +1,679 @@
-﻿/* === theme.css — Default Theme Variables === */
+﻿/* === Base Bootstrap Variable Mapping === */
 :root {
-    --body-bg: #111111;
-    --brand-bg: #1a1a1a;
-    --brand-text: #f1f1f1;
-    --signature-text: #00ffcc;
-    --signature-glow: #00ffcc;
-    --navbar-bg: #2c3e50;
+    --bs-body-bg: var(--body-bg);
+    --bs-body-color: var(--content-text);
+}
+
+/* === Blue Relic (Gold Standard) === */
+.theme-blue {
+    --body-bg: #0d1b2a;
+    --content-text: #e0e6ed;
+    --primary: #1b6ec2;
+    --secondary: #274c77;
+    --success: #2a9d8f;
+    --info: #00b4d8;
+    --warning: #f4a261;
+    --danger: #e63946;
+    --card-bg: #1a2c44;
+    --card-text: #e0e6ed;
+    --card-border: #274c77;
+    --navbar-bg: #1b6ec2;
     --navbar-text: #ffffff;
-    --navbar-link: #ffffff;
-    --navbar-link-hover: #00ffcc;
-    --sidebar-bg: #ecf0f1;
-    --sidebar-border: #bdc3c7;
-    --sidebar-heading: #34495e;
-    --sidebar-link: #2c3e50;
-    --header-bg: #1a1a1a;
-    --footer-bg: #2c3e50;
-    --footer-text: #ffffff;
-    --content-bg: #ffffff;
-    --content-text: #333333;
+    --link: #00b4d8;
+    --link-hover: #90e0ef;
+    --border: #274c77;
+    --signature-text: #00b4d8;
+    --signature-glow: #90e0ef;
+    /*  bootstrap-aware  */
+    /* Body */
+    --bs-body-bg: #0d1b2a;
+    --bs-body-color: #e0e6ed;
+    /* Headings */
+    --bs-heading-color: #e0e6ed;
+    /* highlights */
+    --bs-primary: #1b6ec2;
+    --bs-secondary: #274c77;
+    --bs-success: #2a9d8f;
+    --bs-info: #00b4d8;
+    --bs-warning: #f4a261;
+    --bs-danger: #e63946;
+    /* Cards */
+    --bs-card-bg: #1a2c44;
+    --bs-card-color: #e0e6ed;
+    --bs-card-border-color: #274c77;
+    /* Buttons */
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-color: #fff;
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #274c77;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-border-color: #274c77;
+    /* Nav pills */
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-color: #fff;
+    /* Navbar */
+    --bs-navbar-bg: var(--bs-primary);
+    --bs-navbar-color: #fff;
+    /* Alerts */
+    --bs-alert-bg: #1a2c44;
+    --bs-alert-color: #e0e6ed;
+    --bs-alert-border-color: #274c77;
+    /* Badges */
+    --bs-badge-color: #fff;
+    --bs-badge-bg: var(--bs-primary);
+    /* Tables */
+    --bs-table-bg: #1a2c44;
+    --bs-table-color: #e0e6ed;
+    --bs-table-border-color: #274c77;
+    /* Links */
+    --bs-link-color: #00b4d8;
+    --bs-link-hover-color: #0d1b2a;
 }
 
-/* === Dark Mode Theme === */
-.theme-dark {
-    --body-bg: #0a0a0a;
-    --brand-bg: #121212;
-    --brand-text: #e0e0e0;
-    --signature-text: #00ffcc;
-    --signature-glow: #00ffcc;
-    --navbar-bg: #1f1f1f;
-    --navbar-text: #e0e0e0;
-    --navbar-link: #e0e0e0;
-    --navbar-link-hover: #00ffcc;
-    --sidebar-bg: #1a1a1a;
-    --sidebar-border: #333;
-    --sidebar-heading: #00ffcc;
-    --sidebar-link: #e0e0e0;
-    --header-bg: #121212;
-    --footer-bg: #1f1f1f;
-    --footer-text: #e0e0e0;
-    --content-bg: #1a1a1a;
-    --content-text: #e0e0e0;
-}
-
-/* === Light Theme === */
-.theme-light {
-    --body-bg: #eaeaea;
-    --brand-bg: #ffffff;
-    --brand-text: #222;
-    --signature-text: #555;
-    --signature-glow: #aaa;
-    --navbar-bg: #f0f0f0;
-    --navbar-text: #333;
-    --navbar-link: #333;
-    --navbar-link-hover: #007acc;
-    --sidebar-bg: #fafafa;
-    --sidebar-border: #ddd;
-    --sidebar-heading: #444;
-    --sidebar-link: #333;
-    --header-bg: #ffffff;
-    --footer-bg: #f0f0f0;
-    --footer-text: #333;
-    --content-bg: #fefefe;
-    --content-text: #222;
-}
-
-/* === LinearDescent Retro Theme === */
-.theme-retro {
-    --body-bg: #000000;
-    --brand-bg: #000;
-    --brand-text: #00ffcc;
-    --signature-text: #00ffcc;
-    --signature-glow: #00ffcc;
+/* === Contributor Gold === */
+.theme-gold {
+    --body-bg: #1a1a1a;
+    --content-text: #f5f5f5;
+    --primary: #ffd700;
+    --secondary: #ffcc00;
+    --success: #c0a000;
+    --info: #ffe066;
+    --warning: #ffb703;
+    --danger: #e63946;
+    --card-bg: #222;
+    --card-text: #ffd700;
+    --card-border: #ffcc00;
     --navbar-bg: #111;
-    --navbar-text: #00ffcc;
-    --navbar-link: #00ffcc;
-    --navbar-link-hover: #ff00ff;
-    --sidebar-bg: #222;
-    --sidebar-border: #00ffcc;
-    --sidebar-heading: #ff00ff;
-    --sidebar-link: #00ffcc;
-    --header-bg: #000;
-    --footer-bg: #111;
-    --footer-text: #00ffcc;
-    --content-bg: #000;
-    --content-text: #00ffcc;
-}
-
-.theme-contributor {
-    --body-bg: #050505;
-    --brand-bg: #0d0d0d;
-    --brand-text: #f5f5f5;
+    --navbar-text: #ffd700;
+    --link: #ffd700;
+    --link-hover: #ffcc00;
+    --border: #ffcc00;
     --signature-text: #ffd700;
     --signature-glow: #ffcc00;
-    --navbar-bg: #222;
-    --navbar-text: #ffd700;
-    --navbar-link: #ffd700;
-    --navbar-link-hover: #ffcc00;
-    --sidebar-bg: #111;
-    --sidebar-border: #ffd700;
-    --sidebar-heading: #ffcc00;
-    --sidebar-link: #ffd700;
-    --header-bg: #0d0d0d;
-    --footer-bg: #222;
-    --footer-text: #ffd700;
-    --content-bg: #111;
-    --content-text: #ffd700;
+    /*  bootstrap-aware  */
+    /* Body */
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #f5f5f5;
+    /* Headings */
+    --bs-heading-color: #ffd700;
+    /* highlights */
+    --bs-primary: #ffd700;
+    --bs-secondary: #ffcc00;
+    --bs-success: #c0a000;
+    --bs-info: #ffe066;
+    --bs-warning: #ffb703;
+    --bs-danger: #e63946;
+    /* Cards */
+    --bs-card-bg: #222;
+    --bs-card-color: #ffd700;
+    --bs-card-border-color: #ffcc00;
+    /* Buttons */
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-color: #000;
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #ffcc00;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-border-color: #ffcc00;
+    /* Nav pills */
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-color: #000;
+    /* Navbar */
+    --bs-navbar-bg: #111;
+    --bs-navbar-color: #ffd700;
+    /* Alerts */
+    --bs-alert-bg: #222;
+    --bs-alert-color: #ffd700;
+    --bs-alert-border-color: #ffcc00;
+    /* Badges */
+    --bs-badge-color: #000;
+    --bs-badge-bg: var(--bs-primary);
+    /* Tables */
+    --bs-table-bg: #222;
+    --bs-table-color: #ffd700;
+    --bs-table-border-color: #ffcc00;
+    /* Links */
+    --bs-link-color: #ffd700;
+    --bs-link-hover-color: #ffcc00;
+}
+
+/* === Retro Neon === */
+.theme-retro {
+    --body-bg: #000;
+    --content-text: #00ffcc;
+    --primary: #00ffcc;
+    --secondary: #ff00ff;
+    --success: #39ff14;
+    --info: #00ffff;
+    --warning: #ffff00;
+    --danger: #ff073a;
+    --card-bg: #111;
+    --card-text: #00ffcc;
+    --card-border: #ff00ff;
+    --navbar-bg: #111;
+    --navbar-text: #00ffcc;
+    --link: #00ffcc;
+    --link-hover: #ff00ff;
+    --border: #ff00ff;
+    --signature-text: #00ffcc;
+    --signature-glow: #00ffcc;
+    /*  bootstrap-aware  */
+    /* Body */
+    --bs-body-bg: #000;
+    --bs-body-color: #00ffcc;
+    /* Headings */
+    --bs-heading-color: #ff00ff;
+    /* highlights */
+    --bs-primary: #00ffcc;
+    --bs-secondary: #ff00ff;
+    --bs-success: #39ff14;
+    --bs-info: #00ffff;
+    --bs-warning: #ffff00;
+    --bs-danger: #ff073a;
+    /* Cards */
+    --bs-card-bg: #111;
+    --bs-card-color: #00ffcc;
+    --bs-card-border-color: #ff00ff;
+    /* Buttons */
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-color: #000;
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #ff00ff;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-border-color: #ff00ff;
+    /* Nav pills */
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-color: #000;
+    /* Navbar */
+    --bs-navbar-bg: #111;
+    --bs-navbar-color: #00ffcc;
+    /* Alerts */
+    --bs-alert-bg: #111;
+    --bs-alert-color: #00ffcc;
+    --bs-alert-border-color: #ff00ff;
+    /* Badges */
+    --bs-badge-color: #000;
+    --bs-badge-bg: var(--bs-primary);
+    /* Tables */
+    --bs-table-bg: #111;
+    --bs-table-color: #00ffcc;
+    --bs-table-border-color: #ff00ff;
+    /* Links */
+    --bs-link-color: #00ffcc;
+    --bs-link-hover-color: #ff00ff;
+}
+
+/* === Light Modern === */
+.theme-light {
+    --body-bg: #f8f9fa;
+    --content-text: #212529;
+    --primary: #007acc;
+    --secondary: #6c757d;
+    --success: #198754;
+    --info: #0dcaf0;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --card-bg: #ffffff;
+    --card-text: #212529;
+    --card-border: #dee2e6;
+    --navbar-bg: #ffffff;
+    --navbar-text: #212529;
+    --link: #007acc;
+    --link-hover: #0056b3;
+    --border: #dee2e6;
+    --signature-text: #555;
+    --signature-glow: #aaa;
+    /*  bootstrap-aware  */
+    /* Body */
+    --bs-body-bg: #f8f9fa;
+    --bs-body-color: #212529;
+    /* Headings */
+    --bs-heading-color: #212529;
+    /* highlights */
+    --bs-primary: #007acc;
+    --bs-secondary: #6c757d;
+    --bs-success: #198754;
+    --bs-info: #0dcaf0;
+    --bs-warning: #ffc107;
+    --bs-danger: #dc3545;
+    /* Cards */
+    --bs-card-bg: #ffffff;
+    --bs-card-color: #212529;
+    --bs-card-border-color: #dee2e6;
+    /* Buttons */
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-color: #fff;
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #0056b3;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-border-color: #0056b3;
+    /* Nav pills */
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-color: #fff;
+    /* Navbar */
+    --bs-navbar-bg: #ffffff;
+    --bs-navbar-color: #212529;
+    /* Alerts */
+    --bs-alert-bg: #ffffff;
+    --bs-alert-color: #212529;
+    --bs-alert-border-color: #dee2e6;
+    /* Badges */
+    --bs-badge-color: #fff;
+    --bs-badge-bg: var(--bs-primary);
+    /* Tables */
+    --bs-table-bg: #ffffff;
+    --bs-table-color: #212529;
+    --bs-table-border-color: #dee2e6;
+    /* Links */
+    --bs-link-color: #007acc;
+    --bs-link-hover-color: #0056b3;
+}
+
+/* === Obsidian (Deep Dark) === */
+.theme-obsidian {
+    --body-bg: #0b0c10;
+    --content-text: #c5c6c7;
+    --primary: #1f2833;
+    --secondary: #45a29e;
+    --success: #66fcf1;
+    --info: #5bc0be;
+    --warning: #f0c674;
+    --danger: #d9534f;
+    --card-bg: #1f2833;
+    --card-text: #c5c6c7;
+    --card-border: #45a29e;
+    --navbar-bg: #0b0c10;
+    --navbar-text: #66fcf1;
+    --link: #66fcf1;
+    --link-hover: #45a29e;
+    --border: #45a29e;
+    --signature-text: #66fcf1;
+    --signature-glow: #45a29e;
+    /*  bootstrap-aware  */
+    /* Body */
+    --bs-body-bg: #0b0c10;
+    --bs-body-color: #c5c6c7;
+    /* Headings */
+    --bs-heading-color: #66fcf1;
+    /* highlights */
+    --bs-primary: #1f2833;
+    --bs-secondary: #45a29e;
+    --bs-success: #66fcf1;
+    --bs-info: #5bc0be;
+    --bs-warning: #f0c674;
+    --bs-danger: #d9534f;
+    /* Cards */
+    --bs-card-bg: #1f2833;
+    --bs-card-color: #c5c6c7;
+    --bs-card-border-color: #45a29e;
+    /* Buttons */
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-color: #c5c6c7;
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #45a29e;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-border-color: #45a29e;
+    /* Nav pills */
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-color: #fff;
+    /* Navbar */
+    --bs-navbar-bg: #0b0c10;
+    --bs-navbar-color: #66fcf1;
+    /* Alerts */
+    --bs-alert-bg: #1f2833;
+    --bs-alert-color: #c5c6c7;
+    --bs-alert-border-color: #45a29e;
+    /* Badges */
+    --bs-badge-color: #fff;
+    --bs-badge-bg: var(--bs-primary);
+    /* Tables */
+    --bs-table-bg: #1f2833;
+    --bs-table-color: #c5c6c7;
+    --bs-table-border-color: #45a29e;
+    /* Links */
+    --bs-link-color: #66fcf1;
+    --bs-link-hover-color: #45a29e;
+}
+
+/* ============================================================
+   UNIVERSAL INTERACTION LAYER FOR ALL THEMES
+   Applies to: buttons, pills, chips, badges, tables, nav, forms
+   ============================================================ */
+
+/* === BUTTONS ================================================= */
+
+/* Solid buttons */
+.btn {
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+    .btn:hover {
+        background-color: var(--bs-btn-hover-bg);
+        border-color: var(--bs-btn-hover-border-color);
+        color: var(--bs-btn-hover-color);
+    }
+
+    .btn:active,
+    .btn:focus:active {
+        background-color: var(--bs-secondary);
+        border-color: var(--bs-secondary);
+        color: #fff;
+        box-shadow: inset 0 0 6px rgba(0,0,0,.35);
+    }
+
+    .btn:focus {
+        box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--bs-primary) 40%, transparent);
+    }
+
+/* Outline buttons */
+.btn-outline-primary {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
+
+    .btn-outline-primary:active {
+        background-color: var(--bs-secondary);
+        border-color: var(--bs-secondary);
+    }
+
+/* Disabled */
+.btn:disabled,
+.btn.disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+/* === CHIPS / TAGS ============================================ */
+
+.badge,
+.chip {
+    padding: .35rem .65rem;
+    border-radius: 50rem;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+    .chip:hover,
+    .badge:hover {
+        background-color: var(--bs-secondary);
+        color: #fff;
+    }
+
+    .chip:active,
+    .badge:active {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
+
+/* === NAV PILLS =============================================== */
+
+.nav-pills .nav-link {
+    color: var(--content-text);
+    transition: background-color .2s ease, color .2s ease;
+}
+
+    .nav-pills .nav-link:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary) 25%, transparent);
+        color: var(--bs-secondary);
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: var(--bs-nav-pills-link-active-bg);
+        color: var(--bs-nav-pills-link-active-color);
+    }
+
+/* === NAV LINKS (Navbar) ====================================== */
+
+.navbar-nav .nav-link {
+    color: var(--navbar-text);
+    transition: color .2s ease, background-color .2s ease;
+}
+
+    .navbar-nav .nav-link:hover {
+        color: var(--link-hover);
+    }
+
+    .navbar-nav .nav-link.active {
+        color: var(--link-hover);
+        border-bottom: 2px solid var(--link-hover);
+    }
+
+/* === TABLE ROW INTERACTIONS ================================== */
+
+.table tbody tr {
+    transition: background-color .15s ease;
+}
+
+    .table tbody tr:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary) 10%, transparent);
+    }
+
+/* === FORM CONTROLS =========================================== */
+
+.form-control,
+.form-select {
+    background-color: var(--card-bg);
+    color: var(--content-text);
+    border-color: var(--border);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--bs-primary) 40%, transparent);
+    }
+
+/* === CARDS ==================================================== */
+
+.card {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--card-border);
+    transition: background-color .25s ease, border-color .25s ease;
+}
+
+    .card:hover {
+        border-color: var(--bs-primary);
+    }
+
+/* === LINKS ==================================================== */
+
+a {
+    color: var(--link);
+    transition: color .2s ease;
+}
+
+    a:hover {
+        color: var(--link-hover);
+    }
+
+/* === BADGES =================================================== */
+
+.badge {
+    background-color: var(--bs-badge-bg);
+    color: var(--bs-badge-color);
+}
+
+    .badge:hover {
+        background-color: var(--bs-secondary);
+    }
+
+/* === TOOLTIPS ================================================= */
+
+.tooltip-inner {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border: 1px solid var(--border);
+}
+
+.tooltip-arrow::before {
+    border-top-color: var(--border) !important;
+}
+
+/* === THEME-AWARE DROPDOWN FIX === */
+
+.dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+}
+
+.dropdown-item {
+    color: var(--content-text);
+    background-color: transparent;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        background-color: color-mix(in srgb, var(--bs-secondary) 25%, transparent);
+        color: var(--bs-secondary);
+    }
+
+    .dropdown-item.active,
+    .dropdown-item:active {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
+
+/* === THEME-AWARE ACCORDION FIX === */
+
+.accordion-button {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border);
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+    .accordion-button:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary) 20%, transparent);
+        color: var(--bs-secondary);
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: var(--bs-primary);
+        color: #fff;
+        border-color: var(--bs-primary);
+    }
+
+    .accordion-button:focus {
+        box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--bs-primary) 40%, transparent);
+    }
+
+.dropdown-toggle {
+    background-color: var(--bs-btn-bg);
+    color: var(--bs-btn-color);
+    border-color: var(--bs-btn-border-color);
+}
+
+    .dropdown-toggle:hover {
+        background-color: var(--bs-btn-hover-bg);
+        color: var(--bs-btn-hover-color);
+        border-color: var(--bs-btn-hover-border-color);
+    }
+
+/* ============================================================
+   THEME-AWARE SELECT (form-select) — MATCHES PILL INTERACTIONS
+   ============================================================ */
+
+.form-select {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border: 1px solid var(--border);
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+    /* Hover — same tinting behavior as pills */
+    .form-select:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary) 20%, transparent);
+        border-color: var(--bs-secondary);
+        color: var(--bs-secondary);
+    }
+
+    /* Focus — same glow language as pills/buttons */
+    .form-select:focus {
+        background-color: var(--card-bg);
+        border-color: var(--bs-primary);
+        color: var(--card-text);
+        box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--bs-primary) 40%, transparent);
+    }
+
+    /* Disabled — consistent with pills/buttons */
+    .form-select:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+    /* Dropdown menu inside select (for custom select libraries) */
+    .form-select option {
+        background-color: var(--card-bg);
+        color: var(--card-text);
+    }
+
+/* ============================================================
+   THEME-AWARE LIST GROUP ITEMS
+   ============================================================ */
+
+/*.list-group-item {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border);
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+}*/
+
+    /* Hover — same tinting language as pills */
+    /*.list-group-item:hover {
+        background-color: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+        color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }*/
+
+    /* Active — bold, readable, premium */
+    /*.list-group-item.active {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+        box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--bs-primary) 40%, transparent);
+    }*/
+
+    /* Disabled — consistent with everything else */
+    /*.list-group-item.disabled,
+    .list-group-item:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }*/
+
+/* ============================================================
+   OVERRIDE BOOTSTRAP'S ACTION LIST GROUP VARIABLES
+   ============================================================ */
+
+.list-group, .list-group-item {
+    --bs-list-group-active-color: var(--card-text);
+    --bs-list-group-active-bg: var(--card-bg);
+    --bs-list-group-active-border-color: var(--border);
+}
+
+/* ============================================================
+   THEME-AWARE GRADIENT TOKENS
+   ============================================================ */
+
+/* Primary → Secondary diagonal */
+:root,
+.theme-blue,
+.theme-gold,
+.theme-retro,
+.theme-light,
+.theme-obsidian {
+    --gradient-primary: linear-gradient( 135deg, color-mix(in srgb, var(--bs-primary) 90%, transparent) 0%, color-mix(in srgb, var(--bs-secondary) 90%, transparent) 100% );
+    /* Soft glow background gradient */
+    --gradient-soft: linear-gradient( 180deg, color-mix(in srgb, var(--bs-primary) 12%, transparent) 0%, transparent 60% );
+    /* Card highlight gradient */
+    --gradient-card: linear-gradient( 145deg, color-mix(in srgb, var(--bs-primary) 8%, transparent) 0%, color-mix(in srgb, var(--bs-secondary) 8%, transparent) 100% );
+    /* Accent ribbon gradient */
+    --gradient-accent: linear-gradient( 90deg, var(--bs-primary) 0%, var(--bs-secondary) 100% );
+    /* Body background atmospheric gradient */
+    --gradient-body: radial-gradient( circle at 20% 20%, color-mix(in srgb, var(--bs-primary) 10%, transparent) 0%, transparent 70% );
 }

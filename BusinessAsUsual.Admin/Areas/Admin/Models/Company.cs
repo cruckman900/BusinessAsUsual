@@ -41,6 +41,12 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models
         public string ModulesEnabled { get; set; } = "Employees,Products";
 
         /// <summary>
+        /// Gets or sets a value indicating whether submodules are enabled.
+        /// </summary>
+        [Display(Name = "Submodules Enabled")]
+        public string SubmodulesEnabled { get; set; } = string.Empty;
+
+        /// <summary>
         /// UTC timestamp when the company was created.
         /// </summary>
         [Display(Name = "Created At")]

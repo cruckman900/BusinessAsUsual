@@ -34,5 +34,5 @@
 }
 
 .hero-btn:hover {
-    background-color: var(--navbar-link-hover);
+    background-color: var(--link-hover);
 }

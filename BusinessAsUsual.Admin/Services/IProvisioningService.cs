@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Admin.Database;
+﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Admin.Database;
 
 namespace BusinessAsUsual.Admin.Services
 {
@@ -34,5 +35,14 @@ namespace BusinessAsUsual.Admin.Services
             string billingPlan,
             string[] modules
         );
+
+        /// <summary>
+        /// Initiates the asynchronous provisioning of a new tenant based on the specified request parameters.
+        /// </summary>
+        /// <param name="request">The details of the tenant to provision, including configuration settings and required resources. Cannot be
+        /// null.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a <see
+        /// cref="ProvisioningResult"/> indicating the outcome of the provisioning process.</returns>
+        Task<ProvisioningResult> ProvisionTenantAsync(ProvisioningRequest request);
     }
 }

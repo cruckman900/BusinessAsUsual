@@ -1,12 +1,12 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+﻿using BusinessAsUsual.Core.Modules;
+using BusinessAsUsual.Admin.Areas.Admin.Models;
 using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using System.Reflection;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
+using System.Reflection;
 
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
@@ -39,7 +39,23 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// Displays the company provisioning form.
         /// </summary>
         [HttpGet("provision")]
-        public IActionResult ProvisionCompany() => View(new Company());
+        public IActionResult ProvisionCompany()
+        {
+            var vm = new ProvisionCompanyViewModel
+            {
+                Company = new Company(),
+                GroupedModules = ModuleCatalog.AllModules
+                    .GroupBy(m => m.Group)
+                    .Select(g => new ModuleGroupViewModel
+                    {
+                        GroupName = g.Key,
+                        Modules = g.ToList()
+                    })
+                    .ToList()
+            };
+
+            return View(vm);
+        }
 
         /// <summary>
         /// Handles form submission, validates input, and triggers provisioning.
@@ -48,51 +64,38 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// <param name="company">Form-bound company data.</param>
         /// <returns>Redirect to success view or redisplay form with errors.</returns>
         [HttpPost("provision")]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProvisionCompany([FromForm] Company company)
+        public async Task<IActionResult> ProvisionCompany(ProvisionCompanyViewModel vm)
         {
-            try
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var company = vm.Company;
+
+            var modules = (company.ModulesEnabled ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+            var submodules = (company.SubmodulesEnabled ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+            var request = new ProvisioningRequest
             {
-                if (!ModelState.IsValid || company == null)
-                {
-                    return View(company); // redisplay form with validation errors
-                }
+                CompanyName = company.Name,
+                AdminEmail = company.AdminEmail,
+                BillingPlan = company.BillingPlan,
+                Modules = modules,
+                Submodules = submodules
+            };
 
-                var success = await _provisioner.ProvisionTenantAsync(
-                    company.Name,
-                    company.AdminEmail,
-                    company.BillingPlan,
-                    company.ModulesEnabled.Split(","));
+            var result = await _provisioner.ProvisionTenantAsync(request);
 
-                if (success)
-                {
-                    var commitTag = $"🟢 Provisioned {company.Name} with {company.ModulesEnabled} [{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}]";
-                    TempData["SmartCommit"] = commitTag;
-
-                    await _hubContext.Clients.All.SendAsync("ReceiveCommit", commitTag);
-
-                    if (Request.GetTypedHeaders().Accept?.Any(h => h.MediaType == "application/json") == true)
-                    {
-                        Console.WriteLine("🧪 Success. Returning JSON response");
-                        return Ok(new { message = "Provisioning successful", commitTag });
-                    }
-                    else
-                    {
-                        Console.WriteLine("🧪 Success. Returning HTML view");
-                        return RedirectToAction("ProvisionSuccess");
-                    }
-                }
-
-                Console.WriteLine("❌ ProvisioningService reported failure. Returning HTML view");
-                ModelState.AddModelError("", "Provisioning failed due to internal error.");
-                return View(company);
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                // Log failure
-                Console.WriteLine($"❌ CompanyController - ProvisionCompany error ex: {ex}");
-                throw;
+                ModelState.AddModelError("", result.Error ?? "Provisioning failed.");
+                return View(vm);
             }
+
+            TempData["SmartCommit"] = $"Provisioned {company.Name}";
+            return RedirectToAction("ProvisionSuccess");
         }
 
         /// <summary>
