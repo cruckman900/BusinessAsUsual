@@ -5,9 +5,4 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Update="appsettings.json" CopyToOutputDirectory="Never" />
-    <None Update="appsettings.Development.json" CopyToOutputDirectory="Never" />
-  </ItemGroup>
 </Project>
