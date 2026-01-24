@@ -4,8 +4,10 @@ using BusinessAsUsual.Infrastructure.Data;
 using BusinessAsUsual.Infrastructure.Persistence;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
-using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.API.Services.Provisioning;
+using BusinessAsUsual.Admin.Services;
+using BusinessAsUsual.API.Database;
 
 namespace BusinessAsUsual.API
 {
@@ -54,6 +56,8 @@ namespace BusinessAsUsual.API
             // Optional: register shared services
             //TODO: builder.Services.AddBusinessAsUsualServices();
 
+            builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
+            builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
             builder.Services.AddScoped<CompanyProvisioningService>();
             builder.Services.AddScoped<TenantProvisioningService>();
 

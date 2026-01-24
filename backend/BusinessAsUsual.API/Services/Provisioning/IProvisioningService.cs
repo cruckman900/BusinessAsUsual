@@ -1,7 +1,6 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
-using BusinessAsUsual.Admin.Database;
+﻿using BusinessAsUsual.API.Common.DTOs;
 
-namespace BusinessAsUsual.Admin.Services
+namespace BusinessAsUsual.API.Services.Provisioning
 {
     /// <summary>
     ///     Defines the contract for provisioning new tenants within the Business As Usual platform.

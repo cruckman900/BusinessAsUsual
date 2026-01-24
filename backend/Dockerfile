@@ -1,20 +1,25 @@
-# Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend_build
 WORKDIR /src
 
-# Copy everything from the solution root
-COPY ../ .
+# Copy project files for restore
+COPY backend/BusinessAsUsual.API/BusinessAsUsual.API.csproj backend/BusinessAsUsual.API/
+COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
+COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
+COPY BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj BusinessAsUsual.Infrastructure/
 
-# Restore using the solution file
-RUN dotnet restore BusinessAsUsual.sln
+RUN dotnet restore backend/BusinessAsUsual.API/BusinessAsUsual.API.csproj
 
-# Publish the API project
+# Copy full source
+COPY backend/BusinessAsUsual.API/ backend/BusinessAsUsual.API/
+COPY backend/BusinessAsUsual.Domain/ backend/BusinessAsUsual.Domain/
+COPY backend/BusinessAsUsual.Application/ backend/BusinessAsUsual.Application/
+COPY BusinessAsUsual.Infrastructure/ BusinessAsUsual.Infrastructure/
+
 WORKDIR /src/backend/BusinessAsUsual.API
-RUN dotnet publish "BusinessAsUsual.API.csproj" -c Release -o /app/publish
+RUN dotnet publish -c Release -o /app/publish
 
-# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=backend_build /app/publish .
 EXPOSE 80
 ENTRYPOINT ["dotnet", "BusinessAsUsual.API.dll"]

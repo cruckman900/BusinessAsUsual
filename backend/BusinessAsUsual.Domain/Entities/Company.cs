@@ -1,63 +1,68 @@
-﻿using BusinessAsUsual.Domain.Entities.ProvisionedCompany;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Domain.Entities;
-
-/// <summary>
-/// Represents a company in the system.
-/// </summary>
-public class Company
+namespace BusinessAsUsual.Domain.Entities
 {
     /// <summary>
-    /// Unique identifier for the company.
+    /// Represents a company being provisioned into the system.
     /// </summary>
-    public Guid CompanyID { get; set; }
+    public class Company
+    {
+        /// <summary>Unique identifier for the company.</summary>
+        public Guid Id { get; set; }
 
-    /// <summary>
-    /// Display name of the company.
-    /// </summary>
-    public string CompanyName { get; set; } = string.Empty;
+        /// <summary>Name of the company.</summary>
+        [Display(Name = "Company Name")]
+        [Required(ErrorMessage = "Company Name is required.")]
+        [StringLength(100, ErrorMessage = "Company Name must be under 100 characters.")]
+        public string Name { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Optional description of the company.
-    /// </summary>
-    public string Description { get; set; } = string.Empty;
+        /// <summary>Database name assigned to the company.</summary>
+        [Display(Name = "Database Name")]
+        public string DbName { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Indicates whether the company is active.
-    /// </summary>
-    public bool IsActive { get; set; }
+        /// <summary>
+        /// Gets or sets the description associated with this instance.
+        /// </summary>
+        [Display(Name = "Description")]
+        public string Description { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Timestamp when the company was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
+        /// <summary>Email address of the company admin.</summary>
+        [Display(Name = "Admin Email")]
+        [Required(ErrorMessage = "Admin Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string AdminEmail { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Timestamp when the company was last updated, if applicable.
-    /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+        /// <summary>
+        /// Billing plan assigned to the company.
+        /// </summary>
+        [Display(Name = "Billing Plan")]
+        [Required(ErrorMessage = "Billing Plan is required.")]
+        public string BillingPlan { get; set; } = "Standard";
 
-    // ─────────────────────────────────────────────
-    // Navigation properties
-    // ─────────────────────────────────────────────
+        /// <summary>
+        /// Comma-separated list of enabled modules.
+        /// </summary>
+        [Display(Name = "Modules Enabled")]
+        [Required(ErrorMessage = "Modules Enabled is required.")]
+        public string ModulesEnabled { get; set; } = "Employees,Products";
 
-    /// <summary>
-    /// Collection of users associated with the company.
-    /// </summary>
-    public ICollection<CompanyUser>? Users { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether submodules are enabled.
+        /// </summary>
+        [Display(Name = "Submodules Enabled")]
+        public string SubmodulesEnabled { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Collection of roles defined for the company.
-    /// </summary>
-    public ICollection<CompanyUserRole>? Roles { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether the object is active.
+        /// </summary>
+        [Display(Name = "Is Active")]
+        public bool IsActive { get; set; } = true;
 
-    /// <summary>
-    /// Collection of settings configured for the company.
-    /// </summary>
-    public ICollection<CompanySetting>? Settings { get; set; }
-
-    /// <summary>
-    /// Collection of permission groups available to the company.
-    /// </summary>
-    public ICollection<CompanyUserRolePermissionGroup>? PermissionGroups { get; set; }
+        /// <summary>
+        /// UTC timestamp when the company was created.
+        /// </summary>
+        [Display(Name = "Created At")]
+        [Required(ErrorMessage = "Created At is required.")]
+        public DateTime CreatedAt { get; set; }
+    }
 }

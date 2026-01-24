@@ -1,8 +1,8 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
-using BusinessAsUsual.Admin.Services;
+﻿using BusinessAsUsual.API.Common.DTOs;
+using BusinessAsUsual.API.Services.Provisioning;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
+namespace BusinessAsUsual.API.Controllers
 {
     /// <summary>
     /// Represents an API controller that handles company provisioning requests.

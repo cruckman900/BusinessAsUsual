@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS root_build
 WORKDIR /src
 
 # Copy everything
@@ -15,6 +15,6 @@ RUN dotnet publish "BusinessAsUsual.Web.csproj" -c Release -o /app/publish
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=root_build /app/publish .
 EXPOSE 80
 ENTRYPOINT ["dotnet", "BusinessAsUsual.Web.dll"]

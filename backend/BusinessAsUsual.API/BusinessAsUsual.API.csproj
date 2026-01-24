@@ -4,6 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Disable legacy web.config transform during publish -->
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,18 +17,20 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+      Version="9.0.10" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
     <ProjectReference Include="..\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Common\Models\" />
-    <Folder Include="Common\DTOs\" />
     <Folder Include="Common\Utilities\" />
     <Folder Include="Modules\HR.API\" />
     <Folder Include="Modules\Inventory.API\" />
@@ -36,7 +40,6 @@
     <Folder Include="Services\Auth\" />
     <Folder Include="Services\Metrics\" />
     <Folder Include="Services\Settings\" />
-    <Folder Include="Services\Provisioning\ProvisioningScripts\" />
   </ItemGroup>
 
 </Project>
