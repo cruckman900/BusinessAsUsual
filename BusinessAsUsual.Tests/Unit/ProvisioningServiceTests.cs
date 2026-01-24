@@ -36,8 +36,8 @@ namespace BusinessAsUsual.Tests.Unit
             var env = new Mock<IWebHostEnvironment>();
             env.Setup(e => e.ContentRootPath).Returns("/fake/path");
 
-            // Mock ProvisioningDb
-            var mockDb = new Mock<ProvisioningDb>();
+            // Mock IProvisioningDb
+            var mockDb = new Mock<IProvisioningDb>();
 
             mockDb.Setup(d => d.EnsureMasterDatabaseExistsAsync())
                   .Returns(Task.CompletedTask);
