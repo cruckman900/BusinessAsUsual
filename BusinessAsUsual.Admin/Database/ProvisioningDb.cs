@@ -13,7 +13,7 @@ namespace BusinessAsUsual.Admin.Database
     /// - Tenant DB creation
     /// - Tenant schema application
     /// </summary>
-    public class ProvisioningDb
+    public class ProvisioningDb : IProvisioningDb
     {
         private readonly string _rawConn;
         private readonly string _masterConn;

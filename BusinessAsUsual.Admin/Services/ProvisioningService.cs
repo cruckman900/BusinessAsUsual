@@ -86,7 +86,7 @@ namespace BusinessAsUsual.Admin.Services
     /// accepts a ProvisioningRequest to specify additional options.</remarks>
     public class ProvisioningService : IProvisioningService
     {
-        private readonly ProvisioningDb _db;
+        private readonly IProvisioningDb _db;
         private readonly IWebHostEnvironment _env;
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace BusinessAsUsual.Admin.Services
         /// </summary>
         /// <param name="db">The database context used for provisioning operations. Cannot be null.</param>
         /// <param name="env">The web hosting environment that provides information about the application's environment. Cannot be null.</param>
-        public ProvisioningService(ProvisioningDb db, IWebHostEnvironment env)
+        public ProvisioningService(IProvisioningDb db, IWebHostEnvironment env)
         {
             _db = db;
             _env = env;
