@@ -8,73 +8,62 @@ using Xunit;
 namespace BusinessAsUsual.Tests.E2E
 {
     /// <summary>
-    /// End-to-end test for the provisioning flow using Selenium.
-    /// Simulates user interaction with the MVC form and verifies modal feedback.
+    /// Provides integration tests for the company provisioning API to verify correct behavior and response payloads
+    /// when provisioning a company.
     /// </summary>
+    /// <remarks>This test class uses a web application factory to create an HTTP client for sending requests
+    /// to the API endpoints in a test environment. Tests within this class validate that the provisioning flow returns
+    /// the expected results when given valid input data.</remarks>
     public class ProvisioningFlowTests : IClassFixture<WebApplicationFactory<Program>>
-
     {
         private readonly HttpClient _client;
 
         /// <summary>
-        /// Default Constructor
+        /// Initializes a new instance of the ProvisioningFlowTests class using the specified web application factory.
         /// </summary>
-        /// <param name="factory"></param>
+        /// <param name="factory">The WebApplicationFactory used to create an HTTP client for integration testing. Cannot be null.</param>
         public ProvisioningFlowTests(WebApplicationFactory<Program> factory)
         {
-            _client = factory.CreateClient(); // no port binding, no external launch
+            _client = factory.CreateClient();
         }
 
         /// <summary>
-        /// Simulates a full provisioning flow and asserts that the success modal is displayed.
+        /// Verifies that the company provisioning API returns a successful JSON payload when provided with valid input
+        /// data.
         /// </summary>
+        /// <remarks>This test ensures that a POST request to the '/api/provision-company' endpoint with
+        /// valid company details results in a successful response containing the expected success message and content
+        /// type.</remarks>
+        /// <returns>A task that represents the asynchronous test operation.</returns>
         [Fact]
         public async Task ProvisioningFlow_ReturnsSuccessPayload()
         {
-            try
+            var payload = new
             {
-                var formData = new Dictionary<string, string>
-                {
-                    { "Name", "NEXTRiff" },
-                    { "AdminEmail", "admin@nextriff.com" },
-                    { "BillingPlan", "Standard" },
-                    { "ModulesEnabled", "Billing,Inventory" }
-                };
+                companyName = "NEXTRiff",
+                adminEmail = "admin@nextriff.com",
+                billingPlan = "Standard",
+                modules = new[] { "Billing", "Inventory" }
+            };
 
-                var content = new FormUrlEncodedContent(formData);
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var request = new HttpRequestMessage(HttpMethod.Post, "/admin/company/provision")
-                {
-                    Content = content
-                };
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var response = await _client.PostAsync("/api/provisioning/provision-company", content);
+            var body = await response.Content.ReadAsStringAsync();
 
-                var response = await _client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+            Console.WriteLine($"Status: {response.StatusCode}");
+            Console.WriteLine($"Content-Type: {response.Content.Headers.ContentType}");
+            Console.WriteLine($"Body: {body}");
 
-                var responseBody = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
 
-                Console.WriteLine($"Status: {response.StatusCode}");
-                Console.WriteLine($"Content-Type: {response.Content.Headers.ContentType}");
-                Console.WriteLine($"Body: {responseBody}");
+            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
 
-                if (response.Content.Headers.ContentType?.MediaType != "application/json")
-                {
-                    throw new InvalidOperationException("Expected JSON response but got HTML.");
-                }
+            var doc = JsonDocument.Parse(body);
 
-                var payload = JsonDocument.Parse(responseBody);
-
-                var message = payload.RootElement.GetProperty("message").GetString();
-
-                Assert.Equal("Provisioning successful", message);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Test failed with exception: {ex}");
-                throw;
-            }
+            Assert.True(doc.RootElement.GetProperty("success").GetBoolean());
+            Assert.Equal("Provisioning successful", doc.RootElement.GetProperty("message").GetString());
         }
     }
 }

@@ -34,7 +34,8 @@ namespace BusinessAsUsual.Tests.Unit
             );
 
             var env = new Mock<IWebHostEnvironment>();
-            env.Setup(e => e.ContentRootPath).Returns("/fake/path");
+            var root = Directory.GetCurrentDirectory();
+            env.Setup(e => e.ContentRootPath).Returns(root);
 
             // Mock IProvisioningDb
             var mockDb = new Mock<IProvisioningDb>();
