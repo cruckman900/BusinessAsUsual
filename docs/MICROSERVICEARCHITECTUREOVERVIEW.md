@@ -1494,7 +1494,7 @@ flowchart LR
     end
 
     subgraph Data["Data Layer"]
-        F[(RDS PostgreSQL)]
+        F[(RDS Microsoft SQL)]
     end
 
     subgraph Storage["Static Assets"]
@@ -1569,7 +1569,7 @@ flowchart TB
         end
 
         subgraph PrivateSubnet["Private Subnet"]
-            RDS[(RDS PostgreSQL)]
+            RDS[(RDS Microsoft SQL)]
             SGRDS[SG: Database]
         end
 
@@ -1609,7 +1609,7 @@ flowchart LR
     end
 
     subgraph Data["Data Layer"]
-        G[(RDS PostgreSQL)]
+        G[(RDS Microsoft SQL)]
         H[S3 Static Assets]
     end
 
@@ -1710,7 +1710,7 @@ This diagram illustrates the sequence flow of a user login process in the BAU pl
 ```mermaid
 flowchart LR
     subgraph Frontend["Frontend"]
-        A[React / Next.js]
+        A[MVC / Blazor]
         B[TypeScript]
         C[Bootstrap + Custom Theme Engine]
     end
@@ -1724,7 +1724,7 @@ flowchart LR
     subgraph Infrastructure["Infrastructure"]
         G[AWS EC2]
         H[AWS S3]
-        I[AWS RDS PostgreSQL]
+        I[AWS RDS Microsoft SQL]
         J[AWS CloudFront]
         K[AWS Route 53]
     end
@@ -1783,7 +1783,7 @@ flowchart TB
     end
 
     subgraph Data["Data Layer"]
-        I[(RDS PostgreSQL)]
+        I[(RDS Microsoft SQL)]
         J[S3 Static Assets]
     end
 
@@ -2467,8 +2467,8 @@ flowchart TB
     end
 
     subgraph Frontend["Frontend Layer"]
-        F1[Admin App - React/Next]
-        F2[Main App - React/Next]
+        F1[Admin App - MVC]
+        F2[Main App - Blazor]
         F3[Theme Engine]
     end
 
@@ -2493,7 +2493,7 @@ flowchart TB
     end
 
     subgraph Data["Data Layer"]
-        D1[(RDS PostgreSQL)]
+        D1[(RDS Microsoft SQL)]
         D2[(S3 Static Assets)]
         D3[(Logs on EC2)]
     end
@@ -2563,7 +2563,7 @@ flowchart LR
     end
 
     subgraph Data["Data Layer"]
-        D1[(RDS PostgreSQL)]
+        D1[(RDS Microsoft SQL)]
         D2[(S3 Assets)]
     end
 
