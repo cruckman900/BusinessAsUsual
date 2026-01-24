@@ -219,6 +219,10 @@ flowchart TB
 - [Diagram 20 — Module & Submodule Hierarchy](#-diagram-20---module--submodule-heirarchy-erp-structure)
 - [Diagram 21 — Full System Overview](#-diagram-21---full-system-overview-all-components)
 - [Diagram 22 — Future Mobile Architecture](#-diagram-22---future-mobile-architecture-android--ios)
+- [Diagram 23 — Mobile Navigation Flow](#-diagram-22---mobile-navigation-flow-android--ios)
+- [Diagram 24 — Offline Sync Architecture](#-diagram-23---offline-sync-architecture)
+- [Diagram 25 — Database Schema](#-diagram-24---database-schema-high-level-erd)
+- [Diagram 26 — Request Lifecycle](#-diagram-25---request-lifecycle-frontend--api--db--response)
 
 </details>
 
@@ -2598,13 +2602,117 @@ This diagram illustrates the future mobile architecture for the BAU platform, sh
 
 ---
 
-### TODO
+# 📱 Diagram 23 - Mobile Navigation Flow (Android & iOS)
 
+```mermaid
+flowchart TB
+
+    subgraph App["BAU Mobile App"]
+        A[Launch App]
+        B[Check Auth State]
+        C[Login Screen]
+        D[Dashboard]
+        E[Module List]
+        F[Module Detail]
+        G[Settings]
+    end
+
+    subgraph API["BAU API"]
+        H[Validate Token]
+        I[Fetch Modules]
+        J[Fetch Module Data]
+    end
+
+    A --> B
+    B -->|Token Valid| D
+    B -->|No Token| C
+    C --> H
+    D --> E
+    E --> I
+    E --> F
+    F --> J
+    D --> G
 ```
-mobile flows,
-offline sync,
-database schema,
-request lifecycle
+
+This diagram illustrates the mobile navigation flow for the BAU platform, showing how users navigate through the app and how the app interacts with the backend API for authentication and data retrieval.
+
+---
+
+# 🔄 Diagram 24 - Offline Sync Architecture
+
+```mermaid
+flowchart LR
+
+    subgraph Mobile["Mobile App"]
+        A[Local Database]
+        B[Sync Queue]
+        C[Pending Changes]
+        D[Conflict Resolver]
+    end
+
+    subgraph Sync["Sync Engine"]
+        E[Detect Changes]
+        F[Batch Requests]
+        G[Retry Logic]
+    end
+
+    subgraph API["BAU API"]
+        H[Apply Changes]
+        I[Return Updated Snapshot]
+    end
+
+    subgraph Cloud["Cloud Storage"]
+        J[(RDS PostgreSQL)]
+    end
+
+    A --> B
+    B --> C
+    C --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> J
+    H --> I
+    I --> A
+    I --> D
 ```
+
+This diagram illustrates the offline sync architecture for the BAU mobile app, showing how local changes are detected, batched, and synchronized with the backend API while handling conflicts and retries.
+
+---
+
+# Diagram 25 - Database Schema (High-Level ERD)
+
+```mermaid
+flowchart TB
+
+    subgraph Business["Business Entities"]
+        B1[(Business)]
+        B2[(Settings)]
+        B3[(Modules)]
+        B4[(Submodules)]
+    end
+
+    subgraph Users["User Entities"]
+        U1[(Users)]
+        U2[(RefreshTokens)]
+    end
+
+    subgraph Logs["Logging Entities"]
+        L1[(AuditLog)]
+        L2[(ErrorLog)]
+    end
+
+    B1 --> B2
+    B1 --> B3
+    B3 --> B4
+
+    U1 --> U2
+
+    B1 --> L1
+    B1 --> L2
+```
+
+This diagram illustrates a high-level database schema for the BAU platform, showing key entities such as Business, Settings, Modules, Submodules, Users, RefreshTokens, AuditLog, and ErrorLog, along with their relationships.
 
 ---
