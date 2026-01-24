@@ -21,7 +21,6 @@ It powers a suite of business modules—products, services, accounting, inventor
 
 
 Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform built for scale, clarity, and creative firepower. This backend is the engine behind your business suite, orchestrating products, services, accounting, inventory, scheduling, and billing with precision and swagger.
->>>>>>> 47627de84952acc9be2f27aba5486ea81458f78b
 
 ---
 
@@ -85,3 +84,4 @@ http://localhost:5000/swagger
 - Deliver expressive, accessible UI/UX through a unified theme system
 - Support real-world deployment pipelines (Docker + AWS)
 - Keep documentation clear, discoverable, and contributor-friendly
+```
