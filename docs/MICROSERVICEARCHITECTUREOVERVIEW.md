@@ -88,6 +88,142 @@ flowchart TB
     Z --> C
 ```
 
+---
+
+<details>
+<summary><strong>📘 Table of Contents</strong></summary>
+
+---
+
+## 🧭 Overview & Purpose
+- [Purpose of This Document](#purpose-of-this-document)
+- [Why BAU Uses a Microservice Architecture](#why-bau-uses-a-microservice-architecture)
+- [What “Module = Microservice” Means](#what-module--microservice-means)
+- [How Services Communicate](#how-services-communicate)
+  - [1. Synchronous API Calls](#1-synchronous-api-calls)
+  - [2. Asynchronous Events](#2-asynchronous-events)
+- [How the UI Discovers Modules](#how-the-ui-discovers-modules)
+- [Tenant Isolation Strategy](#tenant-isolation-strategy)
+- [How Modules Handle Cross‑Domain Data](#how-modules-handle-crossdomain-data)
+
+---
+
+## 🏛️ Module Registry Service (MRS)
+- [Purpose](#purpose)
+- [Responsibilities](#responsibilities)
+- [Module Metadata Model](#module-metadata-model)
+- [Module Registration Flow](#module-registration-flow)
+- [Discovery Endpoints](#discovery-endpoints)
+- [Health Checking](#health-checking)
+- [Multi‑Tenant Routing](#multitenant-routing)
+- [Security](#security)
+- [Deployment Model](#deployment-model)
+- [Why MRS Matters](#why-mrs-matters)
+
+---
+
+## 🚪 API Gateway & Routing Strategy
+- [Purpose](#purpose-1)
+- [Responsibilities](#responsibilities-1)
+- [Routing Model](#routing-model)
+- [Tenant Resolution](#tenant-resolution)
+- [Authentication & Authorization](#authentication--authorization)
+- [Request Aggregation](#request-aggregation-optional)
+- [Health & Diagnostics](#health--diagnostics)
+- [Deployment Model](#deployment-model-1)
+- [Why the Gateway Matters](#why-the-gateway-matters)
+
+---
+
+## 🧩 BAU Microservice Template
+- [Purpose](#purpose-2)
+- [Folder Structure](#folder-structure)
+- [Layer Responsibilities](#layer-responsibilities)
+- [Required Endpoints](#required-endpoints)
+- [Health Checks](#health-checks)
+- [Logging Standards](#logging-standards)
+- [Database Rules](#database-rules)
+- [Event Publishing](#event-publishing)
+- [Event Subscribing](#event-subscribing)
+- [Module Registration](#module-registration)
+- [Deployment Expectations](#deployment-expectations)
+- [Example Minimal Module](#example-minimal-module)
+
+---
+
+## ⏱️ Example Microservice: Timekeeping
+- [Purpose](#purpose-3)
+- [Domain Overview](#domain-overview)
+- [Folder Structure](#folder-structure-1)
+- [Data Model](#data-model-simplified)
+- [API Surface](#api-surface)
+- [Tenant Handling](#tenant-handling)
+- [Integration with Other Modules](#integration-with-other-modules)
+- [Events](#events)
+- [UI Integration](#ui-integration)
+- [Health & Diagnostics](#health--diagnostics-1)
+- [Deployment](#deployment)
+- [Summary](#summary-1)
+
+---
+
+## 🗄️ Database Strategy — Tenant‑Per‑Database
+- [Purpose](#purpose-4)
+- [Core Principles](#core-principles)
+- [Database Naming Convention](#database-naming-convention)
+- [Migrations](#migrations)
+- [Cross‑Module Data Access](#crossmodule-data-access)
+- [Local Read Models](#local-read-models)
+- [Backup & Restore](#backup--restore)
+- [Scaling Strategy](#scaling-strategy)
+- [Why This Strategy Works](#why-this-strategy-works)
+
+---
+
+## 🔔 Event‑Driven Architecture
+- [Purpose](#purpose-5)
+- [Core Concepts](#core-concepts)
+- [Architecture Overview](#architecture-overview)
+- [Event Flow](#event-flow)
+- [Example: Business Provisioning](#example-business-provisioning)
+- [Why This Matters](#why-this-matters)
+
+---
+
+## 📱 Impact on Mobile Apps
+- [Key Advantages](#key-advantages)
+- [Summary](#summary-2)
+
+---
+
+## 🖼️ Diagrams
+- [Diagram 1 — High‑Level Architecture](#-diagram-1---high-level-architecture-diagram)
+- [Diagram 2 — Deployment Pipeline](#-diagram-2---deployment-pipeline-github---aws---ec2)
+- [Diagram 3 — Network Topology](#️-diagram-3---network-topology-vpc-subnets-routing)
+- [Diagram 4 — Service Dependency Graph](#-diagram-4---service-dependency-graph)
+- [Diagram 5 — Database Schema](#️-diagram-5---database-schema-erd-style-mermaid)
+- [Diagram 6 — User Login Sequence](#-diagram-6---user-login-sequence-flow)
+- [Diagram 7 — Tech Stack Grid](#-diagram-7---tech-stack-grid)
+- [Diagram 8 — Nginx Reverse Proxy Routing](#-diagram-8---nginx-reverse-proxy-routing)
+- [Diagram 9 — System Metric Pipeline](#-diagram-9---system-metric-pipeline-collectors---api---dashboard)
+- [Diagram 10 — Provisioning Wizard Flow](#-diagram-10---provisioning-wizard-flow-business-creation--module-setup)
+- [Diagram 11 — API Routing Map](#️-diagram-11---api-routing-map-domain-organized-endpoints)
+- [Diagram 12 — Theme Engine Architecture](#-diagram-12---multi-tenant-theme-engine-architecture)
+- [Diagram 13 — Admin Dashboard Layout](#-diagram-13---admin-dashboard-layout-architecture)
+- [Diagram 14 — Logging & Diagnostics Pipeline](#-diagram-14---logging--diagnostics-pipeline)
+- [Diagram 15 — Configuration & Settings Flow](#️-diagram-15---configuration--settings-flow)
+- [Diagram 16 — Authentication Token Lifecycle](#-diagram-16---authentication-token-lifecycle)
+- [Diagram 17 — Static Assets Delivery Pipeline](#-diagram-17---static-assets-delivery-pipeline)
+- [Diagram 18 — Full Deployment Pipeline](#-diagram-18---full-deployment-pipeline-github---aws---ec2---nginx)
+- [Diagram 19 — Error Handling & Recovery Flow](#️-diagram-19---error-handling--recovery-flow)
+- [Diagram 20 — Module & Submodule Hierarchy](#-diagram-20---module--submodule-heirarchy-erp-structure)
+- [Diagram 21 — Full System Overview](#-diagram-21---full-system-overview-all-components)
+- [Diagram 22 — Future Mobile Architecture](#-diagram-22---future-mobile-architecture-android--ios)
+
+</details>
+
+---
+
 ## Purpose of This Document
 This document provides a complete, contributor‑ready overview of the Business As Usual (BAU) microservice architecture. It explains how modules are structured, how services communicate, how data flows between domains, and how the platform achieves scalability, resilience, and tenant isolation.
 
