@@ -10,7 +10,7 @@
 **Business As Usual** is a multi-tenant, modular ASP.NET Core platform built for clarity, scale, and expressive engineering.  
 It powers a suite of business modules—products, services, accounting, inventory, scheduling, billing, and more—through a clean, extensible architecture.
 
-=======
+---
 
 # 🎸 Business As Usual: Modular ASP.NET Core Backend
 
