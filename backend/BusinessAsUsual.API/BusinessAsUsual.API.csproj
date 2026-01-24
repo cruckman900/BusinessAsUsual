@@ -25,11 +25,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Common\Models\" />
+    <Folder Include="Common\DTOs\" />
+    <Folder Include="Common\Utilities\" />
     <Folder Include="Modules\HR.API\" />
     <Folder Include="Modules\Inventory.API\" />
     <Folder Include="Modules\Accounting.API\" />
     <Folder Include="Modules\Timekeeping.API\" />
     <Folder Include="Modules\Orders.API\" />
+    <Folder Include="Services\Auth\" />
+    <Folder Include="Services\Metrics\" />
+    <Folder Include="Services\Settings\" />
+    <Folder Include="Services\Provisioning\ProvisioningScripts\" />
   </ItemGroup>
 
 </Project>

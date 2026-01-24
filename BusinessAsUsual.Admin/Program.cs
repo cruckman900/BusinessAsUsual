@@ -73,7 +73,7 @@ namespace BusinessAsUsual.Admin
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-                builder.Services.AddSingleton<ProvisioningDb>();
+                builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
                 builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 
                 builder.Services.AddDefaultCorrelationId(options =>

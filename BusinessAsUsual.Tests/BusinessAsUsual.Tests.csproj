@@ -42,4 +42,8 @@
     <Folder Include="Modules\Orders.Tests\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="ProvisioningScripts\DefaultSchema.sql" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+  
 </Project>
