@@ -1,9 +1,5 @@
-﻿using BusinessAsUsual.Admin;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using Xunit;
 
 namespace BusinessAsUsual.Tests.E2E
 {
@@ -14,7 +10,7 @@ namespace BusinessAsUsual.Tests.E2E
     /// <remarks>This test class uses a web application factory to create an HTTP client for sending requests
     /// to the API endpoints in a test environment. Tests within this class validate that the provisioning flow returns
     /// the expected results when given valid input data.</remarks>
-    public class ProvisioningFlowTests : IClassFixture<WebApplicationFactory<Program>>
+    public class ProvisioningFlowTests : IClassFixture<ApiTestFactory>
     {
         private readonly HttpClient _client;
 
@@ -22,7 +18,7 @@ namespace BusinessAsUsual.Tests.E2E
         /// Initializes a new instance of the ProvisioningFlowTests class using the specified web application factory.
         /// </summary>
         /// <param name="factory">The WebApplicationFactory used to create an HTTP client for integration testing. Cannot be null.</param>
-        public ProvisioningFlowTests(WebApplicationFactory<Program> factory)
+        public ProvisioningFlowTests(ApiTestFactory factory)
         {
             _client = factory.CreateClient();
         }

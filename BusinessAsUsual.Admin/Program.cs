@@ -1,5 +1,4 @@
-﻿using Amazon.CloudWatchLogs;
-using BusinessAsUsual.Admin.Data;
+﻿using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
@@ -16,9 +15,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
-using Amazon.Extensions.NETCore.Setup;
 using BusinessAsUsual.Admin.Services.Metrics;
-using BusinessAsUsual.Admin.Database;
+using BusinessAsUsual.API.Database;
+using BusinessAsUsual.API.Services.Provisioning;
 
 namespace BusinessAsUsual.Admin
 {

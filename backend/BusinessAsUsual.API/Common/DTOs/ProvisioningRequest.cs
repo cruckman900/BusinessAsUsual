@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.API.Common.DTOs
 {
     /// <summary>
     /// Represents a request to provision a new company account, including administrative and billing details.

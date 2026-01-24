@@ -1,7 +1,6 @@
 ﻿using BusinessAsUsual.Domain.Entities;
 using BusinessAsUsual.Domain.Entities.ProvisionedCompany;
 using BusinessAsUsual.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Application.Services.Provisioning;
 
@@ -31,8 +30,8 @@ public class CompanyProvisioningService
     {
         var company = new Company
         {
-            CompanyID = Guid.NewGuid(),
-            CompanyName = companyName,
+            Id = Guid.NewGuid(),
+            Name = companyName,
             Description = description,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
@@ -46,7 +45,7 @@ public class CompanyProvisioningService
         var adminRole = new CompanyUserRole
         {
             RoleID = Guid.NewGuid(),
-            CompanyID = company.CompanyID,
+            CompanyID = company.Id,
             RoleName = "Administrator",
             Description = "Full access to all company features",
             IsActive = true,
@@ -61,7 +60,7 @@ public class CompanyProvisioningService
         var defaultUser = new CompanyUser
         {
             UserID = Guid.NewGuid(),
-            CompanyID = company.CompanyID,
+            CompanyID = company.Id,
             UserName = "admin",
             Email = "admin@" + companyName.ToLower().Replace(" ", "") + ".com",
             IsActive = true,
@@ -76,7 +75,7 @@ public class CompanyProvisioningService
         var roleAssignment = new CompanyUserRoleAssignment
         {
             AssignmentID = Guid.NewGuid(),
-            CompanyID = company.CompanyID,
+            CompanyID = company.Id,
             RoleID = adminRole.RoleID,
             UserID = defaultUser.UserID,
             IsActive = true,
@@ -91,7 +90,7 @@ public class CompanyProvisioningService
         await _db.CompanySettings.AddAsync(new CompanySetting
         {
             SettingID = Guid.NewGuid(),
-            CompanyID = company.CompanyID,
+            CompanyID = company.Id,
             SettingKey = "Theme",
             SettingValue = "Default",
             IsActive = true,
@@ -104,7 +103,7 @@ public class CompanyProvisioningService
         var defaultGroup = new CompanyUserRolePermissionGroup
         {
             PermissionGroupID = Guid.NewGuid(),
-            CompanyID = company.CompanyID,
+            CompanyID = company.Id,
             GroupName = "Default Group",
             Description = "Default permission group",
             IsActive = true,

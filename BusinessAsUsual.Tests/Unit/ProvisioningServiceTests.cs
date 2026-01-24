@@ -1,9 +1,9 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
-using BusinessAsUsual.Admin.Database;
+﻿using BusinessAsUsual.API.Database;
 using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Moq;
+using BusinessAsUsual.API.Common.DTOs;
+using BusinessAsUsual.Domain.Entities;
 
 namespace BusinessAsUsual.Tests.Unit
 {

@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.API.Common.DTOs
 {
     /// <summary>
     /// Represents the result of a company provisioning operation, including success status and related details.
