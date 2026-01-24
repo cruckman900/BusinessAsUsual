@@ -17,6 +17,7 @@ This document outlines the architectural vision, workflow strategy, and onboardi
 
 ## 🧱 Solution Structure
 
+```
 BusinessAsUsual/
 ├── src/
 │   ├── BusinessAsUsual.Web/           # MVC frontend (UI Layer)
@@ -35,6 +36,8 @@ BusinessAsUsual/
 ├── STRATEGY.md                        # Architecture and onboarding guide
 ├── LICENSE.md                         # Project license
 └── README.md                          # Public-facing project overview
+```
+
 ---
 
 ## 🧠 Architectural Philosophy
