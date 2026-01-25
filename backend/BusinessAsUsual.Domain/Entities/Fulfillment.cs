@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Domain.Entities
 {
     /// <summary>
     /// Fulfillment as defined by Business As Usual

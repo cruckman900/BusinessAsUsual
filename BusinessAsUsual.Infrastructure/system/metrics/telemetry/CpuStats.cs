@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.Infrastructure.System.Metrics.Telemetry
 {
     /// <summary>
     /// Represents CPU usage statistics for a system or process.

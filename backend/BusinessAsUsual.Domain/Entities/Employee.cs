@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Domain.Entities
 {
     /// <summary>
     /// Represents an employee within the Business As Usual system.

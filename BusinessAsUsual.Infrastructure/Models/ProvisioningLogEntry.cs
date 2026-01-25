@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Infrastructure.Models
 {
     /// <summary>Provisioning Log Entry</summary>
     public class ProvisioningLogEntry

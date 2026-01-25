@@ -1,4 +1,4 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+﻿using BusinessAsUsual.Infrastructure.System.Metrics.Telemetry;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

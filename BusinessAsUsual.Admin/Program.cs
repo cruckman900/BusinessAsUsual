@@ -2,15 +2,17 @@
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
 using BusinessAsUsual.Infrastructure;
+using BusinessAsUsual.Infrastructure.Persistence;
+using BusinessAsUsual.Infrastructure.Provisioning;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
 using DotNetEnv;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
-using BusinessAsUsual.Infrastructure.Provisioning;
 
 namespace BusinessAsUsual.Admin
 {
@@ -92,6 +94,21 @@ namespace BusinessAsUsual.Admin
 
                 // Register your services
                 builder.Services.AddBusinessAsUsualServices();
+
+                // Admin database
+                builder.Services.AddDbContext<BusinessDbContext>(options =>
+                {
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("AdminDb"));
+                });
+
+                // HttpClient for calling the API provisioning endpoint
+                builder.Services.AddHttpClient("ProvisioningApi", client =>
+                {
+                    client.BaseAddress = new Uri(
+                        builder.Configuration["ApiBaseUrl"]
+                        ?? "https://localhost:5001" // fallback for dev
+                    );
+                });
 
                 if (string.IsNullOrWhiteSpace(connString))
                 {

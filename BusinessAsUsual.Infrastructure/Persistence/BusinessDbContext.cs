@@ -1,6 +1,7 @@
 ﻿using BusinessAsUsual.Domain.Entities;
 using BusinessAsUsual.Domain.Entities.ProvisionedCompany;
 using Microsoft.EntityFrameworkCore;
+using CompanyInfo = BusinessAsUsual.Domain.Entities.ProvisionedCompany.CompanyInfo;
 
 namespace BusinessAsUsual.Infrastructure.Persistence
 {

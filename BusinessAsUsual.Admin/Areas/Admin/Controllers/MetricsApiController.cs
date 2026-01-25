@@ -1,5 +1,5 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
-using BusinessAsUsual.Admin.Services.Metrics;
+﻿using BusinessAsUsual.Admin.Services.Metrics;
+using BusinessAsUsual.Infrastructure.System.Metrics.Telemetry;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
