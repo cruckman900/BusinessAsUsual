@@ -1,6 +1,7 @@
-﻿using BusinessAsUsual.API.Database;
-using BusinessAsUsual.Admin.Services;
-using BusinessAsUsual.API.Services.Provisioning;
+﻿using BusinessAsUsual.Admin.Services;
+using BusinessAsUsual.Admin.Services.Health;
+using BusinessAsUsual.Admin.Services.Logs;
+using BusinessAsUsual.Admin.Services.Metrics;
 
 namespace BusinessAsUsual.Admin.Extensions
 {
@@ -16,13 +17,37 @@ namespace BusinessAsUsual.Admin.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddBusinessAsUsualServices(this IServiceCollection services)
         {
-            services.AddScoped<IProvisioningService, ProvisioningService>();
+            //if (builder.Environment.IsDevelopment())
+            //{
+            //    builder.Services.AddSingleton<ILogReader, LocalLogReader>();
+            //}
+            //else
+            //{
+            //    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+            //    builder.Services.AddAWSService<IAmazonCloudWatchLogs>();
+            //    builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
+            //}
+            // TEMPORARY: Always use LocalLogReader
+            //builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
+
             services.AddScoped<TenantMetadataService>();
-            services.AddScoped<ProvisioningDb>();
-            services.AddScoped<ProvisioningLogger>();
-            services.AddScoped<ProvisioningService>();
             services.AddScoped<ISmartCommitLogger, SmartCommitLogger>();
+            services.AddSingleton<LogQueryService>();
+            services.AddSingleton<ILogReader, LocalLogReader>();
+            services.AddSingleton<EnvironmentService>();
+            services.AddSingleton<SystemSettingsService>();
+            services.AddSingleton<CpuCollector>();
+            services.AddSingleton<MemoryCollector>();
+            services.AddSingleton<DiskCollector>();
+            services.AddSingleton<NetworkCollector>();
+            services.AddSingleton<UptimeCollector>();
             services.AddSignalR();
+            services.AddHttpContextAccessor();
+
+            if (OperatingSystem.IsWindows())
+                services.AddSingleton<IHealthMetricsProvider, WindowsHealthMetricsProvider>();
+            else
+                services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
             return services;
         }
     }

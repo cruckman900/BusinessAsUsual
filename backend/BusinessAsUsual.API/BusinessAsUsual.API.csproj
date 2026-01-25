@@ -11,35 +11,29 @@
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-      Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
     <ProjectReference Include="..\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
     <ProjectReference Include="..\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Models\" />
-    <Folder Include="Common\Utilities\" />
     <Folder Include="Modules\HR.API\" />
     <Folder Include="Modules\Inventory.API\" />
     <Folder Include="Modules\Accounting.API\" />
     <Folder Include="Modules\Timekeeping.API\" />
     <Folder Include="Modules\Orders.API\" />
-    <Folder Include="Services\Auth\" />
-    <Folder Include="Services\Metrics\" />
-    <Folder Include="Services\Settings\" />
   </ItemGroup>
 
 </Project>

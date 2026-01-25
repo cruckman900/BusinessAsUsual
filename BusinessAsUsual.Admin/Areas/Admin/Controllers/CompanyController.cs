@@ -1,13 +1,13 @@
 ﻿using BusinessAsUsual.Core.Modules;
-using BusinessAsUsual.Admin.Areas.Admin.Models;
-using BusinessAsUsual.Admin.Data;
 using BusinessAsUsual.Admin.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using BusinessAsUsual.API.Services.Provisioning;
-using BusinessAsUsual.API.Common.DTOs;
+using BusinessAsUsual.Application.Services.Provisioning;
+using BusinessAsUsual.Application.Contracts;
+using BusinessAsUsual.Infrastructure.Persistence;
+using BusinessAsUsual.Admin.Areas.Admin.Models;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 {
@@ -20,7 +20,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     {
         private readonly IProvisioningService _provisioner;
         private readonly IHubContext<SmartCommitHub> _hubContext;
-        private readonly AdminDbContext _context;
+        private readonly BusinessDbContext _context;
 
         /// <summary>
         /// Injects the provisioning service for tenant orchestration.
@@ -28,7 +28,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// <param name="provisioningService">Service responsible for provisioning logic.</param>
         /// <param name="hubContext"></param>
         /// <param name="context"></param>
-        public CompanyController(IProvisioningService provisioningService, IHubContext<SmartCommitHub> hubContext, AdminDbContext context)
+        public CompanyController(IProvisioningService provisioningService, IHubContext<SmartCommitHub> hubContext, BusinessDbContext context)
         {
             _provisioner = provisioningService;
             _hubContext = hubContext;

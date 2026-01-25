@@ -14,10 +14,12 @@ namespace BusinessAsUsual.Tests.Infrastructure
         /// Verifies that <see cref="ConfigLoader.LoadEnvironmentVariables()"/> loads AWS_SQL_CONNECTION_STRING correctly.
         /// </summary>
         [Fact]
-        public void ShouldLoadEnvironmentVariablesFromDotEnv()
+        public async Task ShouldLoadEnvironmentVariablesFromDotEnv()
         {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+            
             // Act
-            ConfigLoader.LoadEnvironmentVariables(); // Let it auto-resolve path
+            await ConfigLoader.LoadEnvironmentVariables(); // Let it auto-resolve path
 
             // Assert
             var connectionString = Environment.GetEnvironmentVariable("AWS_SQL_CONNECTION_STRING");

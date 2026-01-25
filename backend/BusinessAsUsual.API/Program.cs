@@ -1,13 +1,11 @@
-﻿using BusinessAsUsual.Application.Services.Provisioning;
-using BusinessAsUsual.Infrastructure;
-using BusinessAsUsual.Infrastructure.Data;
-using BusinessAsUsual.Infrastructure.Persistence;
+﻿using BusinessAsUsual.API.Common;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using BusinessAsUsual.API.Services.Provisioning;
-using BusinessAsUsual.Admin.Services;
-using BusinessAsUsual.API.Database;
+using BusinessAsUsual.Application.Services.Provisioning;
+using BusinessAsUsual.Infrastructure.Provisioning;
+using BusinessAsUsual.Application.Database;
+using BusinessAsUsual.Infrastructure.Database;
+using BusinessAsUsual.Infrastructure;
 
 namespace BusinessAsUsual.API
 {
@@ -38,17 +36,6 @@ namespace BusinessAsUsual.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<MasterDbContext>(options =>
-                options.UseMySql(connString,
-                new MySqlServerVersion(ServerVersion.AutoDetect(
-                    connString
-                ))));
-            builder.Services.AddDbContext<BusinessDbContext>(options =>
-                options.UseMySql(connString,
-                new MySqlServerVersion(ServerVersion.AutoDetect(
-                    connString
-                ))));
-
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
             builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -56,10 +43,9 @@ namespace BusinessAsUsual.API
             // Optional: register shared services
             //TODO: builder.Services.AddBusinessAsUsualServices();
 
+            builder.Services.AddSingleton<AppEnvironment, AppEnvironment>();
             builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
             builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
-            builder.Services.AddScoped<CompanyProvisioningService>();
-            builder.Services.AddScoped<TenantProvisioningService>();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))

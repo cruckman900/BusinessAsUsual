@@ -1,5 +1,5 @@
-﻿using BusinessAsUsual.API.Common.DTOs;
-using BusinessAsUsual.API.Services.Provisioning;
+﻿using BusinessAsUsual.Application.Contracts;
+using BusinessAsUsual.Application.Services.Provisioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessAsUsual.API.Controllers
