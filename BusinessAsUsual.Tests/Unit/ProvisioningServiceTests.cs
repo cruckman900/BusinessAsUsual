@@ -1,44 +1,39 @@
-﻿using BusinessAsUsual.API.Database;
-using BusinessAsUsual.Admin.Services;
-using Microsoft.AspNetCore.Hosting;
-using Moq;
-using BusinessAsUsual.API.Common.DTOs;
+﻿using BusinessAsUsual.Application.Common;
+using BusinessAsUsual.Application.Contracts;
+using BusinessAsUsual.Application.Database;
 using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Infrastructure.Provisioning;
+using Moq;
 
 namespace BusinessAsUsual.Tests.Unit
 {
     /// <summary>
-    /// Contains unit tests for the ProvisioningService, verifying tenant provisioning scenarios and expected outcomes.
+    /// Contains unit tests for the ProvisioningService class, verifying tenant provisioning scenarios and expected
+    /// outcomes.
     /// </summary>
     /// <remarks>This test class uses xUnit and Moq to validate the behavior of ProvisioningService methods
-    /// under various conditions. Tests are categorized as unit tests and are intended to ensure that tenant
-    /// provisioning succeeds when all required steps complete successfully.</remarks>
+    /// under various conditions. Tests are organized to ensure that all provisioning steps succeed and that the service
+    /// interacts correctly with its dependencies.</remarks>
     public class ProvisioningServiceTests
     {
         /// <summary>
         /// Verifies that ProvisionTenantAsync returns a successful result when all provisioning steps complete without
         /// errors.
         /// </summary>
-        /// <remarks>This test ensures that the tenant provisioning workflow completes successfully and
-        /// that all required database operations are invoked exactly once. It validates that the result contains a
-        /// non-null company ID and tenant database name, indicating successful provisioning.</remarks>
+        /// <remarks>This unit test ensures that the tenant provisioning workflow succeeds when all
+        /// dependencies and steps execute as expected. It checks that the result indicates success and that required
+        /// identifiers are present in the response.</remarks>
         /// <returns>A task that represents the asynchronous test operation.</returns>
         [Trait("Category", "Unit")]
         [Fact]
         public async Task ProvisionTenantAsync_ReturnsSuccess_WhenAllStepsSucceed()
         {
             // Arrange
-            Environment.SetEnvironmentVariable(
-                "AWS_SQL_CONNECTION_STRING",
-                "Server=localhost;Database=BusinessAsUsual;User Id=test;Password=test;"
-            );
-
-            var env = new Mock<IWebHostEnvironment>();
-            var root = Directory.GetCurrentDirectory();
-            env.Setup(e => e.ContentRootPath).Returns(root);
-
-            // Mock IProvisioningDb
             var mockDb = new Mock<IProvisioningDb>();
+            var mockEnv = new Mock<IAppEnvironment>();
+
+            mockEnv.Setup(e => e.ContentRootPath)
+                   .Returns(Directory.GetCurrentDirectory());
 
             mockDb.Setup(d => d.EnsureMasterDatabaseExistsAsync())
                   .Returns(Task.CompletedTask);
@@ -55,8 +50,10 @@ namespace BusinessAsUsual.Tests.Unit
             mockDb.Setup(d => d.ApplyTenantSchemaAsync(It.IsAny<string>(), It.IsAny<string>()))
                   .Returns(Task.CompletedTask);
 
-            // Create service
-            var service = new ProvisioningService(mockDb.Object, env.Object);
+            var service = new ProvisioningService(
+                mockDb.Object,
+                mockEnv.Object
+            );
 
             var request = new ProvisioningRequest
             {
@@ -74,7 +71,6 @@ namespace BusinessAsUsual.Tests.Unit
             Assert.NotNull(result.CompanyId);
             Assert.NotNull(result.TenantDbName);
 
-            // Verify calls
             mockDb.Verify(d => d.EnsureMasterDatabaseExistsAsync(), Times.Once);
             mockDb.Verify(d => d.SaveCompanyInfoAsync(It.IsAny<Company>()), Times.Once);
             mockDb.Verify(d => d.CreateTenantDatabaseAsync(It.IsAny<string>()), Times.Once);

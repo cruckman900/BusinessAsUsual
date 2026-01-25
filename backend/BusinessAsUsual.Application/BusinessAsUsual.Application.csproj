@@ -7,19 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
     <ProjectReference Include="..\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="schema\**\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="2.5.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +21,7 @@
     <Folder Include="Modules\Accounting.Application\" />
     <Folder Include="Modules\Timekeeping.Application\" />
     <Folder Include="Modules\Orders.Application\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

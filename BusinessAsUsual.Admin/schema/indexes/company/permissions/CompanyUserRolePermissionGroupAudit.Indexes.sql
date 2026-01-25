@@ -1,3 +1,0 @@
-﻿CREATE INDEX idx_CURPGA_CompanyID ON CompanyUserRolePermissionGroupAudit (CompanyID);
-CREATE INDEX idx_CURPGA_PermissionGroupID ON CompanyUserRolePermissionGroupAudit (PermissionGroupID);
-CREATE INDEX idx_CURPGA_ChangedByUserID ON CompanyUserRolePermissionGroupAudit (ChangedByUserID);

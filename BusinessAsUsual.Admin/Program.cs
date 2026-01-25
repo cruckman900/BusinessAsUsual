@@ -1,10 +1,6 @@
-﻿using BusinessAsUsual.Admin.Data;
-using BusinessAsUsual.Admin.Extensions;
+﻿using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
-using BusinessAsUsual.Admin.Services;
-using BusinessAsUsual.Admin.Services.Health;
-using BusinessAsUsual.Admin.Services.Logs;
 using BusinessAsUsual.Infrastructure;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
@@ -12,12 +8,9 @@ using DotNetEnv;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
-using BusinessAsUsual.Admin.Services.Metrics;
-using BusinessAsUsual.API.Database;
-using BusinessAsUsual.API.Services.Provisioning;
+using BusinessAsUsual.Infrastructure.Provisioning;
 
 namespace BusinessAsUsual.Admin
 {
@@ -66,14 +59,10 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddControllersWithViews();
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
-                builder.Services.AddDbContext<AdminDbContext>(options =>
-                    options.UseSqlServer(connString));
+
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
-
-                builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
-                builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
 
                 builder.Services.AddDefaultCorrelationId(options =>
                 {
@@ -82,7 +71,7 @@ namespace BusinessAsUsual.Admin
                     options.RequestHeader = "X-Correlation-ID";
                     options.ResponseHeader = "X-Correlation-ID";
                 });
-                builder.Services.AddHttpContextAccessor();
+
                 builder.Services.AddHealthChecks()
                     .AddProcessAllocatedMemoryHealthCheck(512) // MB threshold
                     .AddWorkingSetHealthCheck(1024) // MB threshold
@@ -97,44 +86,6 @@ namespace BusinessAsUsual.Admin
                         tags: new[] { "db", "sql" }
                     )
                     .AddCheck("Self", () => HealthCheckResult.Healthy());
-                builder.Services.AddSingleton<LogQueryService>();
-
-                //if (builder.Environment.IsDevelopment())
-                //{
-                //    builder.Services.AddSingleton<ILogReader, LocalLogReader>();
-                //}
-                //else
-                //{
-                //    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-                //    builder.Services.AddAWSService<IAmazonCloudWatchLogs>();
-                //    builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
-                //}
-                // TEMPORARY: Always use LocalLogReader
-                builder.Services.AddSingleton<ILogReader, LocalLogReader>();
-                //builder.Services.AddSingleton<ILogReader, CloudWatchLogReader>();
-
-                builder.Services.AddSingleton<EnvironmentService>();
-
-                if (OperatingSystem.IsWindows())
-                {
-                    builder.Services.AddSingleton<IHealthMetricsProvider, WindowsHealthMetricsProvider>();
-                }
-                else if (OperatingSystem.IsLinux())
-                {
-                    builder.Services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
-                }
-                else
-                {
-                    builder.Services.AddSingleton<IHealthMetricsProvider, LinuxHealthMetricsProvider>();
-                }
-
-                builder.Services.AddSingleton<CpuCollector>();
-                builder.Services.AddSingleton<MemoryCollector>();
-                builder.Services.AddSingleton<DiskCollector>();
-                builder.Services.AddSingleton<NetworkCollector>();
-                builder.Services.AddSingleton<UptimeCollector>();
-
-                builder.Services.AddSingleton<SystemSettingsService>();
 
                 // Initialize Serilog AFTER configuration is loaded
                 SerilogBootstrapper.Initialize();

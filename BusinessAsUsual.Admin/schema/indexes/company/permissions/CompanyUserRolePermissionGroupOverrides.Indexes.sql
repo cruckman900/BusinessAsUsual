@@ -1,5 +1,0 @@
-﻿CREATE INDEX idx_CURPGO_CompanyID ON CompanyUserRolePermissionGroupOverrides (CompanyID);
-CREATE INDEX idx_CURPGO_PermissionGroupID ON CompanyUserRolePermissionGroupOverrides (PermissionGroupID);
-CREATE INDEX idx_CURPGO_RoleID ON CompanyUserRolePermissionGroupOverrides (RoleID);
-CREATE INDEX idx_CURPGO_PermissionID ON CompanyUserRolePermissionGroupOverrides (PermissionID);
-CREATE INDEX idx_CURPGO_OverriddenByUserID ON CompanyUserRolePermissionGroupOverrides (OverriddenByUserID);

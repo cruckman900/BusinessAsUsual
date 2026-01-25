@@ -21,17 +21,6 @@
   </Target>
 
   <ItemGroup>
-    <Compile Remove="schema\tables\auth\**" />
-    <Compile Remove="schema\tables\core\**" />
-    <Content Remove="schema\tables\auth\**" />
-    <Content Remove="schema\tables\core\**" />
-    <EmbeddedResource Remove="schema\tables\auth\**" />
-    <EmbeddedResource Remove="schema\tables\core\**" />
-    <None Remove="schema\tables\auth\**" />
-    <None Remove="schema\tables\core\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Components\ModuleNav\" />
     <Folder Include="Components\Sidebar\" />
     <Folder Include="Components\TopBar\" />
@@ -46,13 +35,6 @@
     <Folder Include="Modules\Orders.Admin\Views\" />
     <Folder Include="Modules\Timekeeping.Admin\Controllers\" />
     <Folder Include="Modules\Timekeeping.Admin\Views\" />
-    <Folder Include="schema\tables\" />
-    <Folder Include="schema\tables\permissions\" />
-    <Folder Include="schema\tables\meta\" />
-    <Folder Include="schema\tables\mobile\" />
-    <Folder Include="schema\constraints\" />
-    <Folder Include="schema\indexes\" />
-    <Folder Include="schema\unique_indexes\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
@@ -72,14 +54,12 @@
     <PackageReference Include="Docker.DotNet" Version="3.125.5" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Markdig" Version="0.42.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-      Version="9.0.10" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.76.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
     <PackageReference Include="Selenium.Support" Version="4.36.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.36.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="141.0.7390.7600" />
@@ -100,9 +80,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BusinessAsUsual.Core\BusinessAsUsual.Core.csproj" />
-    <ProjectReference
-      Include="..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
-    <ProjectReference Include="..\backend\BusinessAsUsual.API\BusinessAsUsual.API.csproj" />
+    <ProjectReference Include="..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
