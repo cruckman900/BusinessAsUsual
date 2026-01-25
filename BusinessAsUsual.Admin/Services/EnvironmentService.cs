@@ -1,4 +1,4 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+﻿using BusinessAsUsual.Infrastructure.System.Metrics.Telemetry;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.Infrastructure.System.Metrics.Telemetry
 {
     /// <summary>
     /// Represents a collection of system resource metrics, including CPU, memory, disk, network, and uptime statistics.

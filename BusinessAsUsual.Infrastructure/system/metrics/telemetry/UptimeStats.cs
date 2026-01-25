@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.Infrastructure.System.Metrics.Telemetry
 {
     /// <summary>
     /// Represents uptime statistics, including the total duration in seconds and a human-readable representation.

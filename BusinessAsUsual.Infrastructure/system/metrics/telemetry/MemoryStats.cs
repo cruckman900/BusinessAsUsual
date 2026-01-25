@@ -1,4 +1,4 @@
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Infrastructure.System.Metrics.Telemetry
 {
     /// <summary>
     /// Represents memory usage statistics, including total and used memory values.

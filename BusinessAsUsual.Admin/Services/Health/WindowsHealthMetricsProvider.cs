@@ -1,4 +1,4 @@
-﻿using BusinessAsUsual.Admin.Areas.Admin.Models;
+﻿using BusinessAsUsual.Infrastructure.System.Metrics.Telemetry;
 using System.Diagnostics;
 
 namespace BusinessAsUsual.Admin.Services.Health

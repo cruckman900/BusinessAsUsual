@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Domain.Entities
 {
     /// <summary>
     /// Represents the metadata related to a company within the Business As Usual system.

@@ -1,4 +1,4 @@
-﻿namespace BusinessAsUsual.Admin.Areas.Admin.Models
+﻿namespace BusinessAsUsual.Infrastructure.System.Metrics.Telemetry
 {
     /// <summary>
     /// Represents metadata and configuration details about the current application environment, including versioning,

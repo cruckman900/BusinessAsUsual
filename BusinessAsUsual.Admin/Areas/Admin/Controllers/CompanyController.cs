@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using BusinessAsUsual.Application.Services.Provisioning;
-using BusinessAsUsual.Application.Contracts;
 using BusinessAsUsual.Infrastructure.Persistence;
 using BusinessAsUsual.Admin.Areas.Admin.Models;
+using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Application.Contracts;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 {
@@ -18,19 +18,19 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     [Route("admin/company")]
     public class CompanyController : Controller
     {
-        private readonly IProvisioningService _provisioner;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHubContext<SmartCommitHub> _hubContext;
         private readonly BusinessDbContext _context;
 
         /// <summary>
         /// Injects the provisioning service for tenant orchestration.
         /// </summary>
-        /// <param name="provisioningService">Service responsible for provisioning logic.</param>
+        /// <param name="httpClientFactory"></param>
         /// <param name="hubContext"></param>
         /// <param name="context"></param>
-        public CompanyController(IProvisioningService provisioningService, IHubContext<SmartCommitHub> hubContext, BusinessDbContext context)
+        public CompanyController(IHttpClientFactory httpClientFactory, IHubContext<SmartCommitHub> hubContext, BusinessDbContext context)
         {
-            _provisioner = provisioningService;
+            _httpClientFactory = httpClientFactory;
             _hubContext = hubContext;
             _context = context;
         }
@@ -90,11 +90,24 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
                 Submodules = submodules
             };
 
-            var result = await _provisioner.ProvisionTenantAsync(request);
+            var client = _httpClientFactory.CreateClient("ProvisioningApi");
 
-            if (!result.Success)
+            var response = await client.PostAsJsonAsync(
+                "/api/provisioning/provision-company",
+                request);
+
+            if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError("", result.Error ?? "Provisioning failed.");
+                var error = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError("", $"Provisioning failed: {error}");
+                return View(vm);
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ProvisioningResult>();
+
+            if (result is null || !result.Success)
+            {
+                ModelState.AddModelError("", result?.Error ?? "Provisioning failed.");
                 return View(vm);
             }
 

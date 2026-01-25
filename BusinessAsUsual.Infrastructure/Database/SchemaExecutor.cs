@@ -16,7 +16,6 @@ public class SchemaExecutor
     /// <param name="connectionString"></param>
     /// <param name="script"></param>
     /// <returns></returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "<Pending>")]
     public async Task ExecuteScriptAsync(string connectionString, string script)
     {
         await Task.Run(() =>

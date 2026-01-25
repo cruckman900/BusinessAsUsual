@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.Models
+namespace BusinessAsUsual.Domain.Entities
 {
     /// <summary>Company info for clients onboarding to Business As Usual</summary>
     public class CompanyInfo

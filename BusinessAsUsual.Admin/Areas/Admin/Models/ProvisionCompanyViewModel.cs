@@ -1,4 +1,5 @@
 ﻿using BusinessAsUsual.Core.Modules;
+using BusinessAsUsual.Domain.Entities;
 
 namespace BusinessAsUsual.Admin.Areas.Admin.Models
 {
