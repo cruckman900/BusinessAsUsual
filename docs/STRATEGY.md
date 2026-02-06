@@ -22,7 +22,7 @@ BusinessAsUsual/
 ├── frontend/
 │   ├── BusinessAsUsual.Admin/           # MVC frontend (UI Layer) Admin Site
 │       └── Dockerfile 
-│   ├── BusinessAsUsual.Web/             # MVC frontend (UI Layer) Client Site
+│   └── BusinessAsUsual.Web/             # MVC frontend (UI Layer) Client Site
 │       └── Dockerfile 
 ├── backend/
 │   ├── BusinessAsUsual.API/             # Public-facing APIs (API Layer)
@@ -38,7 +38,7 @@ BusinessAsUsual/
 ├── NOTES.md                             # Milestones and creative logs
 ├── STRATEGY.md                          # Architecture and onboarding guide
 ├── LICENSE.md                           # Project license
-└── docker-compose
+├── docker-compose
 └── README.md                            # Public-facing project overview
 ```
 
