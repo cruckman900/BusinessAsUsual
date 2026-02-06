@@ -20,7 +20,7 @@ It powers a suite of business modules—products, services, accounting, inventor
 - **Architecture:** Clean Architecture + Modular Design  
 - **Containerization:** Docker  
 - **Cloud Deployment:** AWS (EC2, RDS, S3, IAM)  
-- **Database:** PostgreSQL (via EF Core)  
+- **Database:** Microsoft SQL (via T-SQL & EF Core)  
 - **CI/CD:** GitHub Actions + Docker Hub  
 - **Security:** JWT Auth, HTTPS, CORS, Rate Limiting  
 - **Docs:** Swagger + `/docs` (architecture, onboarding, theming, metadata)
