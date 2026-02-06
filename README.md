@@ -1,9 +1,7 @@
 ﻿![BUSINESS AS USUAL](https://img.shields.io/badge/BUSINESS_AS_USUAL-%23F57C00?style=for-the-badge&logo=data:image/png;base64,...)
 ![Proprietary](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual?style=for-the-badge)
-
 ![CI Build](https://github.com/cruckman900/BusinessAsUsual/actions/workflows/ci.yml/badge.svg)
-![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual)
 
 # 🎸 Business As Usual — Modular ASP.NET Core Platform
 
@@ -14,7 +12,6 @@ It powers a suite of business modules—products, services, accounting, inventor
 
 ![Hits](https://hits.sh/github.com/cruckman900/BusinessAsUsual-Android.svg?style=for-the-badge)
 ![Stars](https://img.shields.io/github/stars/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
-
 ![Issues](https://img.shields.io/github/issues/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
 ![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
 
