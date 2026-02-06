@@ -3,17 +3,17 @@
 ![Contributors](https://img.shields.io/github/contributors/cruckman900/BusinessAsUsual?style=for-the-badge)
 ![CI Build](https://github.com/cruckman900/BusinessAsUsual/actions/workflows/ci.yml/badge.svg)
 
+![Hits](https://hits.sh/github.com/cruckman900/BusinessAsUsual-Android.svg?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
+![Issues](https://img.shields.io/github/issues/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
+
 # 🎸 Business As Usual — Modular ASP.NET Core Platform
 
 **Business As Usual** is a multi-tenant, modular ASP.NET Core platform built for clarity, scale, and expressive engineering.  
 It powers a suite of business modules—products, services, accounting, inventory, scheduling, billing, and more—through a clean, extensible architecture.
 
 ---
-
-![Hits](https://hits.sh/github.com/cruckman900/BusinessAsUsual-Android.svg?style=for-the-badge)
-![Stars](https://img.shields.io/github/stars/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
-![Issues](https://img.shields.io/github/issues/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
 
 
 Welcome to **Business As Usual**—a multi-tenant, modular ASP.NET Core platform built for scale, clarity, and creative firepower. This backend is the engine behind your business suite, orchestrating products, services, accounting, inventory, scheduling, and billing with precision and swagger.
