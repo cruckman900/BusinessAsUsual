@@ -12,8 +12,6 @@ It powers a suite of business modules—products, services, accounting, inventor
 
 ---
 
-# 🎸 Business As Usual: Modular ASP.NET Core Backend
-
 ![Hits](https://hits.sh/github.com/cruckman900/BusinessAsUsual-Android.svg?style=for-the-badge)
 ![Stars](https://img.shields.io/github/stars/cruckman900/BusinessAsUsual-Android?style=for-the-badge)
 
