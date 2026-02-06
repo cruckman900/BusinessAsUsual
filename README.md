@@ -61,11 +61,12 @@ docker-compose up --build
 
 # Access Swagger UI
 http://localhost:5000/swagger
+```
 
-🧭 Project Goals
+## 🧭 Project Goals
 - Provide a modular, multi-tenant foundation for business applications
 - Maintain a clean, extensible architecture suitable for long-term growth
 - Deliver expressive, accessible UI/UX through a unified theme system
 - Support real-world deployment pipelines (Docker + AWS)
 - Keep documentation clear, discoverable, and contributor-friendly
-```
+
