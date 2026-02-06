@@ -233,14 +233,3 @@ This makes the system predictable, testable, and easy to extend.
 | Application    | Use cases, orchestration, validation         | UseCase classes, service coordinations        |
 | Domain         | Pure business logic, entities, value objects | Entities, aggregates, domain services         |
 | Infrastructure | Persistence, external APIs, adapters         | Repositories, DB clients, email/SMS providers |
-
-🏢 Multi-Tenant Lifecycle
-
-```mermaid
-flowchart LR
-    Create[Create Tenant] --> Provision[Provision Resources]
-    Provision --> Route[Assign Routing Rules]
-    Route --> Scope[Scope Requests by Tenant]
-    Scope --> Operate[Normal Operation]
-    Operate --> Teardown[Teardown / Archive]
-```
