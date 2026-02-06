@@ -21,15 +21,15 @@ This document outlines the architectural vision, workflow strategy, and onboardi
 BusinessAsUsual/
 ├── frontend/
 │   ├── BusinessAsUsual.Admin/           # MVC frontend (UI Layer) Admin Site
+│       └── Dockerfile 
 │   ├── BusinessAsUsual.Web/             # MVC frontend (UI Layer) Client Site
+│       └── Dockerfile 
 ├── backend/
 │   ├── BusinessAsUsual.API/             # Public-facing APIs (API Layer)
+│       └── Dockerfile 
 │   ├── BusinessAsUsual.Application/     # Use cases, interfaces (Application Layer)
 │   ├── BusinessAsUsual.Domain/          # Entities, enums, value objects (Domain Layer)
 │   └── BusinessAsUsual.Infrastructure/  # EF Core, external services (Infrastructure Layer)
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                       # GitHub Actions workflow
@@ -38,6 +38,7 @@ BusinessAsUsual/
 ├── NOTES.md                             # Milestones and creative logs
 ├── STRATEGY.md                          # Architecture and onboarding guide
 ├── LICENSE.md                           # Project license
+└── docker-compose
 └── README.md                            # Public-facing project overview
 ```
 
