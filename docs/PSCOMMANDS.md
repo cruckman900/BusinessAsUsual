@@ -1,6 +1,8 @@
-﻿🧭 Navigation & File System
-# List files and folders
+# ﻿🧭 Navigation & File System
+## List files and folders
+```powershell
 Get-ChildItem
+```
 
 # Change directory
 Set-Location "C:\Path\To\Directory"
