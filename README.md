@@ -25,8 +25,6 @@ It powers a suite of business modules—products, services, accounting, inventor
 - **Security:** JWT Auth, HTTPS, CORS, Rate Limiting  
 - **Docs:** Swagger + `/docs` (architecture, onboarding, theming, metadata)
 
----
-
 ## 🧩 Modular Breakdown
 
 | Module           | Purpose                                      | Status         |
@@ -37,8 +35,6 @@ It powers a suite of business modules—products, services, accounting, inventor
 | `WebAPI`         | Controllers, endpoints, middleware           | 🚧 In Progress |
 | `Identity`       | Auth, registration, roles, JWT               | ✅ Stable      |
 | `Tenant`         | Multi-tenant logic, scoped services          | 🚧 Planned     |
-
----
 
 ## 📚 Documentation
 
@@ -52,8 +48,6 @@ All detailed documentation lives in the `/docs` directory:
 - **Splash Logic, Badges, and More:** See additional files in `/docs`
 
 This keeps the root README clean while giving contributors a clear map of the system.
-
----
 
 ## 🛠️ Setup & Onboarding
 
