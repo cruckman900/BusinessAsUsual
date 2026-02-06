@@ -1,30 +1,39 @@
 # ﻿🧭 Navigation & File System
+
 ## List files and folders
 ```powershell
 Get-ChildItem
 ```
 
-# Change directory
+## Change directory
+```powershell
 Set-Location "C:\Path\To\Directory"
+```
 
-# Create a new folder
+## Create a new folder
+```powershell
 New-Item -ItemType Directory -Path "NewFolder"
+```
 
-# Copy files or folders
+## Copy files or folders
+```powershell
 Copy-Item "source.txt" -Destination "C:\Backup\source.txt"
+```
 
-# Move files or folders
+## Move files or folders
+```powershell
 Move-Item "old.txt" -Destination "C:\Archive\old.txt"
+```
 
-# Delete files or folders
+## Delete files or folders
+```powershell
 Remove-Item "unwanted.txt"
+```
+---
 
-
+# 🔍 System Info & Diagnostics
 
-
-
-🔍 System Info & Diagnostics
-# Get system info
+## Get system info
 Get-ComputerInfo
 
 # Check memory usage
