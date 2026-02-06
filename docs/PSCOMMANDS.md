@@ -75,7 +75,7 @@ Install-Module -Name ModuleName
 Update-Module -Name ModuleName
 ```
 
-@## List installed modules
+### List installed modules
 ```powershell
 Get-InstalledModule
 ```
@@ -125,62 +125,89 @@ $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("UserName"
 $acl.SetAccessRule($rule)
 Set-Acl "C:\Path\To\File.txt" $acl
 ```
-
 
-🌐 Networking
-# Get IP configuration
+---
+
+## 🌐 Networking
+
+### Get IP configuration
+```powershell
 Get-NetIPAddress
+```
 
-# Test network connection
+### Test network connection
+```powershell
 Test-Connection google.com
+```
 
-# Get DNS settings
+### Get DNS settings
+```powershell
 Get-DnsClientServerAddress
+```
 
-# Get active TCP connections
+### Get active TCP connections
+```powershell
 Get-NetTCPConnection
+```
 
-
+---
 
+## 🧪 Environment & Variables
 
-
-🧪 Environment & Variables
-# List environment variables
+### List environment variables
+```powershell
 Get-ChildItem Env:
+```
 
-# Set an environment variable
+### Set an environment variable
+```powershell
 $env:MY_VAR = "HelloWorld"
+```
 
-# Persist environment variable (system-wide)
+### Persist environment variable (system-wide)
+```powershell
 [Environment]::SetEnvironmentVariable("MY_VAR", "HelloWorld", "Machine")
+```
 
-
+---
 
+## 🎯 Miscellaneous Power Moves
 
-
-🎯 Miscellaneous Power Moves
-# Search for a string in files
+### Search for a string in files
+```powershell
 Select-String -Path "*.log" -Pattern "ERROR"
+```
 
-# Export data to CSV
+### Export data to CSV
+```powershell
 Get-Process | Export-Csv -Path "processes.csv" -NoTypeInformation
+```
 
-# Convert to JSON
+### Convert to JSON
+```powershell
 Get-Service | ConvertTo-Json
+```
 
-🛠️ Scripting & Automation
-# Define a function
+---
+
+## 🛠️ Scripting & Automation
+
+### Define a function
+```powershell
 function Say-Hello {
     param($Name)
     Write-Output "Hello, $Name!"
 }
+```
 
-# Run a script
+### Run a script
+```powershell
 .\myscript.ps1
+```
 
-# Schedule a task
+### Schedule a task
+```powershell
 $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-File C:\Scripts\Backup.ps1"
 $trigger = New-ScheduledTaskTrigger -Daily -At 9am
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "DailyBackup"
-
-
+```
