@@ -7,58 +7,78 @@
 Get-ChildItem
 ```
 
-## Change directory
+### Change directory
 ```powershell
 Set-Location "C:\Path\To\Directory"
 ```
 
-## Create a new folder
+### Create a new folder
 ```powershell
 New-Item -ItemType Directory -Path "NewFolder"
 ```
 
-## Copy files or folders
+### Copy files or folders
 ```powershell
 Copy-Item "source.txt" -Destination "C:\Backup\source.txt"
 ```
 
-## Move files or folders
+### Move files or folders
 ```powershell
 Move-Item "old.txt" -Destination "C:\Archive\old.txt"
 ```
 
-## Delete files or folders
+### Delete files or folders
 ```powershell
 Remove-Item "unwanted.txt"
 ```
+
 ---
 
-# 🔍 System Info & Diagnostics
+## 🔍 System Info & Diagnostics
 
-## Get system info
+### Get system info
+```powershell
 Get-ComputerInfo
+```
 
-# Check memory usage
+### Check memory usage
+```powershell
 Get-CimInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory, TotalVisibleMemorySize
+```
 
-# List running processes
+### List running processes
+```powershell
 Get-Process
+```
 
-# List services
+### List services
+```powershell
 Get-Service
+```
 
-# Check disk space
+### Check disk space
+```powershell
 Get-PSDrive
+```
 
-📦 Package Management
-# Install a module
+---
+
+## 📦 Package Management
+
+### Install a module
+```powershell
 Install-Module -Name ModuleName
+```
 
-# Update a module
+### Update a module
+```powershell
 Update-Module -Name ModuleName
+```
 
-# List installed modules
+## List installed modules
+```powershell
 Get-InstalledModule
+```
 
 # Import a module
 Import-Module ModuleName
