@@ -27,11 +27,11 @@ jobs:
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/id_rsa" \
             ./ \
-            ssm-user@${{ secrets.EC2_HOST }}:/home/ssm-user/BusinessAsUsual/
+            ec2-user@${{ secrets.EC2_HOST }}:/home/ssm-user/BusinessAsUsual/
 
       - name: Deploy on EC2
         run: |
-          ssh ssm-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
+          ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
             cd /home/ssm-user/BusinessAsUsual
             export AWS_SQL_CONNECTION_STRING="${AWS_SQL_CONNECTION_STRING}"
             docker-compose -f docker-compose.prod.yml down
