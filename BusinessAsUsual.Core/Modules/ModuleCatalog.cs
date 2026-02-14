@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace BusinessAsUsual.Core.Modules
+﻿namespace BusinessAsUsual.Core.Modules
 {
     public static class ModuleCatalog
     {
