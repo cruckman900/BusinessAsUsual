@@ -1,11 +1,13 @@
 ﻿using BusinessAsUsual.API.Common;
+using BusinessAsUsual.Application.Common;
+using BusinessAsUsual.Application.Database;
+using BusinessAsUsual.Application.Services.Provisioning;
+using BusinessAsUsual.Infrastructure;
+using BusinessAsUsual.Infrastructure.Database;
+using BusinessAsUsual.Infrastructure.Extensions;
+using BusinessAsUsual.Infrastructure.Provisioning;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
-using BusinessAsUsual.Application.Services.Provisioning;
-using BusinessAsUsual.Infrastructure.Provisioning;
-using BusinessAsUsual.Application.Database;
-using BusinessAsUsual.Infrastructure.Database;
-using BusinessAsUsual.Infrastructure;
 
 namespace BusinessAsUsual.API
 {
@@ -43,9 +45,11 @@ namespace BusinessAsUsual.API
             // Optional: register shared services
             //TODO: builder.Services.AddBusinessAsUsualServices();
 
-            builder.Services.AddSingleton<AppEnvironment, AppEnvironment>();
+            builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
             builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
             builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
+
+            builder.Services.AddPlatformMetrics();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
@@ -78,6 +82,24 @@ namespace BusinessAsUsual.API
                 }
             }
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAdmin",
+                    policy =>
+                    {
+                        policy.WithOrigins(
+                            "https://localhost:7229",               // local web
+                            "https://localhost:7238",               // local Admin
+                            "https://businessasusual.work",         // live web
+                            "https://www.businessasusual.work",     // live web (www)
+                            "https://admin.businessasusual.work"    // live admin
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                    });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline
@@ -95,6 +117,7 @@ namespace BusinessAsUsual.API
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
+            app.UseCors("AllowAdmin");
 
             app.MapControllers();
 

@@ -1,11 +1,6 @@
-using BusinessAsUsual.Infrastructure;
-using BusinessAsUsual.Web.Data.Context;
-using BusinessAsUsual.Web.Factory;
 using BusinessAsUsual.Web.Modules.HR.Services;
 using BusinessAsUsual.Web.Services;
-using DotNetEnv;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
 namespace BusinessAsUsual.Web
@@ -34,33 +29,19 @@ namespace BusinessAsUsual.Web
         /// </remarks>
         public static async Task Main(string[] args)
         {
-            // Load environment variables from .env
-            await ConfigLoader.LoadEnvironmentVariables();
-            Env.Load();
-
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddDbContext<CompanyDbContext>(options =>
-                options.UseSqlServer(
-                    ConfigLoader.Get("AWS_SQL_CONNECTION_STRING")));
             builder.Services.AddMudServices();
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
             });
 
-            // Add services to the container
-            //builder.Services.AddRazorComponents()
-            //    .AddInteractiveServerComponents();
-
             // Register ThemeContext as a singleton (global theme state)
             builder.Services.AddSingleton<ThemeContext>();
 
             // Register Scoped services
-            builder.Services.AddScoped<CompanyDbContextFactory>();
-            builder.Services.AddScoped<EmployeeService>();
-            builder.Services.AddScoped<CompanySession>();
             builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
             builder.Services.AddScoped<PageHeaderService>();
 
@@ -93,9 +74,6 @@ namespace BusinessAsUsual.Web
 
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
-
-            //app.MapRazorComponents<App>()
-            //    .AddInteractiveServerRenderMode();
 
             // Launch the application
             await app.RunAsync().ConfigureAwait(false);

@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: frontend/BusinessAsUsual.Web/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "3000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - API_URL=http://backend:80
+    depends_on:
+      - backend
+      - admin
+
+  admin:
+    build:
+      context: .
+      dockerfile: frontend/BusinessAsUsual.Admin/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - API_URL=http://backend:80
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/BusinessAsUsual.API/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # This value will come from the host environment / secrets at runtime
+      - AWS_SQL_CONNECTION_STRING
+    depends_on: []
+
+networks:
+  BusinessAsUsual:
+    driver: bridge

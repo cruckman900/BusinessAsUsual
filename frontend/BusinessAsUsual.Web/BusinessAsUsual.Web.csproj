@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Modules\Accounting\Components\" />
     <Folder Include="Modules\Accounting\Pages\" />
     <Folder Include="Modules\Inventory\Components\" />

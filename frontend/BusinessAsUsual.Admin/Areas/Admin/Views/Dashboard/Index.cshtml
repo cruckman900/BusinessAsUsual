@@ -1,0 +1,157 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2 id="health" class="mb-3">System Health</h2>
+
+<div class="row mb-4" id="health-cards"></div>
+
+<div class="row g-3">
+    <div class="col-md-4 justify-content-center">
+        <div class="card w-100">
+            <div class="card-header">
+                <i class="fas fa-microchip me-1"></i> CPU Usage
+            </div>
+            <div class="card-body chart-container">
+                <canvas id="cpuChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 justify-content-center">
+        <div class="card w-100">
+            <div class="card-header">
+                <i class="fas fa-memory me-1"></i> Memory Usage
+            </div>
+            <div class="card-body donut-container">
+                <canvas id="memoryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .card {
+        max-width: 550px;
+        width: 100%;
+    }
+
+    .chart-container {
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .donut-container {
+        max-width: 350px;
+        width: 100%;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        let cpuChart, memoryChart;
+
+        async function loadHealth() {
+            const stats = await fetch('https://localhost:5001/api/health').then(res => res.json());
+
+            const html = `
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <h5>CPU</h5><p class="fs-4">${stats.cpu}%</p>
+                </div></div></div>
+
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <h5>Memory</h5><p class="fs-6">${stats.memory.used.toFixed(1)} / ${stats.memory.total.toFixed(1)} MB</p>
+                </div></div></div>
+
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <h5>Disk</h5><p class="fs-6">${stats.disk.used.toFixed(1)} / ${stats.disk.total.toFixed(1)} GB</p>
+                </div></div></div>
+
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <h5>Uptime</h5><p class="fs-6">${stats.uptime}</p>
+                </div></div></div>
+            `;
+
+            document.getElementById('health-cards').innerHTML = html;
+
+            updateCharts(stats);
+        }
+
+        function initCharts() {
+            const cpuCtx = document.getElementById('cpuChart');
+            const memCtx = document.getElementById('memoryChart');
+
+            cpuChart = new Chart(cpuCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU %',
+                        data: [],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    animation: false,
+                    scales: {
+                        y: { min: 0, max: 100 }
+                    }
+                }
+            });
+
+            memoryChart = new Chart(memCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used', 'Free'],
+                    datasets: [{
+                        data: [0, 1],
+                        backgroundColor: ['#f97316', '#22c55e']
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    animation: false,
+                    cutout: '60%'
+                }
+            });
+        }
+
+        function updateCharts(stats) {
+            const now = new Date().toLocaleTimeString();
+
+            cpuChart.data.labels.push(now);
+            cpuChart.data.datasets[0].data.push(stats.cpu);
+            if (cpuChart.data.labels.length > 20) {
+                cpuChart.data.labels.shift();
+                cpuChart.data.datasets[0].data.shift();
+            }
+            cpuChart.update();
+
+            const used = stats.memory.used;
+            const total = stats.memory.total;
+            memoryChart.data.datasets[0].data = [used, total - used];
+            memoryChart.update();
+        }
+
+        async function pollHealth() {
+            await loadHealth();
+            setTimeout(pollHealth, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            pollHealth();
+        });
+    </script>
+}

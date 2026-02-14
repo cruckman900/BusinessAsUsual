@@ -1,22 +1,40 @@
 version: "3.8"
 
 services:
-  frontend:
+  web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: frontend/BusinessAsUsual.Web/Dockerfile
     networks:
       - BusinessAsUsual
     ports:
-      - "3000:3000"
+      - "3000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=CI
+      - API_URL=http://backend:80
     depends_on:
       - backend
       - admin
 
+  admin:
+    build:
+      context: .
+      dockerfile: frontend/BusinessAsUsual.Admin/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=CI
+      - API_URL=http://backend:80
+    depends_on:
+      backend:
+        condition: service_started
+
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: backend/BusinessAsUsual.API/Dockerfile
     networks:
       - BusinessAsUsual
     ports:
@@ -24,69 +42,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=CI
       - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
-    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
-
-  admin:
-    build:
-      context: .
-      dockerfile: BusinessAsUsual.Admin/Dockerfile
-    networks:
-      - BusinessAsUsual
-    ports:
-      - "8080:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=CI
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
-    working_dir: /app
-    volumes:
-      - ./.env:/app/.env
-    depends_on:
-      - db
-
-  runtime:
-    build:
-      context: .
-      dockerfile: Dockerfile.runtime.build
-    networks:
-      - BusinessAsUsual
-    ports:
-      - "5001:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=CI
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
-    working_dir: /app
-    volumes:
-      - ./.env:/app/.env
-    depends_on:
-      db:
-        condition: service_healthy
-
-  tests:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    networks:
-      - BusinessAsUsual
-    environment:
-      - ASPNETCORE_ENVIRONMENT=CI
-      - AWS_SQL_CONNECTION_STRING=Server=db;User Id=sa;Password=YourStrong!Password123;Database=BusinessAsUsual;Encrypt=True;TrustServerCertificate=true;
-    working_dir: /app
-    depends_on:
-      db:
-        condition: service_healthy
-      backend:
-        condition: service_started
-      admin:
-        condition: service_started
-    command:
-      [
-        "/bin/sh",
-        "-c",
-        "echo '🧪 Starting tests with env:' && env && echo '⏳ Waiting for DB to finish init...' && sleep 25 && dotnet test BusinessAsUsual.Tests/BusinessAsUsual.Tests.csproj --no-build --settings TestConfig.runsettings",
-      ]
 
   db:
     build:
