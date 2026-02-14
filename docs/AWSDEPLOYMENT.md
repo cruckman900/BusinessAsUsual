@@ -183,8 +183,6 @@ Designed for:
 - Enterprise observability  
 - Zero‑downtime updates
 
----
-
 ```bash
    ,     #_
    ~\_  ####_        Amazon Linux 2023
@@ -219,15 +217,11 @@ Deploy the **Business As Usual** SaaS application to **Amazon Web Services (AWS)
 
 This document captures the exact steps taken to stand up the environment.
 
----
-
 ## 2. Account and region
 
 - **AWS Account ID:** 283784618079
 - **Plan:** Upgraded from free tier to paid
 - **Region:** `us-east-1` (N. Virginia) (chosen for low latency and broad service support)
-
----
 
 # ✅ SECTION 1 — VPC, Subnets, and Routing Tables
 
@@ -300,8 +294,6 @@ flowchart TB
     RDS --> RT_Private
 ```
 
----
-
 # ✅ SECTION 2 — DNS → EC2 → Application → Database Request Path
 
 ## How Traffic Reaches the Application
@@ -344,7 +336,6 @@ All database operations occur through EF Core, using a secure, internal VPC conn
 
 ASP.NET Core returns JSON, HTML, or API responses back through NGINX to the user’s browser.
 
-
 ```mermaid
 flowchart LR
     A[Client / Browser] --> B[HTTPS Request]
@@ -365,8 +356,6 @@ flowchart LR
     C -->|Static Assets| C
     D -->|EF Core Queries| E
 ```
-
----
 
 # ✅ SECTION 3 — HTTPS, Certbot, and Auto‑Renewal Lifecycle
 
@@ -406,8 +395,6 @@ NGINX reloads gracefully, ensuring:
 - No dropped connections
 - No downtime
 - Seamless certificate rotation
-
----
 
 ## 3. EC2 instance provisioning
 
@@ -757,8 +744,6 @@ This deployment demonstrates practical experience with:
 - DNS and TLS configuration
 - Cost-optimized, production-relevant architecture design
 
----
-
 # 🚀 Deployment Documentation Additions
 
 ## 🧱 Scaling the EC2 Instance
@@ -820,8 +805,6 @@ curl -I http://localhost:3000
 - t3.small: ~$15–$20/month
 - t3.small Unlimited: ~$20–$25/month
 - t3.medium: ~$30/month
-
----
 
 ## 🔐 AWS Secrets Manager Setup
 
@@ -888,14 +871,11 @@ Confirms:
 - Migrations applied
 - Internal services initialized
 
-
 ### Nginx Upstream Health Checks
 
 ```
 proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
 ```
-
----
 
 ## 📊 Logging & Monitoring
 
@@ -1037,8 +1017,6 @@ for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
 - Rapid refresh
 - Multiple tabs
 - Idle → resume
-
----
 
 ## 🧭 Admin Site Enhancements (Planned)
 
