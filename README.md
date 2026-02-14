@@ -20,7 +20,7 @@ It powers a suite of business modules—products, services, accounting, inventor
 - **Architecture:** Clean Architecture + Modular Design  
 - **Containerization:** Docker  
 - **Cloud Deployment:** AWS (EC2, RDS, S3, IAM)  
-- **Database:** PostgreSQL (via EF Core)  
+- **Database:** Microsoft SQL (via T-SQL & EF Core)  
 - **CI/CD:** GitHub Actions + Docker Hub  
 - **Security:** JWT Auth, HTTPS, CORS, Rate Limiting  
 - **Docs:** Swagger + `/docs` (architecture, onboarding, theming, metadata)
@@ -61,11 +61,12 @@ docker-compose up --build
 
 # Access Swagger UI
 http://localhost:5000/swagger
+```
 
-🧭 Project Goals
+## 🧭 Project Goals
 - Provide a modular, multi-tenant foundation for business applications
 - Maintain a clean, extensible architecture suitable for long-term growth
 - Deliver expressive, accessible UI/UX through a unified theme system
 - Support real-world deployment pipelines (Docker + AWS)
 - Keep documentation clear, discoverable, and contributor-friendly
-```
+
