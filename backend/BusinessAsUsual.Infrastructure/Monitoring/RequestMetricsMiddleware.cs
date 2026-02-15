@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
-using BusinessAsUsual.Infrastructure.Monitoring;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
 
-namespace BusinessAsUsual.API.Middleware
+namespace BusinessAsUsual.Infrastructure.Monitoring
 {
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
+using BusinessAsUsual.Infrastructure.Monitoring;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
 using HealthChecks.UI.Client;
@@ -50,6 +51,9 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
 
+                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+                builder.Services.AddSingleton<RequestMetricsMiddleware>();
+
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -87,6 +91,8 @@ namespace BusinessAsUsual.Admin
                 });
 
                 var app = builder.Build();
+
+                app.UseMiddleware<RequestMetricsMiddleware>();
 
                 // Configure the HTTP request pipeline.
                 if (!app.Environment.IsDevelopment())
