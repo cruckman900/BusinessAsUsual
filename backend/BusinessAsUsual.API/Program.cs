@@ -1,10 +1,13 @@
-﻿using BusinessAsUsual.API.Common;
+﻿using Amazon.CloudWatch;
+using BusinessAsUsual.API.Common;
+using BusinessAsUsual.API.Middleware;
 using BusinessAsUsual.Application.Common;
 using BusinessAsUsual.Application.Database;
 using BusinessAsUsual.Application.Services.Provisioning;
 using BusinessAsUsual.Infrastructure;
 using BusinessAsUsual.Infrastructure.Database;
 using BusinessAsUsual.Infrastructure.Extensions;
+using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Infrastructure.Provisioning;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
@@ -50,6 +53,9 @@ namespace BusinessAsUsual.API
             builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
 
             builder.Services.AddPlatformMetrics();
+
+            builder.Services.AddAWSService<IAmazonCloudWatch>();
+            builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
@@ -101,6 +107,8 @@ namespace BusinessAsUsual.API
             });
 
             var app = builder.Build();
+
+            app.UseMiddleware<RequestMetricsMiddleware>();
 
             // Configure the HTTP request pipeline
             if (app.Environment.IsDevelopment())
