@@ -52,10 +52,6 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
 
-                builder.Services.AddAWSService<IAmazonCloudWatch>();
-                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
-                //builder.Services.AddSingleton<RequestMetricsMiddleware>();
-
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -82,6 +78,10 @@ namespace BusinessAsUsual.Admin
 
                 // Register your services
                 builder.Services.AddBusinessAsUsualServices();
+
+                builder.Services.AddAWSService<IAmazonCloudWatch>();
+                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+                builder.Services.AddSingleton<RequestMetricsMiddleware>();
 
                 // HttpClient for calling the API provisioning endpoint
                 builder.Services.AddHttpClient("ProvisioningApi", client =>
