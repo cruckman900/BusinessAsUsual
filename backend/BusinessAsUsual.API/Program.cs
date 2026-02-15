@@ -1,6 +1,5 @@
 ﻿using Amazon.CloudWatch;
 using BusinessAsUsual.API.Common;
-using BusinessAsUsual.API.Middleware;
 using BusinessAsUsual.Application.Common;
 using BusinessAsUsual.Application.Database;
 using BusinessAsUsual.Application.Services.Provisioning;
