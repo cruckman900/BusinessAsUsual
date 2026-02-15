@@ -25,8 +25,10 @@ RUN dotnet publish frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj -c Re
 # ============================
 # RUNTIME STAGE
 # ============================
-ENV ASPNETCORE_URLS=http://+:80
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://+:80
+
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "BusinessAsUsual.Web.dll"]
