@@ -51,6 +51,7 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
 
+                builder.Services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>();
                 builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
                 builder.Services.AddSingleton<RequestMetricsMiddleware>();
 
