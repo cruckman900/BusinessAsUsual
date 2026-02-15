@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Admin.Extensions;
+﻿using Amazon.CloudWatch;
+using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
 using BusinessAsUsual.Infrastructure.Monitoring;
@@ -51,9 +52,9 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
 
-                builder.Services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>();
+                builder.Services.AddAWSService<IAmazonCloudWatch>();
                 builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
-                builder.Services.AddSingleton<RequestMetricsMiddleware>();
+                //builder.Services.AddSingleton<RequestMetricsMiddleware>();
 
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
