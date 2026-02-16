@@ -65,17 +65,10 @@
     "items": [
       {
         "id": "menu-health-monitoring",
-        "label": "Platform Health",
+        "label": "Health",
         "route": "/admin/monitoring",
         "description": "System overview and live stats",
         "icon": "fas fa-tachometer-alt"
-      },
-      {
-        "id": "menu-health-logs",
-        "label": "Logs",
-        "route": "/admin/logs",
-        "description": "View application and system logs",
-        "icon": "fas fa-scroll"
       },
       {
         "id": "menu-health-metrics",
@@ -83,6 +76,13 @@
         "route": "/admin/metrics",
         "description": "Charts and performance trends",
         "icon": "fas fa-chart-line"
+      },
+      {
+        "id": "menu-health-logs",
+        "label": "Logs",
+        "route": "/admin/logs",
+        "description": "View application and system logs",
+        "icon": "fas fa-scroll"
       },
       {
         "id": "menu-health-settings",
