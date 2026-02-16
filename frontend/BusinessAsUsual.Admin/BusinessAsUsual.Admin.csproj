@@ -59,8 +59,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-      Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
     <PackageReference Include="Selenium.Support" Version="4.36.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.36.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="141.0.7390.7600" />
@@ -80,10 +79,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
-    <ProjectReference
-      Include="..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
     <ProjectReference Include="..\..\BusinessAsUsual.Core\BusinessAsUsual.Core.csproj" />
   </ItemGroup>
