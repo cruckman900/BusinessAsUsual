@@ -8,6 +8,8 @@
     </h5>
 
     <div class="mt-2">
+
+        @* Service Metrics *@
         @if (Model.Metrics != null)
         {
             <p>Latency: @Model.Metrics.LatencyMs ms</p>
@@ -15,11 +17,21 @@
             <p>Errors: @Model.Metrics.ErrorRate</p>
         }
 
-        @if (Model.Infrastructure != null)
+        @* Service Alarms *@
+        @if (Model.ServiceAlarms != null)
         {
-            foreach (var prop in Model.Infrastructure.GetType().GetProperties())
+            foreach (var alarm in Model.ServiceAlarms)
             {
-                <p>@prop.Name: @prop.GetValue(Model.Infrastructure)</p>
+                <p>@alarm.Key: @alarm.Value</p>
+            }
+        }
+
+        @* Infrastructure Alarms *@
+        @if (Model.InfraAlarms != null)
+        {
+            foreach (var alarm in Model.InfraAlarms)
+            {
+                <p>@alarm.Key: @alarm.Value</p>
             }
         }
     </div>
