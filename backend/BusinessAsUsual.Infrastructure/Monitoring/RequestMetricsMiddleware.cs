@@ -38,8 +38,8 @@ namespace BusinessAsUsual.Infrastructure.Monitoring
         {
             _next = next;
             _metrics = metrics;
-            _serviceName = configuration["SERVICE_NAME"] ?? "Backend";
-            _environment = configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production";
+            _serviceName = configuration["Monitoring:ServiceName"] ?? "UnknownService";
+            _environment = configuration["Monitoring:Environment"] ?? "UnknownEnvironment";
         }
 
         /// <summary>
