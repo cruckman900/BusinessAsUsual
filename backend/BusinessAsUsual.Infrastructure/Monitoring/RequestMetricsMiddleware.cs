@@ -54,41 +54,57 @@ namespace BusinessAsUsual.Infrastructure.Monitoring
         public async Task Invoke(HttpContext context)
         {
             var sw = Stopwatch.StartNew();
-            await _next(context);
-            sw.Stop();
 
-            var statusCode = context.Response.StatusCode;
-            var isError = statusCode >= 500;
+            // Capture the original response body
+            var originalBody = context.Response.Body;
+            await using var memStream = new MemoryStream();
+            context.Response.Body = memStream;
 
-            // Latency
-            await _metrics.PublishAsync(
-                "LatencyMs",
-                sw.ElapsedMilliseconds,
-                _serviceName,
-                _environment,
-                Amazon.CloudWatch.StandardUnit.Milliseconds
-            );
-
-            // Requests per minute (increment)
-            await _metrics.PublishAsync(
-                "RequestsPerMinute",
-                1,
-                _serviceName,
-                _environment,
-                Amazon.CloudWatch.StandardUnit.Count
-            );
-
-            // Error rate (only if 500+)
-            if (isError)
+            try
             {
+                await _next(context);
+            }
+            finally
+            {
+                sw.Stop();
+
+                // Rewind and copy the response back to the original stream
+                memStream.Position = 0;
+                await memStream.CopyToAsync(originalBody);
+                context.Response.Body = originalBody;
+
+                var statusCode = context.Response.StatusCode;
+                var isError = statusCode >= 500;
+
+                // Latency
                 await _metrics.PublishAsync(
-                    "ErrorRate",
+                    "LatencyMs",
+                    sw.ElapsedMilliseconds,
+                    _serviceName,
+                    _environment,
+                    Amazon.CloudWatch.StandardUnit.Milliseconds
+                );
+
+                // Requests per minute (increment)
+                await _metrics.PublishAsync(
+                    "RequestsPerMinute",
                     1,
                     _serviceName,
                     _environment,
                     Amazon.CloudWatch.StandardUnit.Count
                 );
 
+                // Error rate (only if 500+)
+                if (isError)
+                {
+                    await _metrics.PublishAsync(
+                        "ErrorRate",
+                        1,
+                        _serviceName,
+                        _environment,
+                        Amazon.CloudWatch.StandardUnit.Count
+                    );
+                }
             }
         }
     }
