@@ -120,14 +120,14 @@ namespace BusinessAsUsual.API
                 app.UseHsts();
             }
 
-            app.UseMiddleware<RequestMetricsMiddleware>();
-
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
             app.UseCors("AllowAdmin");
 
             app.MapControllers();
+
+            app.UseMiddleware<RequestMetricsMiddleware>();
 
             await app.RunAsync();
         }
