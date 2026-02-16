@@ -1,3 +1,5 @@
+using Amazon.CloudWatch;
+using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Web.Modules.HR.Services;
 using BusinessAsUsual.Web.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -48,6 +50,10 @@ namespace BusinessAsUsual.Web
             // DI Registration
             builder.Services.AddScoped<IHRService, HRService>();
 
+            builder.Services.AddAWSService<IAmazonCloudWatch>();
+            builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+            builder.Services.AddSingleton<RequestMetricsMiddleware>();
+
             // Register Circuit Logging
             builder.Logging.SetMinimumLevel(LogLevel.Debug);
             builder.Logging.AddConsole();
@@ -55,6 +61,8 @@ namespace BusinessAsUsual.Web
             // Register Razor Components and MudBlazor services
 
             var app = builder.Build();
+
+            app.UseMiddleware<RequestMetricsMiddleware>();
 
             // Configure middleware for production environments
             if (!app.Environment.IsDevelopment())
