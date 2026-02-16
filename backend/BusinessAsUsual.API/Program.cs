@@ -118,7 +118,7 @@ namespace BusinessAsUsual.API
             }
             else
             {
-                //app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
 

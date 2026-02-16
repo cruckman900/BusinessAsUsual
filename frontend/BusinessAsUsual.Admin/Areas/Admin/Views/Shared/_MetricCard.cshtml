@@ -1,0 +1,30 @@
+﻿@using BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring
+@model MetricCardModel
+
+<div class="card p-3 shadow-sm metric-card" data-title="@Model.Title">
+    <h5>
+        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_StatusDot.cshtml", Model.Color)
+        @Model.Title
+    </h5>
+
+    <div class="mt-2">
+        @if (Model.Metrics != null)
+        {
+            <p>Latency: @Model.Metrics.LatencyMs ms</p>
+            <p>Requests: @Model.Metrics.RequestsPerMinute rpm</p>
+            <p>Errors: @Model.Metrics.ErrorRate</p>
+        }
+
+        @if (Model.Infrastructure != null)
+        {
+            foreach (var prop in Model.Infrastructure.GetType().GetProperties())
+            {
+                <p>@prop.Name: @prop.GetValue(Model.Infrastructure)</p>
+            }
+        }
+    </div>
+
+    <button class="btn btn-sm btn-outline-primary mt-2 open-detail" data-title="@Model.Title">
+        View Details
+    </button>
+</div>
