@@ -1,30 +1,53 @@
 ﻿using BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring;
 using BusinessAsUsual.Admin.Dtos;
+using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
+namespace BusinessAsUsual.Web.Areas.Admin.ViewComponents
 {
     /// <summary>
-    /// Represents a view component that renders the infrastructure health status using an optional health model.
+    /// Represents a view component that displays the health status of infrastructure components, such as RDS and EC2.
     /// </summary>
-    /// <remarks>Use this view component to display the current health information of the platform
-    /// infrastructure. The component accepts an optional model of type PlatformHealthDto, which contains the health
-    /// data to be presented. If no model is provided, the view will be rendered with a null model, and the display
-    /// should account for the absence of health data.</remarks>
+    /// <remarks>This component retrieves and displays health metrics for RDS and EC2 instances. If the
+    /// provided model is null, it fetches the current platform health asynchronously. The displayed metrics include
+    /// alarms for storage, CPU, memory, and connection statuses, with color coding based on alarm states.</remarks>
     public class InfrastructureHealthViewComponent : ViewComponent
     {
+        private readonly IMonitoringService _monitoring;
+
         /// <summary>
-        /// Generates a view component result that displays infrastructure health metrics for RDS and EC2 based on the
-        /// provided platform health data.
+        /// Initializes a new instance of the InfrastructureHealthViewComponent class using the specified monitoring
+        /// service.
         /// </summary>
-        /// <remarks>The method evaluates alarm statuses for RDS and EC2 and determines their display
-        /// colors according to the current health state. The resulting view provides a visual summary of infrastructure
-        /// health for monitoring purposes.</remarks>
-        /// <param name="model">The platform health data containing infrastructure alarm statuses for RDS and EC2 components. Cannot be
-        /// null.</param>
-        /// <returns>A view component result containing the rendered view with health metric cards for RDS and EC2.</returns>
+        /// <remarks>Ensure that the provided IMonitoringService instance is properly configured before
+        /// passing it to this constructor. An invalid or null service may result in runtime errors when attempting to
+        /// access infrastructure health information.</remarks>
+        /// <param name="monitoring">The monitoring service used to retrieve infrastructure health data. This parameter cannot be null.</param>
+        public InfrastructureHealthViewComponent(IMonitoringService monitoring)
+        {
+            _monitoring = monitoring;
+        }
+
+        /// <summary>
+        /// Invokes the view component to render platform health metrics, including the current status of RDS and EC2
+        /// alarms.
+        /// </summary>
+        /// <remarks>If the provided model is null, the method synchronously fetches the latest platform
+        /// health data to ensure the view displays up-to-date metrics.</remarks>
+        /// <param name="model">A model containing platform health data. If null, the method retrieves the latest platform health metrics
+        /// before rendering.</param>
+        /// <returns>An <see cref="IViewComponentResult"/> that renders the view displaying health metrics for RDS and EC2
+        /// resources.</returns>
         public IViewComponentResult Invoke(PlatformHealthDto model)
         {
+            // ---------------------------------------------
+            // If model is null (initial page load), fetch it
+            // ---------------------------------------------
+            if (model == null)
+            {
+                model = _monitoring.GetPlatformHealthAsync().GetAwaiter().GetResult();
+            }
+
             var infra = model.Infrastructure;
 
             // -----------------------------
@@ -38,11 +61,10 @@ namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
                 { "Connections High", infra.RdsConnectionsHigh ?? string.Empty }
             };
 
-            string rdsColor = rdsAlarms.Values.Contains("ALARM")
-                ? "red"
-                : rdsAlarms.Values.Contains("INSUFFICIENT_DATA")
-                    ? "yellow"
-                    : "green";
+            string rdsColor =
+                rdsAlarms.Values.Contains("ALARM") ? "red" :
+                rdsAlarms.Values.Contains("INSUFFICIENT_DATA") ? "yellow" :
+                "green";
 
             var rdsCard = new MetricCardModel
             {
@@ -60,11 +82,10 @@ namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
                 { "Status Check Failed", infra.Ec2StatusCheckFailed ?? string.Empty }
             };
 
-            string ec2Color = ec2Alarms.Values.Contains("ALARM")
-                ? "red"
-                : ec2Alarms.Values.Contains("INSUFFICIENT_DATA")
-                    ? "yellow"
-                    : "green";
+            string ec2Color =
+                ec2Alarms.Values.Contains("ALARM") ? "red" :
+                ec2Alarms.Values.Contains("INSUFFICIENT_DATA") ? "yellow" :
+                "green";
 
             var ec2Card = new MetricCardModel
             {
@@ -73,7 +94,6 @@ namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
                 InfraAlarms = ec2Alarms
             };
 
-            // Pass both cards to the view
             return View(new[] { rdsCard, ec2Card });
         }
     }
