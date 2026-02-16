@@ -39,7 +39,7 @@ globalThis.resolveSidebarSection = function () {
     //if (path.includes("/admin/settings")) return "Settings";
 
     // Health & Diagnostics category
-    if (path.includes("/admin/dashboard")) return "Health & Diagnostics";
+    if (path.includes("/admin/monitoring")) return "Health & Diagnostics";
     if (path.includes("/admin/logs")) return "Health & Diagnostics";
     if (path.includes("/admin/metrics")) return "Health & Diagnostics";
     if (path.includes("/admin/settings")) return "Health & Diagnostics";

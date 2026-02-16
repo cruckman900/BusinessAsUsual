@@ -64,9 +64,9 @@
     "icon": "fas fa-heartbeat",
     "items": [
       {
-        "id": "menu-health-dashboard",
-        "label": "Dashboard",
-        "route": "/admin/dashboard",
+        "id": "menu-health-monitoring",
+        "label": "Platform Health",
+        "route": "/admin/monitoring",
         "description": "System overview and live stats",
         "icon": "fas fa-tachometer-alt"
       },
