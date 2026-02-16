@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Middleware\" />
     <Folder Include="Modules\HR.API\" />
     <Folder Include="Modules\Inventory.API\" />
     <Folder Include="Modules\Accounting.API\" />

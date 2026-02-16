@@ -24,7 +24,7 @@
         /// <remarks>Use this property to access or update metrics associated with various services. Each
         /// key in the dictionary represents the name of a specific metric, and the value provides detailed data for
         /// that metric. This enables monitoring and analysis of service performance or health.</remarks>
-        public Dictionary<string, ServiceMetricsDto>? Metrics { get; set; }
+        public required Dictionary<string, ServiceMetricsDto> Metrics { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of service alarms, where each key represents an alarm identifier and each value
@@ -34,7 +34,7 @@
         /// Each alarm is represented by a <see cref="ServiceAlarmDto"/> instance, which provides information about the
         /// alarm's status and configuration. Modifying this dictionary allows for the management of multiple alarms by
         /// their unique identifiers.</remarks>
-        public Dictionary<string, ServiceAlarmDto>? Alarms { get; set; }
+        public required Dictionary<string, ServiceAlarmDto> Alarms { get; set; }
 
         /// <summary>
         /// Gets or sets the infrastructure alarm data transfer object, which contains information about the current
@@ -43,7 +43,7 @@
         /// <remarks>Use this property to access or update details related to infrastructure alarms, such
         /// as their status or configuration. Monitoring this property enables effective tracking and management of
         /// infrastructure-related alerts within the platform.</remarks>
-        public InfrastructureAlarmDto? Infrastructure { get; set; }
+        public required InfrastructureAlarmDto Infrastructure { get; set; }
     }
 
     /// <summary>
