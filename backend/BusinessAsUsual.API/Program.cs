@@ -55,6 +55,7 @@ namespace BusinessAsUsual.API
 
             builder.Services.AddAWSService<IAmazonCloudWatch>();
             builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+            builder.Services.AddSingleton<RequestMetricsMiddleware>();
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
