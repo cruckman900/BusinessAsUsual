@@ -117,9 +117,10 @@ namespace BusinessAsUsual.API
             else
             {
                 app.UseExceptionHandler("/Error");
-                app.UseMiddleware<RequestMetricsMiddleware>();
                 app.UseHsts();
             }
+
+            app.UseMiddleware<RequestMetricsMiddleware>();
 
             app.UseHttpsRedirection();
             app.UseRouting();
