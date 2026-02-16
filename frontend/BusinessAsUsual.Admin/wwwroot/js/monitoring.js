@@ -8,7 +8,6 @@ function refreshMonitoring() {
 
 function updateUI(data) {
 
-    // POST the model to each View Component endpoint
     $.ajax({
         url: "/Admin/Monitoring/PlatformStatus",
         method: "POST",

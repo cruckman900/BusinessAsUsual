@@ -17,7 +17,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
         /// <param name="model">An optional model containing platform health data to be displayed in the view. If null, the view is rendered
         /// without model data.</param>
         /// <returns>An <see cref="IViewComponentResult"/> that renders the platform status view with the provided model.</returns>
-        public IViewComponentResult Invoke(PlatformHealthDto? model = null)
+        public IViewComponentResult Invoke(PlatformHealthDto model)
         {
             return View(model);
         }
