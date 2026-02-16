@@ -108,8 +108,6 @@ namespace BusinessAsUsual.API
 
             var app = builder.Build();
 
-            app.UseMiddleware<RequestMetricsMiddleware>();
-
             // Configure the HTTP request pipeline
             if (app.Environment.IsDevelopment())
             {
@@ -119,6 +117,7 @@ namespace BusinessAsUsual.API
             else
             {
                 app.UseExceptionHandler("/Error");
+                app.UseMiddleware<RequestMetricsMiddleware>();
                 app.UseHsts();
             }
 
