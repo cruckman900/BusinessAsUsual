@@ -30,7 +30,11 @@
     }
     catch (Exception ex)
     {
-        Console.Write("model", Model);
+        <div class="col-12">
+            <div class="alert alert-danger">
+                Error loading service health data: @ex.Message
+            </div>
+        </div>
     }
 }
 
