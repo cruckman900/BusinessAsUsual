@@ -53,6 +53,7 @@ namespace BusinessAsUsual.Web
             builder.Services.AddAWSService<IAmazonCloudWatch>();
             builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
             builder.Services.AddSingleton<RequestMetricsMiddleware>();
+            builder.Services.AddControllers(); // tiny MVC controller for testing errors and metrics
 
             // Register Circuit Logging
             builder.Logging.SetMinimumLevel(LogLevel.Debug);
@@ -80,6 +81,7 @@ namespace BusinessAsUsual.Web
 
             app.UseHttpsRedirection();
 
+            app.MapControllers(); // Map MVC controllers for API endpoints for testing purposes
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 
