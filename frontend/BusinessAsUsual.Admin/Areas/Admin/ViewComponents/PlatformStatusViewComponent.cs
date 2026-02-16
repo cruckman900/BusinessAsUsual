@@ -1,24 +1,49 @@
 ﻿using BusinessAsUsual.Admin.Dtos;
+using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BusinessAsUsual.Admin.Areas.Admin.ViewComponents
+namespace BusinessAsUsual.Web.Areas.Admin.ViewComponents
 {
     /// <summary>
     /// Represents a view component that displays the current health status of the platform.
     /// </summary>
-    /// <remarks>This view component accepts an optional model of type PlatformHealthDto, which contains the
-    /// health status data to be rendered. If no model is provided, the view will be rendered without health status
-    /// information. Use this component to provide users with a visual summary of platform health in the UI.</remarks>
+    /// <remarks>This view component retrieves platform health information using the provided monitoring
+    /// service. If no health data model is supplied, it automatically fetches the latest platform health status. Ensure
+    /// that the monitoring service is properly configured to provide accurate health information.</remarks>
     public class PlatformStatusViewComponent : ViewComponent
     {
+        private readonly IMonitoringService _monitoring;
+
         /// <summary>
-        /// Invokes the view component to render the platform status view using the specified model.
+        /// Initializes a new instance of the PlatformStatusViewComponent class using the specified monitoring service.
         /// </summary>
-        /// <param name="model">An optional model containing platform health data to be displayed in the view. If null, the view is rendered
-        /// without model data.</param>
-        /// <returns>An <see cref="IViewComponentResult"/> that renders the platform status view with the provided model.</returns>
+        /// <remarks>The provided IMonitoringService instance must be properly configured before being
+        /// passed to this constructor. Passing a null value will result in a runtime exception.</remarks>
+        /// <param name="monitoring">The monitoring service that provides platform status information. This parameter must not be null.</param>
+        public PlatformStatusViewComponent(IMonitoringService monitoring)
+        {
+            _monitoring = monitoring;
+        }
+
+        /// <summary>
+        /// Invokes the view component to display platform health information using the specified model or retrieves the
+        /// current platform health data if the model is null.
+        /// </summary>
+        /// <remarks>If the supplied model is null, this method synchronously fetches the latest platform
+        /// health data to ensure the view is always rendered with up-to-date information.</remarks>
+        /// <param name="model">The platform health data to be displayed in the view. If null, the method retrieves the latest platform
+        /// health information from the monitoring service.</param>
+        /// <returns>A view component result that renders the platform health view with the provided or retrieved model.</returns>
         public IViewComponentResult Invoke(PlatformHealthDto model)
         {
+            // ---------------------------------------------
+            // If model is null (initial page load), fetch it
+            // ---------------------------------------------
+            if (model == null)
+            {
+                model = _monitoring.GetPlatformHealthAsync().GetAwaiter().GetResult();
+            }
+
             return View(model);
         }
     }
