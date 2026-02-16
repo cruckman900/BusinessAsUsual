@@ -1,0 +1,27 @@
+﻿@using BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring
+@using BusinessAsUsual.Admin.Dtos
+@model PlatformHealthDto
+
+<div class="row">
+
+    <div class="col-md-6 mb-3">
+        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_MetricCard.cshtml",
+        new MetricCardModel
+        {
+            Title = "RDS",
+            Color = Model.Infrastructure.GetType().GetProperties().Any(p => (string)p.GetValue(Model.Infrastructure) == "ALARM") ? "red" : "green",
+            Infrastructure = Model.Infrastructure
+        })
+    </div>
+
+    <div class="col-md-6 mb-3">
+        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_MetricCard.cshtml",
+                new MetricCardModel
+                {
+                    Title = "EC2",
+                    Color = (Model.Infrastructure.Ec2CpuHigh == "ALARM" || Model.Infrastructure.Ec2StatusCheckFailed == "ALARM") ? "red" : "green",
+                    Infrastructure = Model.Infrastructure
+                })
+    </div>
+
+</div>

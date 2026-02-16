@@ -2,6 +2,7 @@
 using BusinessAsUsual.Admin.Extensions;
 using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Admin.Logging;
+using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
@@ -82,6 +83,7 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddAWSService<IAmazonCloudWatch>();
                 builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
                 builder.Services.AddSingleton<RequestMetricsMiddleware>();
+                builder.Services.AddScoped<IMonitoringService, MonitoringService>();
 
                 // HttpClient for calling the API provisioning endpoint
                 builder.Services.AddHttpClient("ProvisioningApi", client =>

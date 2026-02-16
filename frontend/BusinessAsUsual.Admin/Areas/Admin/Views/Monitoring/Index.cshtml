@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Platform Health";
+}
+
+<div class="containermt-4">
+
+    <div id="platform-status">
+        @await Component.InvokeAsync("PlatformStatus")
+    </div>
+
+    <div class="mt-4" id="service-health">
+        @await Component.InvokeAsync("ServiceHealth")
+    </div>
+
+    <div class="mt-4" id="infrastructure-health">
+        @await Component.InvokeAsync("InfrastructureHealth")
+    </div>
+
+    <div class="mt-4" id="last-updated">
+        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_LastUpdated.cshtml")
+    </div>
+
+</div>
+
+<script src="~/js/monitoring.js"></script>

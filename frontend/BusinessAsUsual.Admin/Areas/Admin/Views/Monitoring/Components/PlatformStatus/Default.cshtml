@@ -1,0 +1,36 @@
+﻿@using BusinessAsUsual.Admin.Dtos
+@model PlatformHealthDto
+
+@{
+    string status = "Healthy";
+    string color = "green";
+
+    bool anyServiceAlarm = Model.Alarms?.Values.Any(a => a.HighErrorRate == "ALARM" || a.NoTraffic == "ALARM") ?? false;
+    bool anyInfraAlarm = Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "ALARM") ?? false;
+    bool anyInsufficient = (Model.Alarms?.Values.Any(a => a.HighErrorRate == "INSUFFICIENT_DATA" || a.NoTraffic == "INSUFFICIENT_DATA") ?? false)
+                        || (Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "INSUFFICIENT_DATA") ?? false);
+
+    if (anyInfraAlarm)
+    {
+        status = "Critical";
+        color = "red";
+    }
+    else if (anyServiceAlarm)
+    {
+        status = "Degraded";
+        color = "yellow";
+    }
+    else if (anyInsufficient)
+    {
+        status = "Unknown";
+        color = "yellow";
+    }
+}
+
+<div class="card p-3 shadow-sm">
+    <h4>
+        @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_StatusDot.cshtml", color)
+        Platform Status: @status
+    </h4>
+    <p class="text-muted">Overall health of the BAU platform.</p>
+</div>
