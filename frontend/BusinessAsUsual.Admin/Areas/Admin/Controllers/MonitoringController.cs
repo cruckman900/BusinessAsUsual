@@ -111,6 +111,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         public async Task<IActionResult> GetPlatformHealth()
         {
             var dto = await _monitoring.GetPlatformHealthAsync();
+            if (dto == null)
+                return Content("DTO IS NULL");
             return Ok(dto);
         }
     }
