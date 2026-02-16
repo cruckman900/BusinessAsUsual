@@ -5,25 +5,32 @@
     string status = "Healthy";
     string color = "green";
 
-    bool anyServiceAlarm = Model.Alarms?.Values.Any(a => a.HighErrorRate == "ALARM" || a.NoTraffic == "ALARM") ?? false;
-    bool anyInfraAlarm = Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "ALARM") ?? false;
-    bool anyInsufficient = (Model.Alarms?.Values.Any(a => a.HighErrorRate == "INSUFFICIENT_DATA" || a.NoTraffic == "INSUFFICIENT_DATA") ?? false)
-                        || (Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "INSUFFICIENT_DATA") ?? false);
+    try
+    {
+        bool anyServiceAlarm = Model.Alarms?.Values.Any(a => a.HighErrorRate == "ALARM" || a.NoTraffic == "ALARM") ?? false;
+        bool anyInfraAlarm = Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "ALARM") ?? false;
+        bool anyInsufficient = (Model.Alarms?.Values.Any(a => a.HighErrorRate == "INSUFFICIENT_DATA" || a.NoTraffic == "INSUFFICIENT_DATA") ?? false)
+                            || (Model.Infrastructure?.GetType().GetProperties().Any(p => (string?)p.GetValue(Model.Infrastructure) == "INSUFFICIENT_DATA") ?? false);
 
-    if (anyInfraAlarm)
-    {
-        status = "Critical";
-        color = "red";
+        if (anyInfraAlarm)
+        {
+            status = "Critical";
+            color = "red";
+        }
+        else if (anyServiceAlarm)
+        {
+            status = "Degraded";
+            color = "yellow";
+        }
+        else if (anyInsufficient)
+        {
+            status = "Unknown";
+            color = "yellow";
+        }
     }
-    else if (anyServiceAlarm)
+    catch (Exception ex)
     {
-        status = "Degraded";
-        color = "yellow";
-    }
-    else if (anyInsufficient)
-    {
-        status = "Unknown";
-        color = "yellow";
+        Console.Write("model", Model);
     }
 }
 
