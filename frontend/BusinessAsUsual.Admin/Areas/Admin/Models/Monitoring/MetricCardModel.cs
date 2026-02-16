@@ -36,21 +36,24 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring
         /// allowing for monitoring and optimization based on the metrics it exposes.</remarks>
         public ServiceMetricsDto? Metrics { get; set; }
 
-        // Service-level alarms (HighErrorRate, NoTraffic)
+        // Service-level alarms (filtered)
         /// <summary>
-        /// Gets or sets the service-level alarms, such as high error rates or no traffic conditions.
+        /// Gets or sets the collection of service-level alarms, where each entry associates an alarm identifier with
+        /// its corresponding message.
         /// </summary>
-        /// <remarks>Use this property to monitor and respond to critical service conditions that may
-        /// require attention. The alarms provide insight into the current operational state of the service.</remarks>
-        public ServiceAlarmDto? Alarms { get; set; }
+        /// <remarks>Use this property to retrieve or update alarms related to service health and
+        /// performance. Each key-value pair represents a specific alarm, enabling monitoring and alerting for
+        /// individual services.</remarks>
+        public Dictionary<string, string>? ServiceAlarms { get; set; }
 
-        // Infrastructure-level alarms (RDS, EC2)
+        // Infrastructure-level alarms (filtered)
         /// <summary>
-        /// Gets or sets the infrastructure-level alarms for services such as RDS and EC2.
+        /// Gets or sets the collection of infrastructure-level alarms, where each key represents an alarm identifier
+        /// and each value provides the alarm description.
         /// </summary>
-        /// <remarks>Use this property to access or update alarms related to the application's underlying
-        /// infrastructure. Monitoring these alarms can help ensure the health and availability of dependent
-        /// services.</remarks>
-        public InfrastructureAlarmDto? Infrastructure { get; set; }
+        /// <remarks>Use this property to monitor and manage the current state of infrastructure alarms.
+        /// The dictionary allows for efficient retrieval and updating of alarm information, supporting system health
+        /// checks and alerting scenarios.</remarks>
+        public Dictionary<string, string>? InfraAlarms { get; set; }
     }
 }

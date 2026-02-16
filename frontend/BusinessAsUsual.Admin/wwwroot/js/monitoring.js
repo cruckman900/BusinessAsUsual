@@ -6,6 +6,8 @@ function refreshMonitoring() {
         .then(data => updateUI(data));
 }
 
+refreshMonitoring(); // Initial load
+
 function updateUI(data) {
 
     $.ajax({
