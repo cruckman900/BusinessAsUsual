@@ -127,6 +127,7 @@ namespace BusinessAsUsual.API
 
             app.MapControllers();
 
+
             app.UseMiddleware<RequestMetricsMiddleware>();
 
             await app.RunAsync();
