@@ -57,6 +57,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult PlatformStatus([FromBody] PlatformHealthDto model)
         {
+            if (model == null)
+                return Content("MODEL IS NULL");
             return ViewComponent("PlatformStatus", model);
         }
 
@@ -73,6 +75,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult ServiceHealth([FromBody] PlatformHealthDto model)
         {
+            if (model == null)
+                return Content("MODEL IS NULL"); 
             return ViewComponent("ServiceHealth", model);
         }
 
@@ -86,6 +90,8 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult InfrastructureHealth([FromBody] PlatformHealthDto model)
         {
+            if (model == null)
+                return Content("MODEL IS NULL"); 
             return ViewComponent("InfrastructureHealth", model);
         }
 
