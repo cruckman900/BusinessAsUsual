@@ -3,27 +3,37 @@
 @model PlatformHealthDto
 
 <div class="row">
-    @if (Model.Metrics != null && Model.Alarms != null)
-    {
-        @foreach (var service in Model.Metrics.Keys)
+    @try{
+        @if (Model.Metrics != null && Model.Alarms != null)
         {
-            var alarms = Model.Alarms[service];
-            string color = alarms.HighErrorRate == "ALARM" || alarms.NoTraffic == "ALARM"
-            ? "red"
-            : alarms.HighErrorRate == "INSUFFICIENT_DATA" || alarms.NoTraffic == "INSUFFICIENT_DATA"
-            ? "yellow"
-            : "green";
+            @foreach (var service in Model.Metrics.Keys)
+            {
+                var alarms = Model.Alarms[service];
+                string color = alarms.HighErrorRate == "ALARM" || alarms.NoTraffic == "ALARM"
+                ? "red"
+                : alarms.HighErrorRate == "INSUFFICIENT_DATA" || alarms.NoTraffic == "INSUFFICIENT_DATA"
+                ? "yellow"
+                : "green";
 
-            <div class="col-md-4 mb-3">
-                @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_MetricCard.cshtml",
-                new MetricCardModel
-                {
-                    Title = service,
-                    Color = color,
-                    Metrics = Model.Metrics[service],
-                    Alarms = alarms
-                })
-            </div>
+                <div class="col-md-4 mb-3">
+                    @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_MetricCard.cshtml",
+                    new MetricCardModel
+                    {
+                        Title = service,
+                        Color = color,
+                        Metrics = Model.Metrics[service],
+                        Alarms = alarms
+                    })
+                </div>
+            }
         }
+    }
+    catch (Exception ex)
+    {
+        <div class="col-12">
+            <div class="alert alert-danger">
+                Error loading service health data: @ex.Message
+            </div>
+        </div>
     }
 </div>
