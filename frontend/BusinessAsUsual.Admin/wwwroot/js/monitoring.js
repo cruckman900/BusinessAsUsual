@@ -39,6 +39,7 @@ function updateUI(data) {
 
 // Drawer logic
 $(document).on("click", ".open-detail", function () {
+    alert("hello world");
     let title = $(this).data("title");
 
     $("#drawer-title").text(title);
