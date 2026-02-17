@@ -342,8 +342,8 @@
 /* === BUTTONS ================================================= */
 
 .text-muted {
-    color: var(--secondary) !important;
-    opacity: 0.6;
+    color: var(--content-text) !important;
+    opacity: 0.95;
 }
 
 /* Solid buttons */
