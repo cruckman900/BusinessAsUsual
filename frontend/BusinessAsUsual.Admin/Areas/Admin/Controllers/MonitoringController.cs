@@ -95,6 +95,19 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
             return ViewComponent("InfrastructureHealth", model);
         }
 
+        /// <summary>
+        /// Processes a request to display the details of a specific alarm by its title.
+        /// </summary>
+        /// <remarks>This method expects a valid, non-null title to be provided in the request body. If
+        /// the title is null or empty, the resulting view may not display the intended alarm details.</remarks>
+        /// <param name="title">The title of the alarm to be displayed in the detail view. Cannot be null.</param>
+        /// <returns>An IActionResult that renders the AlarmDetail view component for the specified alarm.</returns>
+        [HttpPost]
+        public IActionResult AlarmDetail([FromBody] string title)
+        {
+            return ViewComponent("AlarmDetail", new { title });
+        }
+
         // ---------------------------------------------------------
         // API ENDPOINT FOR POLLING (JS fetches this)
         // ---------------------------------------------------------

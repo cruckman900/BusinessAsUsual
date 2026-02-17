@@ -1,0 +1,26 @@
+﻿@using BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring
+@model AlarmDetailModel
+
+<h5>Alarm Details</h5>
+
+@if (Model.Alarms != null)
+{
+    @foreach (var alarm in Model.Alarms)
+    {
+        <p>
+            <strong>@alarm.Key:</strong> @alarm.Value <br />
+            <span class="text-muted"></span>
+        </p>
+    }
+}
+
+@if (Model.RecentMetrics != null && Model.RecentMetrics.Any())
+{
+    <h6 class="mt-4">Recent Metrics</h6>
+    @foreach (var m in Model.RecentMetrics)
+    {
+        <p>Latency: @m.LatencyMs ms</p>
+        <p>Requests: @m.RequestsPerMinute rpm</p>
+        <p>Errors: @m.ErrorRate</p>
+    }
+}
