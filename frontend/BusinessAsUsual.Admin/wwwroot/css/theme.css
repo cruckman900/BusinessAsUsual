@@ -342,7 +342,7 @@
 /* === BUTTONS ================================================= */
 
 .text-muted {
-    color: var(--content-text) !important;
+    color: var(--secondary) !important;
     opacity: 0.6;
 }
 
