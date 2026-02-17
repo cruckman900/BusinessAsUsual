@@ -1,7 +1,29 @@
 ﻿<div id="alarm-detail-drawer" class="drawer">
-    <div class="drawer-content">
-        <h4 id="drawer-title"></h4>
+    <div class="drawer-content shadow-lg">
+        <h4 id="drawer-title" class="mb-3"></h4>
         <div id="drawer-body"></div>
         <button class="btn btn-secondary mt-3" id="close-drawer">Close</button>
     </div>
 </div>
+
+<style>
+    .drawer {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        width: 450px;
+        height: 100%;
+        background: #fff;
+        transition: right 0.3s ease;
+        z-index: 9999;
+        border-left: 1px solid #ddd;
+    }
+
+        .drawer.open {
+            right: 0;
+        }
+
+    .drawer-content {
+        padding: 20px;
+    }
+</style>
