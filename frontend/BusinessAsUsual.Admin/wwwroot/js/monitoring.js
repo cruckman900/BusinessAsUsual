@@ -38,24 +38,24 @@ function updateUI(data) {
 }
 
 // Drawer logic
-//$(document).on("click", ".open-detail", function () {
-//    let title = $(this).data("title");
+$(document).on("click", ".open-detail", function () {
+    let title = $(this).data("title");
 
-//    $("#drawer-title").text(title);
-//    $("#drawer-body").html("Loading...");
+    $("#drawer-title").text(title);
+    $("#drawer-body").html("Loading...");
 
-//    $.ajax({
-//        url: "/Admin/Monitoring/AlarmDetail",
-//        method: "POST",
-//        contentType: "application/json",
-//        data: JSON.stringify(title),
-//        success: html => {
-//            $("#drawer-body").html(html);
-//            $("#alarm-detail-drawer").addClass("open");
-//        }
-//    });
-//});
+    $.ajax({
+        url: "/Admin/Monitoring/AlarmDetail",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(title),
+        success: html => {
+            $("#drawer-body").html(html);
+            $("#alarm-detail-drawer").addClass("open");
+        }
+    });
+});
 
-//$("#close-drawer").on("click", function () {
-//    $("#alarm-detail-drawer").removeClass("open");
-//});
+$("#close-drawer").on("click", function () {
+    $("#alarm-detail-drawer").removeClass("open");
+});
