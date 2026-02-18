@@ -103,10 +103,10 @@ namespace BusinessAsUsual.Admin
 
                 var app = builder.Build();
 
-                //if (app.Environment.IsProduction())
-                //{
-                //    app.UseMiddleware<RequestMetricsMiddleware>();
-                //}
+                if (app.Environment.IsProduction())
+                {
+                    app.UseMiddleware<RequestMetricsMiddleware>();
+                }
 
                 // Configure the HTTP request pipeline.
                 if (!app.Environment.IsDevelopment())
