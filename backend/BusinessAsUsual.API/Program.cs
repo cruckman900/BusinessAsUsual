@@ -53,9 +53,11 @@ namespace BusinessAsUsual.API
 
             builder.Services.AddPlatformMetrics();
 
-            builder.Services.AddAWSService<IAmazonCloudWatch>();
-            builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
-            builder.Services.AddSingleton<RequestMetricsMiddleware>();
+            if (builder.Environment.IsProduction())
+            {
+                builder.Services.AddAWSService<IAmazonCloudWatch>();
+                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+            }
 
             // Validate connection string
             if (string.IsNullOrWhiteSpace(connString))
@@ -108,7 +110,10 @@ namespace BusinessAsUsual.API
 
             var app = builder.Build();
 
-            app.UseMiddleware<RequestMetricsMiddleware>();
+            if (app.Environment.IsProduction())
+            {
+                app.UseMiddleware<RequestMetricsMiddleware>();
+            }
 
             // Configure the HTTP request pipeline
             if (app.Environment.IsDevelopment())
