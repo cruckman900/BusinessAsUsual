@@ -80,7 +80,7 @@ namespace BusinessAsUsual.Admin
                 // Register your services
                 builder.Services.AddBusinessAsUsualServices();
 
-                if (!builder.Environment.IsDevelopment())
+                if (builder.Environment.IsProduction())
                 {
                     // Only add AWS services in non-development environments
                     builder.Services.AddAWSService<IAmazonCloudWatch>();
@@ -103,7 +103,7 @@ namespace BusinessAsUsual.Admin
 
                 var app = builder.Build();
 
-                if (!app.Environment.IsDevelopment())
+                if (app.Environment.IsProduction())
                 {
                     app.UseMiddleware<RequestMetricsMiddleware>();
                 }
