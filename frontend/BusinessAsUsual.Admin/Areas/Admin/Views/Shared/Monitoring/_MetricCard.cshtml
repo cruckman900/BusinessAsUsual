@@ -1,13 +1,13 @@
 ﻿@using BusinessAsUsual.Admin.Areas.Admin.Models.Monitoring
 @model MetricCardModel
 
-<div class="card p-3 shadow-sm metric-card" style="background: var(--gradient-card)" data-title="@Model.Title">
+<div class="card p-3 h-100 shadow-sm metric-card" style="background: var(--gradient-card)" data-title="@Model.Title">
     <h5>
         @await Html.PartialAsync("~/Areas/Admin/Views/Shared/Monitoring/_StatusDot.cshtml", Model.Color)
         @Model.Title
     </h5>
 
-    <div class="mt-2">
+    <div class="mt-2 h-100">
 
         @* Service Metrics *@
         @if (Model.Metrics != null)
