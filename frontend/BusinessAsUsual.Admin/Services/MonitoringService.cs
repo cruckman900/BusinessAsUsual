@@ -16,6 +16,7 @@ namespace BusinessAsUsual.Admin.Services
     public class MonitoringService : IMonitoringService
     {
         private readonly IAmazonCloudWatch _cloudWatch;
+        private readonly IWebHostEnvironment _env;
 
         // Optional 5-second cache to reduce CloudWatch calls
         private static readonly ConcurrentDictionary<string, (DateTime Timestamp, PlatformHealthDto Data)> _cache
@@ -26,11 +27,12 @@ namespace BusinessAsUsual.Admin.Services
         /// <summary>
         /// Initializes a new instance of the MonitoringService class using the specified Amazon CloudWatch client.
         /// </summary>
-        /// <param name="cloudWatch">The IAmazonCloudWatch instance used to interact with Amazon CloudWatch services. This parameter cannot be
-        /// null.</param>
-        public MonitoringService(IAmazonCloudWatch cloudWatch)
+        /// <param name="cloudWatch">The IAmazonCloudWatch instance used to interact with Amazon CloudWatch services. This parameter cannot be null.</param>
+        /// <param name="env">The IWebHostEnvironment instance providing information about the hosting environment. This parameter cannot be null</param>
+        public MonitoringService(IAmazonCloudWatch cloudWatch, IWebHostEnvironment env)
         {
             _cloudWatch = cloudWatch;
+            _env = env;
         }
 
         /// <summary>
@@ -44,6 +46,11 @@ namespace BusinessAsUsual.Admin.Services
         /// metrics and alarms.</returns>
         public async Task<PlatformHealthDto> GetPlatformHealthAsync()
         {
+            if (_env.IsDevelopment())
+            {
+                return FakePlatformHealth();
+            }
+
             var cacheKey = "platform-health";
 
             if (_cache.TryGetValue(cacheKey, out var entry))
@@ -66,6 +73,39 @@ namespace BusinessAsUsual.Admin.Services
             _cache[cacheKey] = (DateTime.UtcNow, dto);
 
             return dto;
+        }
+
+        // ------------------------------------------------------------
+        // 0. IF IS DEV, RETURN FAKE METRICS
+        // ------------------------------------------------------------
+
+        private PlatformHealthDto FakePlatformHealth()
+        {
+            return new PlatformHealthDto
+            {
+                Timestamp = DateTime.UtcNow,
+                Metrics = new Dictionary<string, ServiceMetricsDto>
+                {
+                    ["Backend"] = new ServiceMetricsDto { LatencyMs = 120, RequestsPerMinute = 500, ErrorRate = 0.01 },
+                    ["Admin"] = new ServiceMetricsDto { LatencyMs = 80, RequestsPerMinute = 200, ErrorRate = 0.005 },
+                    ["Web"] = new ServiceMetricsDto { LatencyMs = 150, RequestsPerMinute = 1000, ErrorRate = 0.02 }
+                },
+                Alarms = new Dictionary<string, ServiceAlarmDto>
+                {
+                    ["Backend"] = new ServiceAlarmDto { HighErrorRate = "OK", NoTraffic = "ALARM" },
+                    ["Admin"] = new ServiceAlarmDto { HighErrorRate = "OK", NoTraffic = "OK" },
+                    ["Web"] = new ServiceAlarmDto { HighErrorRate = "ALARM", NoTraffic = "OK" }
+                },
+                Infrastructure = new InfrastructureAlarmDto
+                {
+                    RdsFreeStorageLow = "OK",
+                    RdsCpuHigh = "ALARM",
+                    RdsFreeableMemoryLow = "OK",
+                    RdsConnectionsHigh = "OK",
+                    Ec2CpuHigh = "ALARM",
+                    Ec2StatusCheckFailed = "OK"
+                }
+            };
         }
 
         // ------------------------------------------------------------

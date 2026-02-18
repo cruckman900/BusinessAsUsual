@@ -80,10 +80,17 @@ namespace BusinessAsUsual.Admin
                 // Register your services
                 builder.Services.AddBusinessAsUsualServices();
 
-                builder.Services.AddAWSService<IAmazonCloudWatch>();
-                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
-                builder.Services.AddSingleton<RequestMetricsMiddleware>();
-                builder.Services.AddScoped<IMonitoringService, MonitoringService>();
+                if (!builder.Environment.IsDevelopment())
+                {
+                    // Only add AWS services in non-development environments
+                    builder.Services.AddAWSService<IAmazonCloudWatch>();
+                    builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+                    builder.Services.AddScoped<IMonitoringService, MonitoringService>();
+                }
+                else
+                {
+                    builder.Services.AddSingleton<IMonitoringService, LocalMonitoringService>();
+                }
 
                 // HttpClient for calling the API provisioning endpoint
                 builder.Services.AddHttpClient("ProvisioningApi", client =>
@@ -96,7 +103,10 @@ namespace BusinessAsUsual.Admin
 
                 var app = builder.Build();
 
-                app.UseMiddleware<RequestMetricsMiddleware>();
+                if (!app.Environment.IsDevelopment())
+                {
+                    app.UseMiddleware<RequestMetricsMiddleware>();
+                }
 
                 // Configure the HTTP request pipeline.
                 if (!app.Environment.IsDevelopment())

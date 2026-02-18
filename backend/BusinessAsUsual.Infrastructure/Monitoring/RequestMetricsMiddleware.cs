@@ -78,35 +78,39 @@ namespace BusinessAsUsual.Infrastructure.Monitoring
                     isError = true;
                 }
 
-                // Latency
-                await _metrics.PublishAsync(
-                    "LatencyMs",
-                    sw.ElapsedMilliseconds,
-                    _serviceName,
-                    _environment,
-                    Amazon.CloudWatch.StandardUnit.Milliseconds
-                );
-
-                // Requests per minute (increment)
-                await _metrics.PublishAsync(
-                    "RequestsPerMinute",
-                    1,
-                    _serviceName,
-                    _environment,
-                    Amazon.CloudWatch.StandardUnit.Count
-                );
-
-                // Error rate (unhandled exception OR 500+ status)
-                if (isError)
+                if (_environment == "Production")
                 {
+                    // Latency
                     await _metrics.PublishAsync(
-                        "ErrorRate",
+                        "LatencyMs",
+                        sw.ElapsedMilliseconds,
+                        _serviceName,
+                        _environment,
+                        Amazon.CloudWatch.StandardUnit.Milliseconds
+                    );
+
+                    // Requests per minute (increment)
+                    await _metrics.PublishAsync(
+                        "RequestsPerMinute",
                         1,
                         _serviceName,
                         _environment,
                         Amazon.CloudWatch.StandardUnit.Count
                     );
+
+                    // Error rate (unhandled exception OR 500+ status)
+                    if (isError)
+                    {
+                        await _metrics.PublishAsync(
+                            "ErrorRate",
+                            1,
+                            _serviceName,
+                            _environment,
+                            Amazon.CloudWatch.StandardUnit.Count
+                        );
+                    }
                 }
+
             }
         }
     }
