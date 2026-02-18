@@ -65,6 +65,7 @@ public class CloudWatchLogReader : ILogReader
             "WRN" => "WARN",
             "DBG" => "DEBUG",
             "FAT" => "FATAL",
+            "FTL" => "FATAL",
             _ => match.Groups["lvl"].Value
         };
     }
