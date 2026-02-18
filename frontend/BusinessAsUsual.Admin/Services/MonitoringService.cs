@@ -46,7 +46,7 @@ namespace BusinessAsUsual.Admin.Services
         /// metrics and alarms.</returns>
         public async Task<PlatformHealthDto> GetPlatformHealthAsync()
         {
-            if (_env.IsDevelopment())
+            if (!_env.IsProduction())
             {
                 return FakePlatformHealth();
             }

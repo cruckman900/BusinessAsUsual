@@ -50,9 +50,12 @@ namespace BusinessAsUsual.Web
             // DI Registration
             builder.Services.AddScoped<IHRService, HRService>();
 
-            builder.Services.AddAWSService<IAmazonCloudWatch>();
-            builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
-            builder.Services.AddSingleton<RequestMetricsMiddleware>();
+            if (builder.Environment.IsProduction())
+            {
+                builder.Services.AddAWSService<IAmazonCloudWatch>();
+                builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
+            }
+
             builder.Services.AddControllers(); // tiny MVC controller for testing errors and metrics
 
             // Register Circuit Logging
@@ -63,7 +66,10 @@ namespace BusinessAsUsual.Web
 
             var app = builder.Build();
 
-            app.UseMiddleware<RequestMetricsMiddleware>();
+            if (app.Environment.IsProduction())
+            {
+                app.UseMiddleware<RequestMetricsMiddleware>();
+            }
 
             // Configure middleware for production environments
             if (!app.Environment.IsDevelopment())

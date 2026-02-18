@@ -2,10 +2,27 @@
 
 namespace BusinessAsUsual.Admin.Services
 {
+    /// <summary>
+    /// Provides a local implementation of platform health monitoring services, supplying simulated metrics and alarm
+    /// data for development and testing purposes.
+    /// </summary>
+    /// <remarks>This service generates realistic but artificial health metrics and alarms for backend, admin,
+    /// and web services, as well as infrastructure alarms. It is intended for use in local or non-production
+    /// environments where real monitoring data is unavailable or unnecessary. The generated data mimics typical service
+    /// behavior to facilitate UI development and integration testing without requiring live infrastructure.</remarks>
     public class LocalMonitoringService : IMonitoringService
     {
         private readonly Random _rand = new();
 
+        /// <summary>
+        /// Asynchronously retrieves a snapshot of the platform's current health, including service metrics and
+        /// infrastructure alarms.
+        /// </summary>
+        /// <remarks>The returned health data includes metrics and alarms for various services and
+        /// infrastructure components. The values are simulated and intended for demonstration or testing purposes
+        /// only.</remarks>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a <see
+        /// cref="PlatformHealthDto"/> object with the platform's health information at the time of the request.</returns>
         public Task<PlatformHealthDto> GetPlatformHealthAsync()
         {
             return Task.FromResult(new PlatformHealthDto
