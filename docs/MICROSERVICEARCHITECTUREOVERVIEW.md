@@ -224,6 +224,13 @@ flowchart TB
 - [Diagram 25 — Database Schema](#-diagram-24---database-schema-high-level-erd)
 - [Diagram 26 — Request Lifecycle](#-diagram-25---request-lifecycle-frontend--api--db--response)
 
+---
+
+- [Service Catalog](#service-catalog)
+- [Event Catalog](#event-catalog)
+- [Deployment Topology](#deployment-topology)
+- [Local Development Workflow](#local-development-workflow)
+
 </details>
 
 ---
@@ -2716,3 +2723,2605 @@ flowchart TB
 This diagram illustrates a high-level database schema for the BAU platform, showing key entities such as Business, Settings, Modules, Submodules, Users, RefreshTokens, AuditLog, and ErrorLog, along with their relationships.
 
 ---
+
+# Service Catalog
+
+## 🛰️ Platform Services
+
+Foundational, system‑level services required by all tenants and modules.
+
+---
+
+<details><summary><strong>User Management</strong> - Platform</summary>
+
+### Purpose
+
+Handles users, roles, and permissions across the entire BAU platform.
+
+### Submodules
+
+- Users
+- Roles
+- Permissions
+
+### Service Type
+
+Core Platform Service
+
+### Dependencies
+
+None (other modules depend on this)
+
+---
+
+</details>
+
+<details><summary><strong>Audit Logs</strong> - Platform</summary>
+
+### Purpose
+
+Captures system and security events for compliance, diagnostics, and analytics.
+
+### Submodules
+
+- System Events
+- Security Events
+
+### Service Type
+
+Core Platform Service
+
+---
+
+</details>
+
+<details><summary><strong>Notifications</strong> - Platform</summary>
+
+### Purpose
+
+Centralized service for sending notifications across channels (email, SMS, push).
+
+### Submodules
+
+- Email
+- SMS
+- Push Notifications
+
+### Service Type
+
+Infrastructure Service
+
+---
+
+</details>
+
+<details><summary><strong>Reporting & Analytics</strong> - Platform</summary>
+
+### Purpose
+
+Dashboards, exports, KPIs, and analytics pipelines.
+
+### Submodules
+
+- Dashboards
+- Exports
+- KPIs
+
+### Service Type
+
+Platform Service
+
+---
+
+</details>
+
+<details><summary><strong>Integrations</strong> - Platform</summary>
+
+### Purpose
+
+External system integrations, API keys, webhooks, and connectors.
+
+### Submodules
+
+- API Keys
+- Webhooks
+- Connectors
+
+### Service Type
+
+Platform Service
+
+---
+
+</details>
+
+<details><summary><strong>System Settings</strong> - Platform</summary>
+
+### Purpose
+
+Global and tenant-level configuration.
+
+### Submodules
+
+- Company Profile
+- Preferences
+
+### Service Type
+
+Platform Service
+
+---
+
+</details>
+
+<details><summary><strong>Localization</strong> - Platform</summary>
+
+### Purpose
+
+Languages, regions, and localization rules.
+
+### Submodules
+
+- Languages
+- Regions
+
+### Service Type
+
+Platform Service
+
+---
+
+</details>
+
+## 💰 Financial Services
+
+<details><summary><strong>Accounting</strong> - Financial</summary>
+
+### Purpose
+
+Core accounting engine for journal entries and chart of accounts.
+
+### Submodules
+
+- Chart of Accounts
+- Journal Entries
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>General Ledger</strong> - Financial</summary>
+
+### Purpose
+
+Ledger management and reconciliation workflows.
+
+### Submodules
+
+- Ledgers
+- Reconciliation
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Accounts Receivable</strong> - Financial</summary>
+
+### Purpose
+
+Invoice management and collections.
+
+### Submodules
+
+- Invoices
+- Collections
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Accounts Payable</strong> - Financial</summary>
+
+### Purpose
+
+Vender bills ans payments.
+
+### Submodules
+
+- Bills
+- Vendor Payments
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Billing</strong> - Financial</summary>
+
+### Purpose
+
+Recurring and one-time billing engine.
+
+### Submodules
+
+- Recurring Billing
+- One-Time Billing
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Invoicing</strong> - Financial</summary>
+
+### Purpose
+
+Invoice templates and delivery.
+
+### Submodules
+
+- Templates
+- Delivery
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Payments</strong> - Financial</summary>
+
+### Purpose
+
+Payment gateways and reconciliation.
+
+### Submodules
+
+- Gateways
+- Reconciliation
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Payroll</strong> - Financial</summary>
+
+### Purpose
+
+Pay runs and deductions.
+
+### Submodules
+
+- Pay Runs
+- Deductions
+
+### Service Type
+
+Domain Module
+
+### Dependencies
+
+- Timekeeping (HR)
+
+---
+
+</details>
+
+<details><summary><strong>Banking</strong> - Financial</summary>
+
+### Purpose
+
+Bank accounts and transactions.
+
+### Submodules
+
+- Accounts
+- Transactions
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Budgeting</strong> - Financial</summary>
+
+### Purpose
+
+Forecasting and budget allocations.
+
+### Submodules
+
+- Forecasts
+- Allocations
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Taxation</strong> - Financial</summary>
+
+### Purpose
+
+Tax rates and filings.
+
+### Submodules
+
+- Rates
+- Filings
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+## 🧲 Sales & CRM Services
+
+<details><summary><strong>CRM</strong> - Sales</summary>
+
+### Purpose
+
+Lead and opportunity management.
+
+### Submodules
+
+- Leads
+- Opportunities
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Customers</strong> - Sales</summary>
+
+### Purpose
+
+Customer profiles and history.
+
+### Submodules
+
+- Profiles
+- History
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Quotes & Estimates</strong> - Sales</summary>
+
+### Purpose
+
+Quote drafting and approval workflows.
+
+### Submodules
+
+- Drafts
+- Approvals
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Orders</strong> - Sales</summary>
+
+### Purpose
+
+Sales orders and fulfillment.
+
+### Submodules
+
+- Sales Orders
+- Fulfillment
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Subscriptions</strong> - Sales</summary>
+
+### Purpose
+
+Subscription plans and renewals.
+
+### Submodules
+
+- Plans
+- Renewals
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Point of Sale (POS)</strong> - Sales</summary>
+
+### Purpose
+
+Registers and receipts for retail operations.
+
+### Submodules
+
+- Registers
+- Receipts
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Products</strong> - Sales</summary>
+
+### Purpose
+
+Product catalog and variants.
+
+### Submodules
+
+- Catalog
+- Variants
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Menu Management</strong> - Sales</summary>
+
+### Purpose
+
+Restaurant menu items and categories.
+
+### Submodules
+
+- Items
+- Categories
+
+### Service Type
+
+Industry-Specific Module (Hospitality)
+
+---
+
+</details>
+
+<details><summary><strong>Customer Portal</strong> - Sales</summary>
+
+### Purpose
+
+Self-service customer portal.
+
+### Submodules
+
+- Access
+- Self Service
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+## ⚙️ Operations Services
+
+<details><summary><strong>Inventory</strong> - Operations</summary>
+
+### Purpose
+
+Tracks stock levels, adjustments, and item availability across locations.
+
+### Submodules
+
+- Stock Levels
+- Adjustments
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Warehousing</strong> - Operations</summary>
+
+### Purpose
+
+Bin management, warehouse transfers, and storage operations.
+
+### Submodules
+
+- Bins
+- Transfers
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Purchasing</strong> - Operations</summary>
+
+### Purpose
+
+Purchase orders and receiving workflows.
+
+### Submodules
+
+- Purchase Orders
+- Receipts
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Procurement</strong> - Operations</summary>
+
+### Purpose
+
+Vendor management and contract lifecycle.
+
+### Submodules
+
+- Vendors
+- Contracts
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Suppliers</strong> - Operations</summary>
+
+### Purpose
+
+Supplier profiles and performance ratings.
+
+### Submodules
+
+- Profiles
+- Ratings
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Equipment</strong> - Operations</summary>
+
+### Purpose
+
+Asset tracking and maintenance schedules.
+
+### Submodules
+
+- Assets
+- Maintenance
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Maintenance</strong> - Operations</summary>
+
+### Purpose
+
+Maintenance schedules and work orders.
+
+### Submodules
+
+- Schedules
+- Work Orders
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Vehicles</strong> - Operations</summary>
+
+### Purpose
+
+Fleet management and vehicle maintenance.
+
+### Submodules
+
+- Fleet
+- Maintenance
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Fleet Management</strong> - Operations</summary>
+
+### Purpose
+
+Dispatching and vehicle tracking.
+
+### Submodules
+
+- Dispatch
+- Tracking
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Logistics</strong> - Operations</summary>
+
+### Purpose
+
+Shipment management and carrier coordination.
+
+### Submodules
+
+- Shipments
+- Carriers
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Routing</strong> - Operations</summary>
+
+### Purpose
+
+Route planning and optimization.
+
+### Submodules
+
+- Routes
+- Optimization
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Scheduling</strong> - Operations</summary>
+
+### Purpose
+
+Calendars, assignments, and resource scheduling.
+
+### Submodules
+
+- Calendar
+- Assignments
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Projects</strong> - Operations</summary>
+
+### Purpose
+
+Project phases, milestones, and progress tracking.
+
+### Submodules
+
+- Phases
+- Milestones
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Tasks</strong> - Operations</summary>
+
+### Purpose
+
+Task boards and assignment workflows.
+
+### Submodules
+
+- Boards
+- Assignments
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Jobs (Work Orders)</strong> - Operations</summary>
+
+### Purpose
+
+Job dispatching and completion workflows.
+
+### Submodules
+
+- Dispatch
+- Completion
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Services</strong> - Operations</summary>
+
+### Purpose
+
+Service catalog and pricing.
+
+### Submodules
+
+- Catalog
+- Pricing
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Workflows</strong> - Operations</summary>
+
+### Purpose
+
+Automation rules and triggers.
+
+### Submodules
+
+- Automation
+- Triggers
+
+### Service Type
+
+Platform-Adjacent Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Replenishment</strong> - Operations</summary>
+
+### Purpose
+
+Replenishment rules and forecasting.
+
+### Submodules
+
+- Rules
+- Forecasting
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Forecasting</strong> - Operations</summary>
+
+### Purpose
+
+Demand and supply forecasting.
+
+### Submodules
+
+- Demand
+- Supply
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Quality Control</strong> - Operations</summary>
+
+### Purpose
+
+Inspections and non-conformance tracking.
+
+### Submodules
+
+- Inspections
+- Non-Conformance
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Compliance</strong> - Operations</summary>
+
+### Purpose
+
+Policies and audit workflows.
+
+### Submodules
+
+- Policies
+- Audits
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Asset Management</strong> - Operations</summary>
+
+### Purpose
+
+Asset tracking and depreciation.
+
+### Submodules
+
+- Tracking
+- Depreciation
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+## 👥 HR & People Services
+
+<details><summary><strong>Human Resources</strong> - HR</summary>
+
+### Purpose
+
+Employee records and benefits.
+
+### Submodules
+
+- Employee Records
+- Benefits
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Staff Management</strong> - HR</summary>
+
+### Purpose
+
+Staff profiles and role assignments.
+
+### Submodules
+
+- Profiles
+- Roles
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Recruiting</strong> - HR</summary>
+
+### Purpose
+
+Applicant tracking and interview workflows.
+
+### Submodules
+
+- Applicants
+- Interviews
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Onboarding</strong> - HR</summary>
+
+### Purpose
+
+Employee onboarding checklists and training.
+
+### Submodules
+
+- Checklists
+- Training
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Performance</strong> - HR</summary>
+
+### Purpose
+
+Performance reviews and goal tracking.
+
+### Submodules
+
+- Reviews
+- Goals
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Training</strong> - HR</summary>
+
+### Purpose
+
+Courses and certifications.
+
+### Submodules
+
+- Courses
+- Certifications
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Timekeeping</strong> - HR</summary>
+
+### Purpose
+
+Timesheets, approvals, and shift management.
+
+### Submodules
+
+- Timesheets
+- Approvals
+
+### Service Type
+
+Domain Module
+
+### Dependencies
+
+- Employees
+- Projects
+- Payroll (consumer)
+
+---
+
+</details>
+
+## 📄 Documents & Communication Services
+
+<details><summary><strong>Document Management</strong> - Documents</summary>
+
+### Purpose
+
+Document storage and sharing.
+
+### Submodules
+
+- Storage
+- Sharing
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Messaging</strong> - Communication</summary>
+
+### Purpose
+
+Conversations and channels for internal communication.
+
+### Submodules
+
+- Conversations
+- Channels
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>Knowledge Base</strong> - Documents</summary>
+
+### Purpose
+
+Articles and categorized knowledge content.
+
+### Submodules
+
+- Articles
+- Categories
+
+### Service Type
+
+Domain Module
+
+---
+
+</details>
+
+<details><summary><strong>File Storage</strong> - Documents</summary>
+
+### Purpose
+
+File uploads and folder organization.
+
+### Submodules
+
+- Uploads
+- Folders
+
+### Service Type
+
+Infrastructure-Adjacent Module
+
+---
+
+</details>
+
+## 🏭 Industry-Specific Services
+
+<details><summary><strong>Patients</strong> - Healthcare</summary>
+
+### Purpose
+
+Patient records and visit tracking.
+
+### Submodules
+
+- Records
+- Visits
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Clinical Notes</strong> - Healthcare</summary>
+
+### Purpose
+
+SOAP notes and charting.
+
+### Submodules
+
+- SOAP Notes
+- Charts
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Reservations</strong> - Hospitality</summary>
+
+### Purpose
+
+Bookings and calendar management.
+
+### Submodules
+
+- Bookings
+- Calendar
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Events</strong> - Hospitality</summary>
+
+### Purpose
+
+Event planning and staffing.
+
+### Submodules
+
+- Planning
+- Staffing
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Safety</strong> - Mining</summary>
+
+### Purpose
+
+Incident tracking and safety training.
+
+### Submodules
+
+- Incidents
+- Training
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Dispatch</strong> - Logistics</summary>
+
+### Purpose
+
+Assignments and tracking for field operations.
+
+### Submodules
+
+- Assignments
+- Tracking
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Contracts</strong> - Professional Services</summary>
+
+### Purpose
+
+Contract templates and approvals.
+
+### Submodules
+
+- Templates
+- Approvals
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+<details><summary><strong>Field Service</strong> - Professional Services</summary>
+
+### Purpose
+
+Field visits ans reporting.
+
+### Submodules
+
+- Visits
+- Reports
+
+### Service Type
+
+Industry-Specific Module
+
+---
+
+</details>
+
+---
+
+# Event Catalog
+
+The BAU ecosystem uses and <strong>event-driven architecture</strong> to keep microservices decoupled, scalable, and independently deployable.
+
+This catalog defines:
+
+- Event names
+- Producers
+- Consumers
+- Payload schema
+- Versioning
+- Purpose
+
+Every event is:
+
+- Immutable
+- Versioned
+- Tenant-aware
+- JSON-structured
+- Published asyncronously
+
+---
+
+## 📡 Event Categories
+
+Events are grouped into the following domains:
+
+- Platform Events
+- Financial Events
+- Sales & CRM Events
+- Operations Events
+- HR & People Events
+- Documents & Communication Events
+- Industry-Specific Events
+
+Each event is presented in a collapsible block for clarity.
+
+___
+
+## 🛰️ Platform Events
+
+<details><summary><strong>Tenant.Created</strong> - Provisioning Service</summary>
+
+### Purpose
+
+Emitted when a new tenant is provisioned and their databases are created.
+
+### Producer
+
+- Provisioning Engine
+
+### Consumers
+
+- Identity
+- Notifications
+- Settings
+- Any module that needs tenant bootstrap logic
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "tenantName": "string",
+  "createdBy": "userId"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>User.Created</strong> - User Management</summary>
+
+### Purpose
+
+A new user account has been created.
+
+### Producer
+
+- User Management
+
+### Consumers
+
+- Notifications
+- Audit Logs
+- HR (optional)
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "userId": "string",
+  "email": "string",
+  "roles": ["string"]
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>User.RoleUpdated</strong> - User Management</summary>
+
+### Purpose
+
+User roles or permissions have changed.
+
+### Producer
+
+- User Management
+
+### Consumers
+
+- Audit Logs
+- Any module with role-based capabilities
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "userId": "string",
+  "roles": ["string"]
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Notification.Delivered</strong> - Notifications</summary>
+
+### Purpose
+
+Confirms that an email/SMS/push notification was delivered.
+
+### Producer
+
+- Notifications
+
+### Consumers
+
+- Audit Logs
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "notificationId": "string",
+  "channel": "email|sms|push",
+  "status": "delivered"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## 💰 Financial Events
+
+<details><summary><strong>Invoice.Created</strong> - Invoicing</summary>
+
+### Purpose
+
+A new invoice has been generated.
+
+### Producer
+
+- Accounts Receivable
+
+### Consumers
+
+- Accounting
+- General Ledger
+- Notifications
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "invoiceId": "string",
+  "customerId": "string",
+  "amount": "decimal",
+  "dueDate": "ISO-8601"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Payment.Received</strong> - Payments</summary>
+
+### Purpose
+
+A customer payment has been successfully processed.
+
+### Producer
+
+- Payments
+
+### Consumers
+
+- Accounts Receivable
+- Accounting
+- Notifications
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "paymentId": "string",
+  "invoiceId": "string",
+  "amount": "decimal",
+  "method": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>PayRun.Completed</strong> - Payroll</summary>
+
+### Purpose
+
+A payroll run has been completed.
+
+### Producer
+
+- Payroll
+
+### Consumers
+
+- Accounting
+- Notifications
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "payRunId": "string",
+  "totalAmount": "decimal",
+  "employeeCount": "number"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## 🧲 Sales & CRM Events
+
+<details><summary><strong>Lead.Created</strong> - CRM</summary>
+
+### Purpose
+
+A new lead has entered the CRM pipeline.
+
+### Producer
+
+- CRM
+
+### Consumers
+
+- Notifications
+- Reporting
+- Sales Automation
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "leadId": "string",
+  "source": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Order.Created</strong> - Orders</summary>
+
+### Purpose
+
+A new sales order has been placed.
+
+### Producer
+
+- Orders
+
+### Consumers
+
+- Inventory
+- Accounting
+- Fulfillment
+- Notifications
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "orderId": "string",
+  "customerId": "string",
+  "total": "decimal"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Subscription.Renewed</strong> - Subscriptions</summary>
+
+### Purpose
+
+A subscription has auto-renewed.
+
+### Producer
+
+- Subscriptions
+
+### Consumers
+
+- Billing
+- Notifications
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "subscriptionId": "string",
+  "renewalDate": "ISO-8601"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## ⚙️ Operations Events
+
+<details><summary><strong>Inventory.StockAdjusted</strong> - Inventory</summary>
+
+### Purpose
+
+Stock levels have changed due to an adjustment.
+
+### Producer
+
+- Inventory
+
+### Consumers
+
+- Reporting
+- Warehousing
+- Replenishment
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "itemId": "string",
+  "delta": "number",
+  "reason": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Shipment.Created</strong> - Logistics</summary>
+
+### Purpose
+
+A shipment has been created.
+
+### Producer
+
+- Logistics
+
+### Consumers
+
+- Routing
+- Notifications
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "shipmentId": "string",
+  "carrierId": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>Project.Updated</strong> - Projects</summary>
+
+### Purpose
+
+A project's metadata has changed.
+
+### Producer
+
+- Projects
+
+### Consumers
+
+- Timekeeping
+- Tasks
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "projectId": "string",
+  "changes": {}
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## 👥 HR & People Events
+
+<details><summary><strong>Employee.Updated</strong> - HR</summary>
+
+### Purpose
+
+Employee profile changes.
+
+### Producer
+
+- HR
+
+### Consumers
+
+- Timekeeping
+- Payroll
+- Projects
+- Notifications
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "employeeId": "string",
+  "changes": {}
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+<details><summary><strong>TimeEntry.Approved</strong> - Timekeeping</summary>
+
+### Purpose
+
+A time entry has been approved and is ready for payroll.
+
+### Producer
+
+- Timekeeping
+
+### Consumers
+
+- Payroll
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "timeEntryId": "string",
+  "employeeId": "string",
+  "durationMinutes": "number"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## 📄 Document Events
+
+<details><summary><strong>Document.Uploaded</strong> - File Storage</summary>
+
+### Purpose
+
+A new document has been uploaded.
+
+### Producer
+
+- Documents
+
+### Consumers
+
+- File Storage
+- Knowledge Base
+- Messaging (optional)
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "documentId": "string",
+  "uploadedBy": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+## 🏭 Industry-Specific Events
+
+<details><summary><strong>Patient.VistRecorded</strong> - Healthcare</summary>
+
+### Purpose
+
+A patient visit has been logged.
+
+### Producer
+
+- Patients
+
+### Consumers
+
+- Clinical Notes
+- Billing
+- Reporting
+
+### Payload
+
+```Json
+{
+  "eventId": "uuid",
+  "timestamp": "ISO-8601",
+  "tenantId": "string",
+  "patientId": "string",
+  "visitId": "string"
+}
+```
+
+### Version
+
+v1
+
+---
+
+</details>
+
+# Deployment Topology
+
+This section describes how the BAU microservice ecosystem is deployed across AWS infrastructure. It explains where each component runs, how traffic flows, how services scale, and how the platform maintains reliability, observability, and tenant isolation.
+
+The goal is to give contributors a clear mental model of the <strong>runtime environment</strong> &mdash; from the public internet down to individual microservices and tenant databases.
+
+---
+
+## 🏗️ High-Level Overview
+
+BAU is deployed as a <strong>multi-service, multi-tier architecture</strong> running on AWS:
+
+- <strong>CloudFront</strong> serves static assets globally
+- <strong>Nginx Reverse Proxy</strong> routes UI traffic
+- <strong>API Gateway Service</strong> routes API traffic
+- <strong>Microservices</strong> run on EC2 (or ECS in future evolution)
+- <strong>RDS SQL Server</strong> hosts tenant-per-database storage
+- <strong>S3</strong> stores static assets and artifacts
+- <strong>CloudWatch</strong> handles logs, metrics, and alarms
+- <strong>GitHub Actions -> S3 -> CodeDeploy</strong> handles deployments
+
+The topology is intentionally modular, allowing each service to scale independently and maintain clear boundaries.
+
+---
+
+## 🛰️ Traffic Flow Overview
+
+Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microservices → RDS
+                
+1. Client
+    - Browsers, mobile apps, desktop apps, and future devices.
+
+2. CloudFront CDN
+    - Serves static assets (JS, CSS, images)
+    - Caches Admin/Main UI bundles
+    - Reduces latency globally
+
+3. Nginx Reverse Proxy
+    - Terminates HTTPS
+    - Routes UI traffic to Admin/Main apps
+    - Routes API traffic to API Gateway
+    - Enforces security headers
+    - Provides rate limiting (optional)
+
+4. Admin & Main Apps
+    - MVC/Blazor frontends
+    - Dynamically load module UIs via MRS
+    - Communicate only with the API Gateway
+
+5. API Gateway Service
+    - Auth
+    - Tenant Resolution
+    - Routing
+    - Request aggregation
+    - Logging & tracing
+
+6. Microservices <br />
+    Each module runs as an independent service with:
+    - Its own API
+    - Its own database
+    - Its own CI/CD pipeline
+    - Its own scaling rules
+
+7. RDS SQL Server
+    - Tenant-per-database
+    - Module-per-schema
+    - Automated backups
+    - Multi-AZ (optional)
+
+---
+
+## 🧩 Component Resolution
+
+1. CloudFront CDN
+    - Global edge caching
+    - Serves static assets from D3
+    - Reduces load on EC2
+    - Improves performance for Admin/Main apps
+
+    Primary Consumers:
+
+    - Admin App
+    - Main App
+    - Module UI bundles
+
+---
+
+2. Nginx Reverse Proxy (EC2)
+    - Acts as the <strong>front door</strong> for all BAU traffic:
+
+    Responsibilities:
+
+    - HTTPS termination
+    - Routing rules
+    - Reverse proxy to Admin/Main apps
+    - Reverse proxy to API Gateway
+    - Static asset fallback
+    - Logging
+
+    Example Routing:
+
+    ```
+    /           → Admin App
+    /app        → Main App
+    /api/*      → API Gateway
+    /assets/*   → S3/CloudFront
+    ```
+
+---
+
+3. Admin & Main Applications (EC2)
+    - These are the <strong>shell applications</strong> that load module UIs dynamically.
+
+    Responsibilities:
+
+    - Authentication UI
+    - Navigation
+    - Module discovery via MRS
+    - Loading micro-frontends
+    - Tenant switching
+    - User settings
+
+    Deployment:
+
+    - Hosted on EC2
+    - Served behind Nginx
+    - Built via GitHub Actions
+    - Deployed via CodeDeploy
+
+---
+
+4. API Gateway Service (EC2)
+    - The <strong>central routing brain</strong> of the platform.
+
+    Responsibilities:
+
+    - Validate JWT tokens
+    - Resolve tenant context
+    - Forward requests to microservices
+    - Enforce authorization
+    - Aggregate responses (optional)
+    - Emit request logs & metrics
+
+    Deployment:
+
+    - Independent EC2 instance or autoscaling group
+    - Cached module metadata from MRS
+    - Health-checked by Nginx
+
+---
+
+5. Microservices (EC2)
+    - Each BAU module is deployed as its own microservice.
+
+    Characteristics:
+
+    - Independent deployment
+    - Independent scaling
+    - Independent database
+    - Independent health checks
+    - Independent logs & metrics
+
+    Deployment Model:
+
+    - Each service runs on its own EC2 instance (or ECS task in future)
+    - CodeDeploy handles rolling updates
+    - CloudWatch monitors health
+
+    Examples:
+
+    - Timekeeping
+    - Inventory
+    - CRM
+    - Payroll
+    - Notifications
+    - Projects
+    - Documents
+    - Etc.
+
+---
+
+6. RDS SQL Server
+    - The backbone of BAU's <strong>tenant-per-database</strong> strategy.
+
+    Characteristics:
+
+    - One database per tenant per module
+    - Automated backups
+    - Point-in-time restore
+    - Multi-AZ optional
+    - Encrypted at rest
+
+    Example:
+
+    ```
+    bau_tenantA_timekeeping
+    bau_tenantA_inventory
+    bau_tenantA_crm
+    bau_tenantB_timekeeping
+    ...
+    ```
+
+---
+
+7. S3 Buckets
+    Used for:
+
+    - Static assets
+    - UI bundles
+    - Deployment artifacts
+    - Document storage
+    - Backups
+
+    Buckets:
+
+    - bau-static-assets
+    - bau-artifacts
+    - bau-documents
+
+---
+
+8. CloudWatch
+    Handles:
+
+    - Logs
+    - Metrics
+    - Dashboards
+    - Alarms
+    - Traces (via X-Ray)
+
+    Examples:
+
+    - API Gateway latency
+    - Microservice health
+    - Database connection failures
+    - Tenant provisioning errors
+
+---
+
+9. Deployment Pipeline
+    - BAU uses a <strong>GitHub Actions -> S3 -> CodeDeploy -> EC2</strong> pipeline.
+
+    Flow:
+
+    1. Developer pushes to GitHub
+    2. GitHub Actions builds the service
+    3. Artifact uploaded to S3
+    4. CodeDeploy deploys to EC2
+    5. Health checks run
+    6. Traffic shifted to new version
+
+    Benefits:
+
+    - Zero downtime deployments
+    - Rollback support
+    - Consistent across all microservices
+
+---
+
+## 🗺️ Network Topology
+
+### Public Subnet
+
+- Nginx Reverse Proxy
+- CloudFrong endpoints
+
+### Private Subnet
+
+- Admin/Main Apps
+- API Gateway
+- Microservices
+- RDS SQL Server
+- Internal S3 access
+
+### Security Groups
+
+- Strict east-west traffic rules
+- Only Nginx exposed publicly
+- Microservices only reachable via API Gateway
+
+---
+
+## 📈 Scaling Strategy
+
+### Nginx
+
+- Scales vertically or via load balancer
+
+### API Gateway
+
+- Horizontal scaling via EC2 autoscaling group
+
+### Microservices
+
+- Each service scales independently
+- CPU/memory-based autoscaling
+
+### RDS
+
+- Vertical scaling
+- Read replicas (optional)
+
+---
+
+## 🔐 Security Model
+
+- Https everywhere
+- JWT authentication
+- Tenant isolation enforced at gateway + DB layer
+- IAM roles for EC2 -> S3 access
+- Parameter Store for secrets
+- Security groups restrict lateral movement
+
+---
+
+# Local Development Workflow
+
+This section defines how contributors run the BAU platform locally, including the Module Registry Service (MRS), API Gateway, microservices, Admin/Main apps, and tenant-per-database setup.
+
+The goal is to make local development:
+
+- Predictable
+- Modular
+- Fast
+- Cloud-agnostic
+- Contributor-friendly
+
+Every BAU microservice follows the same local workflow, ensuring consistency across the entire ecosystem.
+
+---
+
+## 🧰 Local Requirements
+
+Contributors must install:
+
+- <strong>.NET 9 SDK</strong>
+- <strong>Docker Desktop</strong>
+- <strong>SQL Server Developer Edition</strong> or <strong>SQL Server in Docker</strong>
+- <strong>Git</strong>
+- <strong>Postman/Thunder Client</strong> (optional)
+
+Optional but recommmended:
+
+- <strong>Azure Data Studio</strong> or <strong>SQL Server Management Studio</strong>
+- <strong>ngrok</strong> (for webhook testing)
+
+---
+
+## 🧱 Local Architecture Overview
+
+Locally, BAU runs as a <strong>miniature version</strong> of the production topology:
+
+```
+Admin/Main Apps → API Gateway → Microservices → Local SQL Server
+                     ↑
+                     |
+                 Module Registry Service (MRS)
+```
+
+All services run on localhost using:
+
+- Docker Compose (for shared infrastructure)
+- Individual `dotnet run` processes for microservices
+- Local environment variables for tenant/database resolution
+
+---
+
+## 🐳Docker Compose (Shared Infrastructure)
+
+A standard `docker-compose.yml` is provided to run:
+
+- Module Registry Service (MRS)
+- API Gateway
+- SQL Server
+- Event Bus (future: RabbitMQ / SNS/SQS localstack)
+- Logging pipline (future)
+
+### Example (simplified)
+
+```Yaml
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+
+  mrs:
+    build: ./ModuleRegistryService
+    ports:
+      - "5001:80"
+
+  gateway:
+    build: ./ApiGateway
+    ports:
+      - "5000:80"
+```
+
+Contributors start the shared stack with:
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## 🏃 Running a Microservice Locally
+
+Each microservice runs independently using:
+
+```bash
+dotnet run --project ./ModuleName.Api
+```
+
+On startup, the service will:
+
+1. Load local configuration
+1. Register itself with the local MRS
+1. Expose its API on a local port (e.g., `http://localhost:5100`)
+1. Connect to the tenant database using local connection rules
+
+### Local Ports (Convention)
+
+| Service Type         | Port Range   |
+|----------------------|--------------|
+| API Gateway          | 5000 - 5009  |
+| Core Services        | 5010 - 5029  |
+| Domain Modules       | 5100 - 5999  |
+
+Each module chooses a port in its domain range.
+
+---
+
+## 🧭 Module Registration (Local)
+
+When a microservice starts locally, it calls:
+
+```Post
+POST http://localhost:5001/api/modules/register
+```
+
+The payload includes:
+
+- moduleId
+- displayName
+- apiBaseUrl (local)
+- uiEntryPoint (optional)
+- healthUrl
+- capabilities
+
+This allows the Admin/Main apps to dynamically discover modules <strong>even in local development</strong>.
+
+---
+
+## 🧪 Local Tenant Databases
+
+BAU uses <strong>tenant-per-database</strong>, even locally.
+
+### Local Naming Convention:
+
+```
+bau_local_tenant1_timekeeping
+bau_local_tenant1_inventory
+bau_local_tenant2_crm
+```
+
+### Provisioning Locally
+
+Contributors run:
+
+```Post
+POST http://localhost:5000/api/provisioning/create-tenant
+```
+
+This triggers:
+
+- Database creation
+- Schema migrations
+- Module bootstrap events
+
+---
+
+## 🧩 Running Admin & Main Apps Locally
+
+Admin and Main apps run with:
+
+```Powershell
+dotnet run
+```
+
+### Local Behavior:
+
+- They call the local MRS (`http://localhost:5001`)
+- They dynamically load module UIs
+- They route all API calls through the local API Gateway (`http://localhost:5000`)
+
+This perfectly mirrors production behavior.
+
+---
+
+## 🔄 Hot Reload Workflow
+
+### For .NET Microservices:
+
+```Powershell
+dotnet watch run
+```
+
+### For Admin/Main Apps:
+```Powershell
+dotnet run
+```
+
+### For Shared Infrastructure:
+
+Docker containers restart automatically when rebuilt.
+
+---
+
+## 🧪 Testing Microservices Locally
+
+Contributors can test endpoints using:
+
+- Postman
+- Thunder Client
+- curl
+- Swagger UI (each module exposes `/swagger`)
+
+### Example:
+
+```Get
+GET http://localhost:5100/time-entries
+```
+
+---
+
+## 🧵 Debugging & Logs
+
+### Microservices
+
+- Console logs
+- Structured JSON logs
+- Correlation IDs
+- Tenant IDs
+
+### API Gateway
+
+- Request tracing
+- Routing logs
+- Tenant resolution logs
+
+### MRS
+
+- Module registration logs
+- Health check logs
+
+---
+
+## 🧬 Local Event Bus (Future)
+
+BAU will support:
+
+- RabbitM!
+- SNS/SQS via LocalStack
+- Azure Service Bus (optional)
+
+Local development will use:
+
+```Powershell
+docker compose up event-bus
+```
+
+Microservices will auto-connect to the local event bus.
+
+---
+
+## 🧹 Resetting the Local Environment
+
+To wipe all local databases:
+
+```Powershell
+docker compose down -v
+```
+
+To rebuild everything:
+
+```Powershell
+docker compose up --build
+```
+
