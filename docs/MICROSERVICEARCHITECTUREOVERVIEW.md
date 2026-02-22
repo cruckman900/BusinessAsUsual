@@ -4083,13 +4083,13 @@ Every event is:
 
 Events are grouped into the following domains:
 
-- Platform Events
-- Financial Events
-- Sales & CRM Events
-- Operations Events
-- HR & People Events
-- Documents & Communication Events
-- Industry-Specific Events
+- <strong>Platform Events</strong>
+- <strong>Financial Events</strong>
+- <strong>Sales & CRM Events</strong>
+- <strong>Operations Events</strong>
+- <strong>HR & People Events</strong>
+- <strong>Documents & Communication Events</strong>
+- <strong>Industry-Specific Events</strong>
 
 Each event is presented in a collapsible block for clarity.
 
@@ -4807,12 +4807,13 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ## 🧩 Component Resolution
 
 1. CloudFront CDN
+
     - Global edge caching
     - Serves static assets from D3
     - Reduces load on EC2
     - Improves performance for Admin/Main apps
 
-    Primary Consumers:
+    <strong>Primary Consumers:</strong>
 
     - Admin App
     - Main App
@@ -4821,9 +4822,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 2. Nginx Reverse Proxy (EC2)
-    - Acts as the <strong>front door</strong> for all BAU traffic:
+    
+    Acts as the <strong>front door</strong> for all BAU traffic:
 
-    Responsibilities:
+    <strong>Responsibilities:</strong>
 
     - HTTPS termination
     - Routing rules
@@ -4832,7 +4834,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Static asset fallback
     - Logging
 
-    Example Routing:
+    <strong>Example Routing:</strong>
 
     ```
     /           → Admin App
@@ -4844,9 +4846,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 3. Admin & Main Applications (EC2)
-    - These are the <strong>shell applications</strong> that load module UIs dynamically.
 
-    Responsibilities:
+    These are the <strong>shell applications</strong> that load module UIs dynamically.
+
+    <strong>Responsibilities:</strong>
 
     - Authentication UI
     - Navigation
@@ -4855,7 +4858,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Tenant switching
     - User settings
 
-    Deployment:
+    <strong>Deployment:</strong>
 
     - Hosted on EC2
     - Served behind Nginx
@@ -4865,9 +4868,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 4. API Gateway Service (EC2)
-    - The <strong>central routing brain</strong> of the platform.
 
-    Responsibilities:
+    The <strong>central routing brain</strong> of the platform.
+
+    <strong>Responsibilities:</strong>
 
     - Validate JWT tokens
     - Resolve tenant context
@@ -4876,7 +4880,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Aggregate responses (optional)
     - Emit request logs & metrics
 
-    Deployment:
+    <strong>Deployment:</strong>
 
     - Independent EC2 instance or autoscaling group
     - Cached module metadata from MRS
@@ -4885,9 +4889,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 5. Microservices (EC2)
-    - Each BAU module is deployed as its own microservice.
+    
+    Each BAU module is deployed as its own microservice.
 
-    Characteristics:
+    <strong>Characteristics:</strong>
 
     - Independent deployment
     - Independent scaling
@@ -4895,13 +4900,13 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Independent health checks
     - Independent logs & metrics
 
-    Deployment Model:
+    <strong>Deployment Model:</strong>
 
     - Each service runs on its own EC2 instance (or ECS task in future)
     - CodeDeploy handles rolling updates
     - CloudWatch monitors health
 
-    Examples:
+    <strong>Examples:</strong>
 
     - Timekeeping
     - Inventory
@@ -4915,9 +4920,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 6. RDS SQL Server
-    - The backbone of BAU's <strong>tenant-per-database</strong> strategy.
+    
+    The backbone of BAU's <strong>tenant-per-database</strong> strategy.
 
-    Characteristics:
+    <strong>Characteristics:</strong>
 
     - One database per tenant per module
     - Automated backups
@@ -4925,7 +4931,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Multi-AZ optional
     - Encrypted at rest
 
-    Example:
+    <strong>Example:</strong>
 
     ```
     bau_tenantA_timekeeping
@@ -4938,7 +4944,8 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 7. S3 Buckets
-    Used for:
+
+    <strong>Used for:</strong>
 
     - Static assets
     - UI bundles
@@ -4946,16 +4953,17 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Document storage
     - Backups
 
-    Buckets:
+    <strong>Buckets:</strong>
 
-    - bau-static-assets
-    - bau-artifacts
-    - bau-documents
+    - `bau-static-assets`
+    - `bau-artifacts`
+    - `bau-documents`
 
 ---
 
 8. CloudWatch
-    Handles:
+    
+    <strong>Handles:</strong>
 
     - Logs
     - Metrics
@@ -4963,7 +4971,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     - Alarms
     - Traces (via X-Ray)
 
-    Examples:
+    <strong>Examples:</strong>
 
     - API Gateway latency
     - Microservice health
@@ -4973,9 +4981,10 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ---
 
 9. Deployment Pipeline
-    - BAU uses a <strong>GitHub Actions -> S3 -> CodeDeploy -> EC2</strong> pipeline.
+    
+    BAU uses a <strong>GitHub Actions -> S3 -> CodeDeploy -> EC2</strong> pipeline.
 
-    Flow:
+    <strong>Flow:</strong>
 
     1. Developer pushes to GitHub
     2. GitHub Actions builds the service
@@ -4984,7 +4993,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
     5. Health checks run
     6. Traffic shifted to new version
 
-    Benefits:
+    <strong>Benefits:</strong>
 
     - Zero downtime deployments
     - Rollback support
@@ -5297,7 +5306,7 @@ GET http://localhost:5100/time-entries
 
 BAU will support:
 
-- RabbitM!
+- RabbitMQ
 - SNS/SQS via LocalStack
 - Azure Service Bus (optional)
 
