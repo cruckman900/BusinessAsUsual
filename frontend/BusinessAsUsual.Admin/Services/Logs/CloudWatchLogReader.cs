@@ -15,42 +15,77 @@ public class CloudWatchLogReader : ILogReader
     private readonly IAmazonCloudWatchLogs _client;
 
     /// <summary>
-    /// Initializes a new instance of the CloudWatchLogReader class using the specified Amazon CloudWatch Logs client.
+    /// Initializes a new instance of the CloudWatchLogReader class using the specified CloudWatch Logs client.
     /// </summary>
-    /// <param name="client">The IAmazonCloudWatchLogs client used to interact with the Amazon CloudWatch Logs service. Cannot be null.</param>
+    /// <remarks>Use this constructor to provide a custom or preconfigured CloudWatch Logs client, such as one
+    /// with specific credentials or region settings.</remarks>
+    /// <param name="client">The IAmazonCloudWatchLogs client used to interact with AWS CloudWatch Logs. Cannot be null.</param>
     public CloudWatchLogReader(IAmazonCloudWatchLogs client)
     {
         _client = client;
     }
 
     /// <summary>
-    /// Asynchronously retrieves log entries that match the specified query criteria.
+    /// Asynchronously retrieves a filtered page of log entries from the specified log group based on the provided query
+    /// parameters.
     /// </summary>
-    /// <param name="query">The query parameters used to filter and select log entries. Cannot be null.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a collection of log entries that
-    /// match the query. The collection is empty if no entries are found.</returns>
-    public async Task<IEnumerable<LogEntry>> GetLogsAsync(LogQuery query)
+    /// <remarks>Filtering by log level and search term is performed client-side after retrieving log events
+    /// from the log group. The returned page number is always 1, as server-side paging is not supported; use the
+    /// provided tokens for pagination. This method is not thread-safe.</remarks>
+    /// <param name="query">The query parameters used to filter, search, and page through log entries. Must not be null.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a page of log entries and pagination
+    /// tokens for retrieving additional results.</returns>
+    public async Task<LogPageResult> GetLogsAsync(LogQuery query)
     {
         var request = new FilterLogEventsRequest
         {
             LogGroupName = "/bau/admin",
             Limit = query.Limit,
-            FilterPattern = query.Level != null ? $"[{query.Level}]" : null
+            NextToken = query.NextToken
+            // We’ll filter level/search client-side for simplicity
         };
 
-        var response = await _client.FilterLogEventsAsync(new FilterLogEventsRequest
-        {
-            LogGroupName = "/bau/admin",
-            Limit = query.Limit,
-            FilterPattern = query.Level != null ? $"[{query.Level}]" : null
-        });
+        if (query.StartDate.HasValue)
+            request.StartTime = new DateTimeOffset(query.StartDate.Value).ToUnixTimeMilliseconds();
 
-        return response.Events.Select(e => new LogEntry
+        if (query.EndDate.HasValue)
+            request.EndTime = new DateTimeOffset(query.EndDate.Value).ToUnixTimeMilliseconds();
+
+        var response = await _client.FilterLogEventsAsync(request);
+
+        var entries = response.Events
+            .Select(e => new LogEntry
+            {
+                Timestamp = DateTimeOffset.FromUnixTimeMilliseconds((long)e.Timestamp!).DateTime,
+                Level = ExtractLevel(e.Message),
+                Message = e.Message
+            })
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(query.Level))
         {
-            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds((long)e.Timestamp!).DateTime,
-            Level = ExtractLevel(e.Message),
-            Message = e.Message
-        });
+            entries = entries
+                .Where(e => string.Equals(e.Level, query.Level, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            entries = entries
+                .Where(e =>
+                    e.Message.Contains(query.Search, StringComparison.OrdinalIgnoreCase) ||
+                    (e.Exception != null && e.Exception.Contains(query.Search, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+
+        return new LogPageResult
+        {
+            Mode = "cloudwatch",
+            Page = 1, // page is meaningless here
+            Logs = entries,
+            NextToken = response.NextToken,
+            PrevToken = query.NextToken // minimal backward hint; real back requires client history
+        };
     }
 
     private static string ExtractLevel(string message)

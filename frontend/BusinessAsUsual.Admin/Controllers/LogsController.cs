@@ -1,4 +1,5 @@
 ﻿using BusinessAsUsual.Admin.Services;
+using BusinessAsUsual.Admin.Services.Logs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessAsUsual.Admin.Controllers
@@ -43,24 +44,6 @@ namespace BusinessAsUsual.Admin.Controllers
         {
             var results = _logs.QueryLogs(level, service, search, page, pageSize);
             return Ok(results);
-        }
-
-        /// <summary>
-        /// Returns the most recent log file from the "logs" directory as a downloadable plain text file.
-        /// </summary>
-        /// <remarks>The file is served with a MIME type of "text/plain" and the original file name. If
-        /// the "logs" directory does not exist or contains no .log files, an exception may be thrown.</remarks>
-        /// <returns>A file result containing the contents of the latest .log file in the "logs" directory, or an error response
-        /// if no log files are found.</returns>
-        [HttpGet("download")]
-        public IActionResult Download()
-        {
-            var file = Directory.GetFiles("Logs", "*.log")
-                .OrderByDescending(f => f)
-                .First();
-
-            var bytes = System.IO.File.ReadAllBytes(file);
-            return File(bytes, "text/plain", Path.GetFileName(file));
         }
     }
 }

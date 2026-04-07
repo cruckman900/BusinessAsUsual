@@ -26,13 +26,22 @@
             </div>
 
             <div>
+                <label class="form-label">From</label>
+                <input type="date" id="log-start" class="form-control" />
+            </div>
+
+            <div>
+                <label class="form-label">To</label>
+                <input type="date" id="log-end" class="form-control" />
+            </div>
+
+            <div>
                 <label class="form-label">Auto Refresh</label>
                 <input type="checkbox" id="log-auto" class="form-check-input ms-2" />
             </div>
 
-            <button id="log-refresh" class="btn btn-primary ms-auto">
-                Refresh
-            </button>
+            <button id="log-refresh" class="btn btn-primary ms-auto">Refresh</button>
+            <button id="log-download" class="btn btn-success">Download</button>
         </div>
     </div>
 
@@ -48,7 +57,7 @@
         <button id="log-prev" class="btn btn-secondary">Prev</button>
         <button id="log-next" class="btn btn-secondary">Next</button>
 
-        <span id="log-page-info" class="ms-3"></span>
+        <span id="log-page-info" class="mx-3"></span>
     </div>
 
     <div id="log-container" class="log-window"></div>
@@ -106,32 +115,99 @@
 @section Scripts {
     <script>
         let currentPage = 1;
+        let mode = "local";
+        let nextToken = null;
+        let prevToken = null;
+        let tokenStack = []; // For minimal backward support in CloudWatch mode
 
         async function loadLogs() {
-            const level = document.getElementById("log-level");
-            const search = document.getElementById("log-search");
+            const level = document.getElementById("log-level").value;
+            const search = document.getElementById("log-search").value;
+            const start = document.getElementById("log-start").value;
+            const end = document.getElementById("log-end").value;
             const pageSize = parseInt(document.getElementById("log-page-size").value);
 
-            const url = `/Admin/logs/data?level=${level.value}&search=${search.value}&limit=${pageSize}&pageXOffset=${currentPage}`;
-            const logs = await fetch(url).then(res => res.json());
+            const params = new URLSearchParams({
+                level: level,
+                search: search,
+                start: start,
+                end: end,
+                limit: pageSize,
+                page: currentPage,
+                nextToken: nextToken ?? "",
+                prevToken: prevToken ?? ""
+            });
 
-            renderLogs(logs);
-            document.getElementById("log-page-info").SVGTextContentElement = `PageTransitionEvent ${currentPage}`;
+            const url = `/Admin/logs/data?${params.toString()}`;
+            const result = await fetch(url).then(res => res.json());
 
-            document.getElementById("log-prev").onclick = () => {
-                if (currentPage > 0) {
-                    currentPage--;
-                    loadLogs();
+            mode = result.mode;
+            currentPage = result.page;
+            nextToken = result.nextToken;
+            prevToken = result.prevToken;
+
+            renderLogs(result.logs);
+
+            const pageInfo = document.getElementById("log-page-info");
+            if (mode === "local") {
+                pageInfo.textContent = `Page ${currentPage}`;
+            } else {
+                pageInfo.textContent = `CloudWatch${nextToken ? " (more available)" : ""}`;
+            }
+
+            // Enable/disable buttons based on mode
+            const prevBtn = document.getElementById("log-prev");
+            const nextBtn = document.getElementById("log-next");
+
+            if (mode === "local") {
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = result.logs.length < pageSize;
+            } else {
+                prevBtn.disabled = !prevToken; // minimal backward support
+                nextBtn.disabled = !nextToken;
+            }
+        }
+
+        function wirePaging() {
+            const prevBtn = document.getElementById("log-prev");
+            const nextBtn = document.getElementById("log-next");
+            const pageSizeSelect = document.getElementById("log-page-size");
+
+            prevBtn.onclick = () => {
+                if (mode === "local") {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        loadLogs();
+                    }
+                } else {
+                    if (prevToken) {
+                        // For real backward CloudWatch, you'd maintain a client-side stack.
+                        nextToken = prevToken;
+                        tokenStack.pop(); // discard current
+                        nextToken = tokenStack[tokenStack.length - 1]; // go back
+                       loadLogs();
+                    }
                 }
             };
 
-            document.getElementById("log-next").onclick = () => {
-                currentPage++;
-                loadLogs();
+            nextBtn.onclick = () => {
+                if (mode === "local") {
+                    currentPage++;
+                    loadLogs();
+                } else {
+                    if (nextToken) {
+                        // Move forward using CloudWatch token
+                        tokenStack.push(nextToken); // Push current token before going back
+                        loadLogs();
+                    }
+                }
             };
 
-            document.getElementById("log-page-size").onchange = () => {
+            pageSizeSelect.onchange = () => {
                 currentPage = 1;
+                tokenStack = [];
+                nextToken = null;
+                prevToken = null;
                 loadLogs();
             };
         }
@@ -147,9 +223,42 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        document.getElementById("log-refresh").onclick = loadLogs;
-        document.getElementById("log-search").oninput = loadLogs;
-        document.getElementById("log-level").onchange = loadLogs;
+        document.getElementById("log-refresh").onclick = () => {
+            currentPage = 1;
+            tokenStack = [];
+            nextToken = null;
+            prevToken = null;
+            loadLogs();
+        };
+        document.getElementById("log-search").oninput = () => {
+            currentPage = 1;
+            tokenStack = [];
+            nextToken = null;
+            prevToken = null;
+            loadLogs();
+        };
+        document.getElementById("log-level").onchange = () => {
+            currentPage = 1;
+            tokenStack = [];
+            nextToken = null;
+            prevToken = null;
+            loadLogs();
+        };
+        document.getElementById("log-download").onclick = () => {
+            const level = document.getElementById("log-level").value;
+            const search = document.getElementById("log-search").value;
+            const start = document.getElementById("log-start").value;
+            const end = document.getElementById("log-end").value;
+
+            const params = new URLSearchParams({
+                level: level,
+                search: search,
+                start: start,
+                end: end
+            });
+
+            window.location.href = `/admin/logs/download?${params.toString()}`;
+        };
 
         // setInterval(() => {
         //     if (document.getElementById("log-auto").checked) loadLogs();
@@ -169,6 +278,7 @@
             applySettingsToLogs(e.detail);
         });
 
+        wirePaging();
         loadLogs();
     </script>
 }
