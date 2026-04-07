@@ -11,6 +11,6 @@
         /// <param name="query">The query parameters used to filter and select log entries. Cannot be null.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a collection of <see
         /// cref="LogEntry"/> objects that match the query. The collection is empty if no log entries are found.</returns>
-        Task<IEnumerable<LogEntry>> GetLogsAsync(LogQuery query);
+        Task<LogPageResult> GetLogsAsync(LogQuery query);
     }
 }

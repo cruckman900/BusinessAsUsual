@@ -36,12 +36,12 @@ public class LocalLogReader : ILogReader
     /// Cannot be null.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of log entries matching
     /// the query. The collection may be empty if no entries are found.</returns>
-    public async Task<IEnumerable<LogEntry>> GetLogsAsync(LogQuery query)
+    public async Task<LogPageResult> GetLogsAsync(LogQuery query)
     {
         Console.WriteLine("LocalLogReader: Reading logs from " + _logDirectory);
         var files = Directory.GetFiles(_logDirectory, "*.log")
                              .OrderByDescending(f => f)
-                             .Take(3); // read last 3 files
+                             .Take(3);
 
         var entries = new List<LogEntry>();
         LogEntry? entry = null;
@@ -77,7 +77,6 @@ public class LocalLogReader : ILogReader
 
                 if (newEntry != null)
                 {
-                    // Apply filters BEFORE adding
                     if (query.Level != null && newEntry.Level != query.Level)
                         continue;
 
@@ -86,12 +85,17 @@ public class LocalLogReader : ILogReader
                         (newEntry.Exception == null || !newEntry.Exception.Contains(query.Search, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
+                    if (query.StartDate.HasValue && newEntry.Timestamp < query.StartDate.Value)
+                        continue;
+
+                    if (query.EndDate.HasValue && newEntry.Timestamp > query.EndDate.Value)
+                        continue;
+
                     entries.Add(newEntry);
-                    entry = newEntry; // set current entry
+                    entry = newEntry;
                     continue;
                 }
 
-                // Continuation line (stack trace)
                 if (entry != null && !IsJsonLine(line))
                 {
                     if (!string.IsNullOrWhiteSpace(line))
@@ -99,18 +103,23 @@ public class LocalLogReader : ILogReader
                         entry.Exception += line.TrimEnd() + "\n";
                     }
                 }
-
-                if (entries.Count >= query.Limit)
-                {
-                    var skip = (query.Page - 1) * query.Limit;
-                    return entries.Skip(skip).Take(query.Limit);
-                }
             }
-
-            entries.Reverse();
         }
 
-        return entries;
+        // newest last for UI scroll-to-bottom
+        entries.Reverse();
+
+        var skip = (query.Page - 1) * query.Limit;
+        var pageEntries = entries.Skip(skip).Take(query.Limit).ToList();
+
+        return new LogPageResult
+        {
+            Mode = "local",
+            Page = query.Page,
+            Logs = pageEntries,
+            NextToken = null,
+            PrevToken = null
+        };
     }
 
     private static bool IsJsonLine(string line)

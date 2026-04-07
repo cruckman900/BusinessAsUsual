@@ -4058,7 +4058,7 @@ Industry-Specific Module
 
 # Event Catalog
 
-The BAU ecosystem uses and <strong>event-driven architecture</strong> to keep microservices decoupled, scalable, and independently deployable.
+The BAU ecosystem uses an <strong>event-driven architecture</strong> to keep microservices decoupled, scalable, and independently deployable.
 
 This catalog defines:
 
@@ -4809,7 +4809,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 1. CloudFront CDN
 
     - Global edge caching
-    - Serves static assets from D3
+    - Serves static assets from S3
     - Reduces load on EC2
     - Improves performance for Admin/Main apps
 
@@ -5006,7 +5006,7 @@ Client → CloudFront → Nginx → Admin/Main Apps → API Gateway → Microser
 ### Public Subnet
 
 - Nginx Reverse Proxy
-- CloudFrong endpoints
+- CloudFront endpoints
 
 ### Private Subnet
 
