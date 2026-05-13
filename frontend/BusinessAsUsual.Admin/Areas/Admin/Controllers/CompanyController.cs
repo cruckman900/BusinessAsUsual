@@ -245,5 +245,39 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 
         //    return View(settings);
         //}
+
+        private void HydrateModules(ProvisionCompanyViewModel vm)
+        {
+            vm.GroupedModules = ModuleCatalog.AllModules
+                .GroupBy(m => m.Group)
+                .Select(g => new ModuleGroupViewModel
+                {
+                    GroupName = g.Key,
+                    Modules = g.ToList()
+                })
+                .ToList();
+        }
+
+        private void ApplySelections(ProvisionCompanyViewModel vm)
+        {
+            var selectedModules = (vm.Company.ModulesEnabled ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+            var selectedSubmodules = (vm.Company.SubmodulesEnabled ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var group in vm.GroupedModules)
+            {
+                foreach (var module in group.Modules)
+                {
+                    module.IsSelected = selectedModules.Contains(module.Key);
+
+                    foreach (var sub in module.Submodules)
+                    {
+                        sub.IsSelected = selectedSubmodules.Contains(sub.Key);
+                    }
+                }
+            }
+        }
     }
 }
