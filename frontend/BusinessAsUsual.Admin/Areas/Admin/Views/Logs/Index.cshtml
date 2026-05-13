@@ -45,19 +45,21 @@
         </div>
     </div>
 
-    <div class="d-flex gap-3 mb-3 p-3">
-        <label>Page Size</label>
-        <select id="log-page-size" class="form-select" style="width: 100px;">
-            <option>50</option>
-            <option>100</option>
-            <option selected>200</option>
-            <option>500</option>
-        </select>
+    <div class="d-flex gap-1 mb-3 p-3">
+        <div class="d-flex gap-3 align-items-center">
+            <label>Page Size</label>
+            <select id="log-page-size" class="form-select" style="width: 100px;">
+                <option>50</option>
+                <option>100</option>
+                <option selected>200</option>
+                <option>500</option>
+            </select>
 
-        <button id="log-prev" class="btn btn-secondary">Prev</button>
-        <button id="log-next" class="btn btn-secondary">Next</button>
+            <button id="log-prev" class="btn btn-secondary">Prev</button>
+            <button id="log-next" class="btn btn-secondary">Next</button>
 
-        <span id="log-page-info" class="mx-3"></span>
+            <span id="log-page-info" class="mx-3"></span>
+        </div>
     </div>
 
     <div id="log-container" class="log-window"></div>
