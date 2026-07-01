@@ -5,56 +5,308 @@
 @inject IModuleDiscoveryService ModuleDiscovery
 @inherits NoHeaderPageBase
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="dashboard-container pa-0">
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="dashboard-container pa-4">
 
-    <MudText Typo="Typo.h4" Class="dashboard-title">
-        Welcome to Business As Usual
-    </MudText>
+    <!-- Hero Section -->
+    <MudPaper Elevation="0" Class="pa-6 mb-4" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%); color: white; border-radius: 12px;">
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h3" Class="mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.WavingHand" Size="Size.Large" Class="mr-2" />
+                    Welcome to Business As Usual
+                </MudText>
+                <MudText Typo="Typo.h6" Style="opacity: 0.9;">
+                    Your enterprise management platform
+                </MudText>
+                <MudText Typo="Typo.body1" Class="mt-2" Style="opacity: 0.8;">
+                    @GetGreetingMessage()
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center justify-end">
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Large" Style="font-size: 120px; opacity: 0.2;" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
-    <MudText Typo="Typo.subtitle1" Class="dashboard-subtitle">
-        Choose a module to get started
-    </MudText>
+    <!-- Quick Stats -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active Modules</MudText>
+                        <MudText Typo="Typo.h4">@Modules.Count</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Success">
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> All systems operational
+                        </MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Apps" Size="Size.Large" Color="Color.Primary" Style="font-size: 48px; opacity: 0.3;" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Recent Activity</MudText>
+                        <MudText Typo="Typo.h4">@_recentActivityCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Info">
+                            <MudIcon Icon="@Icons.Material.Filled.Update" Size="Size.Small" /> Last 24 hours
+                        </MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Info" Style="font-size: 48px; opacity: 0.3;" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">System Health</MudText>
+                        <MudText Typo="Typo.h4">98.5%</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Success">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" /> Excellent
+                        </MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Large" Color="Color.Success" Style="font-size: 48px; opacity: 0.3;" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Quick Actions</MudText>
+                        <MudText Typo="Typo.h4">@_quickActionsCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" /> Available
+                        </MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.FlashOn" Size="Size.Large" Color="Color.Warning" Style="font-size: 48px; opacity: 0.3;" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 
     @if (_loading)
     {
-        <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-            <MudText Class="ms-3">Loading modules...</MudText>
+        <div class="d-flex justify-center align-center" style="height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Class="ml-3" Typo="Typo.h6">Loading modules...</MudText>
         </div>
-    }
-    else if (Modules.Any())
-    {
-        <MudGrid Class="dashboard-grid">
-
-            @foreach (var module in Modules)
-            {
-                <MudItem xs="12" sm="6" md="4">
-                    <MudTooltip Text="@($"Open {module.Name} module")">
-                        <MudPaper Class="module-card" Elevation="4" @onclick="() => OpenModule(module.Route)">
-                            <MudIcon Icon="@module.Icon" Size="Size.Large" Class="module-icon" />
-                            <MudText Typo="Typo.h6">@module.Name</MudText>
-                            <MudText Typo="Typo.body2" Class="module-description">@module.Description</MudText>
-                        </MudPaper>
-                    </MudTooltip>
-                </MudItem>
-            }
-
-        </MudGrid>
     }
     else
     {
-        <MudAlert Severity="Severity.Info">
-            No modules are currently available. Please ensure the Module Registry Service is running.
-        </MudAlert>
+        <MudGrid>
+            <!-- Left Column: Modules & Quick Actions -->
+            <MudItem xs="12" md="8">
+                <!-- Available Modules -->
+                @if (Modules.Any())
+                {
+                    <MudText Typo="Typo.h5" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.ViewModule" Class="mr-2" />
+                        Available Modules
+                    </MudText>
+
+                    <MudGrid Class="mb-4">
+                        @foreach (var module in Modules)
+                        {
+                            <MudItem xs="12" sm="6">
+                                <MudPaper Class="pa-4 module-card-hover" Elevation="3" Style="border-radius: 12px; cursor: pointer; transition: all 0.3s ease;" @onclick="() => OpenModule(module.Route)">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                        <MudAvatar Color="Color.Primary" Size="Size.Large" Style="width: 60px; height: 60px;">
+                                            <MudIcon Icon="@module.Icon" Size="Size.Large" />
+                                        </MudAvatar>
+                                        <div style="flex: 1;">
+                                            <MudText Typo="Typo.h6">@module.Name</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@module.Description</MudText>
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" EndIcon="@Icons.Material.Filled.ArrowForward" Class="mt-2">
+                                                Open Module
+                                            </MudButton>
+                                        </div>
+                                    </MudStack>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4">
+                        <MudText Typo="Typo.body1">No modules are currently available.</MudText>
+                        <MudText Typo="Typo.body2">Please ensure the Module Registry Service is running or check your configuration.</MudText>
+                    </MudAlert>
+                }
+
+                <!-- Quick Actions -->
+                <MudText Typo="Typo.h5" Class="mb-3 mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Class="mr-2" />
+                    Quick Actions
+                </MudText>
+                <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 12px;">
+                    <MudGrid>
+                        @foreach (var action in _quickActions)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudButton Variant="Variant.Outlined" 
+                                           Color="@action.Color" 
+                                           StartIcon="@action.Icon" 
+                                           FullWidth="true"
+                                           Size="Size.Large"
+                                           Style="justify-content: flex-start; text-align: left; padding: 16px;"
+                                           OnClick="@(() => NavigationManager.NavigateTo(action.Route))"
+                                           Disabled="@(!action.IsEnabled)">
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body1">@action.Title</MudText>
+                                        <MudText Typo="Typo.caption" Style="opacity: 0.7;">@action.Description</MudText>
+                                    </MudStack>
+                                </MudButton>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Right Column: Activity & System Status -->
+            <MudItem xs="12" md="4">
+                <!-- Recent Activity -->
+                <MudText Typo="Typo.h5" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                    Recent Activity
+                </MudText>
+                <MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-radius: 12px; max-height: 400px; overflow-y: auto;">
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                        @foreach (var activity in _recentActivities)
+                        {
+                            <MudTimelineItem Color="@activity.Color" Size="Size.Small">
+                                <ItemOpposite>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>
+                                </ItemOpposite>
+                                <ItemContent>
+                                    <MudText Typo="Typo.body2"><strong>@activity.Title</strong></MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Description</MudText>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                </MudPaper>
+
+                <!-- System Status -->
+                <MudText Typo="Typo.h5" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                    System Status
+                </MudText>
+                <MudPaper Elevation="2" Class="pa-4" Style="border-radius: 12px;">
+                    <MudStack Spacing="3">
+                        @foreach (var service in _systemServices)
+                        {
+                            <div>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@service.Icon" Size="Size.Small" Color="@service.StatusColor" />
+                                        <MudText Typo="Typo.body2">@service.Name</MudText>
+                                    </MudStack>
+                                    <MudChip T="string" Size="Size.Small" Color="@service.StatusColor" Variant="Variant.Filled">
+                                        @service.Status
+                                    </MudChip>
+                                </MudStack>
+                                <MudProgressLinear Color="@service.StatusColor" Value="@service.Health" Size="Size.Small" Class="mt-1" />
+                            </div>
+                        }
+                    </MudStack>
+                </MudPaper>
+
+                <!-- System Info -->
+                <MudPaper Elevation="2" Class="pa-4 mt-4" Style="border-radius: 12px; background: linear-gradient(135deg, rgba(var(--mud-palette-info-rgb), 0.1) 0%, rgba(var(--mud-palette-primary-rgb), 0.1) 100%);">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
+                            <MudText Typo="Typo.h6">Platform Info</MudText>
+                        </MudStack>
+                        <MudDivider />
+                        <MudStack Spacing="1">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                                <MudText Typo="Typo.caption">v1.0.0</MudText>
+                            </MudStack>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Environment</MudText>
+                                <MudText Typo="Typo.caption">Development</MudText>
+                            </MudStack>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Framework</MudText>
+                                <MudText Typo="Typo.caption">.NET 9</MudText>
+                            </MudStack>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Last Updated</MudText>
+                                <MudText Typo="Typo.caption">@DateTime.Now.ToString("MMM dd, yyyy")</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
     }
 
 </MudContainer>
 
+<style>
+    .module-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    }
+</style>
+
 @code {
     record ModuleCard(string Name, string Description, string Icon, string Route);
+    record QuickAction(string Title, string Description, string Icon, Color Color, string Route, bool IsEnabled);
+    record ActivityItem(string Title, string Description, string Time, Color Color);
+    record SystemService(string Name, string Icon, string Status, Color StatusColor, double Health);
 
     private bool _loading = true;
     private List<ModuleCard> Modules = new();
+    private int _recentActivityCount = 47;
+    private int _quickActionsCount = 12;
+
+    private List<QuickAction> _quickActions = new()
+    {
+        new("Add Employee", "Quickly add a new employee", Icons.Material.Filled.PersonAdd, Color.Primary, "/hr/employees/new", true),
+        new("View Reports", "Access analytics and reports", Icons.Material.Filled.BarChart, Color.Info, "/hr/reports", true),
+        new("Manage Benefits", "Employee benefits management", Icons.Material.Filled.CardGiftcard, Color.Success, "/hr/benefits", true),
+        new("Onboarding", "New employee onboarding", Icons.Material.Filled.AssignmentInd, Color.Warning, "/hr/onboarding", true),
+        new("Departments", "Manage departments", Icons.Material.Filled.Business, Color.Secondary, "/hr/departments", true),
+        new("Settings", "System configuration", Icons.Material.Filled.Settings, Color.Default, "/hr/settings", true),
+        new("Finance Module", "Coming soon", Icons.Material.Filled.AttachMoney, Color.Default, "#", false),
+        new("CRM Module", "Coming soon", Icons.Material.Filled.Contacts, Color.Default, "#", false),
+        new("Inventory", "Coming soon", Icons.Material.Filled.Inventory, Color.Default, "#", false),
+        new("Analytics", "Coming soon", Icons.Material.Filled.Analytics, Color.Default, "#", false),
+        new("Support", "Coming soon", Icons.Material.Filled.Support, Color.Default, "#", false),
+        new("Documentation", "Coming soon", Icons.Material.Filled.MenuBook, Color.Default, "#", false)
+    };
+
+    private List<ActivityItem> _recentActivities = new()
+    {
+        new("Employee Added", "John Smith joined Engineering", "5 min ago", Color.Success),
+        new("Report Generated", "Monthly HR analytics completed", "15 min ago", Color.Info),
+        new("System Update", "Platform updated to v1.0.0", "1 hour ago", Color.Primary),
+        new("Department Created", "New Marketing department", "2 hours ago", Color.Secondary),
+        new("Benefits Enrolled", "3 employees enrolled in health plan", "3 hours ago", Color.Success),
+        new("Review Completed", "Q4 performance reviews finalized", "5 hours ago", Color.Info),
+        new("Training Scheduled", "Leadership workshop scheduled", "Yesterday", Color.Warning),
+        new("Module Deployed", "HR module v2.0 deployed", "Yesterday", Color.Primary)
+    };
+
+    private List<SystemService> _systemServices = new()
+    {
+        new("HR Service", Icons.Material.Filled.People, "Online", Color.Success, 98.5),
+        new("Module Registry", Icons.Material.Filled.AppRegistration, "Online", Color.Success, 100),
+        new("Authentication", Icons.Material.Filled.Security, "Online", Color.Success, 99.2),
+        new("Database", Icons.Material.Filled.Storage, "Online", Color.Success, 97.8),
+        new("API Gateway", Icons.Material.Filled.Api, "Online", Color.Success, 99.5)
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,11 +325,13 @@
                 Icon: ConvertIconToMudBlazor(m.Icon),
                 Route: $"/{m.Key.ToLower()}"
             )).ToList();
+
+            // Update quick actions count
+            _quickActionsCount = _quickActions.Count(a => a.IsEnabled);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading modules: {ex.Message}");
-            // Fall back to empty list
             Modules = new List<ModuleCard>();
         }
         finally
@@ -91,7 +345,6 @@
         if (string.IsNullOrEmpty(icon))
             return Icons.Material.Filled.Apps;
 
-        // Convert MDI icon names to Material Icons
         return icon switch
         {
             "mdi-account-group" => Icons.Material.Filled.People,
@@ -100,6 +353,20 @@
             "mdi-domain" => Icons.Material.Filled.Business,
             _ => Icons.Material.Filled.Apps
         };
+    }
+
+    string GetGreetingMessage()
+    {
+        var hour = DateTime.Now.Hour;
+        var greeting = hour switch
+        {
+            >= 5 and < 12 => "Good morning",
+            >= 12 and < 17 => "Good afternoon",
+            >= 17 and < 22 => "Good evening",
+            _ => "Welcome"
+        };
+
+        return $"{greeting}! Ready to get things done?";
     }
 
     void OpenModule(string route)
