@@ -1,0 +1,189 @@
+@page "/crm/settings"
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>CRM Settings</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Settings</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+        CRM Settings
+    </MudText>
+
+    <MudGrid>
+        <!-- General Settings -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">General Settings</MudText>
+                <MudStack Spacing="3">
+                    <MudTextField Label="Company Name" Variant="Variant.Outlined" Value="@_companyName" Disabled="true" />
+                    <MudTextField Label="Default Currency" Variant="Variant.Outlined" Value="@_defaultCurrency" Disabled="true" />
+                    <MudSelect T="string" Label="Date Format" Variant="Variant.Outlined" Disabled="true">
+                        <MudSelectItem Value="@("MM/dd/yyyy")">MM/dd/yyyy</MudSelectItem>
+                        <MudSelectItem Value="@("dd/MM/yyyy")">dd/MM/yyyy</MudSelectItem>
+                    </MudSelect>
+                    <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
+                        Configuration options coming soon
+                    </MudAlert>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Lead Settings -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Size="Size.Small" Class="mr-2" />
+                    Lead Settings
+                </MudText>
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Configure lead statuses, sources, and assignment rules</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Manage Lead Statuses
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Manage Lead Sources
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Auto-Assignment Rules
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Opportunity Settings -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-2" />
+                    Opportunity Settings
+                </MudText>
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Configure sales stages, probabilities, and forecasting</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Manage Sales Stages
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Stage Probabilities
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Forecast Settings
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Customer Settings -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-2" />
+                    Customer Settings
+                </MudText>
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Configure customer segments, categories, and fields</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Manage Segments
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Custom Fields
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Account Managers
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Notifications -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Small" Class="mr-2" />
+                    Notifications & Alerts
+                </MudText>
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Configure email notifications and reminders</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Email">
+                        Email Templates
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Notification Rules
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true" StartIcon="@Icons.Material.Filled.Edit">
+                        Reminder Settings
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Integrations -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Extension" Size="Size.Small" Class="mr-2" />
+                    Integrations
+                </MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Large" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body1">Email</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">Coming Soon</MudChip>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Success" />
+                                    <MudText Typo="Typo.body1">Calendar</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">Coming Soon</MudChip>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Large" Color="Color.Info" />
+                                    <MudText Typo="Typo.body1">Phone</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">Coming Soon</MudChip>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Api" Size="Size.Large" Color="Color.Warning" />
+                                    <MudText Typo="Typo.body1">API</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">Coming Soon</MudChip>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string _companyName = "Business As Usual";
+    private string _defaultCurrency = "USD";
+}

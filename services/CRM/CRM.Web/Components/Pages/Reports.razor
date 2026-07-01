@@ -1,0 +1,443 @@
+@page "/crm/reports"
+@using CRM.Application.DTOs
+@using CRM.Application.Interfaces
+@using ApexCharts
+@inject IReportService ReportService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>CRM Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="MudBlazor.Color.Primary">Reports</MudText>
+    </div>
+
+    <!-- Header with Title and Date Filter -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
+            CRM Reports & Analytics
+        </MudText>
+
+        <MudSelect T="int" Value="_dateRange" ValueChanged="OnDateRangeChanged" 
+                   Label="Date Range" Variant="Variant.Outlined" 
+                   Style="min-width: 200px;">
+            <MudSelectItem Value="30">Last 30 Days</MudSelectItem>
+            <MudSelectItem Value="60">Last 60 Days</MudSelectItem>
+            <MudSelectItem Value="90">Last 90 Days</MudSelectItem>
+            <MudSelectItem Value="180">Last 6 Months</MudSelectItem>
+            <MudSelectItem Value="365">Last Year</MudSelectItem>
+            <MudSelectItem Value="0">All Time</MudSelectItem>
+        </MudSelect>
+
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
+                       Color="MudBlazor.Color.Primary" 
+                       OnClick="LoadReportsAsync"
+                       Title="Refresh Reports" />
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="mt-8">
+            <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Large" Color="MudBlazor.Color.Primary" />
+            <MudText Typo="Typo.h6" Color="MudBlazor.Color.Secondary">Loading reports...</MudText>
+        </MudStack>
+    }
+    else
+    {
+        <!-- Summary KPI Cards -->
+        <MudGrid Class="mb-6" Spacing="3">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Style="height: 100%;">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">Pipeline Value</MudText>
+                            <MudText Typo="Typo.h5" Color="MudBlazor.Color.Primary">@_kpis.TotalPipelineValue.ToString("C0")</MudText>
+                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                Weighted: @_kpis.WeightedPipelineValue.ToString("C0")
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Style="height: 100%;">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">Win Rate</MudText>
+                            <MudText Typo="Typo.h5" Color="MudBlazor.Color.Success">@_kpis.WinRate%</MudText>
+                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                Avg Deal: @_kpis.AverageDealSize.ToString("C0")
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Style="height: 100%;">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">Active Pipeline</MudText>
+                            <MudText Typo="Typo.h5" Color="MudBlazor.Color.Info">@_kpis.ActiveOpportunities</MudText>
+                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                Opportunities
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Style="height: 100%;">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">Lead Conversion</MudText>
+                            <MudText Typo="Typo.h5" Color="MudBlazor.Color.Warning">@_kpis.LeadConversionRate%</MudText>
+                            <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                                @_kpis.TotalLeads Total Leads
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Detailed Analytics -->
+        <MudText Typo="Typo.h6" Class="mb-3">Detailed Analytics</MudText>
+        <MudGrid Spacing="3">
+            <!-- Sales Pipeline Chart -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2" Style="min-height: 450px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                        Sales Pipeline by Stage
+                    </MudText>
+                    @if (_pipelineChartData.Any())
+                    {
+                        <ApexChart TItem="ChartDataPoint"
+                                   Title="Opportunities by Stage"
+                                   Height="300">
+                            <ApexPointSeries TItem="ChartDataPoint"
+                                           Items="_pipelineChartData"
+                                           Name="Opportunities"
+                                           SeriesType="SeriesType.Bar"
+                                           XValue="e => e.Category"
+                                           YValue="e => e.Value"
+                                           OrderByDescending="e => e.Y" />
+                        </ApexChart>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                            Total: @_pipelineData.TotalValue.ToString("C0") |
+                            Weighted: @_pipelineData.WeightedValue.ToString("C0")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No pipeline data available</MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Lead Source Chart -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2" Style="min-height: 450px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" />
+                        Lead Sources
+                    </MudText>
+                    @if (_leadSourceChartData.Any())
+                    {
+                        <ApexChart TItem="ChartDataPoint"
+                                   Title="Leads by Source"
+                                   Height="300">
+                            <ApexPointSeries TItem="ChartDataPoint"
+                                           Items="_leadSourceChartData"
+                                           Name="Leads"
+                                           SeriesType="SeriesType.Donut"
+                                           XValue="e => e.Category"
+                                           YValue="e => e.Value" />
+                        </ApexChart>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                            Total Leads: @_leadSourceData.TotalLeads
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No lead source data available</MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Win/Loss Analysis Chart -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2" Style="min-height: 450px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
+                        Win/Loss Analysis
+                    </MudText>
+                    @if (_winLossChartData.Any())
+                    {
+                        <ApexChart TItem="ChartDataPoint"
+                                   Title="Closed Opportunities"
+                                   Height="300">
+                            <ApexPointSeries TItem="ChartDataPoint"
+                                           Items="_winLossChartData"
+                                           Name="Revenue"
+                                           SeriesType="SeriesType.Bar"
+                                           XValue="e => e.Category"
+                                           YValue="e => e.Value" />
+                        </ApexChart>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary">
+                            <strong>Win Rate:</strong> @_winLossData.WinRate% |
+                            <strong>Avg Deal:</strong> @_winLossData.AverageDealSize.ToString("C0")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No closed opportunities yet</MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Revenue Forecast Chart -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2" Style="min-height: 450px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                        Revenue Forecast (6 Months)
+                    </MudText>
+                    @if (_forecastChartData.Any())
+                    {
+                        <ApexChart TItem="ForecastDataPoint"
+                                   Title="Revenue Projection"
+                                   Height="300">
+                            <ApexPointSeries TItem="ForecastDataPoint"
+                                           Items="_forecastChartData"
+                                           Name="Forecast"
+                                           SeriesType="SeriesType.Line"
+                                           XValue="e => e.Month"
+                                           YValue="e => e.Value" />
+                            <ApexPointSeries TItem="ForecastDataPoint"
+                                           Items="_actualChartData"
+                                           Name="Actual"
+                                           SeriesType="SeriesType.Line"
+                                           XValue="e => e.Month"
+                                           YValue="e => e.Value" />
+                        </ApexChart>
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
+                            Total Forecast: @_forecastData.TotalForecast.ToString("C0") |
+                            Actual: @_forecastData.TotalActual.ToString("C0")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No forecast data available</MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Top Customers Chart -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="2" Style="min-height: 450px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="mr-2" />
+                        Top 10 Customers by Revenue
+                    </MudText>
+                    @if (_topCustomersChartData.Any())
+                    {
+                        <ApexChart TItem="ChartDataPoint"
+                                   Title="Lifetime Value"
+                                   Height="350">
+                            <ApexPointSeries TItem="ChartDataPoint"
+                                           Items="_topCustomersChartData"
+                                           Name="Lifetime Value"
+                                           SeriesType="SeriesType.Bar"
+                                           XValue="e => e.Category"
+                                           YValue="e => e.Value"
+                                           OrderByDescending="e => e.Y" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No customer data available</MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Conversion Funnel Metrics -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                        Conversion Funnel
+                    </MudText>
+                    <MudGrid>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Class="pa-4" Style="background: var(--mud-palette-primary-lighten); text-align: center;">
+                                <MudText Typo="Typo.h3" Color="MudBlazor.Color.Primary">@_conversionMetrics.LeadToOpportunityRate%</MudText>
+                                <MudText Typo="Typo.body1"><strong>Lead → Opportunity</strong></MudText>
+                                <MudText Typo="Typo.caption">@_conversionMetrics.TotalLeads Leads</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Class="pa-4" Style="background: var(--mud-palette-success-lighten); text-align: center;">
+                                <MudText Typo="Typo.h3" Color="MudBlazor.Color.Success">@_conversionMetrics.OpportunityToCustomerRate%</MudText>
+                                <MudText Typo="Typo.body1"><strong>Opportunity → Customer</strong></MudText>
+                                <MudText Typo="Typo.caption">@_conversionMetrics.TotalOpportunities Opportunities</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudPaper Class="pa-4" Style="background: var(--mud-palette-info-lighten); text-align: center;">
+                                <MudText Typo="Typo.h3" Color="MudBlazor.Color.Info">@_conversionMetrics.OverallConversionRate%</MudText>
+                                <MudText Typo="Typo.body1"><strong>Overall Conversion</strong></MudText>
+                                <MudText Typo="Typo.caption">Avg @_conversionMetrics.AverageDaysToConvert days</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private int _dateRange = 90; // Default to last 90 days
+
+    // Report data
+    private ReportSummaryKPIs _kpis = new();
+    private SalesPipelineData _pipelineData = new();
+    private LeadSourceData _leadSourceData = new();
+    private WinLossData _winLossData = new();
+    private RevenueForecastData _forecastData = new();
+    private TopCustomersData _topCustomersData = new();
+    private ConversionMetrics _conversionMetrics = new();
+
+    // Chart data (transformed for ApexCharts)
+    private List<ChartDataPoint> _pipelineChartData = new();
+    private List<ChartDataPoint> _leadSourceChartData = new();
+    private List<ChartDataPoint> _winLossChartData = new();
+    private List<ForecastDataPoint> _forecastChartData = new();
+    private List<ForecastDataPoint> _actualChartData = new();
+    private List<ChartDataPoint> _topCustomersChartData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReportsAsync();
+    }
+
+    private async Task LoadReportsAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Calculate date range
+            DateTime? startDate = _dateRange > 0 ? DateTime.Now.AddDays(-_dateRange) : null;
+            DateTime? endDate = DateTime.Now;
+
+            // Load all reports in parallel for better performance
+            var kpisTask = ReportService.GetSummaryKPIsAsync();
+            var pipelineTask = ReportService.GetSalesPipelineDataAsync(startDate, endDate);
+            var leadSourceTask = ReportService.GetLeadSourceDataAsync(startDate, endDate);
+            var winLossTask = ReportService.GetWinLossDataAsync(startDate, endDate);
+            var forecastTask = ReportService.GetRevenueForecastDataAsync(6);
+            var topCustomersTask = ReportService.GetTopCustomersDataAsync(10);
+            var conversionTask = ReportService.GetConversionMetricsAsync(startDate, endDate);
+
+            await Task.WhenAll(kpisTask, pipelineTask, leadSourceTask, winLossTask, 
+                              forecastTask, topCustomersTask, conversionTask);
+
+            _kpis = await kpisTask;
+            _pipelineData = await pipelineTask;
+            _leadSourceData = await leadSourceTask;
+            _winLossData = await winLossTask;
+            _forecastData = await forecastTask;
+            _topCustomersData = await topCustomersTask;
+            _conversionMetrics = await conversionTask;
+
+            // Prepare chart data
+            PrepareChartData();
+
+            Snackbar.Add("Reports loaded successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading reports: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnDateRangeChanged(int newRange)
+    {
+        _dateRange = newRange;
+        await LoadReportsAsync();
+    }
+
+    private void NavigateToCustomer(string customerId)
+    {
+        Navigation.NavigateTo($"/crm/customers/{customerId}");
+    }
+
+    private void PrepareChartData()
+    {
+        // Pipeline chart data
+        _pipelineChartData = _pipelineData.Stages
+            .Select(s => new ChartDataPoint { Category = s.StageName, Value = s.Count })
+            .ToList();
+
+        // Lead source chart data
+        _leadSourceChartData = _leadSourceData.Sources
+            .Select(s => new ChartDataPoint { Category = s.Source, Value = s.Count })
+            .ToList();
+
+        // Win/Loss chart data
+        _winLossChartData = new List<ChartDataPoint>
+        {
+            new() { Category = "Closed Won", Value = (decimal)_winLossData.WonRevenue },
+            new() { Category = "Closed Lost", Value = (decimal)_winLossData.LostRevenue }
+        };
+
+        // Forecast chart data (two series)
+        _forecastChartData = _forecastData.DataPoints
+            .Select(d => new ForecastDataPoint { Month = d.Date.ToString("MMM yyyy"), Value = d.Forecast })
+            .ToList();
+
+        _actualChartData = _forecastData.DataPoints
+            .Select(d => new ForecastDataPoint { Month = d.Date.ToString("MMM yyyy"), Value = d.ActualRevenue })
+            .ToList();
+
+        // Top customers chart data
+        _topCustomersChartData = _topCustomersData.Customers
+            .Select(c => new ChartDataPoint { Category = c.CustomerName, Value = c.LifetimeValue })
+            .ToList();
+    }
+
+    // Chart data classes for ApexCharts
+    private class ChartDataPoint
+    {
+        public string Category { get; set; } = string.Empty;
+        public decimal Value { get; set; }
+    }
+
+    private class ForecastDataPoint
+    {
+        public string Month { get; set; } = string.Empty;
+        public decimal Value { get; set; }
+    }
+}

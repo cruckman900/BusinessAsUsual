@@ -1,0 +1,206 @@
+@page "/crm/opportunities"
+@using CRM.Web.Components.Shared
+@using CRM.Application.DTOs
+@inject IOpportunityService OpportunityService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Opportunities</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Opportunities</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+            Opportunities
+        </MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/crm/opportunities/new"))">
+            Add Opportunity
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Value</MudText>
+                        <MudText Typo="Typo.h5">@_totalValue.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Weighted Value</MudText>
+                        <MudText Typo="Typo.h5">@_weightedValue.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Won</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Success">@_wonCount</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Info">@_activeCount</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Opportunities Grid -->
+        <CustomDataGrid TItem="OpportunityDto"
+                        Items="@FilteredOpportunities"
+                        Title="Opportunity List"
+                        SearchPlaceholder="Search opportunities..."
+                        QuickFilterFunc="@((OpportunityDto o) => 
+                            string.IsNullOrEmpty(_searchString) || 
+                            o.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                            (o.CustomerName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))"
+                        Elevation="2">
+            <ToolbarContent>
+                <MudSelect T="string" @bind-Value="_stageFilter" Label="Stage" Variant="Variant.Outlined" Class="ml-4" Style="min-width: 150px;">
+                    <MudSelectItem Value="@("All")">All Stages</MudSelectItem>
+                    <MudSelectItem Value="@("Prospecting")">Prospecting</MudSelectItem>
+                    <MudSelectItem Value="@("Qualification")">Qualification</MudSelectItem>
+                    <MudSelectItem Value="@("Proposal")">Proposal</MudSelectItem>
+                    <MudSelectItem Value="@("Negotiation")">Negotiation</MudSelectItem>
+                    <MudSelectItem Value="@("Closed Won")">Closed Won</MudSelectItem>
+                    <MudSelectItem Value="@("Closed Lost")">Closed Lost</MudSelectItem>
+                </MudSelect>
+            </ToolbarContent>
+            <ChildContent>
+                <PropertyColumn T="OpportunityDto" TProperty="string" Property="o => o.Name" Title="Name" />
+                <PropertyColumn T="OpportunityDto" TProperty="string" Property="o => o.CustomerName" Title="Customer" />
+                <PropertyColumn T="OpportunityDto" TProperty="string" Property="o => o.Stage" Title="Stage">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetStageColor(context.Item.Stage)">
+                            @context.Item.Stage
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="OpportunityDto" TProperty="decimal" Property="o => o.Amount" Title="Amount">
+                    <CellTemplate>
+                        @context.Item.Amount.ToString("C0")
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="OpportunityDto" TProperty="decimal" Property="o => o.Probability" Title="Probability">
+                    <CellTemplate>
+                        @context.Item.Probability%
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="OpportunityDto" TProperty="decimal" Property="o => o.WeightedAmount" Title="Weighted">
+                    <CellTemplate>
+                        @context.Item.WeightedAmount.ToString("C0")
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn T="OpportunityDto" Title="Close Date">
+                    <CellTemplate>
+                        @(context.Item.ExpectedCloseDate?.ToString("MM/dd/yyyy") ?? "N/A")
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="OpportunityDto" TProperty="int" Property="o => o.DaysInStage" Title="Days in Stage" />
+                <TemplateColumn T="OpportunityDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                           Size="Size.Small" 
+                                           Color="Color.Primary"
+                                           OnClick="@(() => Navigation.NavigateTo($"/crm/opportunities/{context.Item.Id}"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Size="Size.Small" 
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteOpportunity(context.Item.Id))" />
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<OpportunityDto> _opportunities = new();
+    private string _searchString = "";
+    private string _stageFilter = "All";
+
+    private decimal _totalValue;
+    private decimal _weightedValue;
+    private int _wonCount;
+    private int _activeCount;
+
+    private IEnumerable<OpportunityDto> FilteredOpportunities =>
+        _opportunities.Where(o =>
+            (string.IsNullOrEmpty(_searchString) || 
+             o.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+             (o.CustomerName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)) &&
+            (_stageFilter == "All" || o.Stage == _stageFilter)
+        );
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOpportunities();
+    }
+
+    private async Task LoadOpportunities()
+    {
+        try
+        {
+            var opportunities = await OpportunityService.GetAllOpportunitiesAsync();
+            _opportunities = opportunities.ToList();
+
+            _totalValue = _opportunities.Sum(o => o.Amount);
+            _weightedValue = _opportunities.Sum(o => o.WeightedAmount);
+            _wonCount = _opportunities.Count(o => o.IsWon);
+            _activeCount = _opportunities.Count(o => !o.IsWon && !o.IsLost);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteOpportunity(string id)
+    {
+        await OpportunityService.DeleteOpportunityAsync(id);
+        _opportunities.RemoveAll(o => o.Id == id);
+        Snackbar.Add("Opportunity deleted successfully", Severity.Success);
+        await LoadOpportunities(); // Refresh metrics
+    }
+
+    private Color GetStageColor(string stage) => stage switch
+    {
+        "Prospecting" => Color.Info,
+        "Qualification" => Color.Primary,
+        "Proposal" => Color.Warning,
+        "Negotiation" => Color.Secondary,
+        "Closed Won" => Color.Success,
+        "Closed Lost" => Color.Error,
+        _ => Color.Default
+    };
+}

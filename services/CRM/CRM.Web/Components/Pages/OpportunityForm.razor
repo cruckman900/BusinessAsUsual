@@ -1,0 +1,253 @@
+@page "/crm/opportunities/new"
+@page "/crm/opportunities/create"
+@page "/crm/opportunities/{Id}"
+@inject IOpportunityService OpportunityService
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "Edit Opportunity" : "New Opportunity")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm/opportunities">Opportunities</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@(IsEditMode ? "Edit" : "New")</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+        @(IsEditMode ? "Edit Opportunity" : "New Opportunity")
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Error">Opportunity not found.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <EditForm Model="@_model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+
+                <MudGrid>
+                    <!-- Basic Information -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">Basic Information</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.Name" 
+                                      Label="Opportunity Name" 
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudSelect T="string" @bind-Value="_model.CustomerId" Label="Customer" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@((string?)null)">Select Customer...</MudSelectItem>
+                            @foreach (var customer in _customers)
+                            {
+                                <MudSelectItem Value="@customer.Id">@customer.CompanyName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <!-- Financial Details -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Financial Details</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="_model.Amount" 
+                                         Label="Amount" 
+                                         Required="true"
+                                         Variant="Variant.Outlined"
+                                         Format="C2" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudNumericField @bind-Value="_model.Probability" 
+                                         Label="Probability (%)" 
+                                         Required="true"
+                                         Variant="Variant.Outlined"
+                                         Min="0"
+                                         Max="100" />
+                    </MudItem>
+
+                    <!-- Stage & Dates -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Stage & Timeline</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="OpportunityStage" @bind-Value="_model.Stage" Label="Stage" Variant="Variant.Outlined">
+                            @foreach (OpportunityStage stage in Enum.GetValues(typeof(OpportunityStage)))
+                            {
+                                <MudSelectItem Value="@stage">@stage.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudDatePicker @bind-Date="_model.ExpectedCloseDate" 
+                                       Label="Expected Close Date"
+                                       Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Description -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudTextField @bind-Value="_model.Description" 
+                                      Label="Description" 
+                                      Lines="4"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Actions -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton ButtonType="ButtonType.Submit" 
+                                       Variant="Variant.Filled" 
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(IsEditMode ? "Update" : "Create")
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Default"
+                                       OnClick="Cancel">
+                                Cancel
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private bool _loading = true;
+    private bool _notFound = false;
+    private OpportunityFormModel _model = new();
+    private List<CustomerDto> _customers = new();
+
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) && Id != "new" && Id != "create";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load customers for dropdown
+        var customers = await CustomerService.GetAllCustomersAsync();
+        _customers = customers.ToList();
+
+        if (IsEditMode)
+        {
+            var opportunity = await OpportunityService.GetOpportunityByIdAsync(Id!);
+            if (opportunity != null)
+            {
+                _model = new OpportunityFormModel
+                {
+                    Name = opportunity.Name,
+                    CustomerId = opportunity.CustomerId,
+                    Amount = opportunity.Amount,
+                    Probability = opportunity.Probability,
+                    Stage = Enum.Parse<OpportunityStage>(opportunity.Stage),
+                    ExpectedCloseDate = opportunity.ExpectedCloseDate,
+                    Description = opportunity.Description
+                };
+            }
+            else
+            {
+                _notFound = true;
+            }
+        }
+
+        _loading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (IsEditMode)
+            {
+                var request = new UpdateOpportunityRequest
+                {
+                    Name = _model.Name,
+                    CustomerId = _model.CustomerId,
+                    Amount = _model.Amount,
+                    Probability = _model.Probability,
+                    Stage = _model.Stage,
+                    ExpectedCloseDate = _model.ExpectedCloseDate,
+                    Description = _model.Description
+                };
+
+                var updated = await OpportunityService.UpdateOpportunityAsync(Id!, request);
+                if (updated != null)
+                {
+                    Snackbar.Add("Opportunity updated successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/opportunities");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update opportunity", Severity.Error);
+                }
+            }
+            else
+            {
+                var request = new CreateOpportunityRequest
+                {
+                    Name = _model.Name,
+                    CustomerId = _model.CustomerId,
+                    Amount = _model.Amount,
+                    Probability = _model.Probability,
+                    Stage = _model.Stage,
+                    ExpectedCloseDate = _model.ExpectedCloseDate,
+                    Description = _model.Description
+                };
+
+                var created = await OpportunityService.CreateOpportunityAsync(request);
+                if (created != null)
+                {
+                    Snackbar.Add("Opportunity created successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/opportunities");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create opportunity", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/crm/opportunities");
+    }
+
+    private class OpportunityFormModel
+    {
+        public string Name { get; set; } = "";
+        public string? CustomerId { get; set; }
+        public decimal Amount { get; set; }
+        public decimal Probability { get; set; } = 50m;
+        public OpportunityStage Stage { get; set; } = OpportunityStage.Prospecting;
+        public DateTime? ExpectedCloseDate { get; set; } = DateTime.Today.AddMonths(3);
+        public string? Description { get; set; }
+    }
+}

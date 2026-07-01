@@ -1,0 +1,405 @@
+@page "/crm/activities"
+@using CRM.Application.Interfaces
+@using CRM.Application.DTOs
+@inject IActivityService ActivityService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Activities</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Activities</MudText>
+    </div>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
+            Activities & Timeline
+        </MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AddActivity">
+            Add Activity
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Filter Bar -->
+        <MudPaper Class="pa-4 mb-4" Elevation="1">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="string" Label="Status" @bind-Value="_selectedStatus" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem T="string" Value="@("All")">All Activities</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Upcoming")">Upcoming</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Overdue")">Overdue</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Completed")">Completed</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Pending")">Pending</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="string" Label="Type" @bind-Value="_selectedType" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem T="string" Value="@("All")">All Types</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Call")">Calls</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Meeting")">Meetings</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Email")">Emails</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Task")">Tasks</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="string" Label="Priority" @bind-Value="_selectedPriority" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem T="string" Value="@("All")">All Priorities</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("High")">High</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Medium")">Medium</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Low")">Low</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               OnClick="ApplyFilters" 
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.FilterAlt">
+                        Apply Filters
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Quick Stats -->
+        <MudGrid Spacing="3" Class="mb-4">
+            <MudItem xs="6" sm="3">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h4" Color="Color.Error">@_overdueCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Overdue</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h4" Color="Color.Warning">@_upcomingCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">This Week</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h4" Color="Color.Info">@_pendingCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Pending</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h4" Color="Color.Success">@_completedCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Completed</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Timeline View -->
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                Activity Timeline
+            </MudText>
+
+            @if (!_filteredActivities.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-4">No activities found matching the selected filters.</MudAlert>
+            }
+            else
+            {
+                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start" Class="mt-4">
+                    @foreach (var activity in _filteredActivities)
+                    {
+                        <MudTimelineItem Color="GetActivityColor(activity)" 
+                                        Size="MudBlazor.Size.Small"
+                                        Elevation="2">
+                            <ItemOpposite>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @activity.ActivityDate.ToString("MMM dd, yyyy")
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @activity.ActivityDate.ToString("hh:mm tt")
+                                </MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudCard Elevation="0" Outlined="true">
+                                    <MudCardContent>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                            <MudIcon Icon="@GetActivityIcon(activity)" Size="MudBlazor.Size.Small" Color="GetActivityColor(activity)" />
+                                            <MudText Typo="Typo.body1" Style="font-weight: 500;">@activity.Subject</MudText>
+                                            <MudSpacer />
+                                            @if (activity.IsCompleted)
+                                            {
+                                                <MudChip T="string" Size="MudBlazor.Size.Small" Color="Color.Success" Variant="Variant.Text">
+                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="MudBlazor.Size.Small" Class="mr-1" />
+                                                    Completed
+                                                </MudChip>
+                                            }
+                                            else if (activity.DueDate.HasValue && activity.DueDate.Value < DateTime.UtcNow)
+                                            {
+                                                <MudChip T="string" Size="MudBlazor.Size.Small" Color="Color.Error" Variant="Variant.Text">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="MudBlazor.Size.Small" Class="mr-1" />
+                                                    Overdue
+                                                </MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string" Size="MudBlazor.Size.Small" Color="Color.Default" Variant="Variant.Text">Pending</MudChip>
+                                            }
+                                        </MudStack>
+
+                                        @if (!string.IsNullOrEmpty(activity.Description))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                                @activity.Description
+                                            </MudText>
+                                        }
+
+                                        <MudStack Row="true" Spacing="2" Class="mb-2">
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined">
+                                                <MudIcon Icon="@Icons.Material.Filled.Category" Size="MudBlazor.Size.Small" Class="mr-1" />
+                                                @activity.Type
+                                            </MudChip>
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" 
+                                                    Color="@GetPriorityColor(activity.Priority)" 
+                                                    Variant="Variant.Outlined">
+                                                @activity.Priority Priority
+                                            </MudChip>
+                                            @if (activity.DurationMinutes.HasValue)
+                                            {
+                                                <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="MudBlazor.Size.Small" Class="mr-1" />
+                                                    @activity.DurationMinutes min
+                                                </MudChip>
+                                            }
+                                            @if (activity.DueDate.HasValue && !activity.IsCompleted)
+                                            {
+                                                <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined" Color="Color.Warning">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Event" Size="MudBlazor.Size.Small" Class="mr-1" />
+                                                    Due @activity.DueDate.Value.ToString("MMM dd")
+                                                </MudChip>
+                                            }
+                                        </MudStack>
+
+                                        @if (activity.IsCompleted && !string.IsNullOrEmpty(activity.Outcome))
+                                        {
+                                            <MudDivider Class="my-2" />
+                                            <MudText Typo="Typo.caption" Style="font-weight: 500;">Outcome:</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@activity.Outcome</MudText>
+
+                                            @if (!string.IsNullOrEmpty(activity.NextSteps))
+                                            {
+                                                <MudText Typo="Typo.caption" Style="font-weight: 500;" Class="mt-2">Next Steps:</MudText>
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">@activity.NextSteps</MudText>
+                                            }
+                                        }
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        @if (!activity.IsCompleted)
+                                        {
+                                            <MudButton Size="MudBlazor.Size.Small" 
+                                                      Variant="Variant.Text" 
+                                                      Color="Color.Success"
+                                                      OnClick="@(() => CompleteActivity(activity))"
+                                                      StartIcon="@Icons.Material.Filled.CheckCircle">
+                                                Complete
+                                            </MudButton>
+                                        }
+                                        <MudButton Size="MudBlazor.Size.Small" 
+                                                  Variant="Variant.Text" 
+                                                  Color="Color.Primary"
+                                                  OnClick="@(() => EditActivity(activity))"
+                                                  StartIcon="@Icons.Material.Filled.Edit">
+                                            Edit
+                                        </MudButton>
+                                        <MudButton Size="MudBlazor.Size.Small" 
+                                                  Variant="Variant.Text" 
+                                                  Color="Color.Error"
+                                                  OnClick="@(() => DeleteActivity(activity))"
+                                                  StartIcon="@Icons.Material.Filled.Delete">
+                                            Delete
+                                        </MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+                    }
+                </MudTimeline>
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<ActivityDto> _allActivities = new();
+    private List<ActivityDto> _filteredActivities = new();
+
+    // Filter state
+    private string _selectedStatus = "All";
+    private string _selectedType = "All";
+    private string _selectedPriority = "All";
+
+    // Stats
+    private int _overdueCount;
+    private int _upcomingCount;
+    private int _pendingCount;
+    private int _completedCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivitiesAsync();
+    }
+
+    private async Task LoadActivitiesAsync()
+    {
+        _loading = true;
+        try
+        {
+            var activities = await ActivityService.GetAllActivitiesAsync();
+            _allActivities = activities.OrderByDescending(a => a.ActivityDate).ToList();
+            ApplyFilters();
+            CalculateStats();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading activities: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        var filtered = _allActivities.AsEnumerable();
+
+        // Status filter
+        if (_selectedStatus != "All")
+        {
+            filtered = _selectedStatus switch
+            {
+                "Completed" => filtered.Where(a => a.IsCompleted),
+                "Pending" => filtered.Where(a => !a.IsCompleted),
+                "Overdue" => filtered.Where(a => !a.IsCompleted && a.DueDate.HasValue && a.DueDate.Value < DateTime.UtcNow),
+                "Upcoming" => filtered.Where(a => !a.IsCompleted && a.DueDate.HasValue && a.DueDate.Value >= DateTime.UtcNow && a.DueDate.Value <= DateTime.UtcNow.AddDays(7)),
+                _ => filtered
+            };
+        }
+
+        // Type filter
+        if (_selectedType != "All")
+        {
+            filtered = filtered.Where(a => a.Type == _selectedType);
+        }
+
+        // Priority filter
+        if (_selectedPriority != "All")
+        {
+            filtered = filtered.Where(a => a.Priority == _selectedPriority);
+        }
+
+        _filteredActivities = filtered.ToList();
+        StateHasChanged();
+    }
+
+    private void CalculateStats()
+    {
+        var now = DateTime.UtcNow;
+        _overdueCount = _allActivities.Count(a => !a.IsCompleted && a.DueDate.HasValue && a.DueDate.Value < now);
+        _upcomingCount = _allActivities.Count(a => !a.IsCompleted && a.DueDate.HasValue && a.DueDate.Value >= now && a.DueDate.Value <= now.AddDays(7));
+        _pendingCount = _allActivities.Count(a => !a.IsCompleted);
+        _completedCount = _allActivities.Count(a => a.IsCompleted);
+    }
+
+    private MudBlazor.Color GetActivityColor(ActivityDto activity)
+    {
+        if (activity.IsCompleted)
+            return MudBlazor.Color.Success;
+        if (activity.DueDate.HasValue && activity.DueDate.Value < DateTime.UtcNow)
+            return MudBlazor.Color.Error;
+        return MudBlazor.Color.Primary;
+    }
+
+    private string GetActivityIcon(ActivityDto activity)
+    {
+        return activity.Type switch
+        {
+            "Call" => Icons.Material.Filled.Phone,
+            "Meeting" => Icons.Material.Filled.Groups,
+            "Email" => Icons.Material.Filled.Email,
+            "Task" => Icons.Material.Filled.Task,
+            _ => Icons.Material.Filled.Event
+        };
+    }
+
+    private MudBlazor.Color GetPriorityColor(string priority)
+    {
+        return priority switch
+        {
+            "High" => MudBlazor.Color.Error,
+            "Medium" => MudBlazor.Color.Warning,
+            "Low" => MudBlazor.Color.Info,
+            _ => MudBlazor.Color.Default
+        };
+    }
+
+    private async Task CompleteActivity(ActivityDto activity)
+    {
+        try
+        {
+            await ActivityService.CompleteActivityAsync(activity.Id);
+            Snackbar.Add("Activity marked as completed", Severity.Success);
+            await LoadActivitiesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error completing activity: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void EditActivity(ActivityDto activity)
+    {
+        Snackbar.Add("Edit activity dialog coming soon", Severity.Info);
+        // TODO: Open edit dialog
+    }
+
+    private async Task DeleteActivity(ActivityDto activity)
+    {
+        try
+        {
+            await ActivityService.DeleteActivityAsync(activity.Id);
+            Snackbar.Add("Activity deleted successfully", Severity.Success);
+            await LoadActivitiesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting activity: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void AddActivity()
+    {
+        Snackbar.Add("Add activity dialog coming soon", Severity.Info);
+        // TODO: Open add dialog
+    }
+}

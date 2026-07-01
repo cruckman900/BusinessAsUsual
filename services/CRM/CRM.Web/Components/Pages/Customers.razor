@@ -1,0 +1,203 @@
+@page "/crm/customers"
+@using CRM.Web.Components.Shared
+@using CRM.Application.DTOs
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Customers</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Customers</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+            Customers
+        </MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/crm/customers/new"))">
+            Add Customer
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Customers</MudText>
+                        <MudText Typo="Typo.h5">@_customers.Count</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Success">@_activeCount</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Lifetime Value</MudText>
+                        <MudText Typo="Typo.h5">@_totalLifetimeValue.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Avg. Lifetime Value</MudText>
+                        <MudText Typo="Typo.h5">@_avgLifetimeValue.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Customers Grid -->
+        <CustomDataGrid TItem="CustomerDto"
+                        Items="@FilteredCustomers"
+                        Title="Customer List"
+                        SearchPlaceholder="Search customers..."
+                        QuickFilterFunc="@((CustomerDto c) => 
+                            string.IsNullOrEmpty(_searchString) || 
+                            (c.CompanyName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (c.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (c.PrimaryContactName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (c.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))"
+                        Elevation="2">
+            <ToolbarContent>
+                <MudSelect T="string" @bind-Value="_statusFilter" Label="Status" Variant="Variant.Outlined" Class="ml-4" Style="min-width: 150px;">
+                    <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                    <MudSelectItem Value="@("Active")">Active</MudSelectItem>
+                    <MudSelectItem Value="@("Inactive")">Inactive</MudSelectItem>
+                    <MudSelectItem Value="@("Prospect")">Prospect</MudSelectItem>
+                </MudSelect>
+            </ToolbarContent>
+            <ChildContent>
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.CompanyName" Title="Company">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.Item.CompanyName</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.PrimaryContactName" Title="Contact Person" />
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.Email" Title="Email" />
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.Phone" Title="Phone" />
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.CustomerStatus" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.CustomerStatus)">
+                            @context.Item.CustomerStatus
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="CustomerDto" TProperty="string" Property="c => c.CustomerSegment" Title="Segment">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.CustomerSegment))
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                                @context.Item.CustomerSegment
+                            </MudChip>
+                        }
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="CustomerDto" TProperty="decimal" Property="c => c.LifetimeValue" Title="Lifetime Value">
+                    <CellTemplate>
+                        @context.Item.LifetimeValue.ToString("C0")
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="CustomerDto" TProperty="int" Property="c => c.OpportunityCount" Title="Opportunities" />
+                <TemplateColumn T="CustomerDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                           Size="Size.Small" 
+                                           Color="Color.Info"
+                                           OnClick="@(() => Navigation.NavigateTo($"/crm/customers/{context.Item.Id}"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Size="Size.Small" 
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteCustomer(context.Item.Id))" />
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<CustomerDto> _customers = new();
+    private string _searchString = "";
+    private string _statusFilter = "All";
+
+    private int _activeCount;
+    private decimal _totalLifetimeValue;
+    private decimal _avgLifetimeValue;
+
+    private IEnumerable<CustomerDto> FilteredCustomers =>
+        _customers.Where(c =>
+            (string.IsNullOrEmpty(_searchString) || 
+             (c.CompanyName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (c.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (c.PrimaryContactName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (c.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)) &&
+            (_statusFilter == "All" || c.CustomerStatus == _statusFilter)
+        );
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            var customers = await CustomerService.GetAllCustomersAsync();
+            _customers = customers.ToList();
+
+            _activeCount = _customers.Count(c => c.CustomerStatus == "Active");
+            _totalLifetimeValue = _customers.Sum(c => c.LifetimeValue);
+            _avgLifetimeValue = _customers.Any() ? _totalLifetimeValue / _customers.Count : 0;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteCustomer(string id)
+    {
+        await CustomerService.DeleteCustomerAsync(id);
+        _customers.RemoveAll(c => c.Id == id);
+        Snackbar.Add("Customer deleted successfully", Severity.Success);
+        await LoadCustomers(); // Refresh metrics
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Active" => Color.Success,
+        "Inactive" => Color.Default,
+        "Prospect" => Color.Info,
+        _ => Color.Default
+    };
+}

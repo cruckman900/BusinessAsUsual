@@ -1,0 +1,196 @@
+@page "/crm/leads"
+@using CRM.Web.Components.Shared
+@using CRM.Application.DTOs
+@inject ILeadService LeadService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Leads</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Leads</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+            Leads
+        </MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/crm/leads/new"))">
+            Add Lead
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Leads Grid -->
+        <CustomDataGrid TItem="LeadDto"
+                        Items="@FilteredLeads"
+                        Title="Lead List"
+                        SearchPlaceholder="Search leads..."
+                        QuickFilterFunc="@((LeadDto l) => 
+                            string.IsNullOrEmpty(_searchString) || 
+                            l.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                            (l.Company?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (l.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))"
+                        Elevation="2">
+            <ToolbarContent>
+                <MudSelect T="string" @bind-Value="_statusFilter" Label="Status" Variant="Variant.Outlined" Class="ml-4" Style="min-width: 150px;">
+                    <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                    <MudSelectItem Value="@("New")">New</MudSelectItem>
+                    <MudSelectItem Value="@("Contacted")">Contacted</MudSelectItem>
+                    <MudSelectItem Value="@("Qualified")">Qualified</MudSelectItem>
+                    <MudSelectItem Value="@("Unqualified")">Unqualified</MudSelectItem>
+                    <MudSelectItem Value="@("Converted")">Converted</MudSelectItem>
+                </MudSelect>
+                <MudSelect T="string" @bind-Value="_sourceFilter" Label="Source" Variant="Variant.Outlined" Class="ml-4" Style="min-width: 150px;">
+                    <MudSelectItem Value="@("All")">All Sources</MudSelectItem>
+                    <MudSelectItem Value="@("Website")">Website</MudSelectItem>
+                    <MudSelectItem Value="@("Referral")">Referral</MudSelectItem>
+                    <MudSelectItem Value="@("Cold Call")">Cold Call</MudSelectItem>
+                    <MudSelectItem Value="@("Email Campaign")">Email Campaign</MudSelectItem>
+                    <MudSelectItem Value="@("Social Media")">Social Media</MudSelectItem>
+                    <MudSelectItem Value="@("Trade Show")">Trade Show</MudSelectItem>
+                    <MudSelectItem Value="@("Partner")">Partner</MudSelectItem>
+                    <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+                </MudSelect>
+            </ToolbarContent>
+            <ChildContent>
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.FullName" Title="Name" />
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.Company" Title="Company" />
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.Email" Title="Email" />
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.Phone" Title="Phone" />
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.Status" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">
+                            @context.Item.Status
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="LeadDto" TProperty="string" Property="l => l.Source" Title="Source">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                            @context.Item.Source
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn T="LeadDto" Title="Value">
+                    <CellTemplate>
+                        @if (context.Item.EstimatedValue.HasValue)
+                        {
+                            @context.Item.EstimatedValue.Value.ToString("C0")
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="LeadDto" TProperty="DateTime" Property="l => l.CreatedDate" Title="Created">
+                    <CellTemplate>
+                        @context.Item.CreatedDate.ToString("MM/dd/yyyy")
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn T="LeadDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                           Size="Size.Small" 
+                                           Color="Color.Primary"
+                                           OnClick="@(() => Navigation.NavigateTo($"/crm/leads/{context.Item.Id}"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Size="Size.Small" 
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteLead(context.Item.Id))" />
+                            @if (context.Item.Status == "Qualified")
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Upgrade" 
+                                               Size="Size.Small" 
+                                               Color="Color.Success"
+                                               OnClick="@(() => ConvertLead(context.Item.Id))"
+                                               Title="Convert to Customer" />
+                            }
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<LeadDto> _leads = new();
+    private string _searchString = "";
+    private string _statusFilter = "All";
+    private string _sourceFilter = "All";
+
+    private IEnumerable<LeadDto> FilteredLeads =>
+        _leads.Where(l =>
+            (string.IsNullOrEmpty(_searchString) || 
+             l.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+             (l.Company?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (l.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)) &&
+            (_statusFilter == "All" || l.Status == _statusFilter) &&
+            (_sourceFilter == "All" || l.Source == _sourceFilter)
+        );
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLeads();
+    }
+
+    private async Task LoadLeads()
+    {
+        try
+        {
+            var leads = await LeadService.GetAllLeadsAsync();
+            _leads = leads.ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteLead(string id)
+    {
+        await LeadService.DeleteLeadAsync(id);
+        _leads.RemoveAll(l => l.Id == id);
+        Snackbar.Add("Lead deleted successfully", Severity.Success);
+    }
+
+    private async Task ConvertLead(string id)
+    {
+        var customer = await LeadService.ConvertLeadToCustomerAsync(id);
+        if (customer != null)
+        {
+            _leads.RemoveAll(l => l.Id == id);
+            Snackbar.Add("Lead converted to customer successfully", Severity.Success);
+            Navigation.NavigateTo($"/crm/customers/{customer.ConvertedToCustomerId}");
+        }
+        else
+        {
+            Snackbar.Add("Failed to convert lead", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "New" => Color.Info,
+        "Contacted" => Color.Primary,
+        "Qualified" => Color.Success,
+        "Unqualified" => Color.Warning,
+        "Converted" => Color.Success,
+        _ => Color.Default
+    };
+}

@@ -22,7 +22,8 @@
 @code {
     private readonly Assembly[] _additionalAssemblies = new[]
     {
-        typeof(HR.Web.Components.App).Assembly
+        typeof(HR.Web.Components.App).Assembly,
+        typeof(CRM.Web.Components.App).Assembly
     };
 
     private readonly RouteData notFoundRoute = new(

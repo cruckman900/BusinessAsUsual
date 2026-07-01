@@ -240,6 +240,71 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                     // Settings
                     new() { Label = "Settings", Route = "/hr/settings", Icon = Icons.Material.Filled.Settings }
                 }
+            },
+            new ModuleDto
+            {
+                ModuleId = "crm",
+                Key = "crm",
+                DisplayName = "CRM",
+                Description = "Customer Relationship Management",
+                UiEntryPoint = "/crm",
+                Icon = Icons.Material.Filled.ContactPhone,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Home", Route = "/crm", Icon = Icons.Material.Filled.Dashboard },
+
+                    // Leads Group
+                    new() 
+                    { 
+                        Label = "Leads", 
+                        Route = "/crm/leads", 
+                        Icon = Icons.Material.Filled.PersonSearch,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Leads", Route = "/crm/leads", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Add Lead", Route = "/crm/leads/new", Icon = Icons.Material.Filled.PersonAdd }
+                        }
+                    },
+
+                    // Opportunities Group
+                    new() 
+                    { 
+                        Label = "Opportunities", 
+                        Route = "/crm/opportunities", 
+                        Icon = Icons.Material.Filled.TrendingUp,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Opportunities", Route = "/crm/opportunities", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Add Opportunity", Route = "/crm/opportunities/new", Icon = Icons.Material.Filled.Add }
+                        }
+                    },
+
+                    // Customers Group
+                    new() 
+                    { 
+                        Label = "Customers", 
+                        Route = "/crm/customers", 
+                        Icon = Icons.Material.Filled.Business,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Customers", Route = "/crm/customers", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Add Customer", Route = "/crm/customers/new", Icon = Icons.Material.Filled.Add }
+                        }
+                    },
+
+                    // Activities
+                    new() { Label = "Activities", Route = "/crm/activities", Icon = Icons.Material.Filled.CalendarToday },
+
+                    // Reports
+                    new() { Label = "Reports", Route = "/crm/reports", Icon = Icons.Material.Filled.Analytics },
+
+                    // Settings
+                    new() { Label = "Settings", Route = "/crm/settings", Icon = Icons.Material.Filled.Settings }
+                }
             }
         };
     }
