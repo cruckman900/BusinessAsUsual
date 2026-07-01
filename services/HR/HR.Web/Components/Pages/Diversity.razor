@@ -1,0 +1,395 @@
+@page "/hr/diversity"
+@using HR.Web.Components.Shared
+
+<PageTitle>Diversity & Inclusion</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Diversity & Inclusion" 
+                  Subtitle="Workforce diversity metrics and initiatives"
+                  Icon="@Icons.Material.Filled.Diversity3">
+        <Actions>
+            <MudTooltip Text="Export D&I report">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download">
+                    Export Report
+                </MudButton>
+            </MudTooltip>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Gender Diversity</MudText>
+                                <MudText Typo="Typo.h4">@femalePercent%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Female employees</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Wc" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Leadership Diversity</MudText>
+                                <MudText Typo="Typo.h4">@leadershipDiversityPercent%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Underrepresented groups</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Pay Equity Score</MudText>
+                                <MudText Typo="Typo.h4">@payEquityScore</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Out of 100</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Balance" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active ERGs</MudText>
+                                <MudText Typo="Typo.h4">@activeERGs</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Employee resource groups</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Demographics Overview -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Gender Distribution</MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Female</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@femaleCount (@femalePercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Primary" Value="@femalePercent" Size="Size.Small" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Male</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@maleCount (@malePercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Secondary" Value="@malePercent" Size="Size.Small" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Non-Binary/Other</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">@nonBinaryCount (@nonBinaryPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Info" Value="@nonBinaryPercent" Size="Size.Small" />
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Age Demographics</MudText>
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>Age Range</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Under 30</td>
+                                <td>@under30Count</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info">@under30Percent%</MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>30-40</td>
+                                <td>@age30to40Count</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@age30to40Percent%</MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>41-50</td>
+                                <td>@age41to50Count</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@age41to50Percent%</MudChip>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Over 50</td>
+                                <td>@over50Count</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">@over50Percent%</MudChip>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Representation by Level -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Stairs" Class="mr-2" />
+                Representation by Level
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Level</th>
+                        <th>Total</th>
+                        <th>Female</th>
+                        <th>URM*</th>
+                        <th>Veterans</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var level in representationByLevel)
+                    {
+                        <tr>
+                            <td><strong>@level.Level</strong></td>
+                            <td>@level.Total</td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@level.Female (@level.FemalePercent%)</MudChip>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">@level.URM (@level.URMPercent%)</MudChip>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">@level.Veterans (@level.VeteranPercent%)</MudChip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">*URM = Underrepresented Minorities</MudText>
+        </MudPaper>
+
+        <!-- Pay Equity Analysis -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
+                Pay Equity Analysis
+            </MudText>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.body1" GutterBottom="true"><strong>Gender Pay Gap</strong></MudText>
+                    <div class="mb-3">
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.body2">Unadjusted Gap</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">4.2%</MudChip>
+                        </div>
+                        <MudProgressLinear Color="Color.Warning" Value="95.8" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Women earn $0.958 per $1.00 men earn</MudText>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.body2">Adjusted Gap (same role/level)</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">1.8%</MudChip>
+                        </div>
+                        <MudProgressLinear Color="Color.Success" Value="98.2" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Controlled for experience and position</MudText>
+                    </div>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.body1" GutterBottom="true"><strong>Ethnicity Pay Gap</strong></MudText>
+                    <div class="mb-3">
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.body2">Unadjusted Gap</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">5.1%</MudChip>
+                        </div>
+                        <MudProgressLinear Color="Color.Warning" Value="94.9" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">URM earn $0.949 per $1.00 non-URM earn</MudText>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.body2">Adjusted Gap (same role/level)</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">2.2%</MudChip>
+                        </div>
+                        <MudProgressLinear Color="Color.Success" Value="97.8" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Controlled for experience and position</MudText>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- D&I Goals and ERGs -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Class="mr-2" />
+                        D&I Goals & Progress
+                    </MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">
+                            <MudText Typo="Typo.body2"><strong>40% female leadership</strong> by 2025</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Current: 38% (on track)</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success">
+                            <MudText Typo="Typo.body2"><strong>30% URM representation</strong> company-wide</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Current: 32% (achieved)</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Warning">
+                            <MudText Typo="Typo.body2"><strong>&lt;2% adjusted pay gap</strong> all demographics</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Current: 2.2% (needs improvement)</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Info">
+                            <MudText Typo="Typo.body2"><strong>8 active ERGs</strong> with executive sponsorship</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Current: 6 (in progress)</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Groups3" Class="mr-2" />
+                        Employee Resource Groups
+                    </MudText>
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>ERG Name</th>
+                                <th>Members</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Women in Tech</td>
+                                <td>28</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>LGBTQ+ Alliance</td>
+                                <td>18</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>Black Professionals Network</td>
+                                <td>15</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>Asian & Pacific Islander</td>
+                                <td>22</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>Veterans Network</td>
+                                <td>12</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                            <tr>
+                                <td>Latinx Network</td>
+                                <td>14</td>
+                                <td><MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip></td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+
+    // Summary stats
+    private int femalePercent = 45;
+    private int leadershipDiversityPercent = 38;
+    private int payEquityScore = 95;
+    private int activeERGs = 6;
+
+    // Gender distribution
+    private int femaleCount = 34;
+    private int maleCount = 39;
+    private int malePercent = 52;
+    private int nonBinaryCount = 2;
+    private int nonBinaryPercent = 3;
+
+    // Age demographics
+    private int under30Count = 18;
+    private int under30Percent = 24;
+    private int age30to40Count = 32;
+    private int age30to40Percent = 43;
+    private int age41to50Count = 18;
+    private int age41to50Percent = 24;
+    private int over50Count = 7;
+    private int over50Percent = 9;
+
+    // Data collection
+    private List<RepresentationLevel> representationByLevel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        representationByLevel = new List<RepresentationLevel>
+        {
+            new() { Level = "Executive", Total = 8, Female = 3, FemalePercent = 38, URM = 2, URMPercent = 25, Veterans = 1, VeteranPercent = 13 },
+            new() { Level = "Director", Total = 12, Female = 5, FemalePercent = 42, URM = 3, URMPercent = 25, Veterans = 2, VeteranPercent = 17 },
+            new() { Level = "Manager", Total = 18, Female = 8, FemalePercent = 44, URM = 6, URMPercent = 33, Veterans = 3, VeteranPercent = 17 },
+            new() { Level = "Senior IC", Total = 22, Female = 10, FemalePercent = 45, URM = 7, URMPercent = 32, Veterans = 4, VeteranPercent = 18 },
+            new() { Level = "Mid-Level IC", Total = 15, Female = 8, FemalePercent = 53, URM = 6, URMPercent = 40, Veterans = 2, VeteranPercent = 13 }
+        };
+    }
+
+    private class RepresentationLevel
+    {
+        public string Level { get; set; } = "";
+        public int Total { get; set; }
+        public int Female { get; set; }
+        public int FemalePercent { get; set; }
+        public int URM { get; set; }
+        public int URMPercent { get; set; }
+        public int Veterans { get; set; }
+        public int VeteranPercent { get; set; }
+    }
+}

@@ -1,0 +1,405 @@
+@page "/hr/orgchart"
+@using HR.Web.Components.Shared
+
+<PageTitle>Organization Chart</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Organization Chart" 
+                  Subtitle="Visual organizational hierarchy and reporting structure"
+                  Icon="@Icons.Material.Filled.AccountTree">
+        <Actions>
+            <MudButtonGroup Variant="Variant.Outlined">
+                <MudTooltip Text="Expand all departments">
+                    <MudButton StartIcon="@Icons.Material.Filled.UnfoldMore" Color="Color.Primary">
+                        Expand All
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="Export org chart">
+                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Secondary">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+            </MudButtonGroup>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Employees</MudText>
+                                <MudText Typo="Typo.h4">@totalEmployees</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Across all levels</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Departments</MudText>
+                                <MudText Typo="Typo.h4">@totalDepartments</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Active teams</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Managers</MudText>
+                                <MudText Typo="Typo.h4">@totalManagers</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">People leaders</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Span of Control</MudText>
+                                <MudText Typo="Typo.h4">@avgSpanOfControl</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Reports per manager</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.DataUsage" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Executive Level -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-2" />
+                Executive Leadership
+            </MudText>
+            <MudGrid Spacing="2">
+                @foreach (var exec in executiveLeadership)
+                {
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudCard Elevation="1">
+                            <MudCardContent>
+                                <div class="d-flex align-center mb-2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Medium" Class="mr-3">
+                                        @exec.Initials
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body1"><strong>@exec.Name</strong></MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@exec.Title</MudText>
+                                    </div>
+                                </div>
+                                <MudDivider Class="mb-2" />
+                                <div class="d-flex justify-space-between">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Direct Reports: <strong>@exec.DirectReports</strong></MudText>
+                                    <MudTooltip Text="View profile">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Primary" />
+                                    </MudTooltip>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Department Hierarchies -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Apartment" Class="mr-2" />
+                Department Structures
+            </MudText>
+            @foreach (var dept in departmentStructures)
+            {
+                <MudExpansionPanels Class="mb-2" MultiExpansion="true">
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">@dept.Name</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Class="ml-2">@dept.EmployeeCount employees</MudChip>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudCard Elevation="0">
+                                <MudCardContent>
+                                    <!-- Department Head -->
+                                    <div class="mb-4">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Department Head</MudText>
+                                        <div class="d-flex align-center mt-2">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                                @dept.Head.Initials
+                                            </MudAvatar>
+                                            <div>
+                                                <MudText Typo="Typo.body1"><strong>@dept.Head.Name</strong></MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@dept.Head.Title</MudText>
+                                            </div>
+                                            <MudSpacer />
+                                            <MudTooltip Text="View profile">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Primary" />
+                                            </MudTooltip>
+                                        </div>
+                                    </div>
+
+                                    <!-- Managers -->
+                                    @if (dept.Managers.Any())
+                                    {
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-2">Team Managers</MudText>
+                                        <MudGrid Spacing="2">
+                                            @foreach (var manager in dept.Managers)
+                                            {
+                                                <MudItem xs="12" sm="6" md="4">
+                                                    <MudPaper Elevation="1" Class="pa-2">
+                                                        <div class="d-flex align-center">
+                                                            <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="mr-2">
+                                                                @manager.Initials
+                                                            </MudAvatar>
+                                                            <div style="flex: 1;">
+                                                                <MudText Typo="Typo.body2"><strong>@manager.Name</strong></MudText>
+                                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@manager.Title</MudText>
+                                                                <MudText Typo="Typo.caption" Color="Color.Info">@manager.DirectReports reports</MudText>
+                                                            </div>
+                                                            <MudTooltip Text="View team">
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Group" Size="Size.Small" Color="Color.Info" />
+                                                            </MudTooltip>
+                                                        </div>
+                                                    </MudPaper>
+                                                </MudItem>
+                                            }
+                                        </MudGrid>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            }
+        </MudPaper>
+
+        <!-- Span of Control Analysis -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+                Span of Control Analysis
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Manager</th>
+                        <th>Title</th>
+                        <th>Department</th>
+                        <th>Direct Reports</th>
+                        <th>Total Team Size</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var manager in spanOfControlData)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@manager.Initials</MudAvatar>
+                                    <strong>@manager.Name</strong>
+                                </div>
+                            </td>
+                            <td>@manager.Title</td>
+                            <td>
+                                <MudBadge Content="@manager.Department" Color="Color.Secondary" />
+                            </td>
+                            <td><strong>@manager.DirectReports</strong></td>
+                            <td>@manager.TotalTeamSize</td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="@GetSpanColor(manager.DirectReports)">
+                                    @GetSpanStatus(manager.DirectReports)
+                                </MudChip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+
+    // Summary stats
+    private int totalEmployees = 75;
+    private int totalDepartments = 6;
+    private int totalManagers = 18;
+    private decimal avgSpanOfControl = 5.2m;
+
+    // Data collections
+    private List<Executive> executiveLeadership = new();
+    private List<DepartmentStructure> departmentStructures = new();
+    private List<ManagerSpanData> spanOfControlData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        executiveLeadership = new List<Executive>
+        {
+            new() { Name = "John Smith", Initials = "JS", Title = "Chief Executive Officer", DirectReports = 6 },
+            new() { Name = "Maria Garcia", Initials = "MG", Title = "Chief Technology Officer", DirectReports = 8 },
+            new() { Name = "David Kim", Initials = "DK", Title = "Chief Financial Officer", DirectReports = 5 },
+            new() { Name = "Sarah Williams", Initials = "SW", Title = "Chief People Officer", DirectReports = 4 }
+        };
+
+        departmentStructures = new List<DepartmentStructure>
+        {
+            new()
+            {
+                Name = "Engineering",
+                EmployeeCount = 25,
+                Head = new Employee { Name = "Robert Taylor", Initials = "RT", Title = "VP of Engineering" },
+                Managers = new List<Manager>
+                {
+                    new() { Name = "Sarah Johnson", Initials = "SJ", Title = "Engineering Manager", DirectReports = 6 },
+                    new() { Name = "James Wilson", Initials = "JW", Title = "Engineering Manager", DirectReports = 5 },
+                    new() { Name = "Amanda Lee", Initials = "AL", Title = "Engineering Manager", DirectReports = 7 }
+                }
+            },
+            new()
+            {
+                Name = "Sales",
+                EmployeeCount = 15,
+                Head = new Employee { Name = "Emily Davis", Initials = "ED", Title = "VP of Sales" },
+                Managers = new List<Manager>
+                {
+                    new() { Name = "Michael Chen", Initials = "MC", Title = "Sales Manager", DirectReports = 4 },
+                    new() { Name = "Robert Taylor", Initials = "RT", Title = "Sales Manager", DirectReports = 5 }
+                }
+            },
+            new()
+            {
+                Name = "Marketing",
+                EmployeeCount = 10,
+                Head = new Employee { Name = "James Wilson", Initials = "JW", Title = "VP of Marketing" },
+                Managers = new List<Manager>
+                {
+                    new() { Name = "Lisa Anderson", Initials = "LA", Title = "Marketing Manager", DirectReports = 4 }
+                }
+            },
+            new()
+            {
+                Name = "HR",
+                EmployeeCount = 8,
+                Head = new Employee { Name = "Lisa Anderson", Initials = "LA", Title = "Director of HR" },
+                Managers = new List<Manager>()
+            },
+            new()
+            {
+                Name = "Finance",
+                EmployeeCount = 12,
+                Head = new Employee { Name = "David Martinez", Initials = "DM", Title = "Director of Finance" },
+                Managers = new List<Manager>
+                {
+                    new() { Name = "Amanda Lee", Initials = "AL", Title = "Finance Manager", DirectReports = 5 }
+                }
+            }
+        };
+
+        spanOfControlData = new List<ManagerSpanData>
+        {
+            new() { Name = "Robert Taylor", Initials = "RT", Title = "VP of Engineering", Department = "Engineering", DirectReports = 3, TotalTeamSize = 25 },
+            new() { Name = "Sarah Johnson", Initials = "SJ", Title = "Engineering Manager", Department = "Engineering", DirectReports = 6, TotalTeamSize = 6 },
+            new() { Name = "Emily Davis", Initials = "ED", Title = "VP of Sales", Department = "Sales", DirectReports = 2, TotalTeamSize = 15 },
+            new() { Name = "Michael Chen", Initials = "MC", Title = "Sales Manager", Department = "Sales", DirectReports = 4, TotalTeamSize = 4 },
+            new() { Name = "James Wilson", Initials = "JW", Title = "VP of Marketing", Department = "Marketing", DirectReports = 1, TotalTeamSize = 10 },
+            new() { Name = "Lisa Anderson", Initials = "LA", Title = "Marketing Manager", Department = "Marketing", DirectReports = 4, TotalTeamSize = 4 },
+            new() { Name = "David Martinez", Initials = "DM", Title = "Director of Finance", Department = "Finance", DirectReports = 1, TotalTeamSize = 12 },
+            new() { Name = "Amanda Lee", Initials = "AL", Title = "Finance Manager", Department = "Finance", DirectReports = 5, TotalTeamSize = 5 }
+        };
+    }
+
+    private Color GetSpanColor(int reports)
+    {
+        if (reports > 8) return Color.Error;
+        if (reports > 6) return Color.Warning;
+        if (reports < 3) return Color.Info;
+        return Color.Success;
+    }
+
+    private string GetSpanStatus(int reports)
+    {
+        if (reports > 8) return "Too High";
+        if (reports > 6) return "High";
+        if (reports < 3) return "Low";
+        return "Optimal";
+    }
+
+    private class Executive
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Title { get; set; } = "";
+        public int DirectReports { get; set; }
+    }
+
+    private class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Title { get; set; } = "";
+    }
+
+    private class Manager
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Title { get; set; } = "";
+        public int DirectReports { get; set; }
+    }
+
+    private class DepartmentStructure
+    {
+        public string Name { get; set; } = "";
+        public int EmployeeCount { get; set; }
+        public Employee Head { get; set; } = new();
+        public List<Manager> Managers { get; set; } = new();
+    }
+
+    private class ManagerSpanData
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Department { get; set; } = "";
+        public int DirectReports { get; set; }
+        public int TotalTeamSize { get; set; }
+    }
+}

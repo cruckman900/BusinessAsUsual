@@ -1,0 +1,239 @@
+@page "/hr/departments"
+@using HR.Application.Services
+@using HR.Application.DTOs
+@inject IDepartmentService DepartmentService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Departments</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/modules/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Departments</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                Departments
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Organize your company structure</MudText>
+        </div>
+        <MudTooltip Text="Create a new department">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+                Add Department
+            </MudButton>
+        </MudTooltip>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Error">
+            @errorMessage
+        </MudAlert>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+            Check the browser console for more details.
+        </MudText>
+    }
+    else if (departments == null || !departments.Any())
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+            No departments found. Click "Add Department" to create your first department.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var dept in departments)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="pa-4 d-flex flex-column" Style="height: 100%;">
+                        <MudCardContent Class="flex-grow-1">
+                            <div class="d-flex justify-space-between align-center mb-3">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Primary" Size="Size.Large" Class="mr-2" />
+                                    @if (dept.IsSubDepartment)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Color="Color.Secondary" Size="Size.Small" />
+                                    }
+                                </div>
+                                @if (dept.IsActive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Inactive</MudChip>
+                                }
+                            </div>
+
+                            <MudText Typo="Typo.h6" GutterBottom="true">@dept.Name</MudText>
+
+                            @if (!string.IsNullOrEmpty(dept.Code))
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="mb-2">@dept.Code</MudChip>
+                            }
+
+                            @if (!string.IsNullOrEmpty(dept.Description))
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                    @dept.Description
+                                </MudText>
+                            }
+
+                            @if (!string.IsNullOrEmpty(dept.Location))
+                            {
+                                <div class="d-flex align-center mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@dept.Location</MudText>
+                                </div>
+                            }
+
+                            @if (dept.IsSubDepartment && !string.IsNullOrEmpty(dept.ParentDepartmentName))
+                            {
+                                <div class="d-flex align-center mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Small" Class="mr-1" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Part of @dept.ParentDepartmentName</MudText>
+                                </div>
+                            }
+
+                            <MudDivider Class="my-3" />
+
+                            <MudStack Spacing="2">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" Class="mr-2" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2">
+                                        <strong>@dept.EmployeeCount</strong> @(dept.EmployeeCount == 1 ? "Employee" : "Employees")
+                                    </MudText>
+                                </div>
+
+                                @if (dept.SubDepartmentCount > 0)
+                                {
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Small" Class="mr-2" Color="Color.Secondary" />
+                                        <MudText Typo="Typo.body2">
+                                            <strong>@dept.SubDepartmentCount</strong> Sub-department@(dept.SubDepartmentCount == 1 ? "" : "s")
+                                        </MudText>
+                                    </div>
+                                }
+
+                                @if (dept.Managers != null && dept.Managers.Any())
+                                {
+                                    <div class="mt-2">
+                                        <MudText Typo="Typo.body2" Class="mb-1"><strong>Management:</strong></MudText>
+                                        @foreach (var manager in dept.Managers.Take(2))
+                                        {
+                                            <div class="d-flex align-center ml-4 mb-1">
+                                                <MudIcon Icon="@(manager.IsPrimary ? Icons.Material.Filled.Star : Icons.Material.Filled.Person)" 
+                                                         Size="Size.Small" 
+                                                         Class="mr-1" 
+                                                         Color="@(manager.IsPrimary ? Color.Warning : Color.Secondary)" />
+                                                <MudText Typo="Typo.body2">
+                                                    @manager.ManagerName
+                                                    @if (!string.IsNullOrEmpty(manager.ManagerRole))
+                                                    {
+                                                        <span class="ml-1" style="color: var(--mud-palette-text-secondary); font-size: 0.85em;">(@manager.ManagerRole)</span>
+                                                    }
+                                                </MudText>
+                                            </div>
+                                        }
+                                        @if (dept.Managers.Count > 2)
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="ml-4">
+                                                +@(dept.Managers.Count - 2) more manager@(dept.Managers.Count - 2 == 1 ? "" : "s")
+                                            </MudText>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-2" Color="Color.Secondary" />
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            No managers assigned
+                                        </MudText>
+                                    </div>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudTooltip Text="View department details">
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Visibility" OnClick="() => ViewDepartment(dept.Id)">
+                                    View
+                                </MudButton>
+                            </MudTooltip>
+                            <MudTooltip Text="Edit department information">
+                                <MudButton Variant="Variant.Text" Color="Color.Secondary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Edit" OnClick="() => EditDepartment(dept.Id)">
+                                    Edit
+                                </MudButton>
+                            </MudTooltip>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-3">
+            Showing @departments.Count() department(s)
+        </MudText>
+    }
+</MudContainer>
+
+@code {
+    private IEnumerable<DepartmentDto>? departments;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartments();
+    }
+
+    private async Task LoadDepartments()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            departments = await DepartmentService.GetAllDepartmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading departments: {ex.Message}";
+            Console.WriteLine(errorMessage);
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            departments = Array.Empty<DepartmentDto>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        Navigation.NavigateTo("/hr/departments/create");
+    }
+
+    private void ViewDepartment(string id)
+    {
+        Navigation.NavigateTo($"/hr/departments/{id}");
+    }
+
+    private void EditDepartment(string id)
+    {
+        Navigation.NavigateTo($"/hr/departments/{id}/edit");
+    }
+}
+

@@ -1,0 +1,454 @@
+@page "/hr/employees/{id}"
+@inject HR.Application.Services.IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+
+<PageTitle>Employee Details</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (employee == null)
+    {
+        <MudAlert Severity="Severity.Error">Employee not found</MudAlert>
+    }
+    else
+    {
+        <!-- Breadcrumbs -->
+        <div class="mb-3">
+            <MudLink Href="/dashboard">Dashboard</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr">HR</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr/employees">Employees</MudLink>
+            <span class="mx-2">/</span>
+            <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@employee.FirstName @employee.LastName</MudText>
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex justify-space-between align-center mb-4">
+            <div>
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                    @employee.FirstName @employee.LastName
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@employee.JobTitle</MudText>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Href="@($"/modules/hr/employees/{Id}/edit")">
+                    Edit Employee
+                </MudButton>
+            </div>
+        </div>
+
+        <MudGrid Spacing="3">
+            <!-- Personal Information Card -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.ContactMail" Class="mr-2" />
+                            Personal Information
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Spacing="2">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Full Name</MudText>
+                                <MudText Typo="Typo.body1">@employee.FirstName @employee.LastName</MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Work Email</MudText>
+                                <MudText Typo="Typo.body1">@employee.Email</MudText>
+                            </div>
+                            @if (!string.IsNullOrEmpty(employee.PersonalEmail))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Personal Email</MudText>
+                                    <MudText Typo="Typo.body1">@employee.PersonalEmail</MudText>
+                                </div>
+                            }
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Phone Number</MudText>
+                                <MudText Typo="Typo.body1">@(employee.PhoneNumber ?? "Not provided")</MudText>
+                            </div>
+                            @if (employee.DateOfBirth.HasValue)
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Date of Birth</MudText>
+                                    <MudText Typo="Typo.body1">@employee.DateOfBirth.Value.ToString("MMMM dd, yyyy")</MudText>
+                                </div>
+                            }
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Employee ID</MudText>
+                                <MudText Typo="Typo.body2" Style="font-family: monospace;">@GetShortId(employee.Id)</MudText>
+                            </div>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Employment Information Card -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+                            Employment Information
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Spacing="2">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Job Title</MudText>
+                                <MudText Typo="Typo.body1">@employee.JobTitle</MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Employment Type</MudText>
+                                <MudText Typo="Typo.body1">@(employee.EmploymentType ?? "Full-Time")</MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Primary Department</MudText>
+                                @if (!string.IsNullOrEmpty(employee.Department))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@employee.Department</MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Not assigned</MudText>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(employee.WorkLocation))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Work Location</MudText>
+                                    <MudText Typo="Typo.body1">@employee.WorkLocation</MudText>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(employee.ManagerName))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Reports To</MudText>
+                                    <MudText Typo="Typo.body1">@employee.ManagerName</MudText>
+                                </div>
+                            }
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Hire Date</MudText>
+                                <MudText Typo="Typo.body1">@employee.HireDate.ToString("MMMM dd, yyyy")</MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Tenure</MudText>
+                                <MudText Typo="Typo.body1">@GetTenure(employee.HireDate)</MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                                @if (employee.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@employee.Status</MudChip>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(employee.SalaryGrade))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Salary Grade</MudText>
+                                    <MudText Typo="Typo.body1">@employee.SalaryGrade</MudText>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Address Information Card -->
+            @if (!string.IsNullOrEmpty(employee.AddressLine1) || !string.IsNullOrEmpty(employee.City))
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                        <MudCardContent Class="flex-grow-1">
+                            <MudText Typo="Typo.h6" GutterBottom="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Home" Class="mr-2" />
+                                Address Information
+                            </MudText>
+                            <MudDivider Class="mb-3" />
+
+                            <MudStack Spacing="2">
+                                @if (!string.IsNullOrEmpty(employee.AddressLine1))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Address</MudText>
+                                        <MudText Typo="Typo.body1">@employee.AddressLine1</MudText>
+                                        @if (!string.IsNullOrEmpty(employee.AddressLine2))
+                                        {
+                                            <MudText Typo="Typo.body1">@employee.AddressLine2</MudText>
+                                        }
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(employee.City))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">City</MudText>
+                                        <MudText Typo="Typo.body1">@employee.City</MudText>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(employee.State))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">State/Province</MudText>
+                                        <MudText Typo="Typo.body1">@employee.State</MudText>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(employee.PostalCode))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Postal Code</MudText>
+                                        <MudText Typo="Typo.body1">@employee.PostalCode</MudText>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(employee.Country))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Country</MudText>
+                                        <MudText Typo="Typo.body1">@employee.Country</MudText>
+                                    </div>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <!-- Emergency Contact Card -->
+            @if (!string.IsNullOrEmpty(employee.EmergencyContactName))
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                        <MudCardContent Class="flex-grow-1">
+                            <MudText Typo="Typo.h6" GutterBottom="true">
+                                <MudIcon Icon="@Icons.Material.Filled.ContactPhone" Class="mr-2" />
+                                Emergency Contact
+                            </MudText>
+                            <MudDivider Class="mb-3" />
+
+                            <MudStack Spacing="2">
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Contact Name</MudText>
+                                    <MudText Typo="Typo.body1">@employee.EmergencyContactName</MudText>
+                                </div>
+                                @if (!string.IsNullOrEmpty(employee.EmergencyContactPhone))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Contact Phone</MudText>
+                                        <MudText Typo="Typo.body1">@employee.EmergencyContactPhone</MudText>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(employee.EmergencyContactRelationship))
+                                {
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Relationship</MudText>
+                                        <MudText Typo="Typo.body1">@employee.EmergencyContactRelationship</MudText>
+                                    </div>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <!-- Department Memberships Card -->
+            @if (employee.Departments != null && employee.Departments.Any())
+            {
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" GutterBottom="true">
+                                <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" Class="mr-2" />
+                                Department Memberships
+                            </MudText>
+                            <MudDivider Class="mb-3" />
+
+                            <MudGrid Spacing="2">
+                                @foreach (var dept in employee.Departments)
+                                {
+                                    <MudItem xs="12" sm="6" md="4">
+                                        <MudPaper Class="pa-3" Elevation="1">
+                                            <MudStack Spacing="1">
+                                                <div class="d-flex align-center gap-2">
+                                                    <MudText Typo="Typo.body1"><strong>@dept.DepartmentName</strong></MudText>
+                                                    @if (dept.IsPrimary)
+                                                    {
+                                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">Primary</MudChip>
+                                                    }
+                                                </div>
+                                                @if (dept.AllocationPercentage.HasValue)
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Allocation: @dept.AllocationPercentage%</MudText>
+                                                }
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Since: @dept.JoinedDate.ToString("MMM yyyy")</MudText>
+                                            </MudStack>
+                                        </MudPaper>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <!-- Managed Departments Card -->
+            @if (employee.ManagedDepartmentNames != null && employee.ManagedDepartmentNames.Any())
+            {
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" GutterBottom="true">
+                                <MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle" Class="mr-2" />
+                                Managed Departments
+                            </MudText>
+                            <MudDivider Class="mb-3" />
+
+                            <MudStack Row="true" Spacing="2">
+                                @foreach (var deptName in employee.ManagedDepartmentNames)
+                                {
+                                    <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Filled">@deptName</MudChip>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <!-- Additional Details Card (kept but simplified) -->
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                            Additional Information
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Days Employed</MudText>
+                                <MudText Typo="Typo.body2">@((DateTime.Now - employee.HireDate).Days) days</MudText>
+                            </MudItem>
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Employment Type</MudText>
+                                <MudText Typo="Typo.body2">@(employee.EmploymentType ?? "Full-Time")</MudText>
+                            </MudItem>
+                            @if (employee.DateOfBirth.HasValue)
+                            {
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Age</MudText>
+                                    <MudText Typo="Typo.body2">@((DateTime.Now.Year - employee.DateOfBirth.Value.Year)) years</MudText>
+                                </MudItem>
+                            }
+                            <MudItem xs="12" sm="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Record Status</MudText>
+                                <MudText Typo="Typo.body2">Active Record</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Quick Actions Card -->
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+                            Quick Actions
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Email" Color="Color.Primary">
+                                Send Email
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Phone" Color="Color.Info">
+                                Call Employee
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Description" Color="Color.Secondary">
+                                View Documents
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary">
+                                View Schedule
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Assessment" Color="Color.Success">
+                                Performance Reviews
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Back Button -->
+        <div class="mt-4">
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/modules/hr/employees">
+                Back to Employees
+            </MudButton>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private HR.Application.DTOs.EmployeeDto? employee;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployee();
+    }
+
+    private async Task LoadEmployee()
+    {
+        isLoading = true;
+        try
+        {
+            employee = await EmployeeService.GetEmployeeByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading employee: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetTenure(DateTime hireDate)
+    {
+        var tenure = DateTime.Now - hireDate;
+        var years = (int)(tenure.TotalDays / 365);
+        var months = (int)((tenure.TotalDays % 365) / 30);
+
+        if (years > 0)
+            return $"{years} year{(years != 1 ? "s" : "")} {months} month{(months != 1 ? "s" : "")}";
+        else if (months > 0)
+            return $"{months} month{(months != 1 ? "s" : "")}";
+        else
+            return $"{(int)tenure.TotalDays} day{(tenure.TotalDays != 1 ? "s" : "")}";
+    }
+
+    private string GetShortId(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+            return "N/A";
+
+        if (id.Length <= 8)
+            return id;
+
+        return $"{id.Substring(0, 8)}...";
+    }
+}

@@ -1,0 +1,371 @@
+@page "/hr/timeoff"
+@using HR.Web.Components.Shared
+
+<PageTitle>Time Off & Attendance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Time Off & Attendance" 
+                  Subtitle="PTO, vacation, and sick leave tracking"
+                  Icon="@Icons.Material.Filled.EventAvailable">
+        <Actions>
+            <MudTooltip Text="Request time off">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                    New Request
+                </MudButton>
+            </MudTooltip>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Out Today</MudText>
+                                <MudText Typo="Typo.h4">@employeesOutToday</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">@((employeesOutToday * 100.0 / 75).ToString("F1"))% of workforce</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Pending Requests</MudText>
+                                <MudText Typo="Typo.h4">@pendingRequests</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Awaiting approval</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.HourglassEmpty" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">PTO Used (YTD)</MudText>
+                                <MudText Typo="Typo.h4">@ptoUsedYTD</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Company-wide days</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.BeachAccess" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg PTO Balance</MudText>
+                                <MudText Typo="Typo.h4">@avgPtoBalance</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Days per employee</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Upcoming Time Off Calendar -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" />
+                Upcoming Time Off (Next 30 Days)
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Days</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in upcomingTimeOff)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@item.Initials</MudAvatar>
+                                    <strong>@item.EmployeeName</strong>
+                                </div>
+                            </td>
+                            <td>@item.Department</td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="@GetTimeOffTypeColor(item.Type)">@item.Type</MudChip>
+                            </td>
+                            <td>@item.StartDate.ToString("MMM dd, yyyy")</td>
+                            <td>@item.EndDate.ToString("MMM dd, yyyy")</td>
+                            <td><strong>@item.Days</strong></td>
+                            <td>
+                                <MudBadge Content="@item.Status" Color="@GetStatusColor(item.Status)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+
+        <!-- Pending Approval Queue -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Approval" Class="mr-2" />
+                Pending Approval Queue
+            </MudText>
+            <MudTable Items="@pendingApprovals" Hover="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Dates</MudTh>
+                    <MudTh>Days</MudTh>
+                    <MudTh>Requested</MudTh>
+                    <MudTh>Manager</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.EmployeeName</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Color="@GetTimeOffTypeColor(context.Type)">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Dates">
+                        @context.StartDate.ToString("MMM dd") - @context.EndDate.ToString("MMM dd")
+                    </MudTd>
+                    <MudTd DataLabel="Days"><strong>@context.Days</strong></MudTd>
+                    <MudTd DataLabel="Requested">@context.RequestedDate.ToString("MMM dd")</MudTd>
+                    <MudTd DataLabel="Manager">@context.Manager</MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="Approve request">
+                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                            </MudTooltip>
+                            <MudTooltip Text="Deny request">
+                                <MudIconButton Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Color="Color.Error" />
+                            </MudTooltip>
+                            <MudTooltip Text="View details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+
+        <!-- PTO Balances Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@ptoBalances" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">PTO Balances</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all employees">
+                            <MudButton Color="@(filterBalance == null ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter low balance employees">
+                            <MudButton Color="@(filterBalance == "Low" ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = "Low")">Low Balance</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter high balance employees">
+                            <MudButton Color="@(filterBalance == "High" ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = "High")">High Balance</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter negative balance employees">
+                            <MudButton Color="@(filterBalance == "Negative" ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = "Negative")">Negative</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>PTO Accrued</MudTh>
+                    <MudTh>PTO Used</MudTh>
+                    <MudTh>Balance</MudTh>
+                    <MudTh>Accrual Rate</MudTh>
+                    <MudTh>Rollover</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.EmployeeName</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="PTO Accrued">@context.Accrued days</MudTd>
+                    <MudTd DataLabel="PTO Used">@context.Used days</MudTd>
+                    <MudTd DataLabel="Balance">
+                        <MudChip T="string" Size="Size.Small" Color="@GetBalanceColor(context.Balance)">
+                            <strong>@context.Balance days</strong>
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Accrual Rate">@context.AccrualRate days/mo</MudTd>
+                    <MudTd DataLabel="Rollover">
+                        @if (context.RolloverDays > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.RolloverDays days</MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View time off history">
+                                <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Adjust balance">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterBalance = null;
+
+    // Summary stats
+    private int employeesOutToday = 8;
+    private int pendingRequests = 12;
+    private int ptoUsedYTD = 892;
+    private decimal avgPtoBalance = 14.3m;
+
+    // Data collections
+    private List<UpcomingTimeOff> upcomingTimeOff = new();
+    private List<PendingApproval> pendingApprovals = new();
+    private List<PtoBalance> ptoBalances = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        upcomingTimeOff = new List<UpcomingTimeOff>
+        {
+            new() { EmployeeName = "Sarah Johnson", Initials = "SJ", Department = "Engineering", Type = "Vacation", StartDate = DateTime.Now.AddDays(3), EndDate = DateTime.Now.AddDays(7), Days = 5, Status = "Approved" },
+            new() { EmployeeName = "Michael Chen", Initials = "MC", Department = "Sales", Type = "PTO", StartDate = DateTime.Now.AddDays(5), EndDate = DateTime.Now.AddDays(5), Days = 1, Status = "Approved" },
+            new() { EmployeeName = "Emily Davis", Initials = "ED", Department = "Marketing", Type = "Sick", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(2), Days = 3, Status = "Approved" },
+            new() { EmployeeName = "James Wilson", Initials = "JW", Department = "Engineering", Type = "Vacation", StartDate = DateTime.Now.AddDays(14), EndDate = DateTime.Now.AddDays(21), Days = 8, Status = "Approved" },
+            new() { EmployeeName = "Lisa Anderson", Initials = "LA", Department = "HR", Type = "PTO", StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(12), Days = 3, Status = "Pending" }
+        };
+
+        pendingApprovals = new List<PendingApproval>
+        {
+            new() { EmployeeName = "David Martinez", Initials = "DM", Type = "Vacation", StartDate = DateTime.Now.AddDays(20), EndDate = DateTime.Now.AddDays(27), Days = 8, RequestedDate = DateTime.Now.AddDays(-2), Manager = "Robert Taylor" },
+            new() { EmployeeName = "Amanda Lee", Initials = "AL", Type = "PTO", StartDate = DateTime.Now.AddDays(7), EndDate = DateTime.Now.AddDays(9), Days = 3, RequestedDate = DateTime.Now.AddDays(-1), Manager = "Sarah Johnson" },
+            new() { EmployeeName = "Robert Taylor", Initials = "RT", Type = "Sick", StartDate = DateTime.Now.AddDays(1), EndDate = DateTime.Now.AddDays(1), Days = 1, RequestedDate = DateTime.Now, Manager = "Emily Davis" }
+        };
+
+        ptoBalances = new List<PtoBalance>
+        {
+            new() { EmployeeName = "Sarah Johnson", Initials = "SJ", Department = "Engineering", Accrued = 20, Used = 8, Balance = 12, AccrualRate = 1.67m, RolloverDays = 0 },
+            new() { EmployeeName = "Michael Chen", Initials = "MC", Department = "Sales", Accrued = 18, Used = 12, Balance = 6, AccrualRate = 1.5m, RolloverDays = 5 },
+            new() { EmployeeName = "Emily Davis", Initials = "ED", Department = "Marketing", Accrued = 22, Used = 5, Balance = 17, AccrualRate = 1.83m, RolloverDays = 0 },
+            new() { EmployeeName = "James Wilson", Initials = "JW", Department = "Engineering", Accrued = 25, Used = 18, Balance = 7, AccrualRate = 2.08m, RolloverDays = 3 },
+            new() { EmployeeName = "Lisa Anderson", Initials = "LA", Department = "HR", Accrued = 20, Used = 10, Balance = 10, AccrualRate = 1.67m, RolloverDays = 0 },
+            new() { EmployeeName = "David Martinez", Initials = "DM", Department = "Finance", Accrued = 15, Used = 18, Balance = -3, AccrualRate = 1.25m, RolloverDays = 0 },
+            new() { EmployeeName = "Amanda Lee", Initials = "AL", Department = "Engineering", Accrued = 18, Used = 7, Balance = 11, AccrualRate = 1.5m, RolloverDays = 2 },
+            new() { EmployeeName = "Robert Taylor", Initials = "RT", Department = "Sales", Accrued = 20, Used = 3, Balance = 17, AccrualRate = 1.67m, RolloverDays = 0 }
+        };
+    }
+
+    private Color GetTimeOffTypeColor(string type) => type switch
+    {
+        "Vacation" => Color.Primary,
+        "PTO" => Color.Success,
+        "Sick" => Color.Warning,
+        "Unpaid" => Color.Error,
+        _ => Color.Default
+    };
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Pending" => Color.Warning,
+        "Denied" => Color.Error,
+        _ => Color.Default
+    };
+
+    private Color GetBalanceColor(decimal balance)
+    {
+        if (balance < 0) return Color.Error;
+        if (balance < 5) return Color.Warning;
+        if (balance > 15) return Color.Success;
+        return Color.Default;
+    }
+
+    private class UpcomingTimeOff
+    {
+        public string EmployeeName { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Type { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int Days { get; set; }
+        public string Status { get; set; } = "";
+    }
+
+    private class PendingApproval
+    {
+        public string EmployeeName { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Type { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int Days { get; set; }
+        public DateTime RequestedDate { get; set; }
+        public string Manager { get; set; } = "";
+    }
+
+    private class PtoBalance
+    {
+        public string EmployeeName { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Accrued { get; set; }
+        public decimal Used { get; set; }
+        public decimal Balance { get; set; }
+        public decimal AccrualRate { get; set; }
+        public int RolloverDays { get; set; }
+    }
+}

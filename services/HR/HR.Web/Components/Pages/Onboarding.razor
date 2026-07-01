@@ -1,0 +1,275 @@
+@page "/hr/onboarding"
+
+<PageTitle>Onboarding</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                Employee Onboarding
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Streamline new hire processes and track progress</MudText>
+        </div>
+        <MudTooltip Text="Start a new employee onboarding process">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                New Onboarding
+            </MudButton>
+        </MudTooltip>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active Onboardings</MudText>
+                                <MudText Typo="Typo.h4">@activeOnboardings</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">+3 this week</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Pending Tasks</MudText>
+                                <MudText Typo="Typo.h4">@pendingTasks</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Requires attention</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Completed</MudText>
+                                <MudText Typo="Typo.h4">@completedOnboardings</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">This month</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Completion</MudText>
+                                <MudText Typo="Typo.h4">@avgCompletionRate%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Primary">Overall rate</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Onboarding Pipeline -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Onboarding Pipeline</MudText>
+            <MudGrid Spacing="2">
+                @foreach (var stage in stages)
+                {
+                    <MudItem xs="12" md="3">
+                        <MudPaper Elevation="1" Class="pa-3" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <MudText Typo="Typo.h6">@stage.Name</MudText>
+                            <MudText Typo="Typo.h3">@stage.Count</MudText>
+                            <MudText Typo="Typo.caption">@stage.Description</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Active Onboardings Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@onboardings" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Active Onboarding List</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all onboarding records">
+                            <MudButton Color="@(filterStatus == null ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Show only in-progress onboarding">
+                            <MudButton Color="@(filterStatus == "In Progress" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "In Progress")">In Progress</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Show completed onboarding">
+                            <MudButton Color="@(filterStatus == "Completed" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Completed")">Completed</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>New Hire</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Start Date</MudTh>
+                    <MudTh>Progress</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Assigned To</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="New Hire">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                @context.Initials
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Position</MudText>
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Start Date">
+                        <MudText Typo="Typo.body2">@context.StartDate.ToString("MMM dd, yyyy")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@GetDaysUntilStart(context.StartDate)</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Progress">
+                        <div class="d-flex align-center gap-2">
+                            <MudProgressLinear Color="@GetProgressColor(context.Progress)" Value="@context.Progress" Size="Size.Medium" Style="width: 100px;" />
+                            <MudText Typo="Typo.body2">@context.Progress%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudBadge Content="@context.Status" Color="@GetStatusColor(context.Status)" />
+                    </MudTd>
+                    <MudTd DataLabel="Assigned To">
+                        <MudText Typo="Typo.body2">@context.AssignedTo</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View onboarding details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit onboarding process">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Mark as complete">
+                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterStatus = null;
+
+    // Summary stats
+    private int activeOnboardings = 12;
+    private int pendingTasks = 34;
+    private int completedOnboardings = 8;
+    private int avgCompletionRate = 78;
+
+    // Pipeline stages
+    private List<PipelineStage> stages = new()
+    {
+        new() { Name = "Pre-boarding", Count = 5, Description = "Before start date" },
+        new() { Name = "First Day", Count = 3, Description = "Orientation" },
+        new() { Name = "First Week", Count = 4, Description = "Training" },
+        new() { Name = "First Month", Count = 2, Description = "Integration" }
+    };
+
+    // Sample onboarding data
+    private List<OnboardingRecord> onboardings = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500); // Simulate API call
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        onboardings = new List<OnboardingRecord>
+        {
+            new() { Name = "Sarah Johnson", Initials = "SJ", Position = "Software Engineer", Department = "Engineering", StartDate = DateTime.Now.AddDays(7), Progress = 45, Status = "In Progress", AssignedTo = "Mike Chen" },
+            new() { Name = "David Martinez", Initials = "DM", Position = "Product Manager", Department = "Product", StartDate = DateTime.Now.AddDays(14), Progress = 25, Status = "In Progress", AssignedTo = "Lisa Wang" },
+            new() { Name = "Emily Brown", Initials = "EB", Position = "UX Designer", Department = "Design", StartDate = DateTime.Now.AddDays(3), Progress = 80, Status = "In Progress", AssignedTo = "Tom Anderson" },
+            new() { Name = "James Wilson", Initials = "JW", Position = "Data Analyst", Department = "Analytics", StartDate = DateTime.Now.AddDays(-7), Progress = 100, Status = "Completed", AssignedTo = "Rachel Kim" },
+            new() { Name = "Maria Garcia", Initials = "MG", Position = "HR Specialist", Department = "HR", StartDate = DateTime.Now.AddDays(21), Progress = 15, Status = "In Progress", AssignedTo = "John Smith" },
+            new() { Name = "Robert Lee", Initials = "RL", Position = "DevOps Engineer", Department = "Engineering", StartDate = DateTime.Now.AddDays(-3), Progress = 95, Status = "In Progress", AssignedTo = "Mike Chen" },
+            new() { Name = "Jennifer Taylor", Initials = "JT", Position = "Sales Manager", Department = "Sales", StartDate = DateTime.Now.AddDays(10), Progress = 35, Status = "In Progress", AssignedTo = "Sarah Miller" },
+            new() { Name = "Michael Davis", Initials = "MD", Position = "Marketing Manager", Department = "Marketing", StartDate = DateTime.Now.AddDays(-14), Progress = 100, Status = "Completed", AssignedTo = "Emma Wilson" },
+        };
+    }
+
+    private string GetDaysUntilStart(DateTime startDate)
+    {
+        var days = (startDate - DateTime.Now).Days;
+        if (days > 0) return $"in {days} day(s)";
+        if (days == 0) return "Today";
+        return $"{Math.Abs(days)} day(s) ago";
+    }
+
+    private Color GetProgressColor(int progress)
+    {
+        if (progress >= 80) return Color.Success;
+        if (progress >= 50) return Color.Info;
+        if (progress >= 25) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Completed" => Color.Success,
+            "In Progress" => Color.Warning,
+            "Not Started" => Color.Default,
+            _ => Color.Info
+        };
+    }
+
+    private class PipelineStage
+    {
+        public string Name { get; set; } = "";
+        public int Count { get; set; }
+        public string Description { get; set; } = "";
+    }
+
+    private class OnboardingRecord
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public int Progress { get; set; }
+        public string Status { get; set; } = "";
+        public string AssignedTo { get; set; } = "";
+    }
+}

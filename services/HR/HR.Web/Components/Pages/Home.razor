@@ -1,0 +1,164 @@
+@page "/hr"
+@page "/hr/home"
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">HR</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+        Human Resources
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manage your organization's most valuable asset - your people
+    </MudText>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Employees</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        View and manage employee records
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudTooltip Text="Navigate to employee directory">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/modules/hr/employees">
+                            View Employees
+                        </MudButton>
+                    </MudTooltip>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Departments</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Organize your company structure
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudTooltip Text="Navigate to departments overview">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/modules/hr/departments">
+                            View Departments
+                        </MudButton>
+                    </MudTooltip>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Style="height: 100%; opacity: 0.6;">
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Onboarding</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Coming soon
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Style="height: 100%; opacity: 0.6;">
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Benefits</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Coming soon
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Class="mt-8">
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                    About HR Module
+                </MudText>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    The Human Resources module provides comprehensive workforce management capabilities including:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Employee Management</strong> - Track employee information, contact details, and employment history
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Department Organization</strong> - Structure your organization with departments and hierarchies
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Onboarding Workflows</strong> - Streamline new hire processes (coming soon)
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Benefits Administration</strong> - Manage employee benefits and enrollments (coming soon)
+                    </MudListItem>
+                </MudList>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-auto pt-4">
+                    This module is dynamically loaded via the Module Registry Service and provides both web UI and mobile API contracts.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                    Module Info
+                </MudText>
+                <MudStack Spacing="2" Class="flex-grow-1">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Module ID</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">hr</MudChip>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                        <MudText Typo="Typo.body2">1.0.0</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
+                        <MudText Typo="Typo.body2">5041</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Web UI Port</MudText>
+                        <MudText Typo="Typo.body2">5002</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Mobile Support</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Yes</MudChip>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .mud-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mud-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+@code {
+    // Navigation is now fully automatic via NavigationInterceptor!
+    // No manual OnAfterRenderAsync needed
+    // Clicks on links and NavigationManager calls are automatically intercepted
+}
+

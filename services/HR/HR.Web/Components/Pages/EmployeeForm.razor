@@ -1,0 +1,513 @@
+@page "/hr/employees/create"
+@page "/hr/employees/{id}/edit"
+@inject HR.Application.Services.IEmployeeService EmployeeService
+@inject HR.Application.Services.IDepartmentService DepartmentService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "Edit Employee" : "Create Employee")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2 pa-0">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Breadcrumbs -->
+        <div class="mb-3">
+            <MudLink Href="/dashboard">Dashboard</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr">HR</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr/employees">Employees</MudLink>
+            <span class="mx-2">/</span>
+            <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@(IsEditMode ? "Edit" : "Create")</MudText>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-4">
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@(IsEditMode ? Icons.Material.Filled.Edit : Icons.Material.Filled.PersonAdd)" Class="mr-2" />
+                @(IsEditMode ? "Edit Employee" : "Create New Employee")
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                @(IsEditMode ? "Update employee information below" : "Enter employee details to create a new record")
+            </MudText>
+        </div>
+
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                    Personal Information
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.FirstName" 
+                                      Label="First Name" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true"
+                                      For="@(() => model.FirstName)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.LastName" 
+                                      Label="Last Name" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true"
+                                      For="@(() => model.LastName)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.Email" 
+                                      Label="Work Email" 
+                                      Variant="Variant.Outlined" 
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      For="@(() => model.Email)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.PersonalEmail" 
+                                      Label="Personal Email" 
+                                      Variant="Variant.Outlined" 
+                                      InputType="InputType.Email"
+                                      For="@(() => model.PersonalEmail)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.PhoneNumber" 
+                                      Label="Phone Number" 
+                                      Variant="Variant.Outlined" 
+                                      InputType="InputType.Telephone"
+                                      For="@(() => model.PhoneNumber)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="dateOfBirth" 
+                                       Label="Date of Birth" 
+                                       Variant="Variant.Outlined" 
+                                       MaxDate="DateTime.Today.AddYears(-18)" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Home" Class="mr-2" />
+                    Address Information
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="model.AddressLine1" 
+                                      Label="Address Line 1" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.AddressLine1)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="model.AddressLine2" 
+                                      Label="Address Line 2" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.AddressLine2)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.City" 
+                                      Label="City" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.City)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.State" 
+                                      Label="State/Province" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.State)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.PostalCode" 
+                                      Label="Postal Code" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.PostalCode)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="model.Country" 
+                                      Label="Country" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.Country)" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.ContactPhone" Class="mr-2" />
+                    Emergency Contact
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.EmergencyContactName" 
+                                      Label="Contact Name" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.EmergencyContactName)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.EmergencyContactPhone" 
+                                      Label="Contact Phone" 
+                                      Variant="Variant.Outlined" 
+                                      InputType="InputType.Telephone"
+                                      For="@(() => model.EmergencyContactPhone)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.EmergencyContactRelationship" 
+                                      Label="Relationship" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.EmergencyContactRelationship)" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+                    Employment Details
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.JobTitle" 
+                                      Label="Job Title" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true"
+                                      For="@(() => model.JobTitle)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect @bind-Value="model.EmploymentType" 
+                                   Label="Employment Type" 
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentType.FullTime)">Full-Time</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentType.PartTime)">Part-Time</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentType.Contract)">Contract</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentType.Temporary)">Temporary</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentType.Intern)">Intern</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect @bind-Value="model.Department" 
+                                   Label="Primary Department" 
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@("")">-- Select Department --</MudSelectItem>
+                            @foreach (var dept in departments)
+                            {
+                                <MudSelectItem Value="@dept.Name">@dept.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.WorkLocation" 
+                                      Label="Work Location" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.WorkLocation)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="hireDate" 
+                                       Label="Hire Date" 
+                                       Variant="Variant.Outlined" 
+                                       Required="true"
+                                       MaxDate="DateTime.Today" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect @bind-Value="model.Status" 
+                                   Label="Employment Status" 
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentStatus.Active)">Active</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentStatus.OnLeave)">On Leave</MudSelectItem>
+                            <MudSelectItem Value="@nameof(HR.Domain.Entities.EmploymentStatus.Terminated)">Terminated</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.SalaryGrade" 
+                                      Label="Salary Grade" 
+                                      Variant="Variant.Outlined" 
+                                      For="@(() => model.SalaryGrade)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect @bind-Value="model.ManagerId" 
+                                   Label="Reports To (Manager)" 
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@("")">-- No Manager --</MudSelectItem>
+                            @foreach (var emp in allEmployees.Where(e => e.Id != Id))
+                            {
+                                <MudSelectItem Value="@emp.Id">@($"{emp.FirstName} {emp.LastName} - {emp.JobTitle}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-space-between mt-4">
+                <MudButton Variant="Variant.Text" 
+                           StartIcon="@Icons.Material.Filled.ArrowBack" 
+                           OnClick="Cancel">
+                    Cancel
+                </MudButton>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           ButtonType="ButtonType.Submit"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="isSaving">
+                    @(isSaving ? "Saving..." : "Save Employee")
+                </MudButton>
+            </div>
+        </EditForm>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private bool IsEditMode => !string.IsNullOrEmpty(Id);
+    private EmployeeFormModel model = new();
+    private List<HR.Application.DTOs.DepartmentDto> departments = new();
+    private List<HR.Application.DTOs.EmployeeDto> allEmployees = new();
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private DateTime? hireDate;
+    private DateTime? dateOfBirth;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartments();
+        await LoadAllEmployees();
+
+        if (IsEditMode && !string.IsNullOrEmpty(Id))
+        {
+            await LoadEmployee();
+        }
+        else
+        {
+            model.Status = nameof(HR.Domain.Entities.EmploymentStatus.Active);
+            model.EmploymentType = nameof(HR.Domain.Entities.EmploymentType.FullTime);
+            hireDate = DateTime.Today;
+        }
+
+        isLoading = false;
+    }
+
+    private async Task LoadDepartments()
+    {
+        try
+        {
+            var allDepts = await DepartmentService.GetAllDepartmentsAsync();
+            departments = allDepts.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading departments: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadAllEmployees()
+    {
+        try
+        {
+            var employees = await EmployeeService.GetAllEmployeesAsync();
+            allEmployees = employees.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading employees: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadEmployee()
+    {
+        try
+        {
+            var employee = await EmployeeService.GetEmployeeByIdAsync(Id!);
+            if (employee != null)
+            {
+                model.FirstName = employee.FirstName;
+                model.LastName = employee.LastName;
+                model.Email = employee.Email;
+                model.PersonalEmail = employee.PersonalEmail;
+                model.PhoneNumber = employee.PhoneNumber;
+                model.JobTitle = employee.JobTitle ?? string.Empty;
+                model.Department = employee.Department ?? string.Empty;
+                model.EmploymentType = employee.EmploymentType ?? nameof(HR.Domain.Entities.EmploymentType.FullTime);
+                model.Status = employee.Status;
+                model.WorkLocation = employee.WorkLocation;
+                model.SalaryGrade = employee.SalaryGrade;
+                model.ManagerId = employee.ManagerId;
+
+                // Address
+                model.AddressLine1 = employee.AddressLine1;
+                model.AddressLine2 = employee.AddressLine2;
+                model.City = employee.City;
+                model.State = employee.State;
+                model.PostalCode = employee.PostalCode;
+                model.Country = employee.Country;
+
+                // Emergency Contact
+                model.EmergencyContactName = employee.EmergencyContactName;
+                model.EmergencyContactPhone = employee.EmergencyContactPhone;
+                model.EmergencyContactRelationship = employee.EmergencyContactRelationship;
+
+                hireDate = employee.HireDate;
+                dateOfBirth = employee.DateOfBirth;
+            }
+            else
+            {
+                Snackbar.Add("Employee not found", Severity.Error);
+                Navigation.NavigateTo("/modules/hr/employees");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading employee: {ex.Message}", Severity.Error);
+            Navigation.NavigateTo("/modules/hr/employees");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            if (IsEditMode)
+            {
+                var updateRequest = new HR.Application.DTOs.UpdateEmployeeRequest
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PersonalEmail = model.PersonalEmail,
+                    PhoneNumber = model.PhoneNumber,
+                    DateOfBirth = dateOfBirth,
+                    Department = model.Department,
+                    JobTitle = model.JobTitle,
+                    EmploymentType = model.EmploymentType ?? nameof(HR.Domain.Entities.EmploymentType.FullTime),
+                    HireDate = hireDate ?? DateTime.Today,
+                    Status = model.Status,
+                    WorkLocation = model.WorkLocation,
+                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : model.ManagerId,
+                    SalaryGrade = model.SalaryGrade,
+                    AddressLine1 = model.AddressLine1,
+                    AddressLine2 = model.AddressLine2,
+                    City = model.City,
+                    State = model.State,
+                    PostalCode = model.PostalCode,
+                    Country = model.Country,
+                    EmergencyContactName = model.EmergencyContactName,
+                    EmergencyContactPhone = model.EmergencyContactPhone,
+                    EmergencyContactRelationship = model.EmergencyContactRelationship
+                };
+
+                await EmployeeService.UpdateEmployeeAsync(Id!, updateRequest);
+                Snackbar.Add("Employee updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createRequest = new HR.Application.DTOs.CreateEmployeeRequest
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PersonalEmail = model.PersonalEmail,
+                    PhoneNumber = model.PhoneNumber,
+                    DateOfBirth = dateOfBirth,
+                    Department = model.Department,
+                    JobTitle = model.JobTitle,
+                    EmploymentType = model.EmploymentType ?? nameof(HR.Domain.Entities.EmploymentType.FullTime),
+                    HireDate = hireDate ?? DateTime.Today,
+                    Status = model.Status,
+                    WorkLocation = model.WorkLocation,
+                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : model.ManagerId,
+                    SalaryGrade = model.SalaryGrade,
+                    AddressLine1 = model.AddressLine1,
+                    AddressLine2 = model.AddressLine2,
+                    City = model.City,
+                    State = model.State,
+                    PostalCode = model.PostalCode,
+                    Country = model.Country,
+                    EmergencyContactName = model.EmergencyContactName,
+                    EmergencyContactPhone = model.EmergencyContactPhone,
+                    EmergencyContactRelationship = model.EmergencyContactRelationship
+                };
+
+                await EmployeeService.CreateEmployeeAsync(createRequest);
+                Snackbar.Add("Employee created successfully", Severity.Success);
+            }
+
+            Navigation.NavigateTo("/modules/hr/employees");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving employee: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(IsEditMode ? $"/modules/hr/employees/{Id}" : "/modules/hr/employees");
+    }
+
+    public class EmployeeFormModel
+    {
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [EmailAddress(ErrorMessage = "Invalid personal email address")]
+        public string? PersonalEmail { get; set; }
+
+        [Phone(ErrorMessage = "Invalid phone number")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Job title is required")]
+        public string JobTitle { get; set; } = string.Empty;
+
+        public string? Department { get; set; }
+        public string? EmploymentType { get; set; }
+        public string? WorkLocation { get; set; }
+        public string? ManagerId { get; set; }
+        public string? SalaryGrade { get; set; }
+
+        [Required(ErrorMessage = "Status is required")]
+        public string Status { get; set; } = nameof(HR.Domain.Entities.EmploymentStatus.Active);
+
+        // Address
+        public string? AddressLine1 { get; set; }
+        public string? AddressLine2 { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? PostalCode { get; set; }
+        public string? Country { get; set; }
+
+        // Emergency Contact
+        public string? EmergencyContactName { get; set; }
+        public string? EmergencyContactPhone { get; set; }
+        public string? EmergencyContactRelationship { get; set; }
+    }
+}

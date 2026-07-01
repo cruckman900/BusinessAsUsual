@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 using BusinessAsUsual.Web.Modules._Shared;
+using BusinessAsUsual.Web.Services;
 
 namespace BusinessAsUsual.Web.Components.Layout
 {
@@ -45,6 +46,11 @@ namespace BusinessAsUsual.Web.Components.Layout
         /// customization or testing.</remarks>
         [Inject] public PageHeaderService HeaderService { get; set; } = default!;
 
+        /// <summary>
+        /// Gets or sets the module discovery service used to discover modules from Module Registry Service.
+        /// </summary>
+        [Inject] public IModuleDiscoveryService ModuleDiscoveryService { get; set; } = default!;
+
         // ------------------------------------------------------------
         // State
         // ------------------------------------------------------------
@@ -64,12 +70,7 @@ namespace BusinessAsUsual.Web.Components.Layout
         // Module Navigation
         // ------------------------------------------------------------
 
-        private List<Modules._Shared.ModuleDefinition> Modules = new()
-        {
-            new() { Name = "HR", Description = "Manage employees, onboarding, and benefits", Route = "/hr", Icon = Icons.Material.Filled.People },
-            new() { Name = "Finance", Description = "Invoices, payroll, and financial reporting", Route = "/finance", Icon = Icons.Material.Filled.AttachMoney },
-            new() { Name = "CRM", Description="Customer relationships and communication", Route = "/crm", Icon = Icons.Material.Filled.BusinessCenter }
-        };
+        private List<Modules._Shared.ModuleDefinition> Modules = new();
 
         private List<Modules._Shared.ModuleDefinition> OverflowModules = new()
         {
@@ -87,12 +88,57 @@ namespace BusinessAsUsual.Web.Components.Layout
         /// handlers to respond to navigation changes and header updates, ensuring the component remains synchronized
         /// with application state. Override this method to perform additional setup when the component is first
         /// rendered.</remarks>
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             Nav.LocationChanged += HandleLocationChanged;
             HeaderService.OnChange += HandleHeaderChanged;
 
+            // Load modules from Module Registry Service FIRST
+            await LoadModulesAsync();
+
+            // Then update module from current URI (after modules are loaded)
             UpdateModuleFromUri(Nav.Uri);
+        }
+
+        private async Task LoadModulesAsync()
+        {
+            try
+            {
+                var discoveredModules = await ModuleDiscoveryService.GetModulesWithUiAsync();
+
+                Console.WriteLine($"[MainLayout] Discovered {discoveredModules.Count()} modules");
+
+                Modules = discoveredModules.Select(m => new Modules._Shared.ModuleDefinition
+                {
+                    Key = m.Key,
+                    Name = m.DisplayName,
+                    Description = m.Description,
+                    // Use /modules/{key} route to embed the module UI via iframe
+                    Route = $"/modules/{m.Key}",
+                    Icon = m.Icon ?? Icons.Material.Filled.Apps,
+                    NavigationItems = m.NavigationItems.Select(nav => new Modules._Shared.ModuleNavigationItem
+                    {
+                        Label = nav.Label,
+                        Route = nav.Route,
+                        Icon = nav.Icon
+                    }).ToList()
+                }).ToList();
+
+                foreach (var module in Modules)
+                {
+                    Console.WriteLine($"[MainLayout] Module: {module.Name} -> {module.Route} ({module.NavigationItems.Count} nav items)");
+                }
+
+                // Re-update module detection now that modules are loaded
+                UpdateModuleFromUri(Nav.Uri);
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash the app
+                Console.WriteLine($"Error loading modules: {ex.Message}");
+            }
         }
 
         private void HandleHeaderChanged()
@@ -114,6 +160,31 @@ namespace BusinessAsUsual.Web.Components.Layout
         {
             var path = new Uri(uri).AbsolutePath.ToLower();
 
+            // Check for embedded module routes first
+            if (path.StartsWith("/modules/"))
+            {
+                var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1)
+                {
+                    var moduleKey = parts[1]; // e.g., "hr" from "/modules/hr/employees"
+
+                    // If modules are loaded, find by route
+                    if (Modules.Any())
+                    {
+                        var module = Modules.FirstOrDefault(m => m.Route.Contains(moduleKey, StringComparison.OrdinalIgnoreCase));
+                        _currentModule = module?.Name;
+                    }
+                    else
+                    {
+                        // Fallback: Use key directly (modules not loaded yet)
+                        // This will be updated when LoadModulesAsync completes
+                        _currentModule = moduleKey.ToUpper();
+                    }
+                    return;
+                }
+            }
+
+            // Legacy hardcoded routes
             if (path.StartsWith("/hr"))
                 _currentModule = "HR";
             else if (path.StartsWith("/finance"))

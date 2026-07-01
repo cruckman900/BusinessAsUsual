@@ -1,0 +1,354 @@
+@page "/hr/benefits"
+@rendermode InteractiveServer
+
+<PageTitle>Benefits</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Class="mr-2" />
+                Benefits Administration
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage employee benefits, enrollments, and costs</MudText>
+        </div>
+        <MudTooltip Text="Create a new benefit plan">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                Add Benefit Plan
+            </MudButton>
+        </MudTooltip>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Error">
+            @errorMessage
+        </MudAlert>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+            Check the browser console for more details.
+        </MudText>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Plans</MudText>
+                                <MudText Typo="Typo.h4">@totalPlans</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Across all categories</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Enrolled Employees</MudText>
+                                <MudText Typo="Typo.h4">@enrolledEmployees</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">@enrollmentRate% enrollment</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Monthly Cost</MudText>
+                                <MudText Typo="Typo.h4">$@monthlyCost.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Company contribution</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Open Enrollment</MudText>
+                                <MudText Typo="Typo.h4">@daysUntilEnrollment</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Days remaining</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Cost Breakdown -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Cost Breakdown by Category</MudText>
+                    <MudStack Spacing="3">
+                        @if (costLabels != null && costData != null)
+                        {
+                            @for (int i = 0; i < Math.Min(costLabels.Length, costData.Length); i++)
+                            {
+                                var index = i; // Capture for lambda
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.body1">@costLabels[index]</MudText>
+                                    <MudText Typo="Typo.h6" Color="Color.Primary">$@costData[index].ToString("N0")/mo</MudText>
+                                </div>
+                            }
+                        }
+                        <MudDivider />
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.h6">Total Monthly</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Primary"><strong>$@monthlyCost.ToString("N0")</strong></MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Enrollment Summary</MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.body1">Health Insurance</MudText>
+                                <MudText Typo="Typo.body2">45 employees</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Primary" Value="60" Size="Size.Medium" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.body1">Dental</MudText>
+                                <MudText Typo="Typo.body2">38 employees</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="51" Size="Size.Medium" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.body1">Vision</MudText>
+                                <MudText Typo="Typo.body2">52 employees</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="69" Size="Size.Medium" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.body1">401(k)</MudText>
+                                <MudText Typo="Typo.body2">63 employees</MudText>
+                            </div>
+                            <MudProgressLinear Color="Color.Info" Value="84" Size="Size.Medium" />
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Benefits Plans Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@benefits" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Benefits Plans</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all benefit plans">
+                            <MudButton Color="@(filterCategory == null ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter health insurance plans">
+                            <MudButton Color="@(filterCategory == "Health" ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = "Health")">Health</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter dental plans">
+                            <MudButton Color="@(filterCategory == "Dental" ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = "Dental")">Dental</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter vision plans">
+                            <MudButton Color="@(filterCategory == "Vision" ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = "Vision")">Vision</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter 401(k) plans">
+                            <MudButton Color="@(filterCategory == "401k" ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = "401k")">401(k)</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Plan Name</MudTh>
+                    <MudTh>Category</MudTh>
+                    <MudTh>Provider</MudTh>
+                    <MudTh>Enrollments</MudTh>
+                    <MudTh>Employee Cost</MudTh>
+                    <MudTh>Company Cost</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Plan Name">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@GetCategoryIcon(context.Category)" Size="Size.Small" Class="mr-2" Color="@GetCategoryColor(context.Category)" />
+                            <div>
+                                <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Code</MudText>
+                            </div>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Category">
+                        <MudBadge Content="@context.Category" Color="@GetCategoryColor(context.Category)" />
+                    </MudTd>
+                    <MudTd DataLabel="Provider">
+                        <MudText Typo="Typo.body2">@context.Provider</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Enrollments">
+                        <div class="d-flex align-center gap-2">
+                            <MudProgressLinear Color="Color.Success" Value="@context.EnrollmentPercentage" Size="Size.Small" Style="width: 60px;" />
+                            <MudText Typo="Typo.body2">@context.Enrollments/@totalEmployees</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Employee Cost">
+                        <MudText Typo="Typo.body2">$@context.EmployeeCost/mo</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Company Cost">
+                        <MudText Typo="Typo.body2" Color="Color.Warning">$@context.CompanyCost/mo</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudBadge Content="@(context.IsActive ? "Active" : "Inactive")" Color="@(context.IsActive ? Color.Success : Color.Default)" />
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View benefit plan details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit benefit plan">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Manage enrollments">
+                                <MudIconButton Icon="@Icons.Material.Filled.Group" Size="Size.Small" Color="Color.Info" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+    </ChildContent>
+    <ErrorContent Context="error">
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+            <MudText Typo="Typo.h6">An error occurred while rendering the Benefits page</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">@error.Message</MudText>
+            <MudText Typo="Typo.caption" Class="mt-1">@error.StackTrace</MudText>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private bool isLoading = true;
+    private string? filterCategory = null;
+    private string? errorMessage;
+
+    // Summary stats
+    private int totalPlans = 12;
+    private int enrolledEmployees = 67;
+    private int totalEmployees = 75;
+    private int enrollmentRate = 89;
+    private decimal monthlyCost = 45680;
+    private int daysUntilEnrollment = 45;
+
+    // Chart data - ensure arrays match length
+    private readonly double[] costData = new double[] { 28000, 8500, 4200, 4980 };
+    private readonly string[] costLabels = new string[] { "Health Insurance", "Dental", "Vision", "401(k) Match" };
+
+    // Sample benefits data
+    private List<BenefitPlan> benefits = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Task.Delay(500); // Simulate API call
+            LoadSampleData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error initializing benefits: {ex.Message}";
+            Console.WriteLine(errorMessage);
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void LoadSampleData()
+    {
+        benefits = new List<BenefitPlan>
+        {
+            new() { Name = "Premium Health Plan", Code = "HP-001", Category = "Health", Provider = "BlueCross BlueShield", Enrollments = 45, EmployeeCost = 250, CompanyCost = 850, IsActive = true },
+            new() { Name = "Standard Health Plan", Code = "HP-002", Category = "Health", Provider = "BlueCross BlueShield", Enrollments = 22, EmployeeCost = 180, CompanyCost = 620, IsActive = true },
+            new() { Name = "Family Dental Plan", Code = "DP-001", Category = "Dental", Provider = "Delta Dental", Enrollments = 38, EmployeeCost = 45, CompanyCost = 95, IsActive = true },
+            new() { Name = "Individual Dental", Code = "DP-002", Category = "Dental", Provider = "Delta Dental", Enrollments = 29, EmployeeCost = 25, CompanyCost = 50, IsActive = true },
+            new() { Name = "Vision Plan", Code = "VP-001", Category = "Vision", Provider = "VSP", Enrollments = 52, EmployeeCost = 15, CompanyCost = 35, IsActive = true },
+            new() { Name = "401(k) Standard", Code = "RT-001", Category = "401k", Provider = "Fidelity", Enrollments = 63, EmployeeCost = 0, CompanyCost = 0, IsActive = true },
+            new() { Name = "Life Insurance", Code = "LI-001", Category = "Life", Provider = "MetLife", Enrollments = 75, EmployeeCost = 0, CompanyCost = 85, IsActive = true },
+            new() { Name = "Disability Insurance", Code = "DI-001", Category = "Disability", Provider = "Guardian", Enrollments = 48, EmployeeCost = 35, CompanyCost = 65, IsActive = true },
+        };
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category switch
+        {
+            "Health" => Icons.Material.Filled.LocalHospital,
+            "Dental" => Icons.Material.Filled.MedicalServices,
+            "Vision" => Icons.Material.Filled.RemoveRedEye,
+            "401k" => Icons.Material.Filled.Savings,
+            "Life" => Icons.Material.Filled.Favorite,
+            "Disability" => Icons.Material.Filled.Accessible,
+            _ => Icons.Material.Filled.CardGiftcard
+        };
+    }
+
+    private Color GetCategoryColor(string category)
+    {
+        return category switch
+        {
+            "Health" => Color.Primary,
+            "Dental" => Color.Success,
+            "Vision" => Color.Warning,
+            "401k" => Color.Secondary,
+            "Life" => Color.Error,
+            "Disability" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private class BenefitPlan
+    {
+        public string Name { get; set; } = "";
+        public string Code { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Provider { get; set; } = "";
+        public int Enrollments { get; set; }
+        public decimal EmployeeCost { get; set; }
+        public decimal CompanyCost { get; set; }
+        public bool IsActive { get; set; }
+        public int EnrollmentPercentage => (int)((double)Enrollments / 75 * 100);
+    }
+}

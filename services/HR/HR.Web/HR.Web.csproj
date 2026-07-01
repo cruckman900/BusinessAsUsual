@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\HR.Application\HR.Application.csproj" />
+    <ProjectReference Include="..\HR.Infrastructure\HR.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
+    <PackageReference Include="MudBlazor" Version="9.3.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <StaticWebAssetBasePath>_content/HR.Web</StaticWebAssetBasePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Exclude bootstrap from static web assets to avoid conflicts with parent shell -->
+    <Content Remove="wwwroot\lib\bootstrap\**" />
+    <None Include="wwwroot\lib\bootstrap\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Themes\" />
+  </ItemGroup>
+
+</Project>

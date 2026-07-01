@@ -1,0 +1,400 @@
+@page "/hr/departments/{id}"
+@inject HR.Application.Services.IDepartmentService DepartmentService
+@inject HR.Application.Services.IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+
+<PageTitle>Department Details</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (department == null)
+    {
+        <MudAlert Severity="Severity.Error">Department not found</MudAlert>
+    }
+    else
+    {
+        <!-- Breadcrumbs -->
+        <div class="mb-3">
+            <MudLink Href="/dashboard">Dashboard</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr">HR</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr/departments">Departments</MudLink>
+            <span class="mx-2">/</span>
+            <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@department.Name</MudText>
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex justify-space-between align-center mb-4">
+            <div>
+                <div class="d-flex align-center">
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                        @department.Name
+                    </MudText>
+                    @if (!string.IsNullOrEmpty(department.Code))
+                    {
+                        <MudChip T="string" Size="Size.Medium" Variant="Variant.Text" Class="ml-2">@department.Code</MudChip>
+                    }
+                </div>
+                @if (department.IsSubDepartment && !string.IsNullOrEmpty(department.ParentDepartmentName))
+                {
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-1">
+                        <MudIcon Icon="@Icons.Material.Filled.SubdirectoryArrowRight" Size="Size.Small" Class="mr-1" />
+                        Sub-department of @department.ParentDepartmentName
+                    </MudText>
+                }
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@department.Description</MudText>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Href="@($"/modules/hr/departments/{Id}/edit")">
+                    Edit Department
+                </MudButton>
+            </div>
+        </div>
+
+        <MudGrid Spacing="3">
+            <!-- Department Overview Card -->
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                            Department Overview
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Spacing="2">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Department Name</MudText>
+                                <MudText Typo="Typo.body1">@department.Name</MudText>
+                            </div>
+                            @if (!string.IsNullOrEmpty(department.Code))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Department Code</MudText>
+                                    <MudText Typo="Typo.body1">@department.Code</MudText>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(department.Location))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Location</MudText>
+                                    <MudText Typo="Typo.body1">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
+                                        @department.Location
+                                    </MudText>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(department.CostCenter))
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Cost Center</MudText>
+                                    <MudText Typo="Typo.body1">@department.CostCenter</MudText>
+                                </div>
+                            }
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Employee Count</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Primary">@department.EmployeeCount</MudText>
+                            </div>
+                            @if (department.SubDepartmentCount > 0)
+                            {
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Sub-departments</MudText>
+                                    <MudText Typo="Typo.h6" Color="Color.Info">@department.SubDepartmentCount</MudText>
+                                </div>
+                            }
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                                @if (department.IsActive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Inactive</MudChip>
+                                }
+                            </div>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Department Management Card -->
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle" Class="mr-2" />
+                            Management Team
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        @if (department.Managers != null && department.Managers.Any())
+                        {
+                            <MudStack Spacing="3">
+                                @foreach (var manager in department.Managers)
+                                {
+                                    <div>
+                                        <div class="d-flex align-center mb-1">
+                                            @if (manager.IsPrimary)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Size="Size.Small" Class="mr-1" />
+                                            }
+                                            <MudText Typo="Typo.body1"><strong>@manager.ManagerName</strong></MudText>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(manager.ManagerRole))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="ml-4">@manager.ManagerRole</MudText>
+                                        }
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-4">
+                                            Since @manager.StartDate.ToString("MMM yyyy")
+                                        </MudText>
+                                    </div>
+                                }
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No managers assigned</MudText>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Primary" 
+                                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                                       Size="Size.Small"
+                                       Class="mt-3"
+                                       Href="@($"/modules/hr/departments/{Id}/edit")">
+                                Assign Manager
+                            </MudButton>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Quick Stats Card -->
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+                            Quick Statistics
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Spacing="2">
+                            <div class="d-flex justify-space-between align-center">
+                                <MudText Typo="Typo.body2">Total Employees</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@departmentEmployees.Count()</MudChip>
+                            </div>
+                            <div class="d-flex justify-space-between align-center">
+                                <MudText Typo="Typo.body2">Active</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">@activeCount</MudChip>
+                            </div>
+                            <div class="d-flex justify-space-between align-center">
+                                <MudText Typo="Typo.body2">On Leave</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@onLeaveCount</MudChip>
+                            </div>
+                            <div class="d-flex justify-space-between align-center">
+                                <MudText Typo="Typo.body2">Avg. Tenure</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Primary"><strong>@GetAverageTenure()</strong></MudText>
+                            </div>
+                            @if (department.Managers != null)
+                            {
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.body2">Managers</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">@department.Managers.Count</MudChip>
+                                </div>
+                            }
+                            @if (department.SubDepartmentCount > 0)
+                            {
+                                <div class="d-flex justify-space-between align-center">
+                                    <MudText Typo="Typo.body2">Sub-departments</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@department.SubDepartmentCount</MudChip>
+                                </div>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Department Employees List -->
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center mb-3">
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                                Department Employees
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Primary" 
+                                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                                       Size="Size.Small"
+                                       Href="/modules/hr/employees/create">
+                                Add Employee
+                            </MudButton>
+                        </div>
+                        <MudDivider Class="mb-3" />
+
+                        @if (departmentEmployees.Any())
+                        {
+                            <MudTable Items="@departmentEmployees" 
+                                      Hover="true" 
+                                      Breakpoint="Breakpoint.Sm"
+                                      Dense="true"
+                                      Striped="true">
+                                <HeaderContent>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Job Title</MudTh>
+                                    <MudTh>Email</MudTh>
+                                    <MudTh>Hire Date</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh Style="text-align: right;">Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name">
+                                        <div class="d-flex align-center">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                                @GetInitials(context.FirstName, context.LastName)
+                                            </MudAvatar>
+                                            <MudText Typo="Typo.body2">@context.FirstName @context.LastName</MudText>
+                                        </div>
+                                    </MudTd>
+                                    <MudTd DataLabel="Job Title">@context.JobTitle</MudTd>
+                                    <MudTd DataLabel="Email">@context.Email</MudTd>
+                                    <MudTd DataLabel="Hire Date">@context.HireDate.ToString("MMM dd, yyyy")</MudTd>
+                                    <MudTd DataLabel="Status">
+                                        @if (context.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.Status</MudChip>
+                                        }
+                                    </MudTd>
+                                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                                          Color="Color.Primary" 
+                                                          Size="Size.Small" 
+                                                          Href="@($"/modules/hr/employees/{context.Id}")" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                          Color="Color.Secondary" 
+                                                          Size="Size.Small" 
+                                                          Href="@($"/modules/hr/employees/{context.Id}/edit")" />
+                                        </MudButtonGroup>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info">No employees found in this department</MudAlert>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Back Button -->
+        <div class="mt-4">
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/modules/hr/departments">
+                Back to Departments
+            </MudButton>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private HR.Application.DTOs.DepartmentDto? department;
+    private IEnumerable<HR.Application.DTOs.EmployeeDto> departmentEmployees = Array.Empty<HR.Application.DTOs.EmployeeDto>();
+    private bool isLoading = true;
+    private int activeCount;
+    private int onLeaveCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartment();
+        await LoadDepartmentEmployees();
+        CalculateStats();
+        isLoading = false;
+    }
+
+    private async Task LoadDepartment()
+    {
+        try
+        {
+            department = await DepartmentService.GetDepartmentByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading department: {ex.Message}");
+        }
+    }
+
+    private async Task LoadDepartmentEmployees()
+    {
+        try
+        {
+            if (department != null)
+            {
+                var allEmployees = await EmployeeService.GetAllEmployeesAsync();
+
+                // Get employees who are members of this department via EmployeeDepartments
+                departmentEmployees = allEmployees
+                    .Where(e => e.Departments != null && e.Departments.Any(d => d.DepartmentId == Id))
+                    .ToList();
+
+                // Fallback to legacy Department field if no junction data
+                if (!departmentEmployees.Any())
+                {
+                    departmentEmployees = allEmployees.Where(e => e.Department == department.Name).ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading employees: {ex.Message}");
+        }
+    }
+
+    private void CalculateStats()
+    {
+        activeCount = departmentEmployees.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active));
+        onLeaveCount = departmentEmployees.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.OnLeave));
+    }
+
+    private string GetAverageTenure()
+    {
+        if (!departmentEmployees.Any())
+            return "N/A";
+
+        var avgDays = departmentEmployees.Average(e => (DateTime.Now - e.HireDate).TotalDays);
+        var years = (int)(avgDays / 365);
+        var months = (int)((avgDays % 365) / 30);
+
+        if (years > 0)
+            return $"{years}y {months}m";
+        else if (months > 0)
+            return $"{months} months";
+        else
+            return $"{(int)avgDays} days";
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        var first = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString().ToUpper() : "";
+        var last = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString().ToUpper() : "";
+        return first + last;
+    }
+}

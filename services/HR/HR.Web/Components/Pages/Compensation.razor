@@ -1,0 +1,340 @@
+@page "/hr/compensation"
+@using HR.Web.Components.Shared
+
+<PageTitle>Compensation Analysis</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Compensation Analysis" 
+                  Subtitle="Salary insights and equity analysis"
+                  Icon="@Icons.Material.Filled.AttachMoney">
+        <Actions>
+            <MudButtonGroup Variant="Variant.Outlined">
+                <MudTooltip Text="Export compensation report">
+                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="Adjust salary ranges">
+                    <MudButton StartIcon="@Icons.Material.Filled.Settings" Color="Color.Secondary">
+                        Settings
+                    </MudButton>
+                </MudTooltip>
+            </MudButtonGroup>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Payroll</MudText>
+                                <MudText Typo="Typo.h4">$@totalPayroll.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Monthly cost</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Average Salary</MudText>
+                                <MudText Typo="Typo.h4">$@averageSalary.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">+3.2% vs last year</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Median Salary</MudText>
+                                <MudText Typo="Typo.h4">$@medianSalary.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">50th percentile</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Merit Budget</MudText>
+                                <MudText Typo="Typo.h4">$@meritBudgetRemaining.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">@meritBudgetPercent% remaining</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Savings" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Salary Distribution by Department -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Salary Distribution by Department</MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Employees</th>
+                        <th>Min Salary</th>
+                        <th>Avg Salary</th>
+                        <th>Max Salary</th>
+                        <th>Total Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dept in departmentStats)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                    <strong>@dept.Name</strong>
+                                </div>
+                            </td>
+                            <td>@dept.EmployeeCount</td>
+                            <td>$@dept.MinSalary.ToString("N0")</td>
+                            <td>$@dept.AvgSalary.ToString("N0")</td>
+                            <td>$@dept.MaxSalary.ToString("N0")</td>
+                            <td><strong>$@dept.TotalCost.ToString("N0")</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+
+        <!-- Pay Equity Analysis -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Balance" Class="mr-2" />
+                        Pay Equity Analysis
+                    </MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-1">
+                                <MudText Typo="Typo.body2">Gender Pay Gap</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">2.3%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="97.7" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">97.7% pay equity (target: 95%+)</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-1">
+                                <MudText Typo="Typo.body2">Tenure-Based Equity</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">94.8%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="94.8" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Adjusted for experience level</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between align-center mb-1">
+                                <MudText Typo="Typo.body2">Market Competitiveness</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">88.5%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="88.5" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Below market average (target: 90%+)</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Class="mr-2" />
+                        Compensation Alerts
+                    </MudText>
+                    <MudStack Spacing="2">
+                        <MudAlert Severity="Severity.Warning" Dense="true" Variant="Variant.Outlined">
+                            <strong>5 employees</strong> below market rate by &gt;10%
+                        </MudAlert>
+                        <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined">
+                            <strong>12 employees</strong> due for merit review this quarter
+                        </MudAlert>
+                        <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
+                            <strong>3 promotions</strong> processed this month
+                        </MudAlert>
+                        <MudAlert Severity="Severity.Error" Dense="true" Variant="Variant.Outlined">
+                            <strong>2 employees</strong> at top of salary band (compression risk)
+                        </MudAlert>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Compensation Details Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@compensationData" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Employee Compensation</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all employees">
+                            <MudButton Color="@(filterRange == null ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter below market rate">
+                            <MudButton Color="@(filterRange == "Below" ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = "Below")">Below Market</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter at market rate">
+                            <MudButton Color="@(filterRange == "Market" ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = "Market")">At Market</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter above market rate">
+                            <MudButton Color="@(filterRange == "Above" ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = "Above")">Above Market</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Position</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Current Salary</MudTh>
+                    <MudTh>Market Rate</MudTh>
+                    <MudTh>Variance</MudTh>
+                    <MudTh>Last Review</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                @context.Initials
+                            </MudAvatar>
+                            <strong>@context.Name</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Position">@context.Position</MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Current Salary">
+                        <strong>$@context.CurrentSalary.ToString("N0")</strong>
+                    </MudTd>
+                    <MudTd DataLabel="Market Rate">$@context.MarketRate.ToString("N0")</MudTd>
+                    <MudTd DataLabel="Variance">
+                        <MudChip T="string" Size="Size.Small" Color="@GetVarianceColor(context.VariancePercent)">
+                            @(context.VariancePercent > 0 ? "+" : "")@context.VariancePercent%
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Last Review">@context.LastReview.ToString("MMM yyyy")</MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View compensation history">
+                                <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Adjust salary">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterRange = null;
+
+    // Summary stats
+    private decimal totalPayroll = 487500;
+    private decimal averageSalary = 81250;
+    private decimal medianSalary = 75000;
+    private decimal meritBudgetRemaining = 48750;
+    private int meritBudgetPercent = 62;
+
+    // Department stats
+    private List<DepartmentCompensation> departmentStats = new();
+
+    // Compensation data
+    private List<CompensationRecord> compensationData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        departmentStats = new List<DepartmentCompensation>
+        {
+            new() { Name = "Engineering", EmployeeCount = 25, MinSalary = 65000, AvgSalary = 95000, MaxSalary = 145000, TotalCost = 2375000 },
+            new() { Name = "Sales", EmployeeCount = 15, MinSalary = 55000, AvgSalary = 78000, MaxSalary = 120000, TotalCost = 1170000 },
+            new() { Name = "Marketing", EmployeeCount = 10, MinSalary = 60000, AvgSalary = 72000, MaxSalary = 95000, TotalCost = 720000 },
+            new() { Name = "HR", EmployeeCount = 8, MinSalary = 58000, AvgSalary = 68000, MaxSalary = 85000, TotalCost = 544000 },
+            new() { Name = "Finance", EmployeeCount = 12, MinSalary = 62000, AvgSalary = 82000, MaxSalary = 110000, TotalCost = 984000 }
+        };
+
+        compensationData = new List<CompensationRecord>
+        {
+            new() { Name = "Sarah Johnson", Initials = "SJ", Position = "Senior Engineer", Department = "Engineering", CurrentSalary = 125000, MarketRate = 130000, VariancePercent = -3.8m, LastReview = new DateTime(2024, 6, 1) },
+            new() { Name = "Michael Chen", Initials = "MC", Position = "Product Manager", Department = "Engineering", CurrentSalary = 110000, MarketRate = 105000, VariancePercent = 4.8m, LastReview = new DateTime(2024, 9, 1) },
+            new() { Name = "Emily Davis", Initials = "ED", Position = "Sales Director", Department = "Sales", CurrentSalary = 98000, MarketRate = 108000, VariancePercent = -9.3m, LastReview = new DateTime(2023, 12, 1) },
+            new() { Name = "James Wilson", Initials = "JW", Position = "Marketing Manager", Department = "Marketing", CurrentSalary = 85000, MarketRate = 82000, VariancePercent = 3.7m, LastReview = new DateTime(2024, 8, 1) },
+            new() { Name = "Lisa Anderson", Initials = "LA", Position = "HR Manager", Department = "HR", CurrentSalary = 78000, MarketRate = 75000, VariancePercent = 4.0m, LastReview = new DateTime(2024, 7, 1) },
+            new() { Name = "David Martinez", Initials = "DM", Position = "Finance Analyst", Department = "Finance", CurrentSalary = 72000, MarketRate = 80000, VariancePercent = -10.0m, LastReview = new DateTime(2024, 3, 1) },
+            new() { Name = "Amanda Lee", Initials = "AL", Position = "Software Engineer", Department = "Engineering", CurrentSalary = 95000, MarketRate = 92000, VariancePercent = 3.3m, LastReview = new DateTime(2024, 10, 1) },
+            new() { Name = "Robert Taylor", Initials = "RT", Position = "Account Executive", Department = "Sales", CurrentSalary = 68000, MarketRate = 75000, VariancePercent = -9.3m, LastReview = new DateTime(2024, 5, 1) }
+        };
+    }
+
+    private Color GetVarianceColor(decimal variance)
+    {
+        if (variance < -5) return Color.Error;
+        if (variance < 0) return Color.Warning;
+        if (variance > 5) return Color.Success;
+        return Color.Default;
+    }
+
+    private class DepartmentCompensation
+    {
+        public string Name { get; set; } = "";
+        public int EmployeeCount { get; set; }
+        public decimal MinSalary { get; set; }
+        public decimal AvgSalary { get; set; }
+        public decimal MaxSalary { get; set; }
+        public decimal TotalCost { get; set; }
+    }
+
+    private class CompensationRecord
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal CurrentSalary { get; set; }
+        public decimal MarketRate { get; set; }
+        public decimal VariancePercent { get; set; }
+        public DateTime LastReview { get; set; }
+    }
+}

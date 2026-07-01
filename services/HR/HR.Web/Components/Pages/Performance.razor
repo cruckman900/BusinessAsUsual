@@ -1,0 +1,376 @@
+@page "/hr/performance"
+@using HR.Web.Components.Shared
+
+<PageTitle>Performance Reviews</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Performance Reviews" 
+                  Subtitle="Track review cycles and employee performance"
+                  Icon="@Icons.Material.Filled.Assessment">
+        <Actions>
+            <MudTooltip Text="Start new review cycle">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                    New Review Cycle
+                </MudButton>
+            </MudTooltip>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Reviews Completed</MudText>
+                                <MudText Typo="Typo.h4">@completedReviews</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">This cycle</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Pending Reviews</MudText>
+                                <MudText Typo="Typo.h4">@pendingReviews</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Due soon</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Rating</MudText>
+                                <MudText Typo="Typo.h4">@avgRating</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Out of 5.0</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Top Performers</MudText>
+                                <MudText Typo="Typo.h4">@topPerformers</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Rating ≥ 4.5</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Current Review Cycle Progress -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                Current Review Cycle: Q4 2024
+            </MudText>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="8">
+                    <div class="mb-3">
+                        <div class="d-flex justify-space-between mb-1">
+                            <MudText Typo="Typo.body2">Overall Progress</MudText>
+                            <MudText Typo="Typo.body2"><strong>@completedReviews of @totalReviews reviews</strong></MudText>
+                        </div>
+                        <MudProgressLinear Color="Color.Primary" Value="@cycleProgress" Size="Size.Large" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@cycleProgress% complete</MudText>
+                    </div>
+                    <MudStack Row="true" Spacing="4">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Cycle Start</MudText>
+                            <MudText Typo="Typo.body2"><strong>Oct 1, 2024</strong></MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Due Date</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Warning"><strong>Dec 31, 2024</strong></MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Days Remaining</MudText>
+                            <MudText Typo="Typo.body2"><strong>45 days</strong></MudText>
+                        </div>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined" Class="mb-2">
+                        Self-assessments: <strong>68/75</strong> complete
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Warning" Dense="true" Variant="Variant.Outlined">
+                        <strong>7 managers</strong> have overdue reviews
+                    </MudAlert>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Performance Rating Distribution -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.DonutSmall" Class="mr-2" />
+                        Rating Distribution
+                    </MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Success" />
+                                    Exceeds Expectations (4.5-5.0)
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">@exceedsCount (@exceedsPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="@exceedsPercent" Size="Size.Small" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Primary" />
+                                    Meets Expectations (3.5-4.4)
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@meetsCount (@meetsPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Primary" Value="@meetsPercent" Size="Size.Small" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" />
+                                    Needs Improvement (2.5-3.4)
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@needsImprovementCount (@needsImprovementPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="@needsImprovementPercent" Size="Size.Small" />
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Error" />
+                                    Below Expectations (&lt;2.5)
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Error">@belowCount (@belowPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Error" Value="@belowPercent" Size="Size.Small" />
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Class="mr-2" />
+                        Action Items
+                    </MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.TrendingDown" IconColor="Color.Error">
+                            <MudText Typo="Typo.body2">
+                                <strong>3 employees</strong> on Performance Improvement Plans (PIPs)
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Requires HR intervention</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.TrendingUp" IconColor="Color.Success">
+                            <MudText Typo="Typo.body2">
+                                <strong>8 employees</strong> recommended for promotion
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Awaiting leadership approval</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.School" IconColor="Color.Info">
+                            <MudText Typo="Typo.body2">
+                                <strong>15 employees</strong> need additional training
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Skill gap identified</MudText>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.AttachMoney" IconColor="Color.Warning">
+                            <MudText Typo="Typo.body2">
+                                <strong>22 employees</strong> eligible for merit increases
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Budget approval pending</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Performance Reviews Table -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@performanceReviews" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Employee Performance Reviews</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all reviews">
+                            <MudButton Color="@(filterStatus == null ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter completed reviews">
+                            <MudButton Color="@(filterStatus == "Completed" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Completed")">Completed</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter pending reviews">
+                            <MudButton Color="@(filterStatus == "Pending" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Pending")">Pending</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter overdue reviews">
+                            <MudButton Color="@(filterStatus == "Overdue" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Overdue")">Overdue</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Manager</MudTh>
+                    <MudTh>Self-Assessment</MudTh>
+                    <MudTh>Rating</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Due Date</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.EmployeeName</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Manager">@context.Manager</MudTd>
+                    <MudTd DataLabel="Self-Assessment">
+                        <MudBadge Content="@context.SelfAssessment" Color="@(context.SelfAssessment == "Complete" ? Color.Success : Color.Warning)" />
+                    </MudTd>
+                    <MudTd DataLabel="Rating">
+                        @if (context.Rating.HasValue)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="@GetRatingColor(context.Rating.Value)">
+                                <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />
+                                @context.Rating.Value
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudBadge Content="@context.Status" Color="@GetReviewStatusColor(context.Status)" />
+                    </MudTd>
+                    <MudTd DataLabel="Due Date">@context.DueDate.ToString("MMM dd, yyyy")</MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View review details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit review">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Submit review">
+                                <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small" Color="Color.Success" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterStatus = null;
+
+    // Summary stats
+    private int completedReviews = 52;
+    private int pendingReviews = 18;
+    private int totalReviews = 75;
+    private decimal avgRating = 3.8m;
+    private int topPerformers = 12;
+    private int cycleProgress = 69;
+
+    // Rating distribution
+    private int exceedsCount = 12;
+    private int exceedsPercent = 23;
+    private int meetsCount = 40;
+    private int meetsPercent = 77;
+    private int needsImprovementCount = 3;
+    private int needsImprovementPercent = 6;
+    private int belowCount = 0;
+    private int belowPercent = 0;
+
+    // Data collection
+    private List<PerformanceReview> performanceReviews = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        performanceReviews = new List<PerformanceReview>
+        {
+            new() { EmployeeName = "Sarah Johnson", Initials = "SJ", Department = "Engineering", Manager = "Robert Taylor", SelfAssessment = "Complete", Rating = 4.5m, Status = "Completed", DueDate = new DateTime(2024, 12, 31) },
+            new() { EmployeeName = "Michael Chen", Initials = "MC", Department = "Sales", Manager = "Emily Davis", SelfAssessment = "Complete", Rating = 4.2m, Status = "Completed", DueDate = new DateTime(2024, 12, 31) },
+            new() { EmployeeName = "Emily Davis", Initials = "ED", Department = "Marketing", Manager = "James Wilson", SelfAssessment = "Complete", Rating = null, Status = "Pending", DueDate = new DateTime(2024, 12, 15) },
+            new() { EmployeeName = "James Wilson", Initials = "JW", Department = "Engineering", Manager = "Robert Taylor", SelfAssessment = "Pending", Rating = null, Status = "Pending", DueDate = new DateTime(2024, 12, 20) },
+            new() { EmployeeName = "Lisa Anderson", Initials = "LA", Department = "HR", Manager = "David Martinez", SelfAssessment = "Complete", Rating = 4.8m, Status = "Completed", DueDate = new DateTime(2024, 12, 31) },
+            new() { EmployeeName = "David Martinez", Initials = "DM", Department = "Finance", Manager = "Amanda Lee", SelfAssessment = "Complete", Rating = 3.5m, Status = "Completed", DueDate = new DateTime(2024, 12, 31) },
+            new() { EmployeeName = "Amanda Lee", Initials = "AL", Department = "Engineering", Manager = "Robert Taylor", SelfAssessment = "Complete", Rating = null, Status = "Overdue", DueDate = new DateTime(2024, 11, 30) },
+            new() { EmployeeName = "Robert Taylor", Initials = "RT", Department = "Sales", Manager = "Emily Davis", SelfAssessment = "Pending", Rating = null, Status = "Pending", DueDate = new DateTime(2024, 12, 25) }
+        };
+    }
+
+    private Color GetRatingColor(decimal rating)
+    {
+        if (rating >= 4.5m) return Color.Success;
+        if (rating >= 3.5m) return Color.Primary;
+        if (rating >= 2.5m) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetReviewStatusColor(string status) => status switch
+    {
+        "Completed" => Color.Success,
+        "Pending" => Color.Warning,
+        "Overdue" => Color.Error,
+        _ => Color.Default
+    };
+
+    private class PerformanceReview
+    {
+        public string EmployeeName { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Manager { get; set; } = "";
+        public string SelfAssessment { get; set; } = "";
+        public decimal? Rating { get; set; }
+        public string Status { get; set; } = "";
+        public DateTime DueDate { get; set; }
+    }
+}
