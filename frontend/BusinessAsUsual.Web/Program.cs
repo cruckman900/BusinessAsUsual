@@ -1,4 +1,5 @@
 using Amazon.CloudWatch;
+using ApexCharts;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Web.Modules.HR.Services;
 using BusinessAsUsual.Web.Services;
@@ -36,6 +37,10 @@ namespace BusinessAsUsual.Web
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
+
+            // Add ApexCharts for CRM reports
+            builder.Services.AddApexCharts();
+
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -62,6 +67,9 @@ namespace BusinessAsUsual.Web
 
             // Register HR Module services (for embedded HR.Web components)
             RegisterHRModuleServices(builder.Services, builder.Configuration);
+
+            // Register CRM Module services (for embedded CRM.Web components)
+            RegisterCRMModuleServices(builder.Services, builder.Configuration);
 
             if (builder.Environment.IsProduction())
             {
@@ -142,6 +150,20 @@ namespace BusinessAsUsual.Web
             // Register services
             services.AddScoped<HR.Application.Services.IEmployeeService, HR.Application.Services.EmployeeService>();
             services.AddScoped<HR.Application.Services.IDepartmentService, HR.Application.Services.DepartmentService>();
+        }
+
+        /// <summary>
+        /// Registers CRM module services and infrastructure for embedded CRM.Web components.
+        /// Configures in-memory database for development and SQL Server for production.
+        /// </summary>
+        private static void RegisterCRMModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            // Register mock CRM services (for development/demo)
+            services.AddScoped<CRM.Application.Services.ILeadService, CRM.Application.Services.MockLeadService>();
+            services.AddScoped<CRM.Application.Services.IOpportunityService, CRM.Application.Services.MockOpportunityService>();
+            services.AddScoped<CRM.Application.Services.ICustomerService, CRM.Application.Services.MockCustomerService>();
+            services.AddScoped<CRM.Application.Interfaces.IReportService, CRM.Application.Services.ReportService>();
+            services.AddScoped<CRM.Application.Interfaces.IActivityService, CRM.Application.Services.MockActivityService>();
         }
 
         /// <summary>

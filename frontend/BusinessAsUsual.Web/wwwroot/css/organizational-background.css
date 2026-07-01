@@ -389,3 +389,23 @@
         transform: none;
     }
 }
+
+/* SVG Org Chart Styles */
+.org-chart-svg {
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    opacity: 0.7;
+    animation: org-fade-in 1s ease-out forwards;
+}
+
+@keyframes org-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}

@@ -1,0 +1,230 @@
+@page "/crm/customers/new"
+@page "/crm/customers/create"
+@page "/crm/customers/{Id}"
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "Customer Details" : "New Customer")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm/customers">Customers</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@(IsEditMode ? "Details" : "New")</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+        @(IsEditMode ? "Customer Details" : "New Customer")
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Error">Customer not found.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <EditForm Model="@_model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">Basic Information</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Name" 
+                                      Label="Customer Name" 
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.CompanyName" 
+                                      Label="Company Name" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Email" 
+                                      Label="Email" 
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Phone" 
+                                      Label="Phone" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudSelect T="string" @bind-Value="_model.CustomerStatus" Label="Status" Variant="Variant.Outlined">
+                            <MudSelectItem Value="@("Active")">Active</MudSelectItem>
+                            <MudSelectItem Value="@("Inactive")">Inactive</MudSelectItem>
+                            <MudSelectItem Value="@("Prospect")">Prospect</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.CustomerSegment" 
+                                      Label="Segment" 
+                                      Placeholder="e.g., Enterprise, SMB"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Description</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.Description" 
+                                      Label="Description" 
+                                      Lines="4"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-4">
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton ButtonType="ButtonType.Submit" 
+                                       Variant="Variant.Filled" 
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(IsEditMode ? "Update" : "Create")
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Default"
+                                       OnClick="Cancel">
+                                Cancel
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private bool _loading = true;
+    private bool _notFound = false;
+    private CustomerFormModel _model = new();
+
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) && Id != "new" && Id != "create";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            var customer = await CustomerService.GetCustomerByIdAsync(Id!);
+            if (customer != null)
+            {
+                _model = new CustomerFormModel
+                {
+                    Name = customer.Name,
+                    CompanyName = customer.CompanyName,
+                    Email = customer.Email,
+                    Phone = customer.Phone,
+                    CustomerStatus = customer.CustomerStatus ?? "Active",
+                    CustomerSegment = customer.CustomerSegment,
+                    Description = customer.Description
+                };
+            }
+            else
+            {
+                _notFound = true;
+            }
+        }
+
+        _loading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (IsEditMode)
+            {
+                var request = new UpdateCustomerRequest
+                {
+                    Name = _model.Name,
+                    CompanyName = _model.CompanyName,
+                    Email = _model.Email,
+                    Phone = _model.Phone,
+                    CustomerStatus = _model.CustomerStatus,
+                    CustomerSegment = _model.CustomerSegment,
+                    Description = _model.Description
+                };
+
+                var updated = await CustomerService.UpdateCustomerAsync(Id!, request);
+                if (updated != null)
+                {
+                    Snackbar.Add("Customer updated successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/customers");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update customer", Severity.Error);
+                }
+            }
+            else
+            {
+                var request = new CreateCustomerRequest
+                {
+                    Name = _model.Name,
+                    CompanyName = _model.CompanyName,
+                    Email = _model.Email,
+                    Phone = _model.Phone,
+                    CustomerStatus = _model.CustomerStatus,
+                    CustomerSegment = _model.CustomerSegment,
+                    Description = _model.Description
+                };
+
+                var created = await CustomerService.CreateCustomerAsync(request);
+                if (created != null)
+                {
+                    Snackbar.Add("Customer created successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/customers");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create customer", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/crm/customers");
+    }
+
+    private class CustomerFormModel
+    {
+        public string Name { get; set; } = "";
+        public string? CompanyName { get; set; }
+        public string Email { get; set; } = "";
+        public string? Phone { get; set; }
+        public string CustomerStatus { get; set; } = "Active";
+        public string? CustomerSegment { get; set; }
+        public string? Description { get; set; }
+    }
+}

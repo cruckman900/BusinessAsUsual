@@ -1,0 +1,321 @@
+@page "/crm/leads/new"
+@page "/crm/leads/create"
+@page "/crm/leads/{Id}"
+@inject ILeadService LeadService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "Edit Lead" : "New Lead")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm/leads">Leads</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@(IsEditMode ? "Edit" : "New")</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+        @(IsEditMode ? "Edit Lead" : "New Lead")
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Error">Lead not found.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <EditForm Model="@_model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+
+                <MudGrid>
+                    <!-- Personal Information -->
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Class="mb-2">Personal Information</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.FirstName" 
+                                      Label="First Name" 
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.LastName" 
+                                      Label="Last Name" 
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Email" 
+                                      Label="Email" 
+                                      InputType="InputType.Email"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Phone" 
+                                      Label="Phone" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Company Information -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Company Information</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.Company" 
+                                      Label="Company" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.JobTitle" 
+                                      Label="Job Title" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Lead Details -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Lead Details</MudText>
+                    </MudItem>
+
+                    @if (IsEditMode)
+                    {
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="LeadStatus" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined">
+                                @foreach (LeadStatus status in Enum.GetValues(typeof(LeadStatus)))
+                                {
+                                    <MudSelectItem Value="@status">@status.ToString()</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12" md="@(IsEditMode ? 4 : 6)">
+                        <MudSelect T="LeadSource" @bind-Value="_model.Source" Label="Source" Variant="Variant.Outlined">
+                            @foreach (LeadSource source in Enum.GetValues(typeof(LeadSource)))
+                            {
+                                <MudSelectItem Value="@source">@source.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" md="@(IsEditMode ? 4 : 6)">
+                        <MudNumericField @bind-Value="_model.EstimatedValue" 
+                                         Label="Estimated Value" 
+                                         Variant="Variant.Outlined"
+                                         Format="C2" />
+                    </MudItem>
+
+                    <!-- Address -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">Address</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_model.AddressLine1" 
+                                      Label="Street Address" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudTextField @bind-Value="_model.City" 
+                                      Label="City" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="3">
+                        <MudTextField @bind-Value="_model.State" 
+                                      Label="State" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" md="3">
+                        <MudTextField @bind-Value="_model.PostalCode" 
+                                      Label="Postal Code" 
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Description -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudTextField @bind-Value="_model.Description" 
+                                      Label="Description" 
+                                      Lines="4"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <!-- Actions -->
+                    <MudItem xs="12" Class="mt-4">
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton ButtonType="ButtonType.Submit" 
+                                       Variant="Variant.Filled" 
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                @(IsEditMode ? "Update" : "Create")
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Default"
+                                       OnClick="Cancel">
+                                Cancel
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private bool _loading = true;
+    private bool _notFound = false;
+    private LeadFormModel _model = new();
+
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) && Id != "new" && Id != "create";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            var lead = await LeadService.GetLeadByIdAsync(Id!);
+            if (lead != null)
+            {
+                _model = new LeadFormModel
+                {
+                    FirstName = lead.FirstName,
+                    LastName = lead.LastName,
+                    Email = lead.Email,
+                    Phone = lead.Phone,
+                    Company = lead.Company,
+                    JobTitle = lead.JobTitle,
+                    Status = Enum.Parse<LeadStatus>(lead.Status),
+                    Source = Enum.Parse<LeadSource>(lead.Source),
+                    EstimatedValue = lead.EstimatedValue,
+                    AddressLine1 = lead.AddressLine1,
+                    City = lead.City,
+                    State = lead.State,
+                    PostalCode = lead.PostalCode,
+                    Description = lead.Description
+                };
+            }
+            else
+            {
+                _notFound = true;
+            }
+        }
+
+        _loading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (IsEditMode)
+            {
+                var request = new UpdateLeadRequest
+                {
+                    FirstName = _model.FirstName,
+                    LastName = _model.LastName,
+                    Email = _model.Email,
+                    Phone = _model.Phone,
+                    Company = _model.Company,
+                    JobTitle = _model.JobTitle,
+                    Status = _model.Status,
+                    Source = _model.Source,
+                    EstimatedValue = _model.EstimatedValue,
+                    AddressLine1 = _model.AddressLine1,
+                    City = _model.City,
+                    State = _model.State,
+                    PostalCode = _model.PostalCode,
+                    Description = _model.Description
+                };
+
+                var updated = await LeadService.UpdateLeadAsync(Id!, request);
+                if (updated != null)
+                {
+                    Snackbar.Add("Lead updated successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/leads");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to update lead", Severity.Error);
+                }
+            }
+            else
+            {
+                var request = new CreateLeadRequest
+                {
+                    FirstName = _model.FirstName,
+                    LastName = _model.LastName,
+                    Email = _model.Email,
+                    Phone = _model.Phone,
+                    Company = _model.Company,
+                    JobTitle = _model.JobTitle,
+                    Source = _model.Source,
+                    EstimatedValue = _model.EstimatedValue,
+                    AddressLine1 = _model.AddressLine1,
+                    City = _model.City,
+                    State = _model.State,
+                    PostalCode = _model.PostalCode,
+                    Description = _model.Description
+                };
+
+                var created = await LeadService.CreateLeadAsync(request);
+                if (created != null)
+                {
+                    Snackbar.Add("Lead created successfully", Severity.Success);
+                    Navigation.NavigateTo("/crm/leads");
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create lead", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/crm/leads");
+    }
+
+    private class LeadFormModel
+    {
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Company { get; set; }
+        public string? JobTitle { get; set; }
+        public LeadStatus Status { get; set; } = LeadStatus.New;
+        public LeadSource Source { get; set; } = LeadSource.Other;
+        public decimal? EstimatedValue { get; set; }
+        public string? AddressLine1 { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? PostalCode { get; set; }
+        public string? Description { get; set; }
+    }
+}

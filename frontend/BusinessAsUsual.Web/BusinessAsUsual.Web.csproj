@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.22" />
+    <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
@@ -18,7 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
-    <PackageReference Include="MudBlazor" Version="9.3.0" />
+    <PackageReference Include="MudBlazor" Version="9.6.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +46,7 @@
     <ProjectReference Include="..\..\services\HR\HR.Domain\HR.Domain.csproj" />
     <ProjectReference Include="..\..\services\HR\HR.Infrastructure\HR.Infrastructure.csproj" />
     <ProjectReference Include="..\..\services\HR\HR.Web\HR.Web.csproj" />
+    <ProjectReference Include="..\..\services\CRM\CRM.Web\CRM.Web.csproj" />
   </ItemGroup>
 
 </Project>
