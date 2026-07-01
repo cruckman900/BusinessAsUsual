@@ -3,19 +3,28 @@
 @using BusinessAsUsual.Web.Components.Layout
 @using Microsoft.AspNetCore.Components.Web
 @using BusinessAsUsual.Web.Components
+@using System.Reflection
 
 <ErrorBoundaryLogger>
-    <Router AppAssembly="@typeof(Program).Assembly">
+    <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="@_additionalAssemblies">
         <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         </Found>
         <NotFound>
-            <SplashScreen />
+            <PageTitle>Not Found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
         </NotFound>
     </Router>
 </ErrorBoundaryLogger>
 
 @code {
+    private readonly Assembly[] _additionalAssemblies = new[]
+    {
+        typeof(HR.Web.Components.App).Assembly
+    };
+
     private readonly RouteData notFoundRoute = new(
         typeof(NotFound),
         new Dictionary<string, object?>()

@@ -1,0 +1,272 @@
+@page "/"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Components.Shared
+@layout SplashLayout
+@inject NavigationManager NavigationManager
+
+<link href="css/organizational-background.css" rel="stylesheet" />
+
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <OrganizationalBackground />
+        <div class="hero-content">
+            <div class="hero-left">
+                <img src="images/logo.png" class="hero-logo" alt="BAU Logo" />
+                <h1 class="hero-title">Business As Usual</h1>
+                <p class="hero-tagline">Enterprise Management, Simplified</p>
+                <p class="hero-description">
+                    The all-in-one platform for modern businesses. Manage HR, Finance, CRM, and more 
+                    with intelligent workflows and real-time insights.
+                </p>
+                <div class="hero-actions">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.Rocket"
+                               Href="/signup"
+                               Class="hero-button-primary">
+                        Start Free Trial
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.PlayArrow"
+                               Class="hero-button-primary">
+                        Watch Demo
+                    </MudButton>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <MudText Typo="Typo.h4" Class="stat-number">500+</MudText>
+                        <MudText Typo="Typo.body2" Class="stat-label">Companies</MudText>
+                    </div>
+                    <div class="stat-item">
+                        <MudText Typo="Typo.h4" Class="stat-number">50K+</MudText>
+                        <MudText Typo="Typo.body2" Class="stat-label">Active Users</MudText>
+                    </div>
+                    <div class="stat-item">
+                        <MudText Typo="Typo.h4" Class="stat-number">99.9%</MudText>
+                        <MudText Typo="Typo.body2" Class="stat-label">Uptime</MudText>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Widget -->
+            <div class="hero-right">
+                <MudPaper Class="login-widget" Elevation="8">
+                    <MudText Typo="Typo.h6" Class="widget-title">
+                        <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-2" />
+                        Sign In
+                    </MudText>
+                    <MudForm @ref="LoginForm">
+                        <MudTextField Label="Username"
+                                      @bind-Value="Username"
+                                      Immediate="true"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Class="mb-3"
+                                      @onkeydown="HandleKeyDown" />
+
+                        <MudTextField Label="Password"
+                                      @bind-Value="Password"
+                                      Immediate="true"
+                                      InputType="@PasswordInputType"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@PasswordToggleIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="true"
+                                      Class="mb-3"
+                                      @onkeydown="HandleKeyDown" />
+                    </MudForm>
+
+                    @if (ShowError)
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">
+                            Invalid username or password
+                        </MudAlert>
+                    }
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Class="mb-2"
+                               OnClick="LoginUser">
+                        Sign In
+                    </MudButton>
+
+                    <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="signup-prompt">
+                        Don't have an account?
+                        <MudLink Href="/signup" Color="Color.Primary" Underline="Underline.Always">
+                            Sign up for free
+                        </MudLink>
+                    </MudText>
+                </MudPaper>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <div class="section-header">
+                <MudText Typo="Typo.h3" Align="Align.Center" Class="section-title">
+                    Everything Your Business Needs
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="section-subtitle">
+                    Powerful modules that work together seamlessly
+                </MudText>
+            </div>
+
+            <MudGrid Spacing="4" Class="feature-grid">
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">Human Resources</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Manage employees, recruitment, onboarding, performance reviews, and benefits all in one place.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">Finance & Accounting</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Track expenses, manage invoices, reconcile accounts, and generate financial reports effortlessly.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.Contacts" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">CRM</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Build stronger customer relationships with comprehensive contact management and sales tracking.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">Operations</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Streamline workflows, manage projects, track assets, and optimize business processes.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">Analytics</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Make data-driven decisions with real-time dashboards, custom reports, and predictive insights.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="feature-card" Elevation="2">
+                        <div class="feature-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Large" Color="Color.Surface" />
+                        </div>
+                        <MudText Typo="Typo.h6" Class="feature-title">Security & Compliance</MudText>
+                        <MudText Typo="Typo.body2" Class="feature-description">
+                            Enterprise-grade security with role-based access, audit trails, and compliance management.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <MudContainer MaxWidth="MaxWidth.Large">
+            <div class="cta-content">
+                <MudText Typo="Typo.h3" Align="Align.Center" Class="cta-title">
+                    Ready to Transform Your Business?
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="cta-subtitle">
+                    Join hundreds of companies already streamlining their operations
+                </MudText>
+                <div class="cta-actions">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.Rocket"
+                               Href="/signup"
+                               Class="cta-button">
+                        Get Started Free
+                    </MudButton>
+                </div>
+            </div>
+        </MudContainer>
+    </section>
+
+    <!-- Footer -->
+    <footer class="home-footer">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            <MudText Typo="Typo.body2" Align="Align.Center">
+                © 2024 Business As Usual. Powered by LinearDescent. All rights reserved.
+            </MudText>
+        </MudContainer>
+    </footer>
+</div>
+
+@code {
+    string Username = "";
+    string Password = "";
+    bool ShowError = false;
+
+    MudForm? LoginForm;
+    InputType PasswordInputType = InputType.Password;
+
+    string PasswordToggleIcon => PasswordInputType == InputType.Password
+        ? Icons.Material.Filled.Visibility
+        : Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        PasswordInputType = PasswordInputType == InputType.Password
+            ? InputType.Text
+            : InputType.Password;
+    }
+
+    void HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            LoginUser();
+        }
+    }
+
+    void LoginUser()
+    {
+        if (Username == "admin" && Password == "password")
+        {
+            NavigationManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            ShowError = true;
+        }
+    }
+}

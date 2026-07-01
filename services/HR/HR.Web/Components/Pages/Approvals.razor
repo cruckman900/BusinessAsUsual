@@ -1,0 +1,300 @@
+@page "/hr/approvals"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Timesheet Approvals - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Approvals</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Approval" Class="mr-2" />
+                        Timesheet Approvals
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Review and approve employee timesheets</MudText>
+                </div>
+                <div class="d-flex gap-2">
+                    <MudChip T="string" Color="Color.Warning" Icon="@Icons.Material.Filled.Schedule" Size="Size.Medium">
+                        @pendingCount Pending
+                    </MudChip>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.CheckCircle" OnClick="ApproveSelected" Disabled="@(!selectedApprovals.Any())">
+                        Approve Selected (@selectedApprovals.Count)
+                    </MudButton>
+                </div>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (approvals == null || !approvals.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No timesheets pending approval.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="TimesheetApproval"
+                             Items="@approvals"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1"
+                             MultiSelection="true"
+                             @bind-SelectedItems="selectedApprovals">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search approvals..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All</MudSelectItem>
+                            <MudSelectItem Value="@("Pending")">Pending</MudSelectItem>
+                            <MudSelectItem Value="@("Approved")">Approved</MudSelectItem>
+                            <MudSelectItem Value="@("Rejected")">Rejected</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="TimesheetApproval" />
+                        <TemplateColumn Title="Employee" Sortable="true" SortBy="@(x => x.EmployeeName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.EmployeeName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.EmployeeName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Department</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Period" Sortable="true" SortBy="@(x => x.StartDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.StartDate.ToString("MMM dd") - @context.Item.EndDate.ToString("MMM dd")</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.PeriodType</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Hours" Sortable="true" SortBy="@(x => x.TotalHours)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.h6">@context.Item.TotalHours</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @context.Item.RegularHours reg / @context.Item.OvertimeHours OT
+                                    </MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Submitted" Sortable="true" SortBy="@(x => x.SubmittedDate)">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@context.Item.SubmittedDate.ToString("MMM dd, yyyy")</MudText>
+                                @{
+                                    var daysAgo = (DateTime.Now - context.Item.SubmittedDate).Days;
+                                }
+                                <MudText Typo="Typo.caption" Color="@(daysAgo > 3 ? Color.Warning : Color.Secondary)">
+                                    @daysAgo day@(daysAgo != 1 ? "s" : "") ago
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewApproval(context.Item.Id))" />
+                                @if (context.Item.Status == "Pending")
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" OnClick="@(() => ApproveTimesheet(context.Item.Id))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Color="Color.Error" OnClick="@(() => RejectTimesheet(context.Item.Id))" />
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="TimesheetApproval" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading approvals</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<TimesheetApproval> approvals = new();
+    private List<TimesheetApproval> allApprovals = new();
+    private HashSet<TimesheetApproval> selectedApprovals = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+    private int pendingCount = 0;
+
+    public class TimesheetApproval
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string EmployeeName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime StartDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now;
+        public string PeriodType { get; set; } = "Weekly";
+        public decimal TotalHours { get; set; } = 0;
+        public decimal RegularHours { get; set; } = 0;
+        public decimal OvertimeHours { get; set; } = 0;
+        public DateTime SubmittedDate { get; set; } = DateTime.Now;
+        public string Status { get; set; } = "Pending";
+        public string ApproverNotes { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApprovalsAsync();
+    }
+
+    private async Task LoadApprovalsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        var today = DateTime.Now;
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+
+        allApprovals = new List<TimesheetApproval>
+        {
+            new TimesheetApproval { EmployeeName = "Sarah Johnson", Department = "Engineering", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 42, RegularHours = 40, OvertimeHours = 2, SubmittedDate = today.AddDays(-1), Status = "Pending" },
+            new TimesheetApproval { EmployeeName = "Michael Chen", Department = "Product", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-2), Status = "Approved" },
+            new TimesheetApproval { EmployeeName = "Jessica Martinez", Department = "Analytics", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-3), Status = "Pending" },
+            new TimesheetApproval { EmployeeName = "David Kim", Department = "Operations", StartDate = startOfWeek.AddDays(-7), EndDate = startOfWeek.AddDays(-1), PeriodType = "Weekly", TotalHours = 45, RegularHours = 40, OvertimeHours = 5, SubmittedDate = today.AddDays(-8), Status = "Approved" },
+            new TimesheetApproval { EmployeeName = "Amanda White", Department = "Marketing", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 35, RegularHours = 35, OvertimeHours = 0, SubmittedDate = today, Status = "Rejected" },
+            new TimesheetApproval { EmployeeName = "Robert Taylor", Department = "Engineering", StartDate = startOfWeek.AddDays(-7), EndDate = startOfWeek.AddDays(-1), PeriodType = "Weekly", TotalHours = 48, RegularHours = 40, OvertimeHours = 8, SubmittedDate = today.AddDays(-7), Status = "Approved" },
+            new TimesheetApproval { EmployeeName = "Nicole Anderson", Department = "Business Analysis", StartDate = startOfWeek.AddDays(-14), EndDate = startOfWeek.AddDays(-8), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-14), Status = "Approved" },
+            new TimesheetApproval { EmployeeName = "Daniel Harris", Department = "Engineering", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 38, RegularHours = 38, OvertimeHours = 0, SubmittedDate = today.AddDays(-4), Status = "Pending" },
+            new TimesheetApproval { EmployeeName = "Lisa Thompson", Department = "HR", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-2), Status = "Pending" }
+        };
+
+        FilterApprovals();
+        isLoading = false;
+    }
+
+    private void FilterApprovals()
+    {
+        approvals = allApprovals;
+
+        if (statusFilter != "All")
+        {
+            approvals = approvals.Where(a => a.Status == statusFilter).ToList();
+        }
+
+        pendingCount = allApprovals.Count(a => a.Status == "Pending");
+    }
+
+    private Func<TimesheetApproval, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.EmployeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Pending" => (Color.Warning, Icons.Material.Filled.Schedule),
+            "Approved" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Rejected" => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewApproval(string id)
+    {
+        Navigation.NavigateTo($"/hr/approvals/{id}");
+    }
+
+    private async Task ApproveTimesheet(string id)
+    {
+        var approval = allApprovals.FirstOrDefault(a => a.Id == id);
+        if (approval != null)
+        {
+            approval.Status = "Approved";
+            FilterApprovals();
+        }
+        await Task.CompletedTask;
+    }
+
+    private async Task RejectTimesheet(string id)
+    {
+        var approval = allApprovals.FirstOrDefault(a => a.Id == id);
+        if (approval != null)
+        {
+            approval.Status = "Rejected";
+            FilterApprovals();
+        }
+        await Task.CompletedTask;
+    }
+
+    private async Task ApproveSelected()
+    {
+        foreach (var approval in selectedApprovals.Where(a => a.Status == "Pending"))
+        {
+            approval.Status = "Approved";
+        }
+        selectedApprovals.Clear();
+        FilterApprovals();
+        await Task.CompletedTask;
+    }
+}

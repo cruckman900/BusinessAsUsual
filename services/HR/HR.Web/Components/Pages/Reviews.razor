@@ -1,0 +1,275 @@
+@page "/hr/reviews"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Performance Reviews - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Performance Reviews</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="mr-2" />
+                        Performance Reviews
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Manage employee performance evaluations</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/reviews/create"))">
+                    Create Review
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (reviews == null || !reviews.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No performance reviews found. Click "Create Review" to add your first review.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="PerformanceReview"
+                             Items="@reviews"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search reviews..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Pending")">Pending</MudSelectItem>
+                            <MudSelectItem Value="@("In Progress")">In Progress</MudSelectItem>
+                            <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                            <MudSelectItem Value="@("Overdue")">Overdue</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Employee" Sortable="true" SortBy="@(x => x.EmployeeName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.EmployeeName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.EmployeeName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Department</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.ReviewPeriod" Title="Review Period" />
+                        <PropertyColumn Property="x => x.ReviewType" Title="Type" />
+                        <PropertyColumn Property="x => x.Reviewer" Title="Reviewer" />
+                        <TemplateColumn Title="Due Date" Sortable="true" SortBy="@(x => x.DueDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.DueDate.ToString("MMM dd, yyyy")</MudText>
+                                    @{
+                                        var daysUntilDue = (context.Item.DueDate - DateTime.Now).Days;
+                                    }
+                                    @if (daysUntilDue < 0 && context.Item.Status != "Completed")
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">@Math.Abs(daysUntilDue) days overdue</MudText>
+                                    }
+                                    else if (daysUntilDue <= 7 && context.Item.Status != "Completed")
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Warning">Due in @daysUntilDue days</MudText>
+                                    }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Overall Rating" Sortable="true" SortBy="@(x => x.OverallRating ?? 0)">
+                            <CellTemplate>
+                                @if (context.Item.OverallRating.HasValue)
+                                {
+                                    <div class="d-flex align-center">
+                                        <MudRating SelectedValue="@context.Item.OverallRating.Value" ReadOnly="true" Size="Size.Small" />
+                                        <MudText Typo="Typo.caption" Class="ml-2">(@context.Item.OverallRating.Value/5)</MudText>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Not rated</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewReview(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditReview(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteReview(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="PerformanceReview" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading performance reviews</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<PerformanceReview> reviews = new();
+    private List<PerformanceReview> allReviews = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class PerformanceReview
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string EmployeeName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string ReviewPeriod { get; set; } = "";
+        public string ReviewType { get; set; } = "";
+        public string Reviewer { get; set; } = "";
+        public DateTime DueDate { get; set; } = DateTime.Now;
+        public string Status { get; set; } = "Pending";
+        public int? OverallRating { get; set; }
+        public string Comments { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviewsAsync();
+    }
+
+    private async Task LoadReviewsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allReviews = new List<PerformanceReview>
+        {
+            new PerformanceReview { EmployeeName = "Sarah Johnson", Department = "Engineering", ReviewPeriod = "Q4 2024", ReviewType = "Quarterly", Reviewer = "John Smith", DueDate = DateTime.Now.AddDays(10), Status = "Pending" },
+            new PerformanceReview { EmployeeName = "Michael Chen", Department = "Product", ReviewPeriod = "Q4 2024", ReviewType = "Quarterly", Reviewer = "Lisa Brown", DueDate = DateTime.Now.AddDays(5), Status = "In Progress", OverallRating = null },
+            new PerformanceReview { EmployeeName = "Emily Rodriguez", Department = "Design", ReviewPeriod = "Q3 2024", ReviewType = "Quarterly", Reviewer = "David Wilson", DueDate = DateTime.Now.AddDays(-15), Status = "Completed", OverallRating = 4 },
+            new PerformanceReview { EmployeeName = "David Kim", Department = "Operations", ReviewPeriod = "Annual 2024", ReviewType = "Annual", Reviewer = "Sarah Chen", DueDate = DateTime.Now.AddDays(-5), Status = "Overdue" },
+            new PerformanceReview { EmployeeName = "Jessica Martinez", Department = "Analytics", ReviewPeriod = "Q3 2024", ReviewType = "Quarterly", Reviewer = "Mark Taylor", DueDate = DateTime.Now.AddDays(-30), Status = "Completed", OverallRating = 5 },
+            new PerformanceReview { EmployeeName = "Robert Taylor", Department = "Engineering", ReviewPeriod = "Annual 2024", ReviewType = "Annual", Reviewer = "Emily Davis", DueDate = DateTime.Now.AddDays(-60), Status = "Completed", OverallRating = 5 },
+            new PerformanceReview { EmployeeName = "Amanda White", Department = "Marketing", ReviewPeriod = "Q4 2024", ReviewType = "Quarterly", Reviewer = "Jennifer Lee", DueDate = DateTime.Now.AddDays(15), Status = "Pending" },
+            new PerformanceReview { EmployeeName = "Christopher Lee", Department = "Quality Assurance", ReviewPeriod = "Q4 2024", ReviewType = "Quarterly", Reviewer = "Ryan Johnson", DueDate = DateTime.Now.AddDays(3), Status = "In Progress", OverallRating = null },
+            new PerformanceReview { EmployeeName = "Nicole Anderson", Department = "Business Analysis", ReviewPeriod = "Probation", ReviewType = "Probationary", Reviewer = "Michelle Garcia", DueDate = DateTime.Now.AddDays(20), Status = "Pending" }
+        };
+
+        FilterReviews();
+        isLoading = false;
+    }
+
+    private void FilterReviews()
+    {
+        reviews = allReviews;
+
+        if (statusFilter != "All")
+        {
+            reviews = reviews.Where(r => r.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<PerformanceReview, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.EmployeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Reviewer.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.ReviewPeriod.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Pending" => (Color.Info, Icons.Material.Filled.Schedule),
+            "In Progress" => (Color.Warning, Icons.Material.Filled.EditNote),
+            "Completed" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Overdue" => (Color.Error, Icons.Material.Filled.Warning),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewReview(string id)
+    {
+        Navigation.NavigateTo($"/hr/reviews/{id}");
+    }
+
+    private void EditReview(string id)
+    {
+        Navigation.NavigateTo($"/hr/reviews/{id}/edit");
+    }
+
+    private async Task DeleteReview(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allReviews.RemoveAll(r => r.Id == id);
+        FilterReviews();
+        await Task.CompletedTask;
+    }
+}

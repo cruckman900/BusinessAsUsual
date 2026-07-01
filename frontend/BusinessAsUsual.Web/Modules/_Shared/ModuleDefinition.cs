@@ -55,5 +55,16 @@
         /// Gets or sets the optional icon for the navigation item.
         /// </summary>
         public string? Icon { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional child navigation items for hierarchical menus.
+        /// </summary>
+        public List<ModuleNavigationItem>? Children { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this navigation group should be expanded by default.
+        /// </summary>
+        public bool ExpandedByDefault { get; set; } = true;
     }
+
 }

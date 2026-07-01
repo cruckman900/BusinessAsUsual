@@ -135,11 +135,110 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                 NavigationItems = new List<NavigationItemDto>
                 {
                     new() { Label = "Home", Route = "/hr", Icon = Icons.Material.Filled.Home },
-                    new() { Label = "Employees", Route = "/hr/employees", Icon = Icons.Material.Filled.People },
-                    new() { Label = "Departments", Route = "/hr/departments", Icon = Icons.Material.Filled.Business },
-                    new() { Label = "Onboarding", Route = "/hr/onboarding", Icon = Icons.Material.Filled.PersonAdd },
-                    new() { Label = "Benefits", Route = "/hr/benefits", Icon = Icons.Material.Filled.CardGiftcard },
-                    new() { Label = "Reports", Route = "/hr/reports", Icon = Icons.Material.Filled.Assessment }
+
+                    // Employee Management Group
+                    new() 
+                    { 
+                        Label = "Employee Management", 
+                        Route = "/hr/employees", 
+                        Icon = Icons.Material.Filled.People,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Employees", Route = "/hr/employees", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Add Employee", Route = "/hr/employees/new", Icon = Icons.Material.Filled.PersonAdd }
+                        }
+                    },
+
+                    // Departments Group
+                    new() 
+                    { 
+                        Label = "Departments", 
+                        Route = "/hr/departments", 
+                        Icon = Icons.Material.Filled.Business,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Departments", Route = "/hr/departments", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Add Department", Route = "/hr/departments/new", Icon = Icons.Material.Filled.Add }
+                        }
+                    },
+
+                    // Recruiting Group
+                    new() 
+                    { 
+                        Label = "Recruiting", 
+                        Route = "/hr/applicants", 
+                        Icon = Icons.Material.Filled.PersonSearch,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Applicants", Route = "/hr/applicants", Icon = Icons.Material.Filled.PersonSearch },
+                            new() { Label = "Interviews", Route = "/hr/interviews", Icon = Icons.Material.Filled.Event }
+                        }
+                    },
+
+                    // Performance Group
+                    new() 
+                    { 
+                        Label = "Performance", 
+                        Route = "/hr/reviews", 
+                        Icon = Icons.Material.Filled.Assessment,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Reviews", Route = "/hr/reviews", Icon = Icons.Material.Filled.Assessment },
+                            new() { Label = "Goals", Route = "/hr/goals", Icon = Icons.Material.Filled.Flag }
+                        }
+                    },
+
+                    // Training Group
+                    new() 
+                    { 
+                        Label = "Training", 
+                        Route = "/hr/courses", 
+                        Icon = Icons.Material.Filled.School,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Courses", Route = "/hr/courses", Icon = Icons.Material.Filled.School },
+                            new() { Label = "Certifications", Route = "/hr/certifications", Icon = Icons.Material.Filled.Verified }
+                        }
+                    },
+
+                    // Timekeeping Group
+                    new() 
+                    { 
+                        Label = "Timekeeping", 
+                        Route = "/hr/timesheets", 
+                        Icon = Icons.Material.Filled.AccessTime,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Timesheets", Route = "/hr/timesheets", Icon = Icons.Material.Filled.AccessTime },
+                            new() { Label = "Approvals", Route = "/hr/approvals", Icon = Icons.Material.Filled.Approval }
+                        }
+                    },
+
+                    // HR Admin Group
+                    new() 
+                    { 
+                        Label = "HR Administration", 
+                        Route = "/hr/onboarding", 
+                        Icon = Icons.Material.Filled.AdminPanelSettings,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Onboarding", Route = "/hr/onboarding", Icon = Icons.Material.Filled.PersonAdd },
+                            new() { Label = "Benefits", Route = "/hr/benefits", Icon = Icons.Material.Filled.CardGiftcard }
+                        }
+                    },
+
+                    // Reports
+                    new() { Label = "Reports", Route = "/hr/reports", Icon = Icons.Material.Filled.BarChart },
+
+                    // Settings
+                    new() { Label = "Settings", Route = "/hr/settings", Icon = Icons.Material.Filled.Settings }
                 }
             }
         };

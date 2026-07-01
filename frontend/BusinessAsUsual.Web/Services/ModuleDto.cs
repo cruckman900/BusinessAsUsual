@@ -100,4 +100,14 @@ public class NavigationItemDto
     /// Gets or sets the icon associated with the navigation item, which is used for display in the UI. This property is optional and can be null if no icon is specified.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional child navigation items for hierarchical menus.
+    /// </summary>
+    public List<NavigationItemDto>? Children { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether this navigation group should be expanded by default.
+    /// </summary>
+    public bool ExpandedByDefault { get; set; } = true;
 }

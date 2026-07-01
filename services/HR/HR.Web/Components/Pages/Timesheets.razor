@@ -1,0 +1,283 @@
+@page "/hr/timesheets"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Timesheets - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Timesheets</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" />
+                        Timesheets
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Manage employee time tracking and submissions</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/timesheets/create"))">
+                    Submit Timesheet
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (timesheets == null || !timesheets.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No timesheets found. Click "Submit Timesheet" to create your first timesheet entry.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Timesheet"
+                             Items="@timesheets"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search timesheets..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Draft")">Draft</MudSelectItem>
+                            <MudSelectItem Value="@("Submitted")">Submitted</MudSelectItem>
+                            <MudSelectItem Value="@("Approved")">Approved</MudSelectItem>
+                            <MudSelectItem Value="@("Rejected")">Rejected</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Employee" Sortable="true" SortBy="@(x => x.EmployeeName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.EmployeeName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.EmployeeName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Department</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Period" Sortable="true" SortBy="@(x => x.StartDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.StartDate.ToString("MMM dd") - @context.Item.EndDate.ToString("MMM dd, yyyy")</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.PeriodType</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Hours" Sortable="true" SortBy="@(x => x.TotalHours)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.TotalHours hrs</MudText>
+                                    @{
+                                        var expectedHours = 40; // Standard work week
+                                        var hoursColor = context.Item.TotalHours >= expectedHours ? Color.Success : Color.Warning;
+                                    }
+                                    <MudText Typo="Typo.caption" Color="@hoursColor">
+                                        @(context.Item.RegularHours) regular / @(context.Item.OvertimeHours) overtime
+                                    </MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Submitted Date" Sortable="true" SortBy="@(x => x.SubmittedDate)">
+                            <CellTemplate>
+                                @if (context.Item.SubmittedDate.HasValue)
+                                {
+                                    <MudText Typo="Typo.body2">@context.Item.SubmittedDate.Value.ToString("MMM dd, yyyy")</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Not submitted</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Approver" Title="Approver" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewTimesheet(context.Item.Id))" />
+                                @if (context.Item.Status == "Draft" || context.Item.Status == "Rejected")
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditTimesheet(context.Item.Id))" />
+                                }
+                                @if (context.Item.Status == "Draft")
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteTimesheet(context.Item.Id))" />
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Timesheet" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading timesheets</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Timesheet> timesheets = new();
+    private List<Timesheet> allTimesheets = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class Timesheet
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string EmployeeName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime StartDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now;
+        public string PeriodType { get; set; } = "Weekly";
+        public decimal TotalHours { get; set; } = 0;
+        public decimal RegularHours { get; set; } = 0;
+        public decimal OvertimeHours { get; set; } = 0;
+        public DateTime? SubmittedDate { get; set; }
+        public string Status { get; set; } = "Draft";
+        public string Approver { get; set; } = "";
+        public string Notes { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTimesheetsAsync();
+    }
+
+    private async Task LoadTimesheetsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        var today = DateTime.Now;
+        var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+
+        allTimesheets = new List<Timesheet>
+        {
+            new Timesheet { EmployeeName = "Sarah Johnson", Department = "Engineering", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 42, RegularHours = 40, OvertimeHours = 2, SubmittedDate = today.AddDays(-1), Status = "Submitted", Approver = "John Smith" },
+            new Timesheet { EmployeeName = "Michael Chen", Department = "Product", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-2), Status = "Approved", Approver = "Lisa Brown" },
+            new Timesheet { EmployeeName = "Emily Rodriguez", Department = "Design", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 38, RegularHours = 38, OvertimeHours = 0, SubmittedDate = null, Status = "Draft", Approver = "David Wilson" },
+            new Timesheet { EmployeeName = "David Kim", Department = "Operations", StartDate = startOfWeek.AddDays(-7), EndDate = startOfWeek.AddDays(-1), PeriodType = "Weekly", TotalHours = 45, RegularHours = 40, OvertimeHours = 5, SubmittedDate = today.AddDays(-8), Status = "Approved", Approver = "Sarah Chen" },
+            new Timesheet { EmployeeName = "Jessica Martinez", Department = "Analytics", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-3), Status = "Submitted", Approver = "Mark Taylor" },
+            new Timesheet { EmployeeName = "Robert Taylor", Department = "Engineering", StartDate = startOfWeek.AddDays(-7), EndDate = startOfWeek.AddDays(-1), PeriodType = "Weekly", TotalHours = 48, RegularHours = 40, OvertimeHours = 8, SubmittedDate = today.AddDays(-7), Status = "Approved", Approver = "Emily Davis" },
+            new Timesheet { EmployeeName = "Amanda White", Department = "Marketing", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 35, RegularHours = 35, OvertimeHours = 0, SubmittedDate = today, Status = "Rejected", Approver = "Jennifer Lee" },
+            new Timesheet { EmployeeName = "Christopher Lee", Department = "Quality Assurance", StartDate = startOfWeek, EndDate = startOfWeek.AddDays(6), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = null, Status = "Draft", Approver = "Ryan Johnson" },
+            new Timesheet { EmployeeName = "Nicole Anderson", Department = "Business Analysis", StartDate = startOfWeek.AddDays(-14), EndDate = startOfWeek.AddDays(-8), PeriodType = "Weekly", TotalHours = 40, RegularHours = 40, OvertimeHours = 0, SubmittedDate = today.AddDays(-14), Status = "Approved", Approver = "Michelle Garcia" }
+        };
+
+        FilterTimesheets();
+        isLoading = false;
+    }
+
+    private void FilterTimesheets()
+    {
+        timesheets = allTimesheets;
+
+        if (statusFilter != "All")
+        {
+            timesheets = timesheets.Where(t => t.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<Timesheet, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.EmployeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Approver.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Draft" => (Color.Default, Icons.Material.Filled.Edit),
+            "Submitted" => (Color.Info, Icons.Material.Filled.Send),
+            "Approved" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Rejected" => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewTimesheet(string id)
+    {
+        Navigation.NavigateTo($"/hr/timesheets/{id}");
+    }
+
+    private void EditTimesheet(string id)
+    {
+        Navigation.NavigateTo($"/hr/timesheets/{id}/edit");
+    }
+
+    private async Task DeleteTimesheet(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allTimesheets.RemoveAll(t => t.Id == id);
+        FilterTimesheets();
+        await Task.CompletedTask;
+    }
+}

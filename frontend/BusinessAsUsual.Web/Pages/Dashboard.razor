@@ -1,9 +1,11 @@
 ﻿@page "/dashboard"
 @using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Services
 @inject NavigationManager NavigationManager
+@inject IModuleDiscoveryService ModuleDiscovery
 @inherits NoHeaderPageBase
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="dashboard-container">
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="dashboard-container pa-0">
 
     <MudText Typo="Typo.h4" Class="dashboard-title">
         Welcome to Business As Usual
@@ -13,35 +15,92 @@
         Choose a module to get started
     </MudText>
 
-    <MudGrid Class="dashboard-grid">
+    @if (_loading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <MudText Class="ms-3">Loading modules...</MudText>
+        </div>
+    }
+    else if (Modules.Any())
+    {
+        <MudGrid Class="dashboard-grid">
 
-        @foreach (var module in Modules)
-        {
-            <MudItem xs="12" sm="6" md="4">
-                <MudPaper Class="module-card" Elevation="4" @onclick="() => OpenModule(module.Route)">
-                    <MudIcon Icon="@module.Icon" Size="Size.Large" Class="module-icon" />
-                    <MudText Typo="Typo.h6">@module.Name</MudText>
-                    <MudText Typo="Typo.body2" Class="module-description">@module.Description</MudText>
-                </MudPaper>
-            </MudItem>
-        }
+            @foreach (var module in Modules)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudTooltip Text="@($"Open {module.Name} module")">
+                        <MudPaper Class="module-card" Elevation="4" @onclick="() => OpenModule(module.Route)">
+                            <MudIcon Icon="@module.Icon" Size="Size.Large" Class="module-icon" />
+                            <MudText Typo="Typo.h6">@module.Name</MudText>
+                            <MudText Typo="Typo.body2" Class="module-description">@module.Description</MudText>
+                        </MudPaper>
+                    </MudTooltip>
+                </MudItem>
+            }
 
-    </MudGrid>
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Info">
+            No modules are currently available. Please ensure the Module Registry Service is running.
+        </MudAlert>
+    }
 
 </MudContainer>
 
 @code {
     record ModuleCard(string Name, string Description, string Icon, string Route);
 
-    List<ModuleCard> Modules = new()
+    private bool _loading = true;
+    private List<ModuleCard> Modules = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new("HR", "Manage employees, onboarding, and records", Icons.Material.Filled.People, "/hr"),
-        new("Timekeeping", "Timesheets, approvals, and schedules", Icons.Material.Filled.Schedule, "/timekeeping"),
-        new("Finance", "Invoices, billing, and payroll", Icons.Material.Filled.AttachMoney, "/finance"),
-        new("CRM", "Clients, leads, and interactions", Icons.Material.Filled.BusinessCenter, "/crm"),
-        new("Contract Audit", "Compliance and contract tracking", Icons.Material.Filled.Description, "/contractaudit"),
-        new("Admin", "System settings and configuration", Icons.Material.Filled.Settings, "/admin")
-    };
+        await LoadModulesAsync();
+    }
+
+    private async Task LoadModulesAsync()
+    {
+        try
+        {
+            var discoveredModules = await ModuleDiscovery.GetModulesWithUiAsync();
+
+            Modules = discoveredModules.Select(m => new ModuleCard(
+                Name: m.DisplayName,
+                Description: m.Description,
+                Icon: ConvertIconToMudBlazor(m.Icon),
+                Route: $"/{m.Key.ToLower()}"
+            )).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading modules: {ex.Message}");
+            // Fall back to empty list
+            Modules = new List<ModuleCard>();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    string ConvertIconToMudBlazor(string? icon)
+    {
+        if (string.IsNullOrEmpty(icon))
+            return Icons.Material.Filled.Apps;
+
+        // Convert MDI icon names to Material Icons
+        return icon switch
+        {
+            "mdi-account-group" => Icons.Material.Filled.People,
+            "mdi-currency-usd" => Icons.Material.Filled.AttachMoney,
+            "mdi-account-multiple" => Icons.Material.Filled.Contacts,
+            "mdi-domain" => Icons.Material.Filled.Business,
+            _ => Icons.Material.Filled.Apps
+        };
+    }
 
     void OpenModule(string route)
     {

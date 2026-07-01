@@ -1,0 +1,388 @@
+@page "/signup"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Components.Shared
+@using BusinessAsUsual.Web.Modules._Shared
+@layout SplashLayout
+@inject NavigationManager NavigationManager
+@inject IModuleDiscoveryService ModuleDiscovery
+
+<link href="css/organizational-background.css" rel="stylesheet" />
+
+<div class="signup-container">
+    <OrganizationalBackground />
+    <MudContainer MaxWidth="MaxWidth.Large" Class="signup-content">
+        <!-- Header -->
+        <div class="signup-header">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" 
+                           Color="Color.Primary" 
+                           Href="/"
+                           Class="back-button" />
+            <img src="images/logo.png" class="signup-logo" alt="BAU Logo" />
+            <MudText Typo="Typo.h4" Class="signup-title">Create Your Account</MudText>
+            <MudText Typo="Typo.body1" Class="signup-subtitle">
+                Get started with Business As Usual in just a few steps
+            </MudText>
+        </div>
+
+        <!-- Stepper -->
+        <MudStepper @ref="stepper" 
+                    Class="signup-stepper">
+
+            <!-- Step 1: Company Information -->
+            <MudStep Title="Company Info">
+                <ChildContent>
+                <MudPaper Class="step-content" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="step-title">Tell us about your company</MudText>
+
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12">
+                            <MudTextField Label="Company Name"
+                                          @bind-Value="companyName"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Industry"
+                                          @bind-Value="industry"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect Label="Company Size"
+                                       @bind-Value="companySize"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@("1-10")">1-10 employees</MudSelectItem>
+                                <MudSelectItem Value="@("11-50")">11-50 employees</MudSelectItem>
+                                <MudSelectItem Value="@("51-200")">51-200 employees</MudSelectItem>
+                                <MudSelectItem Value="@("201-500")">201-500 employees</MudSelectItem>
+                                <MudSelectItem Value="@("500+")">500+ employees</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField Label="Website (optional)"
+                                          @bind-Value="website"
+                                          Variant="Variant.Outlined"
+                                          FullWidth="true"
+                                          Immediate="true" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+                </ChildContent>
+            </MudStep>
+
+            <!-- Step 2: Admin Account -->
+            <MudStep Title="Admin Account">
+                <ChildContent>
+                <MudPaper Class="step-content" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="step-title">Create your admin account</MudText>
+
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="First Name"
+                                          @bind-Value="firstName"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Last Name"
+                                          @bind-Value="lastName"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField Label="Email"
+                                          @bind-Value="email"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          InputType="InputType.Email"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Password"
+                                          @bind-Value="password"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          InputType="InputType.Password"
+                                          Immediate="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Confirm Password"
+                                          @bind-Value="confirmPassword"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          FullWidth="true"
+                                          InputType="InputType.Password"
+                                          Immediate="true" />
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (passwordMismatch)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mt-3" Dense="true">
+                            Passwords do not match
+                        </MudAlert>
+                    }
+                </MudPaper>
+                </ChildContent>
+            </MudStep>
+
+            <!-- Step 3: Module Selection -->
+            <MudStep Title="Choose Modules">
+                <ChildContent>
+                <MudPaper Class="step-content" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="step-title">Select the modules you need</MudText>
+                    <MudText Typo="Typo.body2" Class="step-subtitle mb-4">
+                        Choose the features that best fit your business needs. You can always add more later.
+                    </MudText>
+
+                    <MudGrid Spacing="3">
+                        @foreach (var module in availableModules)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudPaper Class="@GetModuleCardClass(module)" 
+                                          Elevation="2"
+                                          @onclick="() => ToggleModule(module)">
+                                    <div class="module-check">
+                                        @if (module.IsSelected)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                        }
+                                        else
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Outlined.Circle" Color="Color.Default" Size="Size.Large" />
+                                        }
+                                    </div>
+                                    <div class="module-icon">
+                                        <MudIcon Icon="@module.Icon" Size="Size.Large" Color="Color.Primary" />
+                                    </div>
+                                    <MudText Typo="Typo.h6" Class="module-name">@module.DisplayName</MudText>
+                                    <MudText Typo="Typo.body2" Class="module-desc">@module.Description</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    @if (!selectedModules.Any())
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
+                            Please select at least one module to continue
+                        </MudAlert>
+                    }
+                </MudPaper>
+                </ChildContent>
+            </MudStep>
+
+            <!-- Step 4: Review & Confirm -->
+            <MudStep Title="Review & Confirm">
+                <ChildContent>
+                <MudPaper Class="step-content" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="step-title">Review your information</MudText>
+
+                    <div class="review-section">
+                        <MudText Typo="Typo.subtitle1" Class="review-section-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                            Company Information
+                        </MudText>
+                        <MudSimpleTable Dense="true" Class="review-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Company Name:</strong></td>
+                                    <td>@companyName</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Industry:</strong></td>
+                                    <td>@industry</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Company Size:</strong></td>
+                                    <td>@companySize</td>
+                                </tr>
+                                @if (!string.IsNullOrEmpty(website))
+                                {
+                                    <tr>
+                                        <td><strong>Website:</strong></td>
+                                        <td>@website</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </div>
+
+                    <div class="review-section">
+                        <MudText Typo="Typo.subtitle1" Class="review-section-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                            Admin Account
+                        </MudText>
+                        <MudSimpleTable Dense="true" Class="review-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Name:</strong></td>
+                                    <td>@firstName @lastName</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>@email</td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </div>
+
+                    <div class="review-section">
+                        <MudText Typo="Typo.subtitle1" Class="review-section-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Apps" Class="mr-2" />
+                            Selected Modules (@selectedModules.Count)
+                        </MudText>
+                        <div class="selected-modules-review">
+                            @foreach (var module in selectedModules)
+                            {
+                                <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Icon="@module.Icon">
+                                    @module.DisplayName
+                                </MudChip>
+                            }
+                        </div>
+                    </div>
+
+                    <MudCheckBox @bind-Value="agreedToTerms" Label="I agree to the Terms of Service and Privacy Policy" Color="Color.Primary" Class="mt-4" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               Size="Size.Large"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.CheckCircle"
+                               Disabled="!agreedToTerms"
+                               OnClick="CompleteSignup"
+                               Class="mt-4 complete-button">
+                        Create My Account
+                    </MudButton>
+                </MudPaper>
+                </ChildContent>
+            </MudStep>
+        </MudStepper>
+    </MudContainer>
+</div>
+
+@code {
+    private MudStepper? stepper;
+    private bool passwordMismatch = false;
+    private bool agreedToTerms = false;
+
+    // Step 1: Company Info
+    private string companyName = "";
+    private string industry = "";
+    private string companySize = "";
+    private string website = "";
+
+    // Step 2: Admin Account
+    private string firstName = "";
+    private string lastName = "";
+    private string email = "";
+    private string password = "";
+    private string confirmPassword = "";
+
+    // Step 3: Module Selection
+    private List<ModuleDto> availableModules = new();
+    private List<ModuleDto> selectedModules => availableModules.Where(m => m.IsSelected).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModules();
+    }
+
+    private async Task LoadModules()
+    {
+        try
+        {
+            var modules = await ModuleDiscovery.GetModulesWithUiAsync();
+            availableModules = modules.Select(m => new ModuleDto
+            {
+                Key = m.Key,
+                DisplayName = m.DisplayName,
+                Description = m.Description,
+                Icon = m.Icon ?? Icons.Material.Filled.Apps,
+                IsSelected = false
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading modules: {ex.Message}");
+            // Fallback modules
+            availableModules = new List<ModuleDto>
+            {
+                new() { Key = "hr", DisplayName = "HR", Description = "Manage employees, onboarding, and benefits", Icon = Icons.Material.Filled.People },
+                new() { Key = "finance", DisplayName = "Finance", Description = "Track expenses and manage invoices", Icon = Icons.Material.Filled.AttachMoney },
+                new() { Key = "crm", DisplayName = "CRM", Description = "Build customer relationships", Icon = Icons.Material.Filled.Contacts },
+                new() { Key = "operations", DisplayName = "Operations", Description = "Streamline workflows and projects", Icon = Icons.Material.Filled.Business },
+                new() { Key = "analytics", DisplayName = "Analytics", Description = "Data-driven insights", Icon = Icons.Material.Filled.Assessment },
+                new() { Key = "security", DisplayName = "Security", Description = "Enterprise-grade security", Icon = Icons.Material.Filled.Security }
+            };
+        }
+    }
+
+    private void ToggleModule(ModuleDto module)
+    {
+        module.IsSelected = !module.IsSelected;
+        StateHasChanged();
+    }
+
+    private string GetModuleCardClass(ModuleDto module)
+    {
+        return module.IsSelected ? "module-selection-card selected" : "module-selection-card";
+    }
+
+    private bool ValidateCurrentStep()
+    {
+        if (stepper == null) return false;
+
+        // Simplified validation without direct ActiveIndex access
+        // Validate all required fields across steps
+        var companyInfoValid = !string.IsNullOrWhiteSpace(companyName) &&
+                               !string.IsNullOrWhiteSpace(industry) &&
+                               !string.IsNullOrWhiteSpace(companySize);
+
+        passwordMismatch = password != confirmPassword;
+        var adminAccountValid = !string.IsNullOrWhiteSpace(firstName) &&
+                                !string.IsNullOrWhiteSpace(lastName) &&
+                                !string.IsNullOrWhiteSpace(email) &&
+                                !string.IsNullOrWhiteSpace(password) &&
+                                !passwordMismatch;
+
+        var moduleSelectionValid = selectedModules.Any();
+
+        return companyInfoValid && adminAccountValid && moduleSelectionValid;
+    }
+
+    private void CompleteSignup()
+    {
+        // TODO: Implement actual signup logic with backend API
+        // For now, just navigate to dashboard
+        NavigationManager.NavigateTo("/dashboard");
+    }
+
+    public class ModuleDto
+    {
+        public string Key { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Icon { get; set; } = Icons.Material.Filled.Apps;
+        public bool IsSelected { get; set; }
+    }
+}

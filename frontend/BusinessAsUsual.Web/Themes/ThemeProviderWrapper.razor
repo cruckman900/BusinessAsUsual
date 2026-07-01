@@ -1,10 +1,27 @@
 ﻿@inject ThemeContext ThemeContext
+@inject ThemeSyncService ThemeSyncService
+@implements IAsyncDisposable
 
 <MudThemeProvider Theme="@ThemeContext.CurrentTheme" IsDarkMode="@ThemeContext.IsDarkMode" />
 
 @code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThemeSyncService.InitializeAsync();
+            // Broadcast initial theme to any already-loaded iframes
+            ThemeContext.SetTheme(ThemeContext.ThemeName, ThemeContext.IsDarkMode);
+        }
+    }
+
     protected override void OnInitialized()
     {
         ThemeContext.OnThemeChanged += () => InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ThemeSyncService.DisposeAsync();
     }
 }

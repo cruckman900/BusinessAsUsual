@@ -1,0 +1,311 @@
+@page "/hr/goals"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Goals - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Goals</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Class="mr-2" />
+                        Goals
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Track employee goals and objectives</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/goals/create"))">
+                    Create Goal
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (goals == null || !goals.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No goals found. Click "Create Goal" to add your first goal.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Goal"
+                             Items="@goals"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search goals..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Not Started")">Not Started</MudSelectItem>
+                            <MudSelectItem Value="@("In Progress")">In Progress</MudSelectItem>
+                            <MudSelectItem Value="@("At Risk")">At Risk</MudSelectItem>
+                            <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                            <MudSelectItem Value="@("Cancelled")">Cancelled</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Employee" Sortable="true" SortBy="@(x => x.EmployeeName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.EmployeeName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.EmployeeName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Department</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Goal" Sortable="true" SortBy="@(x => x.Title)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.Title</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Category</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Progress" Sortable="true" SortBy="@(x => x.Progress)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudProgressLinear Color="@GetProgressColor(context.Item.Progress)" 
+                                                      Value="@context.Item.Progress" 
+                                                      Size="Size.Medium" 
+                                                      Class="flex-grow-1" 
+                                                      Style="width: 100px;" />
+                                    <MudText Typo="Typo.caption" Class="ml-2">@context.Item.Progress%</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Target Date" Sortable="true" SortBy="@(x => x.TargetDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.TargetDate.ToString("MMM dd, yyyy")</MudText>
+                                    @{
+                                        var daysRemaining = (context.Item.TargetDate - DateTime.Now).Days;
+                                    }
+                                    @if (daysRemaining < 0 && context.Item.Status != "Completed")
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">@Math.Abs(daysRemaining) days overdue</MudText>
+                                    }
+                                    else if (daysRemaining <= 14 && context.Item.Status != "Completed")
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Warning">@daysRemaining days left</MudText>
+                                    }
+                                    else if (context.Item.Status != "Completed")
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Success">@daysRemaining days left</MudText>
+                                    }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Priority" Title="Priority">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetPriorityColor(context.Item.Priority)" Variant="Variant.Text">
+                                    @context.Item.Priority
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewGoal(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditGoal(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteGoal(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Goal" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading goals</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Goal> goals = new();
+    private List<Goal> allGoals = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class Goal
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string EmployeeName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Category { get; set; } = "";
+        public int Progress { get; set; } = 0;
+        public DateTime TargetDate { get; set; } = DateTime.Now;
+        public string Status { get; set; } = "Not Started";
+        public string Priority { get; set; } = "Medium";
+        public List<string> Milestones { get; set; } = new();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGoalsAsync();
+    }
+
+    private async Task LoadGoalsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allGoals = new List<Goal>
+        {
+            new Goal { EmployeeName = "Sarah Johnson", Department = "Engineering", Title = "Complete microservices migration", Category = "Technical", Progress = 65, TargetDate = DateTime.Now.AddDays(30), Status = "In Progress", Priority = "High" },
+            new Goal { EmployeeName = "Michael Chen", Department = "Product", Title = "Launch mobile app MVP", Category = "Product", Progress = 85, TargetDate = DateTime.Now.AddDays(15), Status = "In Progress", Priority = "High" },
+            new Goal { EmployeeName = "Emily Rodriguez", Department = "Design", Title = "Design system documentation", Category = "Documentation", Progress = 100, TargetDate = DateTime.Now.AddDays(-5), Status = "Completed", Priority = "Medium" },
+            new Goal { EmployeeName = "David Kim", Department = "Operations", Title = "Reduce deployment time by 50%", Category = "Efficiency", Progress = 40, TargetDate = DateTime.Now.AddDays(45), Status = "In Progress", Priority = "Medium" },
+            new Goal { EmployeeName = "Jessica Martinez", Department = "Analytics", Title = "Build automated reporting dashboard", Category = "Technical", Progress = 20, TargetDate = DateTime.Now.AddDays(-10), Status = "At Risk", Priority = "High" },
+            new Goal { EmployeeName = "Robert Taylor", Department = "Engineering", Title = "Mentor 2 junior developers", Category = "Leadership", Progress = 75, TargetDate = DateTime.Now.AddDays(60), Status = "In Progress", Priority = "Medium" },
+            new Goal { EmployeeName = "Amanda White", Department = "Marketing", Title = "Increase social media engagement 30%", Category = "Marketing", Progress = 0, TargetDate = DateTime.Now.AddDays(90), Status = "Not Started", Priority = "Low" },
+            new Goal { EmployeeName = "Christopher Lee", Department = "Quality Assurance", Title = "Implement automated testing suite", Category = "Technical", Progress = 55, TargetDate = DateTime.Now.AddDays(20), Status = "In Progress", Priority = "High" },
+            new Goal { EmployeeName = "Nicole Anderson", Department = "Business Analysis", Title = "Document business processes", Category = "Documentation", Progress = 90, TargetDate = DateTime.Now.AddDays(10), Status = "In Progress", Priority = "Medium" },
+            new Goal { EmployeeName = "Daniel Harris", Department = "Engineering", Title = "API performance optimization", Category = "Technical", Progress = 0, TargetDate = DateTime.Now.AddDays(120), Status = "Cancelled", Priority = "Low" }
+        };
+
+        FilterGoals();
+        isLoading = false;
+    }
+
+    private void FilterGoals()
+    {
+        goals = allGoals;
+
+        if (statusFilter != "All")
+        {
+            goals = goals.Where(g => g.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<Goal, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.EmployeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private Color GetProgressColor(int progress)
+    {
+        if (progress >= 80) return Color.Success;
+        if (progress >= 50) return Color.Info;
+        if (progress >= 25) return Color.Warning;
+        return Color.Error;
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Not Started" => (Color.Default, Icons.Material.Filled.Schedule),
+            "In Progress" => (Color.Info, Icons.Material.Filled.Pending),
+            "At Risk" => (Color.Warning, Icons.Material.Filled.Warning),
+            "Completed" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Cancelled" => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private Color GetPriorityColor(string priority)
+    {
+        return priority switch
+        {
+            "High" => Color.Error,
+            "Medium" => Color.Warning,
+            "Low" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private void ViewGoal(string id)
+    {
+        Navigation.NavigateTo($"/hr/goals/{id}");
+    }
+
+    private void EditGoal(string id)
+    {
+        Navigation.NavigateTo($"/hr/goals/{id}/edit");
+    }
+
+    private async Task DeleteGoal(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allGoals.RemoveAll(g => g.Id == id);
+        FilterGoals();
+        await Task.CompletedTask;
+    }
+}
