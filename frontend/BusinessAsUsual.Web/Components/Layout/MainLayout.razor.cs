@@ -113,8 +113,8 @@ namespace BusinessAsUsual.Web.Components.Layout
                     Key = m.Key,
                     Name = m.DisplayName,
                     Description = m.Description,
-                    // Use /modules/{key} route to embed the module UI via iframe
-                    Route = $"/modules/{m.Key}",
+                    // Use direct module route (e.g., /hr)
+                    Route = $"/{m.Key}",
                     Icon = m.Icon ?? Icons.Material.Filled.Apps,
                     NavigationItems = m.NavigationItems.Select(nav => ConvertToModuleNavigationItem(nav)).ToList()
                 }).ToList();
