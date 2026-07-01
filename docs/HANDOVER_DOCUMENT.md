@@ -45,47 +45,25 @@ Each business module (HR, Accounting, Inventory, etc.) should be:
 
 Each business module (e.g., HR, Accounting, Inventory) will be structured as:
 
-```
-HR.Service/
-│
-├── HR.API/                    # REST API endpoints
-│   ├── Controllers/           # HRController, EmployeesController, etc.
-│   ├── Program.cs             # Service host
-│   └── Dockerfile             # Independent deployment
-│
-├── HR.Application/            # Business logic & use cases
-│   ├── Commands/              # CQRS commands
-│   ├── Queries/               # CQRS queries
-│   └── Services/              # Business services
-│
-├── HR.Domain/                 # Domain entities & interfaces
-│   ├── Entities/              # Employee, Department, etc.
-│   └── ValueObjects/          # Domain values
-│
-├── HR.Infrastructure/         # Data access & external services
-│   ├── Persistence/           # EF Core context
-│   └── Repositories/          # Data repositories
-│
-├── HR.Web/                    # Blazor UI Components (injected into main app)
-│   ├── Components/            # Razor components
-│   │   ├── EmployeeList.razor
-│   │   ├── EmployeeDetail.razor
-│   │   └── DepartmentCard.razor
-│   ├── Pages/                 # Full page components
-│   │   ├── Employees.razor
-│   │   └── Dashboard.razor
-│   └── Services/              # UI-specific services
-│       └── HRUIService.cs
-│
-└── HR.Contracts/              # Mobile UI contracts & models
-    ├── UIModels/              # View models for mobile
-    │   ├── EmployeeViewModel.cs
-    │   └── DepartmentViewModel.cs
-    ├── Specifications/        # UI behavior specifications
-    │   ├── EmployeeListSpec.cs
-    │   └── EmployeeFormSpec.cs
-    └── Navigation/            # Navigation contracts
-        └── HRNavigationMap.cs
+```mermaid
+graph TD
+    A[HR Service] --> B[HR.API<br/>REST Endpoints]
+    A --> C[HR.Application<br/>Business Logic]
+    A --> D[HR.Domain<br/>Entities]
+    A --> E[HR.Infrastructure<br/>Data Access]
+    A --> F[HR.Web<br/>Blazor UI]
+    A --> G[HR.Contracts<br/>Mobile Specs]
+
+    B --> H[Controllers]
+    C --> I[Commands/Queries]
+    D --> J[Entities/ValueObjects]
+    E --> K[EF Core/Repositories]
+    F --> L[Components/Pages]
+    G --> M[UIModels/Navigation]
+
+    style A fill:#4CAF50,color:#fff
+    style F fill:#2196F3,color:#fff
+    style G fill:#FF9800,color:#fff
 ```
 
 ### Component Injection Strategy

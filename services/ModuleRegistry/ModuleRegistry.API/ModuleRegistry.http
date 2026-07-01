@@ -1,0 +1,103 @@
+### Module Registry Service API Tests
+### Base URL
+@baseUrl = http://localhost:5100
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+### 2. Get All Modules
+GET {{baseUrl}}/api/modules
+
+### 3. Get Active Modules
+GET {{baseUrl}}/api/modules/active
+
+### 4. Get Modules with UI
+GET {{baseUrl}}/api/modules/ui
+
+### 5. Get Modules with Mobile Support
+GET {{baseUrl}}/api/modules/mobile
+
+### 6. Get Specific Module (HR)
+GET {{baseUrl}}/api/modules/hr
+
+### 7. Register HR Module Manually (with Mobile Support)
+POST {{baseUrl}}/api/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "hr",
+  "displayName": "Human Resources",
+  "description": "Manage employees, departments, onboarding, and benefits",
+  "version": "1.0.0",
+  "apiBaseUrl": "http://localhost:5001",
+  "uiEntryPoint": "http://localhost:5002/hr",
+  "icon": "mdi-account-group",
+  "permissions": [
+    "hr.read",
+    "hr.write",
+    "hr.admin"
+  ],
+  "capabilities": [
+    "employees",
+    "departments",
+    "onboarding",
+    "benefits"
+  ],
+  "healthUrl": "http://localhost:5001/health",
+  "tenantMode": "tenant-per-database",
+  "supportsMobile": true,
+  "mobileUISpecUrl": "http://localhost:5001/api/hr/mobile/ui-spec",
+  "mobileContractVersion": "1.0.0"
+}
+
+### 8. Register Accounting Module (Example)
+POST {{baseUrl}}/api/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "accounting",
+  "displayName": "Accounting",
+  "description": "Financial management, invoicing, and reporting",
+  "version": "1.0.0",
+  "apiBaseUrl": "http://localhost:5003",
+  "uiEntryPoint": "http://localhost:5002/accounting",
+  "icon": "mdi-calculator",
+  "permissions": [
+    "accounting.read",
+    "accounting.write",
+    "accounting.admin"
+  ],
+  "capabilities": [
+    "invoices",
+    "expenses",
+    "reports"
+  ],
+  "healthUrl": "http://localhost:5003/health",
+  "tenantMode": "tenant-per-database"
+}
+
+### 8. Register Inventory Module (Example)
+POST {{baseUrl}}/api/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "inventory",
+  "displayName": "Inventory",
+  "description": "Stock management and warehouse operations",
+  "version": "1.0.0",
+  "apiBaseUrl": "http://localhost:5004",
+  "uiEntryPoint": "http://localhost:5002/inventory",
+  "icon": "mdi-package-variant",
+  "permissions": [
+    "inventory.read",
+    "inventory.write",
+    "inventory.admin"
+  ],
+  "capabilities": [
+    "stock-levels",
+    "warehouses",
+    "transfers"
+  ],
+  "healthUrl": "http://localhost:5004/health",
+  "tenantMode": "tenant-per-database"
+}

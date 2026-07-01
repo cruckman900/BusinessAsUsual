@@ -1,0 +1,32 @@
+@inherits LayoutComponentBase
+
+@* 
+    HR Module Layout
+    This layout is used for HR module pages that are embedded in the main shell.
+    It provides a clean, minimal layout without duplicating the shell's navigation.
+*@
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudMainContent Class="hr-module-main">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+<style>
+    .hr-module-main {
+        padding: 0 !important;
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    /* Let individual pages control their own container padding */
+    .hr-module-main .mud-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+</style>

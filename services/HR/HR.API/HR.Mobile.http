@@ -1,0 +1,37 @@
+### HR Mobile UI Contract API Tests
+### Base URL
+@hrBaseUrl = http://localhost:5001
+
+### 1. Get Complete Mobile UI Specification
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec
+
+### 2. Get Navigation Structure
+GET {{hrBaseUrl}}/api/hr/mobile/navigation
+
+### 3. Get Employee List Screen Specification
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec/employee-list
+
+### 4. Get Employee Detail Screen Specification
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec/employee-detail
+
+### 5. Get Employee Form Specification
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec/employee-form
+
+### 6. Health Check
+GET {{hrBaseUrl}}/health
+
+### 7. Example: How Mobile App Would Use This
+### Step 1: Discover mobile-enabled modules from MRS
+GET http://localhost:5100/api/modules/mobile
+
+### Step 2: Get HR module metadata (includes mobileUISpecUrl)
+GET http://localhost:5100/api/modules/hr
+
+### Step 3: Fetch UI spec from the URL provided in module metadata
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec
+
+### Step 4: Fetch specific screen specs as needed
+GET {{hrBaseUrl}}/api/hr/mobile/ui-spec/employee-list
+
+### Step 5: Fetch data using the regular API endpoints
+GET {{hrBaseUrl}}/api/employees

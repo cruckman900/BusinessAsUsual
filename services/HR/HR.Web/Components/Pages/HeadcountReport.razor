@@ -1,0 +1,373 @@
+@page "/hr/reports/headcount-detail"
+@inject HR.Application.Services.IEmployeeService EmployeeService
+@inject HR.Application.Services.IDepartmentService DepartmentService
+@inject NavigationManager Navigation
+
+<PageTitle>Headcount Report</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Breadcrumbs -->
+        <div class="mb-3">
+            <MudLink Href="/dashboard">Dashboard</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr">HR</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr/reports">Reports</MudLink>
+            <span class="mx-2">/</span>
+            <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Headcount Report</MudText>
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex justify-space-between align-center mb-4">
+            <div>
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                    Headcount Report
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    Overview of employee headcount across departments and statuses
+                </MudText>
+            </div>
+            <div>
+                <MudButtonGroup Variant="Variant.Outlined">
+                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary">
+                        Export PDF
+                    </MudButton>
+                    <MudButton StartIcon="@Icons.Material.Filled.TableChart" Color="Color.Secondary">
+                        Export Excel
+                    </MudButton>
+                </MudButtonGroup>
+            </div>
+        </div>
+
+        <MudGrid Spacing="3">
+            <!-- Summary Cards -->
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Total Employees</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Primary">@totalEmployees</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Active</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Success">@activeEmployees</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">On Leave</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Warning">@onLeaveEmployees</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.EventBusy" Color="Color.Warning" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Departments</MudText>
+                                <MudText Typo="Typo.h4" Color="Color.Info">@totalDepartments</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Color="Color.Info" Size="Size.Large" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Department Breakdown Table -->
+            <MudItem xs="12" md="7">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                            Headcount by Department
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudTable Items="@departmentBreakdown" 
+                                  Dense="true" 
+                                  Hover="true"
+                                  Striped="true"
+                                  Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Department</MudTh>
+                                <MudTh Style="text-align: center;">Active</MudTh>
+                                <MudTh Style="text-align: center;">On Leave</MudTh>
+                                <MudTh Style="text-align: center;">Total</MudTh>
+                                <MudTh Style="text-align: right;">% of Total</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Department">
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                        <strong>@context.DepartmentName</strong>
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Active" Style="text-align: center;">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">@context.ActiveCount</MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="On Leave" Style="text-align: center;">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.OnLeaveCount</MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Total" Style="text-align: center;">
+                                    <MudText Typo="Typo.body1"><strong>@context.TotalCount</strong></MudText>
+                                </MudTd>
+                                <MudTd DataLabel="% of Total" Style="text-align: right;">
+                                    <MudProgressLinear Color="Color.Primary" 
+                                                       Rounded="true" 
+                                                       Size="Size.Medium" 
+                                                       Value="@context.Percentage" 
+                                                       Class="mb-1" />
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Percentage.ToString("F1")%</MudText>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Status Distribution -->
+            <MudItem xs="12" md="5">
+                <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="flex-grow-1">
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" />
+                            Status Distribution
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudStack Spacing="3">
+                            @foreach (var status in statusBreakdown)
+                            {
+                                <div>
+                                    <div class="d-flex justify-space-between align-center mb-1">
+                                        <MudText Typo="Typo.body2">@status.StatusName</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Primary"><strong>@status.Count (@status.Percentage.ToString("F1")%)</strong></MudText>
+                                    </div>
+                                    <MudProgressLinear Color="@GetStatusColor(status.StatusName)" 
+                                                       Rounded="true" 
+                                                       Size="Size.Large" 
+                                                       Value="@status.Percentage" />
+                                </div>
+                            }
+                        </MudStack>
+
+                        <MudDivider Class="my-3" />
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                            Last updated: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Hiring Trends -->
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6" GutterBottom="true">
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                            Recent Hires (Last 12 Months)
+                        </MudText>
+                        <MudDivider Class="mb-3" />
+
+                        <MudTable Items="@recentHires" 
+                                  Dense="true" 
+                                  Hover="true"
+                                  Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Employee</MudTh>
+                                <MudTh>Department</MudTh>
+                                <MudTh>Job Title</MudTh>
+                                <MudTh>Hire Date</MudTh>
+                                <MudTh>Tenure</MudTh>
+                                <MudTh>Status</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Employee">
+                                    <div class="d-flex align-center">
+                                        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                            @GetInitials(context.FirstName, context.LastName)
+                                        </MudAvatar>
+                                        @context.FirstName @context.LastName
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Department">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@context.Department</MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Job Title">@context.JobTitle</MudTd>
+                                <MudTd DataLabel="Hire Date">@context.HireDate.ToString("MMM dd, yyyy")</MudTd>
+                                <MudTd DataLabel="Tenure">@GetTenure(context.HireDate)</MudTd>
+                                <MudTd DataLabel="Status">
+                                    @if (context.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.Status</MudChip>
+                                    }
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Back Button -->
+        <div class="mt-4">
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/modules/hr/reports">
+                Back to Reports
+            </MudButton>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private IEnumerable<HR.Application.DTOs.EmployeeDto> employees = Array.Empty<HR.Application.DTOs.EmployeeDto>();
+    private IEnumerable<HR.Application.DTOs.DepartmentDto> departments = Array.Empty<HR.Application.DTOs.DepartmentDto>();
+
+    private int totalEmployees;
+    private int activeEmployees;
+    private int onLeaveEmployees;
+    private int totalDepartments;
+
+    private List<DepartmentBreakdown> departmentBreakdown = new();
+    private List<StatusBreakdown> statusBreakdown = new();
+    private List<HR.Application.DTOs.EmployeeDto> recentHires = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        CalculateMetrics();
+        isLoading = false;
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            employees = await EmployeeService.GetAllEmployeesAsync();
+            departments = await DepartmentService.GetAllDepartmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+
+    private void CalculateMetrics()
+    {
+        totalEmployees = employees.Count();
+        activeEmployees = employees.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active));
+        onLeaveEmployees = employees.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.OnLeave));
+        totalDepartments = departments.Count();
+
+        // Department breakdown
+        var deptGroups = employees.GroupBy(e => e.Department ?? "Unassigned");
+        departmentBreakdown = deptGroups.Select(g => new DepartmentBreakdown
+        {
+            DepartmentName = g.Key,
+            ActiveCount = g.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active)),
+            OnLeaveCount = g.Count(e => e.Status == nameof(HR.Domain.Entities.EmploymentStatus.OnLeave)),
+            TotalCount = g.Count(),
+            Percentage = totalEmployees > 0 ? (double)g.Count() / totalEmployees * 100 : 0
+        }).OrderByDescending(d => d.TotalCount).ToList();
+
+        // Status breakdown
+        var statusGroups = employees.GroupBy(e => e.Status);
+        statusBreakdown = statusGroups.Select(g => new StatusBreakdown
+        {
+            StatusName = g.Key,
+            Count = g.Count(),
+            Percentage = totalEmployees > 0 ? (double)g.Count() / totalEmployees * 100 : 0
+        }).OrderByDescending(s => s.Count).ToList();
+
+        // Recent hires (last 12 months)
+        var twelveMonthsAgo = DateTime.Now.AddMonths(-12);
+        recentHires = employees
+            .Where(e => e.HireDate >= twelveMonthsAgo)
+            .OrderByDescending(e => e.HireDate)
+            .ToList();
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            nameof(HR.Domain.Entities.EmploymentStatus.Active) => Color.Success,
+            nameof(HR.Domain.Entities.EmploymentStatus.OnLeave) => Color.Warning,
+            nameof(HR.Domain.Entities.EmploymentStatus.Terminated) => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        var first = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString().ToUpper() : "";
+        var last = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString().ToUpper() : "";
+        return first + last;
+    }
+
+    private string GetTenure(DateTime hireDate)
+    {
+        var tenure = DateTime.Now - hireDate;
+        var years = (int)(tenure.TotalDays / 365);
+        var months = (int)((tenure.TotalDays % 365) / 30);
+
+        if (years > 0)
+            return $"{years}y {months}m";
+        else if (months > 0)
+            return $"{months} months";
+        else
+            return $"{(int)tenure.TotalDays} days";
+    }
+
+    public class DepartmentBreakdown
+    {
+        public string DepartmentName { get; set; } = string.Empty;
+        public int ActiveCount { get; set; }
+        public int OnLeaveCount { get; set; }
+        public int TotalCount { get; set; }
+        public double Percentage { get; set; }
+    }
+
+    public class StatusBreakdown
+    {
+        public string StatusName { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public double Percentage { get; set; }
+    }
+}

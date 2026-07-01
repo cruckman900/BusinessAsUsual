@@ -1,0 +1,282 @@
+@page "/hr/settings"
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>HR Settings</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/modules/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Settings</MudText>
+    </div>
+
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+            HR Module Settings
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">Configure HR module preferences and options</MudText>
+    </div>
+
+    <MudGrid Spacing="3">
+        <!-- General Settings -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                    General Settings
+                </MudText>
+
+                <MudStack Spacing="3" Class="mt-4">
+                    <MudSwitch @bind-Value="enableNotifications" Color="Color.Primary" Label="Enable Email Notifications" />
+                    <MudSwitch @bind-Value="autoArchiveTerminated" Color="Color.Primary" Label="Auto-archive Terminated Employees" />
+                    <MudSwitch @bind-Value="requireApproval" Color="Color.Primary" Label="Require Manager Approval for Changes" />
+
+                    <MudDivider />
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Probation Period (Days)</MudText>
+                        <MudTextField @bind-Value="probationDays" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Notice Period (Days)</MudText>
+                        <MudTextField @bind-Value="noticePeriodDays" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveGeneralSettings">
+                        Save Changes
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Document Settings -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                    Document Settings
+                </MudText>
+
+                <MudStack Spacing="3" Class="mt-4">
+                    <MudSwitch @bind-Value="requireDocumentUpload" Color="Color.Primary" Label="Require Document Upload for New Hires" />
+                    <MudSwitch @bind-Value="enableDigitalSignatures" Color="Color.Primary" Label="Enable Digital Signatures" />
+
+                    <MudDivider />
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Allowed File Types</MudText>
+                        <MudChipSet T="string" SelectionMode="SelectionMode.MultiSelection">
+                            <MudChip T="string" Size="Size.Small" Default="true">PDF</MudChip>
+                            <MudChip T="string" Size="Size.Small" Default="true">DOCX</MudChip>
+                            <MudChip T="string" Size="Size.Small">JPG</MudChip>
+                            <MudChip T="string" Size="Size.Small">PNG</MudChip>
+                        </MudChipSet>
+                    </div>
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Max File Size (MB)</MudText>
+                        <MudTextField @bind-Value="maxFileSizeMB" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveDocumentSettings">
+                        Save Changes
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Time & Attendance -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Class="mr-2" />
+                    Time & Attendance
+                </MudText>
+
+                <MudStack Spacing="3" Class="mt-4">
+                    <MudSwitch @bind-Value="enableTimeTracking" Color="Color.Primary" Label="Enable Time Tracking" />
+                    <MudSwitch @bind-Value="requireClockInOut" Color="Color.Primary" Label="Require Clock In/Out" />
+                    <MudSwitch @bind-Value="enableOvertimeTracking" Color="Color.Primary" Label="Track Overtime Hours" />
+
+                    <MudDivider />
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Standard Work Hours per Week</MudText>
+                        <MudTextField @bind-Value="standardWorkHours" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Grace Period (Minutes)</MudText>
+                        <MudTextField @bind-Value="gracePeriodMinutes" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveTimeSettings">
+                        Save Changes
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Leave & PTO -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.BeachAccess" Class="mr-2" />
+                    Leave & PTO
+                </MudText>
+
+                <MudStack Spacing="3" Class="mt-4">
+                    <MudSwitch @bind-Value="enablePTOAccrual" Color="Color.Primary" Label="Enable PTO Accrual" />
+                    <MudSwitch @bind-Value="carryOverUnusedPTO" Color="Color.Primary" Label="Carry Over Unused PTO" />
+                    <MudSwitch @bind-Value="requireManagerApproval" Color="Color.Primary" Label="Require Manager Approval for Leave" />
+
+                    <MudDivider />
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Annual PTO Days</MudText>
+                        <MudTextField @bind-Value="annualPTODays" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Sick Leave Days per Year</MudText>
+                        <MudTextField @bind-Value="sickLeaveDays" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" GutterBottom="true">Max PTO Carryover Days</MudText>
+                        <MudTextField @bind-Value="maxCarryoverDays" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Number" />
+                    </div>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveLeaveSettings">
+                        Save Changes
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Integration Settings -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.IntegrationInstructions" Class="mr-2" />
+                    Integration Settings
+                </MudText>
+
+                <MudGrid Spacing="2" Class="mt-4">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true" Class="pa-3 d-flex flex-column" Style="height: 100%;">
+                            <MudCardContent Class="flex-grow-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Cloud" Color="Color.Info" Size="Size.Medium" Class="mb-2" />
+                                <MudText Typo="Typo.subtitle2">Payroll System</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Not Connected</MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">Configure</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true" Class="pa-3 d-flex flex-column" Style="height: 100%;">
+                            <MudCardContent Class="flex-grow-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Success" Size="Size.Medium" Class="mb-2" />
+                                <MudText Typo="Typo.subtitle2">Email Service</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Not Connected</MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">Configure</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true" Class="pa-3 d-flex flex-column" Style="height: 100%;">
+                            <MudCardContent Class="flex-grow-1">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Warning" Size="Size.Medium" Class="mb-2" />
+                                <MudText Typo="Typo.subtitle2">Calendar Sync</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Not Connected</MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">Configure</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Outlined="true" Class="pa-3 d-flex flex-column" Style="height: 100%;">
+                            <MudCardContent Class="flex-grow-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Secondary" Size="Size.Medium" Class="mb-2" />
+                                <MudText Typo="Typo.subtitle2">Document Storage</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">Not Connected</MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">Configure</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // General Settings
+    private bool enableNotifications = true;
+    private bool autoArchiveTerminated = false;
+    private bool requireApproval = true;
+    private int probationDays = 90;
+    private int noticePeriodDays = 30;
+
+    // Document Settings
+    private bool requireDocumentUpload = true;
+    private bool enableDigitalSignatures = false;
+    private int maxFileSizeMB = 10;
+
+    // Time & Attendance
+    private bool enableTimeTracking = true;
+    private bool requireClockInOut = false;
+    private bool enableOvertimeTracking = true;
+    private int standardWorkHours = 40;
+    private int gracePeriodMinutes = 15;
+
+    // Leave & PTO
+    private bool enablePTOAccrual = true;
+    private bool carryOverUnusedPTO = true;
+    private bool requireManagerApproval = true;
+    private int annualPTODays = 20;
+    private int sickLeaveDays = 10;
+    private int maxCarryoverDays = 5;
+
+    private void SaveGeneralSettings()
+    {
+        // TODO: Implement settings save
+        Console.WriteLine("General settings saved");
+    }
+
+    private void SaveDocumentSettings()
+    {
+        // TODO: Implement settings save
+        Console.WriteLine("Document settings saved");
+    }
+
+    private void SaveTimeSettings()
+    {
+        // TODO: Implement settings save
+        Console.WriteLine("Time settings saved");
+    }
+
+    private void SaveLeaveSettings()
+    {
+        // TODO: Implement settings save
+        Console.WriteLine("Leave settings saved");
+    }
+}
+
+
+

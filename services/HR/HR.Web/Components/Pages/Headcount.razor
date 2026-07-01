@@ -1,0 +1,384 @@
+@page "/hr/headcount"
+@using HR.Web.Components.Shared
+
+<PageTitle>Headcount Planning</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Headcount Planning" 
+                  Subtitle="Workforce planning and budget management"
+                  Icon="@Icons.Material.Filled.Groups">
+        <Actions>
+            <MudTooltip Text="Create new headcount request">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                    New Request
+                </MudButton>
+            </MudTooltip>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Current Headcount</MudText>
+                                <MudText Typo="Typo.h4">@currentHeadcount</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">FTEs</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Approved Budget</MudText>
+                                <MudText Typo="Typo.h4">@approvedHeadcount</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">FTEs</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Open Positions</MudText>
+                                <MudText Typo="Typo.h4">@openPositions</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Vacant roles</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.WorkOff" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">In Pipeline</MudText>
+                                <MudText Typo="Typo.h4">@candidatesInPipeline</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Active candidates</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Budget vs Actual -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                Headcount Budget vs Actual
+            </MudText>
+            <div class="mb-3">
+                <div class="d-flex justify-space-between mb-1">
+                    <MudText Typo="Typo.body2">Utilization</MudText>
+                    <MudText Typo="Typo.body2"><strong>@currentHeadcount of @approvedHeadcount FTEs</strong></MudText>
+                </div>
+                <MudProgressLinear Color="@GetUtilizationColor(utilizationPercent)" Value="@utilizationPercent" Size="Size.Large" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@utilizationPercent% of approved budget utilized</MudText>
+            </div>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="4">
+                    <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
+                        <strong>@remainingBudget FTEs</strong> remaining in budget
+                    </MudAlert>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudAlert Severity="Severity.Info" Dense="true" Variant="Variant.Outlined">
+                        <strong>@pendingApprovals</strong> requests pending approval
+                    </MudAlert>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudAlert Severity="Severity.Warning" Dense="true" Variant="Variant.Outlined">
+                        <strong>@avgTimeToFill days</strong> average time to fill
+                    </MudAlert>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Headcount by Department -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Headcount by Department</MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Current</th>
+                        <th>Approved</th>
+                        <th>Open Reqs</th>
+                        <th>Utilization</th>
+                        <th>Budget Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dept in departmentHeadcount)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                    <strong>@dept.Name</strong>
+                                </div>
+                            </td>
+                            <td>@dept.Current</td>
+                            <td>@dept.Approved</td>
+                            <td>@dept.OpenReqs</td>
+                            <td>
+                                <div class="d-flex align-center gap-2">
+                                    <MudProgressLinear Color="@GetUtilizationColor(dept.Utilization)" Value="@dept.Utilization" Size="Size.Small" Style="width: 60px;" />
+                                    <MudText Typo="Typo.body2">@dept.Utilization%</MudText>
+                                </div>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="@GetBudgetStatusColor(dept.Current, dept.Approved)">
+                                    @(dept.Current <= dept.Approved ? "Within Budget" : "Over Budget")
+                                </MudChip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+
+        <!-- Hiring Pipeline -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+                Hiring Pipeline by Stage
+            </MudText>
+            <MudGrid Spacing="2">
+                @foreach (var stage in pipelineStages)
+                {
+                    <MudItem xs="12" md="3">
+                        <MudPaper Elevation="1" Class="pa-3" Style="@($"background: {stage.Color}; color: white;")">
+                            <MudText Typo="Typo.h6">@stage.Name</MudText>
+                            <MudText Typo="Typo.h3">@stage.Count</MudText>
+                            <MudText Typo="Typo.caption">@stage.Description</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Headcount Requests -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@headcountRequests" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Headcount Requests</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all requests">
+                            <MudButton Color="@(filterStatus == null ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter approved requests">
+                            <MudButton Color="@(filterStatus == "Approved" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Approved")">Approved</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter pending requests">
+                            <MudButton Color="@(filterStatus == "Pending" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Pending")">Pending</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter filled positions">
+                            <MudButton Color="@(filterStatus == "Filled" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Filled")">Filled</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Position</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Priority</MudTh>
+                    <MudTh>Requested By</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Request Date</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Position">
+                        <strong>@context.Position</strong>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Level</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(context.Type)">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Priority">
+                        <MudChip T="string" Size="Size.Small" Color="@GetPriorityColor(context.Priority)">@context.Priority</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Requested By">@context.RequestedBy</MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudBadge Content="@context.Status" Color="@GetStatusColor(context.Status)" />
+                    </MudTd>
+                    <MudTd DataLabel="Request Date">@context.RequestDate.ToString("MMM dd, yyyy")</MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View request details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit request">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                            @if (context.Status == "Approved")
+                            {
+                                <MudTooltip Text="Post job opening">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Work" Size="Size.Small" Color="Color.Success" />
+                                </MudTooltip>
+                            }
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterStatus = null;
+
+    // Summary stats
+    private int currentHeadcount = 75;
+    private int approvedHeadcount = 85;
+    private int openPositions = 10;
+    private int candidatesInPipeline = 28;
+    private int remainingBudget = 10;
+    private int pendingApprovals = 4;
+    private int avgTimeToFill = 42;
+    private int utilizationPercent = 88;
+
+    // Data collections
+    private List<DepartmentHeadcount> departmentHeadcount = new();
+    private List<PipelineStage> pipelineStages = new();
+    private List<HeadcountRequest> headcountRequests = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        departmentHeadcount = new List<DepartmentHeadcount>
+        {
+            new() { Name = "Engineering", Current = 25, Approved = 30, OpenReqs = 5, Utilization = 83 },
+            new() { Name = "Sales", Current = 15, Approved = 18, OpenReqs = 3, Utilization = 83 },
+            new() { Name = "Marketing", Current = 10, Approved = 12, OpenReqs = 2, Utilization = 83 },
+            new() { Name = "HR", Current = 8, Approved = 8, OpenReqs = 0, Utilization = 100 },
+            new() { Name = "Finance", Current = 12, Approved = 12, OpenReqs = 0, Utilization = 100 },
+            new() { Name = "Operations", Current = 5, Approved = 5, OpenReqs = 0, Utilization = 100 }
+        };
+
+        pipelineStages = new List<PipelineStage>
+        {
+            new() { Name = "Sourcing", Count = 8, Description = "New requisitions", Color = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+            new() { Name = "Screening", Count = 12, Description = "Initial review", Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+            new() { Name = "Interviewing", Count = 6, Description = "In process", Color = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+            new() { Name = "Offer Stage", Count = 2, Description = "Pending acceptance", Color = "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" }
+        };
+
+        headcountRequests = new List<HeadcountRequest>
+        {
+            new() { Position = "Senior Software Engineer", Level = "L5", Department = "Engineering", Type = "Backfill", Priority = "High", RequestedBy = "Robert Taylor", Status = "Approved", RequestDate = new DateTime(2024, 11, 1) },
+            new() { Position = "Product Manager", Level = "L4", Department = "Engineering", Type = "New", Priority = "High", RequestedBy = "Sarah Johnson", Status = "Approved", RequestDate = new DateTime(2024, 11, 5) },
+            new() { Position = "Sales Executive", Level = "L3", Department = "Sales", Type = "Backfill", Priority = "Critical", RequestedBy = "Emily Davis", Status = "Approved", RequestDate = new DateTime(2024, 11, 8) },
+            new() { Position = "Marketing Analyst", Level = "L2", Department = "Marketing", Type = "New", Priority = "Medium", RequestedBy = "James Wilson", Status = "Pending", RequestDate = new DateTime(2024, 11, 12) },
+            new() { Position = "DevOps Engineer", Level = "L4", Department = "Engineering", Type = "New", Priority = "High", RequestedBy = "Robert Taylor", Status = "Approved", RequestDate = new DateTime(2024, 11, 15) },
+            new() { Position = "Content Writer", Level = "L2", Department = "Marketing", Type = "New", Priority = "Low", RequestedBy = "James Wilson", Status = "Pending", RequestDate = new DateTime(2024, 11, 18) },
+            new() { Position = "Finance Analyst", Level = "L3", Department = "Finance", Type = "Backfill", Priority = "Medium", RequestedBy = "David Martinez", Status = "Filled", RequestDate = new DateTime(2024, 10, 1) },
+            new() { Position = "Customer Success Manager", Level = "L3", Department = "Sales", Type = "New", Priority = "High", RequestedBy = "Emily Davis", Status = "Approved", RequestDate = new DateTime(2024, 11, 20) }
+        };
+    }
+
+    private Color GetUtilizationColor(int utilization)
+    {
+        if (utilization >= 95) return Color.Error;
+        if (utilization >= 85) return Color.Warning;
+        if (utilization >= 70) return Color.Primary;
+        return Color.Success;
+    }
+
+    private Color GetBudgetStatusColor(int current, int approved)
+    {
+        return current <= approved ? Color.Success : Color.Error;
+    }
+
+    private Color GetTypeColor(string type) => type switch
+    {
+        "Backfill" => Color.Warning,
+        "New" => Color.Primary,
+        _ => Color.Default
+    };
+
+    private Color GetPriorityColor(string priority) => priority switch
+    {
+        "Critical" => Color.Error,
+        "High" => Color.Warning,
+        "Medium" => Color.Primary,
+        "Low" => Color.Info,
+        _ => Color.Default
+    };
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Pending" => Color.Warning,
+        "Filled" => Color.Info,
+        "Denied" => Color.Error,
+        _ => Color.Default
+    };
+
+    private class DepartmentHeadcount
+    {
+        public string Name { get; set; } = "";
+        public int Current { get; set; }
+        public int Approved { get; set; }
+        public int OpenReqs { get; set; }
+        public int Utilization { get; set; }
+    }
+
+    private class PipelineStage
+    {
+        public string Name { get; set; } = "";
+        public int Count { get; set; }
+        public string Description { get; set; } = "";
+        public string Color { get; set; } = "";
+    }
+
+    private class HeadcountRequest
+    {
+        public string Position { get; set; } = "";
+        public string Level { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Type { get; set; } = "";
+        public string Priority { get; set; } = "";
+        public string RequestedBy { get; set; } = "";
+        public string Status { get; set; } = "";
+        public DateTime RequestDate { get; set; }
+    }
+}

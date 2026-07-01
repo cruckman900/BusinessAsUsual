@@ -1,0 +1,343 @@
+@page "/hr/departments/create"
+@page "/hr/departments/{id}/edit"
+@inject HR.Application.Services.IDepartmentService DepartmentService
+@inject HR.Application.Services.IEmployeeService EmployeeService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@(IsEditMode ? "Edit Department" : "Create Department")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2 pa-0">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Breadcrumbs -->
+        <div class="mb-3">
+            <MudLink Href="/dashboard">Dashboard</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr">HR</MudLink>
+            <span class="mx-2">/</span>
+            <MudLink Href="/modules/hr/departments">Departments</MudLink>
+            <span class="mx-2">/</span>
+            <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">@(IsEditMode ? "Edit" : "Create")</MudText>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-4">
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@(IsEditMode ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" />
+                @(IsEditMode ? "Edit Department" : "Create New Department")
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                @(IsEditMode ? "Update department information below" : "Enter department details to create a new record")
+            </MudText>
+        </div>
+
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                    Department Information
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="8">
+                        <MudTextField @bind-Value="model.Name" 
+                                      Label="Department Name" 
+                                      Variant="Variant.Outlined" 
+                                      Required="true"
+                                      HelperText="Enter a unique department name"
+                                      For="@(() => model.Name)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="model.Code" 
+                                      Label="Department Code" 
+                                      Variant="Variant.Outlined"
+                                      HelperText="Short code (e.g., ENG, SALES)"
+                                      For="@(() => model.Code)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="model.Description" 
+                                      Label="Description" 
+                                      Variant="Variant.Outlined" 
+                                      Lines="3"
+                                      HelperText="Provide a brief description of the department"
+                                      For="@(() => model.Description)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.Location" 
+                                      Label="Location" 
+                                      Variant="Variant.Outlined"
+                                      HelperText="Physical location or office"
+                                      For="@(() => model.Location)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="model.CostCenter" 
+                                      Label="Cost Center" 
+                                      Variant="Variant.Outlined"
+                                      HelperText="Financial cost center code"
+                                      For="@(() => model.CostCenter)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Value="model.IsActive" 
+                                   Color="Color.Success" 
+                                   Label="Department is Active"
+                                   Class="mt-2" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+                    Hierarchy
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudSelect @bind-Value="model.ParentDepartmentId" 
+                                   Label="Parent Department" 
+                                   Variant="Variant.Outlined"
+                                   HelperText="Select a parent department to create a sub-department/pod"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@((string?)null)">-- No Parent (Top-Level Department) --</MudSelectItem>
+                            @foreach (var dept in allDepartments.Where(d => d.Id != Id))
+                            {
+                                <MudSelectItem Value="@dept.Id">@dept.Name @(!string.IsNullOrEmpty(dept.Code) ? $"({dept.Code})" : "")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle" Class="mr-2" />
+                    Management
+                </MudText>
+                <MudDivider Class="mb-4" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudSelect T="string"
+                                   MultiSelection="true"
+                                   @bind-SelectedValues="selectedManagerIds"
+                                   Label="Department Managers" 
+                                   Variant="Variant.Outlined"
+                                   HelperText="Select one or more managers for this department"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var emp in employees)
+                            {
+                                <MudSelectItem T="string" Value="@emp.Id">@emp.FirstName @emp.LastName - @emp.JobTitle</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                            The first selected manager will be designated as the primary manager
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-space-between mt-4">
+                <MudButton Variant="Variant.Text" 
+                           StartIcon="@Icons.Material.Filled.ArrowBack" 
+                           OnClick="Cancel">
+                    Cancel
+                </MudButton>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           ButtonType="ButtonType.Submit"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="isSaving">
+                    @(isSaving ? "Saving..." : "Save Department")
+                </MudButton>
+            </div>
+        </EditForm>
+    }
+</MudContainer>
+
+    @code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private bool IsEditMode => !string.IsNullOrEmpty(Id);
+    private DepartmentFormModel model = new();
+    private List<HR.Application.DTOs.EmployeeDto> employees = new();
+    private List<HR.Application.DTOs.DepartmentDto> allDepartments = new();
+    private IReadOnlyCollection<string> selectedManagerIds = new HashSet<string>();
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+        await LoadAllDepartments();
+
+        if (IsEditMode && !string.IsNullOrEmpty(Id))
+        {
+            await LoadDepartment();
+        }
+        else
+        {
+            model.IsActive = true;
+        }
+
+        isLoading = false;
+    }
+
+    private async Task LoadEmployees()
+    {
+        try
+        {
+            var allEmployees = await EmployeeService.GetAllEmployeesAsync();
+            employees = allEmployees.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading employees: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadAllDepartments()
+    {
+        try
+        {
+            var departments = await DepartmentService.GetAllDepartmentsAsync();
+            allDepartments = departments.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading departments: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadDepartment()
+    {
+        try
+        {
+            var department = await DepartmentService.GetDepartmentByIdAsync(Id!);
+            if (department != null)
+            {
+                model.Name = department.Name;
+                model.Description = department.Description ?? string.Empty;
+                model.Code = department.Code;
+                model.Location = department.Location;
+                model.CostCenter = department.CostCenter;
+                model.ParentDepartmentId = department.ParentDepartmentId;
+                model.ManagerEmployeeId = department.ManagerEmployeeId ?? string.Empty;
+                model.IsActive = department.IsActive;
+
+                // Load existing managers
+                if (department.Managers != null && department.Managers.Any())
+                {
+                    selectedManagerIds = department.Managers.Select(m => m.ManagerId).ToHashSet();
+                }
+            }
+            else
+            {
+                Snackbar.Add("Department not found", Severity.Error);
+                Navigation.NavigateTo("/modules/hr/departments");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading department: {ex.Message}", Severity.Error);
+            Navigation.NavigateTo("/modules/hr/departments");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            if (IsEditMode)
+            {
+                var updateRequest = new HR.Application.DTOs.UpdateDepartmentRequest
+                {
+                    Name = model.Name,
+                    Description = model.Description,
+                    Code = model.Code,
+                    Location = model.Location,
+                    CostCenter = model.CostCenter,
+                    ParentDepartmentId = model.ParentDepartmentId,
+                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : model.ManagerEmployeeId,
+                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.ToList() : null,
+                    IsActive = model.IsActive
+                };
+
+                await DepartmentService.UpdateDepartmentAsync(Id!, updateRequest);
+                Snackbar.Add("Department updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createRequest = new HR.Application.DTOs.CreateDepartmentRequest
+                {
+                    Name = model.Name,
+                    Description = model.Description,
+                    Code = model.Code,
+                    Location = model.Location,
+                    CostCenter = model.CostCenter,
+                    ParentDepartmentId = model.ParentDepartmentId,
+                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : model.ManagerEmployeeId,
+                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.ToList() : null,
+                    IsActive = model.IsActive
+                };
+
+                await DepartmentService.CreateDepartmentAsync(createRequest);
+                Snackbar.Add("Department created successfully", Severity.Success);
+            }
+
+            Navigation.NavigateTo("/modules/hr/departments");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving department: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(IsEditMode ? $"/modules/hr/departments/{Id}" : "/modules/hr/departments");
+    }
+
+    public class DepartmentFormModel
+    {
+        [Required(ErrorMessage = "Department name is required")]
+        [StringLength(100, ErrorMessage = "Department name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string Description { get; set; } = string.Empty;
+
+        [StringLength(20, ErrorMessage = "Code cannot exceed 20 characters")]
+        public string? Code { get; set; }
+
+        [StringLength(100, ErrorMessage = "Location cannot exceed 100 characters")]
+        public string? Location { get; set; }
+
+        [StringLength(50, ErrorMessage = "Cost Center cannot exceed 50 characters")]
+        public string? CostCenter { get; set; }
+
+        public string? ParentDepartmentId { get; set; }
+
+        public string? ManagerEmployeeId { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+}

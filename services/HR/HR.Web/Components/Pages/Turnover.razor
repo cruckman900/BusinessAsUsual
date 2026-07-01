@@ -1,0 +1,397 @@
+@page "/hr/turnover"
+@using HR.Web.Components.Shared
+
+<PageTitle>Turnover & Retention</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Turnover & Retention Analysis" 
+                  Subtitle="Employee attrition trends and retention strategies"
+                  Icon="@Icons.Material.Filled.ExitToApp">
+        <Actions>
+            <MudButtonGroup Variant="Variant.Outlined">
+                <MudTooltip Text="Export turnover report">
+                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="View retention programs">
+                    <MudButton StartIcon="@Icons.Material.Filled.Campaign" Color="Color.Secondary">
+                        Programs
+                    </MudButton>
+                </MudTooltip>
+            </MudButtonGroup>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Turnover Rate (YTD)</MudText>
+                                <MudText Typo="Typo.h4">@turnoverRateYTD%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">↑ 1.2% vs last year</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Departures (YTD)</MudText>
+                                <MudText Typo="Typo.h4">@departuresYTD</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Total exits</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.PersonRemove" Size="Size.Large" Color="Color.Error" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Tenure</MudText>
+                                <MudText Typo="Typo.h4">@avgTenure</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Years at departure</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Turnover Cost</MudText>
+                                <MudText Typo="Typo.h4">$@turnoverCost.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Error">Estimated YTD</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Size="Size.Large" Color="Color.Error" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Attrition Breakdown -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.PieChart" Class="mr-2" />
+                        Turnover by Type
+                    </MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Voluntary Departures</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@voluntaryCount (@voluntaryPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="@voluntaryPercent" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Employee-initiated resignations</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Involuntary Terminations</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Error">@involuntaryCount (@involuntaryPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Error" Value="@involuntaryPercent" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Performance or conduct-related</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Retirements</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">@retirementCount (@retirementPercent%)</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Info" Value="@retirementPercent" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Planned workforce transitions</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" Class="mr-2" />
+                        Turnover by Department
+                    </MudText>
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Departures</th>
+                                <th>Turnover Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dept in departmentTurnover)
+                            {
+                                <tr>
+                                    <td><strong>@dept.Name</strong></td>
+                                    <td>@dept.Departures</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@GetTurnoverColor(dept.TurnoverRate)">
+                                            @dept.TurnoverRate%
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Flight Risk Analysis -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-2" />
+                Flight Risk Analysis
+            </MudText>
+            <MudTable Items="@flightRiskEmployees" Hover="true" Dense="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Tenure</MudTh>
+                    <MudTh>Risk Level</MudTh>
+                    <MudTh>Risk Factors</MudTh>
+                    <MudTh>Last Promotion</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.Name</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Tenure">@context.Tenure</MudTd>
+                    <MudTd DataLabel="Risk Level">
+                        <MudChip T="string" Size="Size.Small" Color="@GetRiskColor(context.RiskLevel)">@context.RiskLevel</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Risk Factors">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.RiskFactors</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Last Promotion">@context.LastPromotion</MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="Schedule stay interview">
+                                <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="View retention plan">
+                                <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+
+        <!-- Recent Departures -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@recentDepartures" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Recent Departures</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all departures">
+                            <MudButton Color="@(filterDepartureType == null ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter voluntary departures">
+                            <MudButton Color="@(filterDepartureType == "Voluntary" ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = "Voluntary")">Voluntary</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter involuntary terminations">
+                            <MudButton Color="@(filterDepartureType == "Involuntary" ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = "Involuntary")">Involuntary</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter regrettable losses">
+                            <MudButton Color="@(filterDepartureType == "Regrettable" ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = "Regrettable")">Regrettable</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Position</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Tenure</MudTh>
+                    <MudTh>Departure Type</MudTh>
+                    <MudTh>Exit Date</MudTh>
+                    <MudTh>Reason</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Default" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.Name</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Position">@context.Position</MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Tenure">@context.Tenure</MudTd>
+                    <MudTd DataLabel="Departure Type">
+                        <MudChip T="string" Size="Size.Small" Color="@GetDepartureTypeColor(context.DepartureType)">@context.DepartureType</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Exit Date">@context.ExitDate.ToString("MMM dd, yyyy")</MudTd>
+                    <MudTd DataLabel="Reason">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Reason</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View exit interview">
+                                <MudIconButton Icon="@Icons.Material.Filled.Article" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="View employee file">
+                                <MudIconButton Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterDepartureType = null;
+
+    // Summary stats
+    private decimal turnoverRateYTD = 14.2m;
+    private int departuresYTD = 18;
+    private decimal avgTenure = 3.2m;
+    private decimal turnoverCost = 540000;
+
+    // Turnover breakdown
+    private int voluntaryCount = 12;
+    private int voluntaryPercent = 67;
+    private int involuntaryCount = 4;
+    private int involuntaryPercent = 22;
+    private int retirementCount = 2;
+    private int retirementPercent = 11;
+
+    // Data collections
+    private List<DepartmentTurnover> departmentTurnover = new();
+    private List<FlightRiskEmployee> flightRiskEmployees = new();
+    private List<Departure> recentDepartures = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        departmentTurnover = new List<DepartmentTurnover>
+        {
+            new() { Name = "Sales", Departures = 6, TurnoverRate = 22.5m },
+            new() { Name = "Engineering", Departures = 5, TurnoverRate = 15.2m },
+            new() { Name = "Marketing", Departures = 3, TurnoverRate = 18.8m },
+            new() { Name = "HR", Departures = 2, TurnoverRate = 12.5m },
+            new() { Name = "Finance", Departures = 2, TurnoverRate = 10.0m }
+        };
+
+        flightRiskEmployees = new List<FlightRiskEmployee>
+        {
+            new() { Name = "Jennifer White", Initials = "JW", Department = "Engineering", Tenure = "4 months", RiskLevel = "High", RiskFactors = "Low tenure, below market comp", LastPromotion = "N/A" },
+            new() { Name = "Kevin Brown", Initials = "KB", Department = "Sales", Tenure = "2.5 years", RiskLevel = "High", RiskFactors = "No promotion in 2+ years", LastPromotion = "Jan 2022" },
+            new() { Name = "Michelle Garcia", Initials = "MG", Department = "Marketing", Tenure = "1.8 years", RiskLevel = "Medium", RiskFactors = "Peer promoted, comp variance", LastPromotion = "Jun 2023" },
+            new() { Name = "Brian Thompson", Initials = "BT", Department = "Engineering", Tenure = "5 months", RiskLevel = "High", RiskFactors = "Onboarding concerns, low engagement", LastPromotion = "N/A" },
+            new() { Name = "Rachel Kim", Initials = "RK", Department = "Finance", Tenure = "3.2 years", RiskLevel = "Medium", RiskFactors = "Manager turnover, workload increase", LastPromotion = "Mar 2023" }
+        };
+
+        recentDepartures = new List<Departure>
+        {
+            new() { Name = "Alex Rodriguez", Initials = "AR", Position = "Senior Developer", Department = "Engineering", Tenure = "2.3 years", DepartureType = "Voluntary", ExitDate = DateTime.Now.AddDays(-5), Reason = "Better opportunity" },
+            new() { Name = "Christina Moore", Initials = "CM", Position = "Account Manager", Department = "Sales", Tenure = "1.5 years", DepartureType = "Voluntary", ExitDate = DateTime.Now.AddDays(-12), Reason = "Relocation" },
+            new() { Name = "Daniel Foster", Initials = "DF", Position = "Marketing Coordinator", Department = "Marketing", Tenure = "0.8 years", DepartureType = "Involuntary", ExitDate = DateTime.Now.AddDays(-18), Reason = "Performance issues" },
+            new() { Name = "Patricia Hill", Initials = "PH", Position = "Finance Director", Department = "Finance", Tenure = "12.5 years", DepartureType = "Retirement", ExitDate = DateTime.Now.AddDays(-25), Reason = "Planned retirement" },
+            new() { Name = "Steven Wright", Initials = "SW", Position = "Software Engineer", Department = "Engineering", Tenure = "3.2 years", DepartureType = "Voluntary", ExitDate = DateTime.Now.AddDays(-32), Reason = "Career change" },
+            new() { Name = "Nancy Lopez", Initials = "NL", Position = "HR Specialist", Department = "HR", Tenure = "4.1 years", DepartureType = "Voluntary", ExitDate = DateTime.Now.AddDays(-45), Reason = "Compensation" },
+            new() { Name = "Thomas Green", Initials = "TG", Position = "Sales Rep", Department = "Sales", Tenure = "0.6 years", DepartureType = "Involuntary", ExitDate = DateTime.Now.AddDays(-52), Reason = "Conduct violation" },
+            new() { Name = "Karen Scott", Initials = "KS", Position = "Project Manager", Department = "Engineering", Tenure = "5.8 years", DepartureType = "Voluntary", ExitDate = DateTime.Now.AddDays(-67), Reason = "Work-life balance" }
+        };
+    }
+
+    private Color GetTurnoverColor(decimal rate)
+    {
+        if (rate < 10) return Color.Success;
+        if (rate < 15) return Color.Primary;
+        if (rate < 20) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetRiskColor(string level) => level switch
+    {
+        "High" => Color.Error,
+        "Medium" => Color.Warning,
+        "Low" => Color.Success,
+        _ => Color.Default
+    };
+
+    private Color GetDepartureTypeColor(string type) => type switch
+    {
+        "Voluntary" => Color.Warning,
+        "Involuntary" => Color.Error,
+        "Retirement" => Color.Info,
+        _ => Color.Default
+    };
+
+    private class DepartmentTurnover
+    {
+        public string Name { get; set; } = "";
+        public int Departures { get; set; }
+        public decimal TurnoverRate { get; set; }
+    }
+
+    private class FlightRiskEmployee
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Tenure { get; set; } = "";
+        public string RiskLevel { get; set; } = "";
+        public string RiskFactors { get; set; } = "";
+        public string LastPromotion { get; set; } = "";
+    }
+
+    private class Departure
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Tenure { get; set; } = "";
+        public string DepartureType { get; set; } = "";
+        public DateTime ExitDate { get; set; }
+        public string Reason { get; set; } = "";
+    }
+}

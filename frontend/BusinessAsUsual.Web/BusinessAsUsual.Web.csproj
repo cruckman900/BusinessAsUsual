@@ -18,10 +18,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
-    <PackageReference Include="MudBlazor" Version="8.15.0" />
+    <PackageReference Include="MudBlazor" Version="9.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Components\Shared\" />
     <Folder Include="Modules\Accounting\Components\" />
     <Folder Include="Modules\Accounting\Pages\" />
     <Folder Include="Modules\Inventory\Components\" />
@@ -40,6 +41,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Application\HR.Application.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Domain\HR.Domain.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Infrastructure\HR.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Web\HR.Web.csproj" />
   </ItemGroup>
 
 </Project>

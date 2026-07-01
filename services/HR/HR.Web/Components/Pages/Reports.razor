@@ -1,0 +1,232 @@
+@page "/hr/reports"
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>HR Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="mb-6">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="me-2" />
+            HR Reports & Analytics
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Comprehensive reporting and analytics to support data-driven HR decisions
+        </MudText>
+    </div>
+
+    <MudGrid Spacing="3">
+        @* Compensation & Financial Reports *@
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" Class="mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="me-2" Size="Size.Medium" />
+                Compensation & Financial
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Compensation Analysis</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Salary distribution, pay equity, and compensation trends across departments
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/compensation" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Groups" Color="Color.Info" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Headcount Planning</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Budget utilization, hiring pipeline, and workforce planning metrics
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/headcount" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* People & Performance Reports *@
+        <MudItem xs="12" Class="mt-4">
+            <MudText Typo="Typo.h5" Class="mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="me-2" Size="Size.Medium" />
+                People & Performance
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Color="Color.Primary" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Performance Reviews</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Review cycles, rating distribution, and performance action items
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/performance" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Tertiary" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Training & Development</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Training compliance, course catalog, and employee development plans
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/training" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Success" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">New Hire Analytics</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Hiring source effectiveness, cohort performance, and onboarding metrics
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/newhires" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* Retention & Engagement Reports *@
+        <MudItem xs="12" Class="mt-4">
+            <MudText Typo="Typo.h5" Class="mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.Favorite" Class="me-2" Size="Size.Medium" />
+                Retention & Engagement
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Color="Color.Error" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Turnover & Retention</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Turnover rates, flight risk analysis, and retention trends
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/turnover" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Color="Color.Info" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Time Off & Attendance</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        PTO balances, upcoming absences, and time off request approvals
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/timeoff" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* Diversity & Organization Reports *@
+        <MudItem xs="12" Class="mt-4">
+            <MudText Typo="Typo.h5" Class="mb-2">
+                <MudIcon Icon="@Icons.Material.Filled.Diversity3" Class="me-2" Size="Size.Medium" />
+                Diversity & Organization
+            </MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Diversity3" Color="Color.Secondary" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Diversity & Inclusion</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Demographics, representation metrics, and D&I initiative tracking
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/diversity" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="report-card d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Dark" Size="Size.Large" Class="mb-3" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Organization Chart</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Organizational structure, reporting relationships, and span of control
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Available</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/orgchart" StartIcon="@Icons.Material.Filled.Visibility">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .report-card {
+        height: 100%;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+@code {
+    // Reports page - placeholder for future report generation functionality
+}
+
+
+

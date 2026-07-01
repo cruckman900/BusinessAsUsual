@@ -1,31 +1,146 @@
 ﻿@using BusinessAsUsual.Web.Modules._Shared
-<MudNavMenu>
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<MudNavMenu Class="sidebar-nav-menu">
     @if (CurrentModule != null)
     {
-        <MudPaper Class="ps-4 mb-2" Elevation="1">
-            <MudStack Row="true" AlignItems="@AlignItems.Center" Spacing="1">
+        <MudPaper Class="ps-4 mb-2 pa-3" Elevation="1">
+            <MudStack Row="true" AlignItems="@AlignItems.Center" Spacing="3">
                 <MudIcon Icon="@CurrentModule.Icon" Size="Size.Medium" />
                 <MudText Typo="Typo.h6">@CurrentModule.Name</MudText>
             </MudStack>
-
-            @* @if (!string.IsNullOrWhiteSpace(CurrentModule.Description))
-            {
-                <MudText Typo="Typo.caption" Class="mt-1" Color="Color.Secondary">
-                    @CurrentModule.Description
-                </MudText>
-            } *@
         </MudPaper>
+
+        @if (CurrentModule.NavigationItems.Any())
+        {
+            <div class="nav-links-container">
+                @foreach (var navItem in CurrentModule.NavigationItems)
+                {
+                    var isActive = _activeRoute == navItem.Route;
+                    <MudNavLink @onclick="@(() => NavigateInIframe(navItem.Route))" 
+                                Icon="@navItem.Icon"
+                                Class="sidebar-nav-item"
+                                Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
+                        @navItem.Label
+                    </MudNavLink>
+                }
+            </div>
+        }
+        else
+        {
+            <MudText Typo="Typo.caption" Class="ps-4 text-muted">
+                No navigation items available
+            </MudText>
+        }
     }
-    @if (CurrentModule?.Name == "HR")
-    {
-        <MudNavLink Href="/hr/onboarding" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">New Hire Onboarding</MudNavLink>
-        <MudNavLink Href="/hr/directory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Employee Directory</MudNavLink>
-        <MudNavLink Href="/hr/benefits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CardGiftcard">Benefits Management</MudNavLink>
-    }
-    @* Add other modules here *@
 </MudNavMenu>
 
-    @code {
+@code {
     [Parameter] public ModuleDefinition? CurrentModule { get; set; }
     [Parameter] public EventCallback<string> OnNavigate { get; set; }
+
+    private string? _activeRoute;
+    private DotNetObjectReference<Sidebar>? _dotNetRef;
+
+    protected override void OnInitialized()
+    {
+        // Set initial active route based on current navigation
+        UpdateActiveRoute();
+
+        // Subscribe to navigation events
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("registerSidebarNavigationHandler", _dotNetRef);
+        }
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Update active route when navigation occurs
+        UpdateActiveRoute();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateActiveRoute()
+    {
+        // Get current URL path
+        var currentPath = new Uri(Navigation.Uri).PathAndQuery;
+
+        // Try to match against navigation items
+        if (CurrentModule?.NavigationItems.Any() == true)
+        {
+            // Try exact match first
+            var matchingItem = CurrentModule.NavigationItems
+                .FirstOrDefault(item => string.Equals(item.Route, currentPath, StringComparison.OrdinalIgnoreCase));
+
+            // If no exact match, find the best prefix match (longest matching route)
+            if (matchingItem == null)
+            {
+                matchingItem = CurrentModule.NavigationItems
+                    .Where(item => currentPath.StartsWith(item.Route, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(item => item.Route.Length) // Longest route wins
+                    .FirstOrDefault();
+            }
+
+            if (matchingItem != null)
+            {
+                _activeRoute = matchingItem.Route;
+                Console.WriteLine($"[Sidebar] UpdateActiveRoute - Matched: {_activeRoute} for path: {currentPath}");
+            }
+            else
+            {
+                Console.WriteLine($"[Sidebar] UpdateActiveRoute - No match for: {currentPath}");
+                // Only set to first item if we're at the module root
+                if (currentPath.EndsWith($"/modules/{CurrentModule.Key}", StringComparison.OrdinalIgnoreCase))
+                {
+                    _activeRoute = CurrentModule.NavigationItems.First().Route;
+                }
+            }
+        }
+    }
+
+    [JSInvokable]
+    public Task OnIframeNavigation(string route)
+    {
+        Console.WriteLine($"[Sidebar] Iframe navigated to: {route}");
+        _activeRoute = route;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void NavigateInIframe(string route)
+    {
+        Console.WriteLine($"[Sidebar] Navigating to route: '{route}'");
+        Console.WriteLine($"[Sidebar] CurrentModule.Key: '{CurrentModule?.Key}'");
+
+        // With multi-assembly routing, navigation items should contain full routes
+        // If route starts with /, use it directly; otherwise prefix with /modules/{moduleKey}/
+        if (route.StartsWith("/"))
+        {
+            Console.WriteLine($"[Sidebar] Using full route: {route}");
+            Navigation.NavigateTo(route);
+        }
+        else if (CurrentModule != null)
+        {
+            var moduleRoute = $"/modules/{CurrentModule.Key.ToLower()}/{route.TrimStart('/')}";
+            Console.WriteLine($"[Sidebar] Building route from relative path: {moduleRoute}");
+            Navigation.NavigateTo(moduleRoute);
+        }
+
+        // Don't set _activeRoute here - let OnLocationChanged handle it
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        _dotNetRef?.Dispose();
+    }
 }

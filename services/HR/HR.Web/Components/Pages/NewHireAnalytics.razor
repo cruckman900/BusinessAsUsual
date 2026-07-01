@@ -1,0 +1,483 @@
+@page "/hr/newhires"
+@using HR.Web.Components.Shared
+
+<PageTitle>New Hire Analytics</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="New Hire Analytics" 
+                  Subtitle="Track new employee integration and success"
+                  Icon="@Icons.Material.Filled.PersonAdd">
+        <Actions>
+            <MudButtonGroup Variant="Variant.Outlined">
+                <MudTooltip Text="Export analytics report">
+                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary">
+                        Export
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="View cohort details">
+                    <MudButton StartIcon="@Icons.Material.Filled.Groups" Color="Color.Secondary">
+                        Cohorts
+                    </MudButton>
+                </MudTooltip>
+            </MudButtonGroup>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">New Hires (90 days)</MudText>
+                                <MudText Typo="Typo.h4">@newHires90Days</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Recent additions</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Onboarding Rate</MudText>
+                                <MudText Typo="Typo.h4">@onboardingCompletionRate%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Completion</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Time to Productivity</MudText>
+                                <MudText Typo="Typo.h4">@avgTimeToProductivity</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Days</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">First-Year Turnover</MudText>
+                                <MudText Typo="Typo.h4">@firstYearTurnover%</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">Retention risk</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Hiring Source Analysis -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Source" Class="mr-2" />
+                Hiring Source Analysis
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Hires (YTD)</th>
+                        <th>Percentage</th>
+                        <th>Avg Time to Hire</th>
+                        <th>1-Year Retention</th>
+                        <th>Effectiveness</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var source in hiringSources)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@GetSourceIcon(source.Name)" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                    <strong>@source.Name</strong>
+                                </div>
+                            </td>
+                            <td>@source.HiresYTD</td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@source.Percentage%</MudChip>
+                            </td>
+                            <td>@source.AvgTimeToHire days</td>
+                            <td>
+                                <div class="d-flex align-center gap-2">
+                                    <MudProgressLinear Color="@GetRetentionColor(source.RetentionRate)" Value="@source.RetentionRate" Size="Size.Small" Style="width: 60px;" />
+                                    <MudText Typo="Typo.body2">@source.RetentionRate%</MudText>
+                                </div>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="@GetEffectivenessColor(source.Effectiveness)">
+                                    @source.Effectiveness
+                                </MudChip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+
+        <!-- New Hire Cohort Performance -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-2" />
+                        Cohort Performance Ratings
+                    </MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Q4 2024 Cohort (0-30 days)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">8 hires</MudChip>
+                            </div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Avg Rating: N/A (too early)</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Q3 2024 Cohort (31-90 days)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">4.2 / 5.0</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="84" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">12 hires, 100% retention</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Q2 2024 Cohort (91-180 days)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">3.9 / 5.0</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Primary" Value="78" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">15 hires, 93% retention</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Q1 2024 Cohort (181-365 days)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">3.6 / 5.0</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="72" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">18 hires, 83% retention</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                        Training Completion Rates
+                    </MudText>
+                    <MudStack Spacing="3">
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Onboarding Training</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">96%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="96" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">48 of 50 new hires completed</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Compliance Training</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">92%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Success" Value="92" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">46 of 50 new hires completed</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Role-Specific Training</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">78%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Warning" Value="78" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">39 of 50 new hires completed</MudText>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-space-between mb-1">
+                                <MudText Typo="Typo.body2">Product Training</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">65%</MudChip>
+                            </div>
+                            <MudProgressLinear Color="Color.Info" Value="65" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">33 of 50 new hires completed</MudText>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Manager Effectiveness -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Class="mr-2" />
+                Manager Effectiveness with New Hires
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Manager</th>
+                        <th>Department</th>
+                        <th>New Hires (YTD)</th>
+                        <th>Avg Onboarding Score</th>
+                        <th>1-Year Retention</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var manager in managerEffectiveness)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@manager.Initials</MudAvatar>
+                                    <strong>@manager.Name</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <MudBadge Content="@manager.Department" Color="Color.Secondary" />
+                            </td>
+                            <td>@manager.NewHiresYTD</td>
+                            <td>
+                                <div class="d-flex align-center gap-2">
+                                    <MudProgressLinear Color="@GetScoreColor(manager.OnboardingScore)" Value="@manager.OnboardingScore" Size="Size.Small" Style="width: 60px;" />
+                                    <MudText Typo="Typo.body2">@manager.OnboardingScore / 100</MudText>
+                                </div>
+                            </td>
+                            <td>
+                                <MudChip T="string" Size="Size.Small" Color="@GetRetentionColor(manager.RetentionRate)">
+                                    @manager.RetentionRate%
+                                </MudChip>
+                            </td>
+                            <td>
+                                <MudRating ReadOnly="true" SelectedValue="@manager.Rating" MaxValue="5" Size="Size.Small" Color="Color.Warning" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+
+        <!-- Recent New Hires -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@recentNewHires" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Recent New Hires</MudText>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all new hires">
+                            <MudButton Color="@(filterCohort == null ? Color.Primary : Color.Default)" OnClick="@(() => filterCohort = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter 0-30 day cohort">
+                            <MudButton Color="@(filterCohort == "0-30" ? Color.Primary : Color.Default)" OnClick="@(() => filterCohort = "0-30")">0-30 Days</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter 31-90 day cohort">
+                            <MudButton Color="@(filterCohort == "31-90" ? Color.Primary : Color.Default)" OnClick="@(() => filterCohort = "31-90")">31-90 Days</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter 91+ day cohort">
+                            <MudButton Color="@(filterCohort == "91+" ? Color.Primary : Color.Default)" OnClick="@(() => filterCohort = "91+")">91+ Days</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Position</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Start Date</MudTh>
+                    <MudTh>Tenure</MudTh>
+                    <MudTh>Source</MudTh>
+                    <MudTh>Onboarding Status</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.Name</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Position">@context.Position</MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Start Date">@context.StartDate.ToString("MMM dd, yyyy")</MudTd>
+                    <MudTd DataLabel="Tenure">@context.TenureDays days</MudTd>
+                    <MudTd DataLabel="Source">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Source</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Onboarding Status">
+                        <div class="d-flex align-center gap-2">
+                            <MudProgressCircular Color="@GetOnboardingColor(context.OnboardingProgress)" Value="@context.OnboardingProgress" Size="Size.Small" />
+                            <MudText Typo="Typo.body2">@context.OnboardingProgress%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View employee profile">
+                                <MudIconButton Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="View onboarding progress">
+                                <MudIconButton Icon="@Icons.Material.Filled.Assignment" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterCohort = null;
+
+    // Summary stats
+    private int newHires90Days = 24;
+    private int onboardingCompletionRate = 92;
+    private int avgTimeToProductivity = 45;
+    private decimal firstYearTurnover = 12.5m;
+
+    // Data collections
+    private List<HiringSource> hiringSources = new();
+    private List<ManagerEffectiveness> managerEffectiveness = new();
+    private List<NewHire> recentNewHires = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        hiringSources = new List<HiringSource>
+        {
+            new() { Name = "LinkedIn", HiresYTD = 18, Percentage = 36, AvgTimeToHire = 35, RetentionRate = 89, Effectiveness = "High" },
+            new() { Name = "Employee Referral", HiresYTD = 15, Percentage = 30, AvgTimeToHire = 28, RetentionRate = 95, Effectiveness = "High" },
+            new() { Name = "Indeed", HiresYTD = 8, Percentage = 16, AvgTimeToHire = 42, RetentionRate = 75, Effectiveness = "Medium" },
+            new() { Name = "Company Website", HiresYTD = 5, Percentage = 10, AvgTimeToHire = 38, RetentionRate = 80, Effectiveness = "Medium" },
+            new() { Name = "Recruiter", HiresYTD = 4, Percentage = 8, AvgTimeToHire = 45, RetentionRate = 100, Effectiveness = "High" }
+        };
+
+        managerEffectiveness = new List<ManagerEffectiveness>
+        {
+            new() { Name = "Sarah Johnson", Initials = "SJ", Department = "Engineering", NewHiresYTD = 6, OnboardingScore = 92, RetentionRate = 100, Rating = 5 },
+            new() { Name = "Emily Davis", Initials = "ED", Department = "Sales", NewHiresYTD = 5, OnboardingScore = 88, RetentionRate = 100, Rating = 4 },
+            new() { Name = "Robert Taylor", Initials = "RT", Department = "Engineering", NewHiresYTD = 4, OnboardingScore = 85, RetentionRate = 75, Rating = 4 },
+            new() { Name = "James Wilson", Initials = "JW", Department = "Marketing", NewHiresYTD = 3, OnboardingScore = 90, RetentionRate = 100, Rating = 5 },
+            new() { Name = "David Martinez", Initials = "DM", Department = "Finance", NewHiresYTD = 2, OnboardingScore = 78, RetentionRate = 100, Rating = 3 }
+        };
+
+        recentNewHires = new List<NewHire>
+        {
+            new() { Name = "Jennifer White", Initials = "JW", Position = "Software Engineer", Department = "Engineering", StartDate = DateTime.Now.AddDays(-15), TenureDays = 15, Source = "LinkedIn", OnboardingProgress = 75 },
+            new() { Name = "Kevin Brown", Initials = "KB", Position = "Sales Executive", Department = "Sales", StartDate = DateTime.Now.AddDays(-22), TenureDays = 22, Source = "Referral", OnboardingProgress = 85 },
+            new() { Name = "Michelle Garcia", Initials = "MG", Position = "Marketing Manager", Department = "Marketing", StartDate = DateTime.Now.AddDays(-45), TenureDays = 45, Source = "LinkedIn", OnboardingProgress = 100 },
+            new() { Name = "Brian Thompson", Initials = "BT", Position = "DevOps Engineer", Department = "Engineering", StartDate = DateTime.Now.AddDays(-8), TenureDays = 8, Source = "Indeed", OnboardingProgress = 60 },
+            new() { Name = "Rachel Kim", Initials = "RK", Position = "Finance Analyst", Department = "Finance", StartDate = DateTime.Now.AddDays(-68), TenureDays = 68, Source = "Website", OnboardingProgress = 100 },
+            new() { Name = "Steven White", Initials = "SW", Position = "Product Manager", Department = "Engineering", StartDate = DateTime.Now.AddDays(-30), TenureDays = 30, Source = "Recruiter", OnboardingProgress = 90 },
+            new() { Name = "Angela Martinez", Initials = "AM", Position = "Content Writer", Department = "Marketing", StartDate = DateTime.Now.AddDays(-12), TenureDays = 12, Source = "LinkedIn", OnboardingProgress = 70 },
+            new() { Name = "Daniel Foster", Initials = "DF", Position = "Customer Success", Department = "Sales", StartDate = DateTime.Now.AddDays(-52), TenureDays = 52, Source = "Referral", OnboardingProgress = 100 }
+        };
+    }
+
+    private string GetSourceIcon(string source) => source switch
+    {
+        "LinkedIn" => Icons.Material.Filled.Business,
+        "Employee Referral" => Icons.Material.Filled.Group,
+        "Indeed" => Icons.Material.Filled.Work,
+        "Company Website" => Icons.Material.Filled.Language,
+        "Recruiter" => Icons.Material.Filled.PersonSearch,
+        _ => Icons.Material.Filled.Source
+    };
+
+    private Color GetRetentionColor(int rate)
+    {
+        if (rate >= 90) return Color.Success;
+        if (rate >= 75) return Color.Primary;
+        if (rate >= 60) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetEffectivenessColor(string effectiveness) => effectiveness switch
+    {
+        "High" => Color.Success,
+        "Medium" => Color.Primary,
+        "Low" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private Color GetScoreColor(int score)
+    {
+        if (score >= 85) return Color.Success;
+        if (score >= 70) return Color.Primary;
+        if (score >= 60) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetOnboardingColor(int progress)
+    {
+        if (progress >= 90) return Color.Success;
+        if (progress >= 70) return Color.Primary;
+        if (progress >= 50) return Color.Warning;
+        return Color.Error;
+    }
+
+    private class HiringSource
+    {
+        public string Name { get; set; } = "";
+        public int HiresYTD { get; set; }
+        public int Percentage { get; set; }
+        public int AvgTimeToHire { get; set; }
+        public int RetentionRate { get; set; }
+        public string Effectiveness { get; set; } = "";
+    }
+
+    private class ManagerEffectiveness
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public int NewHiresYTD { get; set; }
+        public int OnboardingScore { get; set; }
+        public int RetentionRate { get; set; }
+        public int Rating { get; set; }
+    }
+
+    private class NewHire
+    {
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public int TenureDays { get; set; }
+        public string Source { get; set; } = "";
+        public int OnboardingProgress { get; set; }
+    }
+}

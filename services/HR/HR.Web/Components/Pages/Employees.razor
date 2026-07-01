@@ -1,0 +1,203 @@
+@page "/hr/employees"
+@using HR.Application.Services
+@using HR.Application.DTOs
+@inject IEmployeeService EmployeeService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Employees</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/modules/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Employees</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                Employees
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage your organization's workforce</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="NavigateToCreate">
+            Add Employee
+        </MudButton>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else if (employees == null || !employees.Any())
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+            No employees found. Click "Add Employee" to create your first employee record.
+        </MudAlert>
+    }
+    else
+    {
+        <MudDataGrid T="EmployeeDto"
+                     Items="@employees"
+                     Filterable="true"
+                     FilterMode="DataGridFilterMode.Simple"
+                     SortMode="SortMode.Multiple"
+                     Hideable="true"
+                     ColumnResizeMode="ResizeMode.Column"
+                     Dense="true"
+                     Hover="true"
+                     Striped="true"
+                     FixedHeader="true"
+                     RowsPerPage="10"
+                     QuickFilter="@QuickFilter"
+                     Elevation="1">
+            <ToolBarContent>
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Search employees..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              Clearable="true"
+                              Class="mt-0" />
+                <MudSpacer />
+            </ToolBarContent>
+            <Columns>
+                <PropertyColumn Property="x => x.Id" Title="Employee ID">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                            @context.Item.Id.Substring(0, Math.Min(8, context.Item.Id.Length))
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.FirstName + " " + x.LastName)">
+                    <CellTemplate>
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                @GetInitials(context.Item.FirstName, context.Item.LastName)
+                            </MudAvatar>
+                            <MudText Typo="Typo.body2">@context.Item.FirstName @context.Item.LastName</MudText>
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.Email" Title="Email" />
+                <TemplateColumn Title="Department" Sortable="false" Filterable="true">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.Department))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">
+                                @context.Item.Department
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Not assigned</MudText>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                    <CellTemplate>
+                        @if (context.Item.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.Item.Status</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View Details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                               Color="Color.Primary" 
+                                               Size="Size.Small" 
+                                               OnClick="() => NavigateToDetail(context.Item.Id)" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit Employee">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                               Color="Color.Secondary" 
+                                               Size="Size.Small" 
+                                               OnClick="() => NavigateToEdit(context.Item.Id)" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="EmployeeDto" />
+            </PagerContent>
+        </MudDataGrid>
+    }
+</MudContainer>
+
+
+@code {
+    private IEnumerable<EmployeeDto>? employees;
+    private bool isLoading = true;
+    private string searchString = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadEmployees();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        employees = await EmployeeService.GetAllEmployeesAsync();
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        var first = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString().ToUpper() : "";
+        var last = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString().ToUpper() : "";
+        return first + last;
+    }
+
+    // Quick filter for the search box
+    private Func<EmployeeDto, bool> QuickFilter => employee =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (employee == null)
+            return false;
+
+        // Search across multiple fields
+        var searchableText = $"{employee.FirstName} {employee.LastName} {employee.Email} {employee.Department} {employee.Status}";
+        return searchableText.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    };
+
+    private void NavigateToDetail(string id)
+    {
+        Navigation.NavigateTo($"/hr/employees/{id}");
+    }
+
+    private void NavigateToEdit(string id)
+    {
+        Navigation.NavigateTo($"/hr/employees/{id}/edit");
+    }
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/hr/employees/create");
+    }
+}
+
+
+

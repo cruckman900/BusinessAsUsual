@@ -1,0 +1,385 @@
+@page "/hr/training"
+@using HR.Web.Components.Shared
+
+<PageTitle>Training & Development</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <ReportHeader Title="Training & Development" 
+                  Subtitle="Employee learning and skill development programs"
+                  Icon="@Icons.Material.Filled.School">
+        <Actions>
+            <MudTooltip Text="Create new training course">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">
+                    New Course
+                </MudButton>
+            </MudTooltip>
+        </Actions>
+    </ReportHeader>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active Programs</MudText>
+                                <MudText Typo="Typo.h4">@activePrograms</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Info">Available courses</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Enrolled Employees</MudText>
+                                <MudText Typo="Typo.h4">@enrolledEmployees</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">Active learners</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Certifications Earned</MudText>
+                                <MudText Typo="Typo.h4">@certificationsEarned</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Success">This year</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CardMembership" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Budget Spent</MudText>
+                                <MudText Typo="Typo.h4">$@budgetSpent.ToString("N0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Warning">@budgetPercent% of budget</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Compliance Training Status -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Class="mr-2" />
+                Compliance Training Status
+            </MudText>
+            <MudGrid Spacing="3">
+                @foreach (var compliance in complianceTraining)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Elevation="1">
+                            <MudCardContent>
+                                <div class="d-flex justify-space-between align-center mb-2">
+                                    <MudText Typo="Typo.body1"><strong>@compliance.Name</strong></MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="@GetComplianceColor(compliance.CompletionRate)">
+                                        @compliance.CompletionRate%
+                                    </MudChip>
+                                </div>
+                                <MudProgressLinear Color="@GetComplianceColor(compliance.CompletionRate)" Value="@compliance.CompletionRate" Size="Size.Small" Class="mb-2" />
+                                <div class="d-flex justify-space-between">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@compliance.Completed of @compliance.Required employees</MudText>
+                                    @if (compliance.Overdue > 0)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">@compliance.Overdue overdue</MudChip>
+                                    }
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Training Catalog -->
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h6" GutterBottom="true">Training Catalog</MudText>
+            <MudTable Items="@trainingCourses" Hover="true" Dense="true" Striped="true">
+                <ToolBarContent>
+                    <MudSpacer />
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudTooltip Text="Show all courses">
+                            <MudButton Color="@(filterType == null ? Color.Primary : Color.Default)" OnClick="@(() => filterType = null)">All</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter required courses">
+                            <MudButton Color="@(filterType == "Required" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Required")">Required</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter optional courses">
+                            <MudButton Color="@(filterType == "Optional" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Optional")">Optional</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Filter certification courses">
+                            <MudButton Color="@(filterType == "Certification" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Certification")">Certification</MudButton>
+                        </MudTooltip>
+                    </MudButtonGroup>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Course Name</MudTh>
+                    <MudTh>Category</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Duration</MudTh>
+                    <MudTh>Enrolled</MudTh>
+                    <MudTh>Completion Rate</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Course Name">
+                        <div>
+                            <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Provider</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Category">
+                        <MudBadge Content="@context.Category" Color="@GetCategoryColor(context.Category)" />
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(context.Type)">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Duration">@context.Duration</MudTd>
+                    <MudTd DataLabel="Enrolled">@context.Enrolled</MudTd>
+                    <MudTd DataLabel="Completion Rate">
+                        <div class="d-flex align-center gap-2">
+                            <MudProgressLinear Color="Color.Success" Value="@context.CompletionRate" Size="Size.Small" Style="width: 60px;" />
+                            <MudText Typo="Typo.body2">@context.CompletionRate%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View course details">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit course">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                            <MudTooltip Text="View enrollments">
+                                <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" Color="Color.Info" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+
+        <!-- Employee Development Plans -->
+        <MudPaper Elevation="2">
+            <MudTable Items="@developmentPlans" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Individual Development Plans</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString"
+                                  Placeholder="Search employees..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Small"
+                                  Clearable="true"
+                                  Immediate="true"
+                                  Class="mt-0 mb-0" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Employee</MudTh>
+                    <MudTh>Department</MudTh>
+                    <MudTh>Active Goals</MudTh>
+                    <MudTh>Completed Courses</MudTh>
+                    <MudTh>In Progress</MudTh>
+                    <MudTh>Certifications</MudTh>
+                    <MudTh>Progress</MudTh>
+                    <MudTh Style="text-align: right;">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Employee">
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
+                            <strong>@context.EmployeeName</strong>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Department">
+                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
+                    </MudTd>
+                    <MudTd DataLabel="Active Goals"><strong>@context.ActiveGoals</strong></MudTd>
+                    <MudTd DataLabel="Completed Courses">@context.CompletedCourses</MudTd>
+                    <MudTd DataLabel="In Progress">@context.InProgressCourses</MudTd>
+                    <MudTd DataLabel="Certifications">
+                        @if (context.Certifications > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.Certifications</MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Progress">
+                        <div class="d-flex align-center gap-2">
+                            <MudProgressCircular Color="@GetProgressColor(context.Progress)" Value="@context.Progress" Size="Size.Small" />
+                            <MudText Typo="Typo.body2">@context.Progress%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Actions" Style="text-align: right;">
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                            <MudTooltip Text="View development plan">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                            </MudTooltip>
+                            <MudTooltip Text="Edit development plan">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                            </MudTooltip>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private string? filterType = null;
+    private string searchString = string.Empty;
+
+    // Summary stats
+    private int activePrograms = 24;
+    private int enrolledEmployees = 68;
+    private int certificationsEarned = 15;
+    private decimal budgetSpent = 48000;
+    private int budgetPercent = 64;
+
+    // Data collections
+    private List<ComplianceTraining> complianceTraining = new();
+    private List<TrainingCourse> trainingCourses = new();
+    private List<DevelopmentPlan> developmentPlans = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        LoadSampleData();
+        isLoading = false;
+    }
+
+    private void LoadSampleData()
+    {
+        complianceTraining = new List<ComplianceTraining>
+        {
+            new() { Name = "Workplace Safety", CompletionRate = 95, Completed = 71, Required = 75, Overdue = 4 },
+            new() { Name = "Anti-Harassment", CompletionRate = 89, Completed = 67, Required = 75, Overdue = 8 },
+            new() { Name = "Data Privacy", CompletionRate = 78, Completed = 59, Required = 75, Overdue = 16 },
+            new() { Name = "Cybersecurity Awareness", CompletionRate = 85, Completed = 64, Required = 75, Overdue = 11 },
+            new() { Name = "Ethics & Compliance", CompletionRate = 92, Completed = 69, Required = 75, Overdue = 6 },
+            new() { Name = "Diversity & Inclusion", CompletionRate = 73, Completed = 55, Required = 75, Overdue = 20 }
+        };
+
+        trainingCourses = new List<TrainingCourse>
+        {
+            new() { Name = "Leadership Fundamentals", Provider = "LinkedIn Learning", Category = "Leadership", Type = "Optional", Duration = "8 hours", Enrolled = 22, CompletionRate = 68 },
+            new() { Name = "Project Management Professional (PMP)", Provider = "PMI", Category = "Certification", Type = "Certification", Duration = "35 hours", Enrolled = 8, CompletionRate = 50 },
+            new() { Name = "Advanced Excel", Provider = "Internal", Category = "Technical", Type = "Optional", Duration = "12 hours", Enrolled = 35, CompletionRate = 82 },
+            new() { Name = "Workplace Safety", Provider = "OSHA", Category = "Compliance", Type = "Required", Duration = "2 hours", Enrolled = 75, CompletionRate = 95 },
+            new() { Name = "Effective Communication", Provider = "Coursera", Category = "Soft Skills", Type = "Optional", Duration = "6 hours", Enrolled = 18, CompletionRate = 72 },
+            new() { Name = "AWS Cloud Practitioner", Provider = "AWS Training", Category = "Certification", Type = "Certification", Duration = "40 hours", Enrolled = 12, CompletionRate = 42 }
+        };
+
+        developmentPlans = new List<DevelopmentPlan>
+        {
+            new() { EmployeeName = "Sarah Johnson", Initials = "SJ", Department = "Engineering", ActiveGoals = 4, CompletedCourses = 8, InProgressCourses = 2, Certifications = 2, Progress = 75 },
+            new() { EmployeeName = "Michael Chen", Initials = "MC", Department = "Sales", ActiveGoals = 3, CompletedCourses = 5, InProgressCourses = 1, Certifications = 1, Progress = 60 },
+            new() { EmployeeName = "Emily Davis", Initials = "ED", Department = "Marketing", ActiveGoals = 5, CompletedCourses = 12, InProgressCourses = 3, Certifications = 0, Progress = 85 },
+            new() { EmployeeName = "James Wilson", Initials = "JW", Department = "Engineering", ActiveGoals = 2, CompletedCourses = 6, InProgressCourses = 1, Certifications = 3, Progress = 55 },
+            new() { EmployeeName = "Lisa Anderson", Initials = "LA", Department = "HR", ActiveGoals = 4, CompletedCourses = 10, InProgressCourses = 2, Certifications = 2, Progress = 80 },
+            new() { EmployeeName = "David Martinez", Initials = "DM", Department = "Finance", ActiveGoals = 3, CompletedCourses = 4, InProgressCourses = 0, Certifications = 1, Progress = 40 },
+            new() { EmployeeName = "Amanda Lee", Initials = "AL", Department = "Engineering", ActiveGoals = 6, CompletedCourses = 15, InProgressCourses = 4, Certifications = 4, Progress = 92 },
+            new() { EmployeeName = "Robert Taylor", Initials = "RT", Department = "Sales", ActiveGoals = 2, CompletedCourses = 3, InProgressCourses = 1, Certifications = 0, Progress = 35 }
+        };
+    }
+
+    private Color GetComplianceColor(int completionRate)
+    {
+        if (completionRate >= 90) return Color.Success;
+        if (completionRate >= 75) return Color.Primary;
+        if (completionRate >= 50) return Color.Warning;
+        return Color.Error;
+    }
+
+    private Color GetCategoryColor(string category) => category switch
+    {
+        "Leadership" => Color.Primary,
+        "Certification" => Color.Success,
+        "Technical" => Color.Info,
+        "Compliance" => Color.Warning,
+        "Soft Skills" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private Color GetTypeColor(string type) => type switch
+    {
+        "Required" => Color.Error,
+        "Optional" => Color.Primary,
+        "Certification" => Color.Success,
+        _ => Color.Default
+    };
+
+    private Color GetProgressColor(int progress)
+    {
+        if (progress >= 75) return Color.Success;
+        if (progress >= 50) return Color.Primary;
+        if (progress >= 25) return Color.Warning;
+        return Color.Error;
+    }
+
+    private class ComplianceTraining
+    {
+        public string Name { get; set; } = "";
+        public int CompletionRate { get; set; }
+        public int Completed { get; set; }
+        public int Required { get; set; }
+        public int Overdue { get; set; }
+    }
+
+    private class TrainingCourse
+    {
+        public string Name { get; set; } = "";
+        public string Provider { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Type { get; set; } = "";
+        public string Duration { get; set; } = "";
+        public int Enrolled { get; set; }
+        public int CompletionRate { get; set; }
+    }
+
+    private class DevelopmentPlan
+    {
+        public string EmployeeName { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Department { get; set; } = "";
+        public int ActiveGoals { get; set; }
+        public int CompletedCourses { get; set; }
+        public int InProgressCourses { get; set; }
+        public int Certifications { get; set; }
+        public int Progress { get; set; }
+    }
+}
