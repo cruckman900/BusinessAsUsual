@@ -275,7 +275,7 @@
     [Parameter]
     public string? Id { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrEmpty(Id);
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) && !Id.Equals("create", StringComparison.OrdinalIgnoreCase);
     private EmployeeFormModel model = new();
     private List<HR.Application.DTOs.DepartmentDto> departments = new();
     private List<HR.Application.DTOs.EmployeeDto> allEmployees = new();
@@ -368,13 +368,13 @@
             else
             {
                 Snackbar.Add("Employee not found", Severity.Error);
-                Navigation.NavigateTo("/modules/hr/employees");
+                Navigation.NavigateTo("/hr/employees");
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading employee: {ex.Message}", Severity.Error);
-            Navigation.NavigateTo("/modules/hr/employees");
+            Navigation.NavigateTo("/hr/employees");
         }
     }
 
@@ -448,7 +448,7 @@
                 Snackbar.Add("Employee created successfully", Severity.Success);
             }
 
-            Navigation.NavigateTo("/modules/hr/employees");
+            Navigation.NavigateTo("/hr/employees");
         }
         catch (Exception ex)
         {
@@ -462,7 +462,7 @@
 
     private void Cancel()
     {
-        Navigation.NavigateTo(IsEditMode ? $"/modules/hr/employees/{Id}" : "/modules/hr/employees");
+        Navigation.NavigateTo(IsEditMode ? $"/hr/employees/{Id}" : "/hr/employees");
     }
 
     public class EmployeeFormModel

@@ -171,7 +171,7 @@
     [Parameter]
     public string? Id { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrEmpty(Id);
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) && !Id.Equals("create", StringComparison.OrdinalIgnoreCase);
     private DepartmentFormModel model = new();
     private List<HR.Application.DTOs.EmployeeDto> employees = new();
     private List<HR.Application.DTOs.DepartmentDto> allDepartments = new();
@@ -247,13 +247,13 @@
             else
             {
                 Snackbar.Add("Department not found", Severity.Error);
-                Navigation.NavigateTo("/modules/hr/departments");
+                Navigation.NavigateTo("/hr/departments");
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading department: {ex.Message}", Severity.Error);
-            Navigation.NavigateTo("/modules/hr/departments");
+            Navigation.NavigateTo("/hr/departments");
         }
     }
 
@@ -299,7 +299,7 @@
                 Snackbar.Add("Department created successfully", Severity.Success);
             }
 
-            Navigation.NavigateTo("/modules/hr/departments");
+            Navigation.NavigateTo("/hr/departments");
         }
         catch (Exception ex)
         {
@@ -313,7 +313,7 @@
 
     private void Cancel()
     {
-        Navigation.NavigateTo(IsEditMode ? $"/modules/hr/departments/{Id}" : "/modules/hr/departments");
+        Navigation.NavigateTo(IsEditMode ? $"/hr/departments/{Id}" : "/hr/departments");
     }
 
     public class DepartmentFormModel
