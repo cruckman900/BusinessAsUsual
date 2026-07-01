@@ -1,4 +1,5 @@
 @page "/hr/departments/create"
+@page "/hr/departments/new"
 @page "/hr/departments/{id}/edit"
 @inject HR.Application.Services.IDepartmentService DepartmentService
 @inject HR.Application.Services.IEmployeeService EmployeeService
@@ -171,7 +172,9 @@
     [Parameter]
     public string? Id { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrEmpty(Id) && !Id.Equals("create", StringComparison.OrdinalIgnoreCase);
+    private bool IsEditMode => !string.IsNullOrEmpty(Id) 
+        && !Id.Equals("create", StringComparison.OrdinalIgnoreCase)
+        && !Id.Equals("new", StringComparison.OrdinalIgnoreCase);
     private DepartmentFormModel model = new();
     private List<HR.Application.DTOs.EmployeeDto> employees = new();
     private List<HR.Application.DTOs.DepartmentDto> allDepartments = new();
