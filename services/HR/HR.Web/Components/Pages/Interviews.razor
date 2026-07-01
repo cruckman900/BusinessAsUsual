@@ -1,0 +1,263 @@
+@page "/hr/interviews"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Interviews - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Interviews</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
+                        Interviews
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Schedule and manage candidate interviews</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/interviews/create"))">
+                    Schedule Interview
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (interviews == null || !interviews.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No interviews scheduled. Click "Schedule Interview" to add your first interview.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Interview"
+                             Items="@interviews"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search interviews..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Scheduled")">Scheduled</MudSelectItem>
+                            <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                            <MudSelectItem Value="@("Cancelled")">Cancelled</MudSelectItem>
+                            <MudSelectItem Value="@("No Show")">No Show</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Candidate" Sortable="true" SortBy="@(x => x.CandidateName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.CandidateName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.CandidateName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Position</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.InterviewType" Title="Type" />
+                        <PropertyColumn Property="x => x.Interviewer" Title="Interviewer" />
+                        <TemplateColumn Title="Date & Time" Sortable="true" SortBy="@(x => x.ScheduledDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.ScheduledDate.ToString("MMM dd, yyyy")</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.ScheduledDate.ToString("hh:mm tt")</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Duration" Title="Duration" />
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Rating" Sortable="true" SortBy="@(x => x.Rating ?? 0)">
+                            <CellTemplate>
+                                @if (context.Item.Rating.HasValue)
+                                {
+                                    <MudRating SelectedValue="@context.Item.Rating.Value" ReadOnly="true" Size="Size.Small" />
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Not rated</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewInterview(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditInterview(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteInterview(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Interview" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading interviews</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Interview> interviews = new();
+    private List<Interview> allInterviews = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class Interview
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string CandidateName { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string InterviewType { get; set; } = "";
+        public string Interviewer { get; set; } = "";
+        public DateTime ScheduledDate { get; set; } = DateTime.Now;
+        public string Duration { get; set; } = "";
+        public string Status { get; set; } = "Scheduled";
+        public int? Rating { get; set; }
+        public string Location { get; set; } = "";
+        public string Notes { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInterviewsAsync();
+    }
+
+    private async Task LoadInterviewsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allInterviews = new List<Interview>
+        {
+            new Interview { CandidateName = "Sarah Johnson", Position = "Software Engineer", InterviewType = "Technical", Interviewer = "John Smith", ScheduledDate = DateTime.Now.AddDays(2).AddHours(10), Duration = "60 min", Status = "Scheduled", Location = "Conference Room A" },
+            new Interview { CandidateName = "Michael Chen", Position = "Product Manager", InterviewType = "Behavioral", Interviewer = "Lisa Brown", ScheduledDate = DateTime.Now.AddDays(1).AddHours(14), Duration = "45 min", Status = "Scheduled", Location = "Office 203" },
+            new Interview { CandidateName = "Emily Rodriguez", Position = "UX Designer", InterviewType = "Portfolio Review", Interviewer = "David Wilson", ScheduledDate = DateTime.Now.AddDays(-2).AddHours(11), Duration = "90 min", Status = "Completed", Rating = 4, Location = "Design Studio" },
+            new Interview { CandidateName = "David Kim", Position = "DevOps Engineer", InterviewType = "Technical", Interviewer = "Sarah Chen", ScheduledDate = DateTime.Now.AddDays(3).AddHours(9), Duration = "60 min", Status = "Scheduled", Location = "Virtual (Zoom)" },
+            new Interview { CandidateName = "Jessica Martinez", Position = "Data Analyst", InterviewType = "Case Study", Interviewer = "Mark Taylor", ScheduledDate = DateTime.Now.AddDays(-5).AddHours(15), Duration = "120 min", Status = "Completed", Rating = 5, Location = "Conference Room B" },
+            new Interview { CandidateName = "Robert Taylor", Position = "Senior Developer", InterviewType = "Technical", Interviewer = "Emily Davis", ScheduledDate = DateTime.Now.AddDays(-10).AddHours(10), Duration = "90 min", Status = "Completed", Rating = 5, Location = "Virtual (Teams)" },
+            new Interview { CandidateName = "Amanda White", Position = "Marketing Specialist", InterviewType = "Initial Screen", Interviewer = "Jennifer Lee", ScheduledDate = DateTime.Now.AddDays(-3).AddHours(13), Duration = "30 min", Status = "No Show", Location = "Phone" },
+            new Interview { CandidateName = "Christopher Lee", Position = "QA Engineer", InterviewType = "Technical", Interviewer = "Ryan Johnson", ScheduledDate = DateTime.Now.AddDays(4).AddHours(11), Duration = "60 min", Status = "Scheduled", Location = "Conference Room C" },
+            new Interview { CandidateName = "Nicole Anderson", Position = "Business Analyst", InterviewType = "Behavioral", Interviewer = "Michelle Garcia", ScheduledDate = DateTime.Now.AddDays(-1).AddHours(16), Duration = "45 min", Status = "Cancelled", Location = "Office 105" }
+        };
+
+        FilterInterviews();
+        isLoading = false;
+    }
+
+    private void FilterInterviews()
+    {
+        interviews = allInterviews;
+
+        if (statusFilter != "All")
+        {
+            interviews = interviews.Where(i => i.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<Interview, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.CandidateName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Position.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Interviewer.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.InterviewType.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => (Color.Info, Icons.Material.Filled.Schedule),
+            "Completed" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Cancelled" => (Color.Error, Icons.Material.Filled.Cancel),
+            "No Show" => (Color.Warning, Icons.Material.Filled.PersonOff),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewInterview(string id)
+    {
+        Navigation.NavigateTo($"/hr/interviews/{id}");
+    }
+
+    private void EditInterview(string id)
+    {
+        Navigation.NavigateTo($"/hr/interviews/{id}/edit");
+    }
+
+    private async Task DeleteInterview(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allInterviews.RemoveAll(i => i.Id == id);
+        FilterInterviews();
+        await Task.CompletedTask;
+    }
+}

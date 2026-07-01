@@ -1,0 +1,436 @@
+/* Home Container */
+.home-container {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Hero Section */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+    /* Remove background gradient - let org chart background show through */
+}
+
+.hero-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    z-index: 10; /* Above org chart background */
+}
+
+.hero-left {
+    color: white;
+    animation: fadeInUp 0.8s ease-out;
+    position: relative;
+    z-index: 10;
+}
+
+.hero-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    background: linear-gradient(to right, #fff, #f0f0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-tagline {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+}
+
+.hero-description {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+    max-width: 600px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.hero-button-primary {
+    padding: 12px 32px !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    background: white !important;
+    color: #00345B !important; /* Brand blue text */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    z-index: 10;
+    opacity: 1 !important; /* Fully opaque */
+}
+
+.hero-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+    background: #f8f8f8 !important;
+}
+
+.hero-button-secondary {
+    padding: 12px 32px !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    border: 2px solid white !important;
+    background: #ffffff !important; /* Solid white background */
+    color: #00345B !important; /* Brand blue text */
+    transition: all 0.3s ease !important;
+    position: relative;
+    z-index: 1000 !important; /* Much higher z-index */
+    backdrop-filter: none !important; /* Remove any blur */
+}
+
+.hero-button-secondary:hover {
+    background: #f8f8f8 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+}
+
+.hero-stats {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 6rem;
+    padding: 2rem;
+    background: rgba(0, 52, 91, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 159, 37, 0.3);
+    z-index: 100;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}
+
+/* Login Widget */
+.hero-right {
+    animation: fadeInRight 0.8s ease-out;
+    position: relative;
+    z-index: 10; /* Above org chart */
+}
+
+.login-widget {
+    padding: 2.5rem !important;
+    border-radius: 16px !important;
+    background: white !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    opacity: 1 !important;
+    position: relative;
+    z-index: 10;
+}
+
+.widget-title {
+    margin-bottom: 2rem !important;
+    display: flex;
+    align-items: center;
+    color: #00345B;
+    font-weight: 600;
+}
+
+/* Force spacing on the form */
+.login-widget .mud-form {
+    gap: 1.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Force spacing on input controls */
+.login-widget .mud-input-control {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Override any MudBlazor mb-3 class */
+.login-widget .mb-3 {
+    margin-bottom: 1.5rem !important;
+}
+
+.login-widget .mb-2 {
+    margin-bottom: 1rem !important;
+}
+
+.login-widget .my-3 {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Make inputs bigger */
+.login-widget .mud-input-slot {
+    padding: 14px 16px !important;
+    font-size: 1rem !important;
+}
+
+/* Make the button bigger */
+.login-widget .mud-button {
+    padding: 14px 24px !important;
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Spacing for the signup prompt */
+.signup-prompt {
+    margin-top: 1rem !important;
+    color: #666;
+}
+
+/* Divider spacing */
+.login-widget .mud-divider {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.widget-title {
+    margin-bottom: 2rem !important;
+    display: flex;
+    align-items: center;
+    color: #00345B;
+    font-weight: 600;
+}
+
+.signup-prompt {
+    margin-top: 1rem !important;
+    color: #666;
+}
+
+/* Features Section */
+.features-section {
+    padding: 6rem 2rem;
+    background: white;
+}
+
+.section-header {
+    margin-bottom: 4rem;
+}
+
+.section-title {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.section-subtitle {
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.feature-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    padding: 2rem;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.feature-title {
+    margin-bottom: 0.75rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.feature-description {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* CTA Section */
+.cta-section {
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.cta-content {
+    text-align: center;
+}
+
+.cta-title {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.cta-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2.5rem;
+}
+
+.cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.cta-button {
+    padding: 14px 40px !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    background: white !important;
+    color: #667eea !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Footer */
+.home-footer {
+    padding: 2rem;
+    background: rgba(0, 52, 91, 0.95);
+    color: white;
+}
+
+.home-footer ::deep .mud-typography {
+    color: white !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .hero-content {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .hero-right {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-stats {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-tagline {
+        font-size: 1.25rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions button {
+        width: 100%;
+    }
+
+    .hero-stats {
+        gap: 1.5rem;
+    }
+
+    .features-section {
+        padding: 4rem 1.5rem;
+    }
+
+    .cta-section {
+        padding: 3rem 1.5rem;
+    }
+
+    .cta-title {
+        font-size: 1.75rem;
+    }
+}

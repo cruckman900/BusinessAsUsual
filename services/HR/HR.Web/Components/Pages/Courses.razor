@@ -1,0 +1,290 @@
+@page "/hr/courses"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Courses - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Courses</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                        Training Courses
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Manage employee training and development programs</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/courses/create"))">
+                    Add Course
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (courses == null || !courses.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No courses found. Click "Add Course" to create your first training course.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Course"
+                             Items="@courses"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search courses..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="categoryFilter" Label="Category" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Categories</MudSelectItem>
+                            <MudSelectItem Value="@("Technical")">Technical</MudSelectItem>
+                            <MudSelectItem Value="@("Leadership")">Leadership</MudSelectItem>
+                            <MudSelectItem Value="@("Compliance")">Compliance</MudSelectItem>
+                            <MudSelectItem Value="@("Soft Skills")">Soft Skills</MudSelectItem>
+                            <MudSelectItem Value="@("Safety")">Safety</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Course" Sortable="true" SortBy="@(x => x.Title)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="@GetCategoryColor(context.Item.Category)" Size="Size.Small" Class="mr-2" Variant="Variant.Outlined">
+                                        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" />
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.Title</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Instructor</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Category" Title="Category">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(context.Item.Category)" Variant="Variant.Filled">
+                                    @context.Item.Category
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Duration" Title="Duration" />
+                        <PropertyColumn Property="x => x.Format" Title="Format" />
+                        <TemplateColumn Title="Enrolled / Capacity" Sortable="false">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.EnrolledCount / @context.Item.Capacity</MudText>
+                                    <MudProgressLinear Color="@GetEnrollmentColor(context.Item.EnrolledCount, context.Item.Capacity)" 
+                                                      Value="@((double)context.Item.EnrolledCount / context.Item.Capacity * 100)" 
+                                                      Size="Size.Small" />
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Completion Rate" Sortable="true" SortBy="@(x => x.CompletionRate)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudProgressCircular Color="@GetCompletionColor(context.Item.CompletionRate)" 
+                                                        Value="@context.Item.CompletionRate" 
+                                                        Size="Size.Small" 
+                                                        Style="width: 40px; height: 40px;" />
+                                    <MudText Typo="Typo.caption" Class="ml-2">@context.Item.CompletionRate%</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewCourse(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditCourse(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCourse(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Course" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading courses</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Course> courses = new();
+    private List<Course> allCourses = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string categoryFilter = "All";
+
+    public class Course
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Title { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Instructor { get; set; } = "";
+        public string Duration { get; set; } = "";
+        public string Format { get; set; } = "";
+        public int EnrolledCount { get; set; } = 0;
+        public int Capacity { get; set; } = 0;
+        public int CompletionRate { get; set; } = 0;
+        public string Status { get; set; } = "Active";
+        public string Description { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCoursesAsync();
+    }
+
+    private async Task LoadCoursesAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allCourses = new List<Course>
+        {
+            new Course { Title = "Advanced C# Programming", Category = "Technical", Instructor = "John Smith", Duration = "8 weeks", Format = "Online", EnrolledCount = 24, Capacity = 30, CompletionRate = 85, Status = "Active" },
+            new Course { Title = "Leadership Fundamentals", Category = "Leadership", Instructor = "Lisa Brown", Duration = "4 weeks", Format = "Hybrid", EnrolledCount = 18, Capacity = 20, CompletionRate = 92, Status = "Active" },
+            new Course { Title = "OSHA Safety Training", Category = "Safety", Instructor = "David Wilson", Duration = "2 days", Format = "In-Person", EnrolledCount = 30, Capacity = 30, CompletionRate = 100, Status = "Completed" },
+            new Course { Title = "Cloud Architecture with AWS", Category = "Technical", Instructor = "Sarah Chen", Duration = "6 weeks", Format = "Online", EnrolledCount = 15, Capacity = 25, CompletionRate = 60, Status = "Active" },
+            new Course { Title = "Effective Communication", Category = "Soft Skills", Instructor = "Mark Taylor", Duration = "3 weeks", Format = "Virtual", EnrolledCount = 22, Capacity = 25, CompletionRate = 78, Status = "Active" },
+            new Course { Title = "GDPR Compliance", Category = "Compliance", Instructor = "Emily Davis", Duration = "1 week", Format = "Online", EnrolledCount = 45, Capacity = 50, CompletionRate = 95, Status = "Active" },
+            new Course { Title = "Agile Project Management", Category = "Leadership", Instructor = "Jennifer Lee", Duration = "5 weeks", Format = "Hybrid", EnrolledCount = 12, Capacity = 20, CompletionRate = 55, Status = "Active" },
+            new Course { Title = "SQL for Data Analysis", Category = "Technical", Instructor = "Ryan Johnson", Duration = "4 weeks", Format = "Online", EnrolledCount = 8, Capacity = 15, CompletionRate = 40, Status = "Active" },
+            new Course { Title = "Diversity & Inclusion", Category = "Soft Skills", Instructor = "Michelle Garcia", Duration = "2 weeks", Format = "Virtual", EnrolledCount = 0, Capacity = 30, CompletionRate = 0, Status = "Upcoming" },
+            new Course { Title = "Cybersecurity Awareness", Category = "Compliance", Instructor = "Daniel Harris", Duration = "1 week", Format = "Online", EnrolledCount = 50, Capacity = 50, CompletionRate = 88, Status = "Active" }
+        };
+
+        FilterCourses();
+        isLoading = false;
+    }
+
+    private void FilterCourses()
+    {
+        courses = allCourses;
+
+        if (categoryFilter != "All")
+        {
+            courses = courses.Where(c => c.Category == categoryFilter).ToList();
+        }
+    }
+
+    private Func<Course, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Instructor.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Category.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private Color GetCategoryColor(string category)
+    {
+        return category switch
+        {
+            "Technical" => Color.Primary,
+            "Leadership" => Color.Secondary,
+            "Compliance" => Color.Warning,
+            "Soft Skills" => Color.Info,
+            "Safety" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetEnrollmentColor(int enrolled, int capacity)
+    {
+        var percentage = (double)enrolled / capacity * 100;
+        if (percentage >= 90) return Color.Warning;
+        if (percentage >= 70) return Color.Info;
+        return Color.Success;
+    }
+
+    private Color GetCompletionColor(int rate)
+    {
+        if (rate >= 80) return Color.Success;
+        if (rate >= 60) return Color.Info;
+        if (rate >= 40) return Color.Warning;
+        return Color.Error;
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Active" => (Color.Success, Icons.Material.Filled.PlayArrow),
+            "Upcoming" => (Color.Info, Icons.Material.Filled.Schedule),
+            "Completed" => (Color.Default, Icons.Material.Filled.CheckCircle),
+            "Cancelled" => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewCourse(string id)
+    {
+        Navigation.NavigateTo($"/hr/courses/{id}");
+    }
+
+    private void EditCourse(string id)
+    {
+        Navigation.NavigateTo($"/hr/courses/{id}/edit");
+    }
+
+    private async Task DeleteCourse(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allCourses.RemoveAll(c => c.Id == id);
+        FilterCourses();
+        await Task.CompletedTask;
+    }
+}

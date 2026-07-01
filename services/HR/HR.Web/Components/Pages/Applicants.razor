@@ -1,0 +1,239 @@
+@page "/hr/applicants"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Applicants - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Applicants</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+                        Applicants
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Manage candidate pipeline and recruiting</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/applicants/create"))">
+                    Add Applicant
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (applicants == null || !applicants.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No applicants found. Click "Add Applicant" to add your first candidate.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Applicant"
+                             Items="@applicants"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search applicants..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Applied")">Applied</MudSelectItem>
+                            <MudSelectItem Value="@("Screening")">Screening</MudSelectItem>
+                            <MudSelectItem Value="@("Interview")">Interview</MudSelectItem>
+                            <MudSelectItem Value="@("Offer")">Offer</MudSelectItem>
+                            <MudSelectItem Value="@("Hired")">Hired</MudSelectItem>
+                            <MudSelectItem Value="@("Rejected")">Rejected</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Name)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.Name)
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.body2">@context.Item.Name</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Email" Title="Email" />
+                        <PropertyColumn Property="x => x.Position" Title="Position" />
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.AppliedDate" Title="Applied Date" Format="yyyy-MM-dd" />
+                        <PropertyColumn Property="x => x.Experience" Title="Experience" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewApplicant(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditApplicant(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteApplicant(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Applicant" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading applicants</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Applicant> applicants = new();
+    private List<Applicant> allApplicants = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class Applicant
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string Status { get; set; } = "Applied";
+        public DateTime AppliedDate { get; set; } = DateTime.Now;
+        public string Experience { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Resume { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApplicantsAsync();
+    }
+
+    private async Task LoadApplicantsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allApplicants = new List<Applicant>
+        {
+            new Applicant { Name = "Sarah Johnson", Email = "sarah.j@email.com", Position = "Software Engineer", Status = "Interview", AppliedDate = DateTime.Now.AddDays(-5), Experience = "5 years", Phone = "(555) 0101" },
+            new Applicant { Name = "Michael Chen", Email = "m.chen@email.com", Position = "Product Manager", Status = "Screening", AppliedDate = DateTime.Now.AddDays(-10), Experience = "8 years", Phone = "(555) 0102" },
+            new Applicant { Name = "Emily Rodriguez", Email = "emily.r@email.com", Position = "UX Designer", Status = "Offer", AppliedDate = DateTime.Now.AddDays(-15), Experience = "4 years", Phone = "(555) 0103" },
+            new Applicant { Name = "David Kim", Email = "d.kim@email.com", Position = "DevOps Engineer", Status = "Applied", AppliedDate = DateTime.Now.AddDays(-2), Experience = "6 years", Phone = "(555) 0104" },
+            new Applicant { Name = "Jessica Martinez", Email = "j.martinez@email.com", Position = "Data Analyst", Status = "Interview", AppliedDate = DateTime.Now.AddDays(-7), Experience = "3 years", Phone = "(555) 0105" },
+            new Applicant { Name = "Robert Taylor", Email = "r.taylor@email.com", Position = "Senior Developer", Status = "Hired", AppliedDate = DateTime.Now.AddDays(-30), Experience = "10 years", Phone = "(555) 0106" },
+            new Applicant { Name = "Amanda White", Email = "a.white@email.com", Position = "Marketing Specialist", Status = "Rejected", AppliedDate = DateTime.Now.AddDays(-20), Experience = "2 years", Phone = "(555) 0107" },
+            new Applicant { Name = "Christopher Lee", Email = "c.lee@email.com", Position = "QA Engineer", Status = "Screening", AppliedDate = DateTime.Now.AddDays(-4), Experience = "4 years", Phone = "(555) 0108" }
+        };
+
+        FilterApplicants();
+        isLoading = false;
+    }
+
+    private void FilterApplicants()
+    {
+        applicants = allApplicants;
+
+        if (statusFilter != "All")
+        {
+            applicants = applicants.Where(a => a.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<Applicant, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Position.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Applied" => (Color.Info, Icons.Material.Filled.Mail),
+            "Screening" => (Color.Primary, Icons.Material.Filled.Search),
+            "Interview" => (Color.Warning, Icons.Material.Filled.Event),
+            "Offer" => (Color.Success, Icons.Material.Filled.AttachMoney),
+            "Hired" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Rejected" => (Color.Error, Icons.Material.Filled.Cancel),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewApplicant(string id)
+    {
+        Navigation.NavigateTo($"/hr/applicants/{id}");
+    }
+
+    private void EditApplicant(string id)
+    {
+        Navigation.NavigateTo($"/hr/applicants/{id}/edit");
+    }
+
+    private async Task DeleteApplicant(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allApplicants.RemoveAll(a => a.Id == id);
+        FilterApplicants();
+        await Task.CompletedTask;
+    }
+}

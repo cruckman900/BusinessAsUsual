@@ -1,0 +1,226 @@
+/* Signup Container */
+.signup-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.signup-content {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Header */
+.signup-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: white !important;
+}
+
+.signup-logo {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1rem;
+    display: block;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.signup-title {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.signup-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Stepper */
+.signup-stepper {
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 2.5rem !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.step-content {
+    padding: 2.5rem 2rem;
+    background: transparent !important;
+}
+
+.step-title {
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.step-subtitle {
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+
+/* Form field spacing */
+.signup-stepper ::deep .mud-input-root {
+    margin-bottom: 1.5rem;
+}
+
+.signup-stepper ::deep .mud-input {
+    padding: 12px 16px;
+}
+
+.signup-stepper ::deep .mud-select {
+    padding: 12px 16px;
+}
+
+.signup-stepper ::deep .mud-input-control {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.signup-stepper ::deep .mud-button {
+    padding: 12px 28px;
+    margin-top: 1rem;
+}
+
+.signup-stepper ::deep .mud-grid-item {
+    padding: 0.75rem;
+}
+
+.signup-stepper ::deep .mud-text-field {
+    margin-bottom: 1.25rem;
+}
+
+/* Module Selection Cards */
+.module-selection-card {
+    padding: 1.5rem;
+    border-radius: 12px !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    text-align: center;
+}
+
+.module-selection-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.module-selection-card.selected {
+    border-color: var(--mud-palette-success);
+    background: rgba(var(--mud-palette-success-rgb), 0.05);
+}
+
+.module-check {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+.module-icon {
+    margin: 0.5rem 0 1rem;
+}
+
+.module-name {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+}
+
+.module-desc {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+/* Review Sections */
+.review-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(102, 126, 234, 0.02);
+    border-radius: 12px;
+}
+
+.review-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1rem;
+}
+
+.review-section-title {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.review-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.review-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.review-table tr:last-child td {
+    border-bottom: none;
+}
+
+.review-table td:first-child {
+    width: 40%;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.selected-modules-review {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+/* Complete Button */
+.complete-button {
+    padding: 14px !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .signup-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .signup-stepper {
+        padding: 1rem !important;
+    }
+
+    .step-content {
+        padding: 1rem 0.5rem;
+    }
+
+    .signup-title {
+        font-size: 1.5rem;
+    }
+
+    .back-button {
+        position: static;
+        margin-bottom: 1rem;
+    }
+}

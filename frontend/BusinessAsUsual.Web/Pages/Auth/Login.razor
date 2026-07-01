@@ -21,13 +21,14 @@
             </div>
         </div>
 
-        <MudForm @ref="LoginForm" @onkeydown="HandleKeyDown">
+        <MudForm @ref="LoginForm">
             <MudTextField Label="Username"
                           @bind-Value="Username"
                           Immediate="true"
                           Variant="Variant.Outlined"
                           FullWidth="true"
-                          Class="login-input" />
+                          Class="login-input"
+                          @onkeydown="HandleKeyDown" />
 
             <MudTextField Label="Password"
                           @bind-Value="Password"
@@ -38,7 +39,8 @@
                           OnAdornmentClick="TogglePasswordVisibility"
                           Variant="Variant.Outlined"
                           FullWidth="true"
-                          Class="login-input" />
+                          Class="login-input"
+                          @onkeydown="HandleKeyDown" />
         </MudForm>
 
         @if (ShowError)

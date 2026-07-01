@@ -1,6 +1,6 @@
 ﻿.dashboard-container {
-    padding-top: 32px;
-    padding-bottom: 32px;
+    padding-top: 8px;
+    padding-bottom: 16px;
 }
 
 .dashboard-title {
@@ -9,11 +9,11 @@
 
 .dashboard-subtitle {
     opacity: 0.7;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .dashboard-grid {
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .module-card {

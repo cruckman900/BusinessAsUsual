@@ -18,71 +18,197 @@
         Manage your organization's most valuable asset - your people
     </MudText>
 
-    <MudGrid Spacing="3">
-        <MudItem xs="12" sm="6" md="3">
+    <!-- Main Module Cards Grid -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <!-- Employee Management -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
             <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
                 <MudCardContent Class="text-center pa-6 flex-grow-1">
                     <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
-                    <MudText Typo="Typo.h6" GutterBottom="true">Employees</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        View and manage employee records
+                    <MudText Typo="Typo.h6" GutterBottom="true">Employee Management</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        View and manage employee records, contact details, and employment history
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">156 Active</MudChip>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudTooltip Text="Navigate to employee directory">
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/modules/hr/employees">
-                            View Employees
-                        </MudButton>
-                    </MudTooltip>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/employees">
+                        View Employees
+                    </MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
 
-        <MudItem xs="12" sm="6" md="3">
+        <!-- Departments -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
             <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
                 <MudCardContent Class="text-center pa-6 flex-grow-1">
                     <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Success" Class="mb-4" />
                     <MudText Typo="Typo.h6" GutterBottom="true">Departments</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Organize your company structure
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Organize your company structure and departmental hierarchies
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">12 Departments</MudChip>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudTooltip Text="Navigate to departments overview">
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/modules/hr/departments">
-                            View Departments
-                        </MudButton>
-                    </MudTooltip>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/departments">
+                        View Departments
+                    </MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
 
-        <MudItem xs="12" sm="6" md="3">
-            <MudCard Style="height: 100%; opacity: 0.6;">
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
-                    <MudText Typo="Typo.h6" GutterBottom="true">Onboarding</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Coming soon
+        <!-- Recruiting -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Recruiting</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage candidates, track applications, and schedule interviews
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">23 Active</MudChip>
                 </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/applicants">
+                        View Applicants
+                    </MudButton>
+                </MudCardActions>
             </MudCard>
         </MudItem>
 
-        <MudItem xs="12" sm="6" md="3">
-            <MudCard Style="height: 100%; opacity: 0.6;">
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Size="Size.Large" Color="Color.Info" Class="mb-4" />
-                    <MudText Typo="Typo.h6" GutterBottom="true">Benefits</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Coming soon
+        <!-- Performance Management -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Performance</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Track reviews, goals, and employee performance metrics
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">8 Overdue</MudChip>
                 </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/reviews">
+                        View Reviews
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Training -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Training</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Course catalog, certifications, and learning development
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Text">15 Courses</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/courses">
+                        View Courses
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Timekeeping -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Timekeeping</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Time tracking, timesheets, and approval workflows
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">12 Pending</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/timesheets">
+                        View Timesheets
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Onboarding & Benefits -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">HR Administration</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Onboarding workflows and benefits administration
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">5 New Hires</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/onboarding">
+                        View Onboarding
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Reports -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" Color="Color.Dark" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Reports & Analytics</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Comprehensive HR analytics, reports, and dashboards
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Dark" Variant="Variant.Text">11 Reports</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/hr/reports">
+                        View Reports
+                    </MudButton>
+                </MudCardActions>
             </MudCard>
         </MudItem>
     </MudGrid>
 
-    <MudGrid Class="mt-8">
+    <!-- Quick Stats Row -->
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+            Quick Stats
+        </MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="6" sm="3">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4" Color="Color.Primary">156</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Employees</MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4" Color="Color.Info">23</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Active Applicants</MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4" Color="Color.Warning">8</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Overdue Reviews</MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4" Color="Color.Error">12</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Pending Approvals</MudText>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- About & Module Info Grid -->
+    <MudGrid>
         <MudItem xs="12" md="8">
             <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
                 <MudText Typo="Typo.h6" GutterBottom="true">
@@ -100,10 +226,22 @@
                         <strong>Department Organization</strong> - Structure your organization with departments and hierarchies
                     </MudListItem>
                     <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                        <strong>Onboarding Workflows</strong> - Streamline new hire processes (coming soon)
+                        <strong>Recruiting</strong> - Manage candidate pipeline from application to hire
                     </MudListItem>
                     <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                        <strong>Benefits Administration</strong> - Manage employee benefits and enrollments (coming soon)
+                        <strong>Performance Management</strong> - Track reviews, goals, and employee development
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Training & Development</strong> - Course catalog, certifications, and learning management
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Timekeeping</strong> - Time tracking, timesheets, and approval workflows
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Onboarding & Benefits</strong> - Streamline new hire processes and benefits administration
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Analytics & Reporting</strong> - Comprehensive HR reports and dashboards
                     </MudListItem>
                 </MudList>
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-auto pt-4">
@@ -125,7 +263,11 @@
                     </div>
                     <div>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
-                        <MudText Typo="Typo.body2">1.0.0</MudText>
+                        <MudText Typo="Typo.body2">2.0.0</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Pages</MudText>
+                        <MudText Typo="Typo.body2">32 pages</MudText>
                     </div>
                     <div>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
@@ -138,6 +280,10 @@
                     <div>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Mobile Support</MudText>
                         <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Yes</MudChip>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Complete</MudChip>
                     </div>
                 </MudStack>
             </MudPaper>

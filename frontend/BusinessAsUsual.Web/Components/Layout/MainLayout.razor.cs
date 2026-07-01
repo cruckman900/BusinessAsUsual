@@ -116,12 +116,7 @@ namespace BusinessAsUsual.Web.Components.Layout
                     // Use /modules/{key} route to embed the module UI via iframe
                     Route = $"/modules/{m.Key}",
                     Icon = m.Icon ?? Icons.Material.Filled.Apps,
-                    NavigationItems = m.NavigationItems.Select(nav => new Modules._Shared.ModuleNavigationItem
-                    {
-                        Label = nav.Label,
-                        Route = nav.Route,
-                        Icon = nav.Icon
-                    }).ToList()
+                    NavigationItems = m.NavigationItems.Select(nav => ConvertToModuleNavigationItem(nav)).ToList()
                 }).ToList();
 
                 foreach (var module in Modules)
@@ -222,6 +217,28 @@ namespace BusinessAsUsual.Web.Components.Layout
             Nav.NavigateTo(route);
             _sidebarOpen = false;
             StateHasChanged();
+        }
+
+        // ------------------------------------------------------------
+        // Helper Methods
+        // ------------------------------------------------------------
+
+        private ModuleNavigationItem ConvertToModuleNavigationItem(NavigationItemDto dto)
+        {
+            var item = new ModuleNavigationItem
+            {
+                Label = dto.Label,
+                Route = dto.Route,
+                Icon = dto.Icon,
+                ExpandedByDefault = dto.ExpandedByDefault
+            };
+
+            if (dto.Children?.Any() == true)
+            {
+                item.Children = dto.Children.Select(ConvertToModuleNavigationItem).ToList();
+            }
+
+            return item;
         }
 
         // ------------------------------------------------------------

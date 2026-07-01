@@ -59,7 +59,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
                     .Select(g => new ModuleGroupViewModel
                     {
                         GroupName = g.Key,
-                        Modules = g.ToList()
+                        Modules = g.Select(SelectableModuleDefinition.FromModuleDefinition).ToList()
                     })
                     .ToList()
             };
@@ -253,7 +253,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
                 .Select(g => new ModuleGroupViewModel
                 {
                     GroupName = g.Key,
-                    Modules = g.ToList()
+                    Modules = g.Select(SelectableModuleDefinition.FromModuleDefinition).ToList()
                 })
                 .ToList();
         }

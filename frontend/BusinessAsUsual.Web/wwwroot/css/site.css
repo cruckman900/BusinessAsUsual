@@ -88,7 +88,7 @@ body {
 }
 
 /* Chips */
-.mud-chip {
+/*.mud-chip {
     color: var(--mud-palette-text-secondary) !important;
 }
 
@@ -96,6 +96,7 @@ body {
         color: var(--mud-palette-primary-contrast-text) !important;
         background-color: var(--mud-palette-primary) !important;
     }
+*/
 
 /* Cards & Paper */
 .mud-card,

@@ -18,13 +18,35 @@
             <div class="nav-links-container">
                 @foreach (var navItem in CurrentModule.NavigationItems)
                 {
-                    var isActive = _activeRoute == navItem.Route;
-                    <MudNavLink @onclick="@(() => NavigateInIframe(navItem.Route))" 
-                                Icon="@navItem.Icon"
-                                Class="sidebar-nav-item"
-                                Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
-                        @navItem.Label
-                    </MudNavLink>
+                    @if (navItem.Children?.Any() == true)
+                    {
+                        <!-- Navigation Group with Children -->
+                        <MudNavGroup Title="@navItem.Label" 
+                                     Icon="@navItem.Icon"
+                                     Expanded="@navItem.ExpandedByDefault">
+                            @foreach (var child in navItem.Children)
+                            {
+                                var isActive = _activeRoute == child.Route;
+                                <MudNavLink @onclick="@(() => NavigateInIframe(child.Route))" 
+                                            Icon="@child.Icon"
+                                            Class="sidebar-nav-item"
+                                            Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
+                                    @child.Label
+                                </MudNavLink>
+                            }
+                        </MudNavGroup>
+                    }
+                    else
+                    {
+                        <!-- Standalone Navigation Link -->
+                        var isActive = _activeRoute == navItem.Route;
+                        <MudNavLink @onclick="@(() => NavigateInIframe(navItem.Route))" 
+                                    Icon="@navItem.Icon"
+                                    Class="sidebar-nav-item"
+                                    Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
+                            @navItem.Label
+                        </MudNavLink>
+                    }
                 }
             </div>
         }
@@ -74,17 +96,24 @@
         // Get current URL path
         var currentPath = new Uri(Navigation.Uri).PathAndQuery;
 
-        // Try to match against navigation items
+        // Try to match against navigation items (including children)
         if (CurrentModule?.NavigationItems.Any() == true)
         {
+            // Flatten navigation items including children
+            var allNavItems = CurrentModule.NavigationItems
+                .Concat(CurrentModule.NavigationItems
+                    .Where(item => item.Children?.Any() == true)
+                    .SelectMany(item => item.Children!))
+                .ToList();
+
             // Try exact match first
-            var matchingItem = CurrentModule.NavigationItems
+            var matchingItem = allNavItems
                 .FirstOrDefault(item => string.Equals(item.Route, currentPath, StringComparison.OrdinalIgnoreCase));
 
             // If no exact match, find the best prefix match (longest matching route)
             if (matchingItem == null)
             {
-                matchingItem = CurrentModule.NavigationItems
+                matchingItem = allNavItems
                     .Where(item => currentPath.StartsWith(item.Route, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(item => item.Route.Length) // Longest route wins
                     .FirstOrDefault();
@@ -101,7 +130,7 @@
                 // Only set to first item if we're at the module root
                 if (currentPath.EndsWith($"/modules/{CurrentModule.Key}", StringComparison.OrdinalIgnoreCase))
                 {
-                    _activeRoute = CurrentModule.NavigationItems.First().Route;
+                    _activeRoute = allNavItems.First().Route;
                 }
             }
         }

@@ -1,0 +1,282 @@
+@page "/hr/certifications"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Certifications - HR</PageTitle>
+
+<ErrorBoundary>
+    <ChildContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+            <div class="mb-3">
+                <MudLink Href="/dashboard">Dashboard</MudLink>
+                <span class="mx-2">/</span>
+                <MudLink Href="/hr">HR</MudLink>
+                <span class="mx-2">/</span>
+                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Certifications</MudText>
+            </div>
+
+            <div class="d-flex justify-space-between align-center mb-4">
+                <div>
+                    <MudText Typo="Typo.h4" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Verified" Class="mr-2" />
+                        Certifications
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary">Track employee certifications and renewals</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/certifications/create"))">
+                    Add Certification
+                </MudButton>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 400px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (certifications == null || !certifications.Any())
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Info">
+                    No certifications found. Click "Add Certification" to add your first certification record.
+                </MudAlert>
+            }
+            else
+            {
+                <MudDataGrid T="Certification"
+                             Items="@certifications"
+                             Filterable="true"
+                             FilterMode="DataGridFilterMode.Simple"
+                             SortMode="SortMode.Multiple"
+                             Hideable="true"
+                             ColumnResizeMode="ResizeMode.Column"
+                             Dense="true"
+                             Hover="true"
+                             Striped="true"
+                             FixedHeader="true"
+                             RowsPerPage="10"
+                             QuickFilter="@QuickFilter"
+                             Elevation="1">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="searchString"
+                                      Placeholder="Search certifications..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      IconSize="Size.Medium"
+                                      Immediate="true"
+                                      Clearable="true"
+                                      Class="mt-0" />
+                        <MudSpacer />
+                        <MudSelect @bind-Value="statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="ml-2" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("All")">All Statuses</MudSelectItem>
+                            <MudSelectItem Value="@("Active")">Active</MudSelectItem>
+                            <MudSelectItem Value="@("Expiring Soon")">Expiring Soon</MudSelectItem>
+                            <MudSelectItem Value="@("Expired")">Expired</MudSelectItem>
+                            <MudSelectItem Value="@("In Progress")">In Progress</MudSelectItem>
+                        </MudSelect>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Employee" Sortable="true" SortBy="@(x => x.EmployeeName)">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @GetInitials(context.Item.EmployeeName)
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2">@context.Item.EmployeeName</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Department</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Certification" Sortable="true" SortBy="@(x => x.CertificationName)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.CertificationName</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.IssuingOrganization</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.CertificationId" Title="Cert ID">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
+                                    @context.Item.CertificationId
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Issued Date" Sortable="true" SortBy="@(x => x.IssuedDate)">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@context.Item.IssuedDate.ToString("MMM dd, yyyy")</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Expiry Date" Sortable="true" SortBy="@(x => x.ExpiryDate)">
+                            <CellTemplate>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.ExpiryDate.ToString("MMM dd, yyyy")</MudText>
+                                    @{
+                                        var daysUntilExpiry = (context.Item.ExpiryDate - DateTime.Now).Days;
+                                    }
+                                    @if (daysUntilExpiry < 0)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">Expired @Math.Abs(daysUntilExpiry) days ago</MudText>
+                                    }
+                                    else if (daysUntilExpiry <= 30)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Warning">Expires in @daysUntilExpiry days</MudText>
+                                    }
+                                    else if (daysUntilExpiry <= 90)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Info">@daysUntilExpiry days remaining</MudText>
+                                    }
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Sortable="true" SortBy="@(x => x.Status)">
+                            <CellTemplate>
+                                @{
+                                    var (color, icon) = GetStatusStyle(context.Item.Status);
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@color" Icon="@icon" Variant="Variant.Filled">
+                                    @context.Item.Status
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewCertification(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" OnClick="@(() => EditCertification(context.Item.Id))" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteCertification(context.Item.Id))" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="Certification" />
+                    </PagerContent>
+                </MudDataGrid>
+            }
+        </MudContainer>
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            <strong>Error loading certifications</strong>
+            <p>@context.Message</p>
+        </MudAlert>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private List<Certification> certifications = new();
+    private List<Certification> allCertifications = new();
+    private bool isLoading = true;
+    private string searchString = "";
+    private string statusFilter = "All";
+
+    public class Certification
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string EmployeeName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string CertificationName { get; set; } = "";
+        public string IssuingOrganization { get; set; } = "";
+        public string CertificationId { get; set; } = "";
+        public DateTime IssuedDate { get; set; } = DateTime.Now;
+        public DateTime ExpiryDate { get; set; } = DateTime.Now;
+        public string Status { get; set; } = "Active";
+        public string VerificationUrl { get; set; } = "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCertificationsAsync();
+    }
+
+    private async Task LoadCertificationsAsync()
+    {
+        isLoading = true;
+        await Task.Delay(500); // Simulate API call
+
+        allCertifications = new List<Certification>
+        {
+            new Certification { EmployeeName = "Sarah Johnson", Department = "Engineering", CertificationName = "AWS Certified Solutions Architect", IssuingOrganization = "Amazon Web Services", CertificationId = "AWS-SA-12345", IssuedDate = DateTime.Now.AddMonths(-18), ExpiryDate = DateTime.Now.AddMonths(6), Status = "Active" },
+            new Certification { EmployeeName = "Michael Chen", Department = "Product", CertificationName = "Certified Scrum Master", IssuingOrganization = "Scrum Alliance", CertificationId = "CSM-67890", IssuedDate = DateTime.Now.AddMonths(-12), ExpiryDate = DateTime.Now.AddMonths(12), Status = "Active" },
+            new Certification { EmployeeName = "Emily Rodriguez", Department = "Design", CertificationName = "UX Design Professional", IssuingOrganization = "Nielsen Norman Group", CertificationId = "NN-UX-11223", IssuedDate = DateTime.Now.AddMonths(-6), ExpiryDate = DateTime.Now.AddMonths(18), Status = "Active" },
+            new Certification { EmployeeName = "David Kim", Department = "Operations", CertificationName = "ITIL Foundation", IssuingOrganization = "AXELOS", CertificationId = "ITIL-44556", IssuedDate = DateTime.Now.AddMonths(-24), ExpiryDate = DateTime.Now.AddDays(25), Status = "Expiring Soon" },
+            new Certification { EmployeeName = "Jessica Martinez", Department = "Analytics", CertificationName = "Google Data Analytics Professional", IssuingOrganization = "Google", CertificationId = "GDA-78901", IssuedDate = DateTime.Now.AddMonths(-9), ExpiryDate = DateTime.Now.AddMonths(15), Status = "Active" },
+            new Certification { EmployeeName = "Robert Taylor", Department = "Engineering", CertificationName = "Microsoft Azure Developer", IssuingOrganization = "Microsoft", CertificationId = "AZ-204-23456", IssuedDate = DateTime.Now.AddMonths(-30), ExpiryDate = DateTime.Now.AddDays(-10), Status = "Expired" },
+            new Certification { EmployeeName = "Amanda White", Department = "Marketing", CertificationName = "HubSpot Inbound Marketing", IssuingOrganization = "HubSpot", CertificationId = "HUB-IM-34567", IssuedDate = DateTime.Now.AddMonths(-3), ExpiryDate = DateTime.Now.AddMonths(21), Status = "Active" },
+            new Certification { EmployeeName = "Christopher Lee", Department = "Quality Assurance", CertificationName = "ISTQB Certified Tester", IssuingOrganization = "ISTQB", CertificationId = "ISTQB-45678", IssuedDate = DateTime.Now.AddMonths(-4), ExpiryDate = DateTime.Now.AddDays(15), Status = "Expiring Soon" },
+            new Certification { EmployeeName = "Nicole Anderson", Department = "Business Analysis", CertificationName = "CBAP Certification", IssuingOrganization = "IIBA", CertificationId = "CBAP-56789", IssuedDate = DateTime.Now.AddMonths(-1), ExpiryDate = DateTime.Now.AddMonths(35), Status = "In Progress" },
+            new Certification { EmployeeName = "Daniel Harris", Department = "Engineering", CertificationName = "Kubernetes Administrator", IssuingOrganization = "CNCF", CertificationId = "CKA-67890", IssuedDate = DateTime.Now.AddMonths(-20), ExpiryDate = DateTime.Now.AddMonths(4), Status = "Active" }
+        };
+
+        FilterCertifications();
+        isLoading = false;
+    }
+
+    private void FilterCertifications()
+    {
+        certifications = allCertifications;
+
+        if (statusFilter != "All")
+        {
+            certifications = certifications.Where(c => c.Status == statusFilter).ToList();
+        }
+    }
+
+    private Func<Certification, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.EmployeeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.CertificationName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.IssuingOrganization.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.CertificationId.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length > 0 ? name.Substring(0, Math.Min(2, name.Length)).ToUpper() : "??";
+    }
+
+    private (Color color, string icon) GetStatusStyle(string status)
+    {
+        return status switch
+        {
+            "Active" => (Color.Success, Icons.Material.Filled.CheckCircle),
+            "Expiring Soon" => (Color.Warning, Icons.Material.Filled.Warning),
+            "Expired" => (Color.Error, Icons.Material.Filled.Cancel),
+            "In Progress" => (Color.Info, Icons.Material.Filled.Pending),
+            _ => (Color.Default, Icons.Material.Filled.Help)
+        };
+    }
+
+    private void ViewCertification(string id)
+    {
+        Navigation.NavigateTo($"/hr/certifications/{id}");
+    }
+
+    private void EditCertification(string id)
+    {
+        Navigation.NavigateTo($"/hr/certifications/{id}/edit");
+    }
+
+    private async Task DeleteCertification(string id)
+    {
+        // TODO: Implement delete confirmation dialog
+        allCertifications.RemoveAll(c => c.Id == id);
+        FilterCertifications();
+        await Task.CompletedTask;
+    }
+}
