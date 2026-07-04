@@ -5,6 +5,7 @@
 @inject IReportService ReportService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
 <PageTitle>CRM Reports</PageTitle>
 
@@ -123,7 +124,8 @@
                     {
                         <ApexChart TItem="ChartDataPoint"
                                    Title="Opportunities by Stage"
-                                   Height="300">
+                                   Height="300"
+                                   Options="GetChartOptions()">
                             <ApexPointSeries TItem="ChartDataPoint"
                                            Items="_pipelineChartData"
                                            Name="Opportunities"
@@ -156,7 +158,8 @@
                     {
                         <ApexChart TItem="ChartDataPoint"
                                    Title="Leads by Source"
-                                   Height="300">
+                                   Height="300"
+                                   Options="GetChartOptions()">
                             <ApexPointSeries TItem="ChartDataPoint"
                                            Items="_leadSourceChartData"
                                            Name="Leads"
@@ -187,7 +190,8 @@
                     {
                         <ApexChart TItem="ChartDataPoint"
                                    Title="Closed Opportunities"
-                                   Height="300">
+                                   Height="300"
+                                   Options="GetChartOptions()">
                             <ApexPointSeries TItem="ChartDataPoint"
                                            Items="_winLossChartData"
                                            Name="Revenue"
@@ -219,7 +223,8 @@
                     {
                         <ApexChart TItem="ForecastDataPoint"
                                    Title="Revenue Projection"
-                                   Height="300">
+                                   Height="300"
+                                   Options="GetForecastChartOptions()">
                             <ApexPointSeries TItem="ForecastDataPoint"
                                            Items="_forecastChartData"
                                            Name="Forecast"
@@ -257,7 +262,8 @@
                     {
                         <ApexChart TItem="ChartDataPoint"
                                    Title="Lifetime Value"
-                                   Height="350">
+                                   Height="350"
+                                   Options="GetChartOptions()">
                             <ApexPointSeries TItem="ChartDataPoint"
                                            Items="_topCustomersChartData"
                                            Name="Lifetime Value"
@@ -331,8 +337,20 @@
     private List<ForecastDataPoint> _actualChartData = new();
     private List<ChartDataPoint> _topCustomersChartData = new();
 
+    private bool _isDarkMode = false;
+
     protected override async Task OnInitializedAsync()
     {
+        // Detect dark mode using JavaScript helper
+        try
+        {
+            _isDarkMode = await JSRuntime.InvokeAsync<bool>("crmTheme.isDarkMode");
+        }
+        catch
+        {
+            _isDarkMode = false;
+        }
+
         await LoadReportsAsync();
     }
 
@@ -426,6 +444,38 @@
         _topCustomersChartData = _topCustomersData.Customers
             .Select(c => new ChartDataPoint { Category = c.CustomerName, Value = c.LifetimeValue })
             .ToList();
+    }
+
+    private ApexChartOptions<ChartDataPoint> GetChartOptions()
+    {
+        var textColor = _isDarkMode ? "#ffffff" : "#000000";
+        return new ApexChartOptions<ChartDataPoint>
+        {
+            Theme = new Theme
+            {
+                Mode = _isDarkMode ? Mode.Dark : Mode.Light
+            },
+            Chart = new Chart
+            {
+                ForeColor = textColor
+            }
+        };
+    }
+
+    private ApexChartOptions<ForecastDataPoint> GetForecastChartOptions()
+    {
+        var textColor = _isDarkMode ? "#ffffff" : "#000000";
+        return new ApexChartOptions<ForecastDataPoint>
+        {
+            Theme = new Theme
+            {
+                Mode = _isDarkMode ? Mode.Dark : Mode.Light
+            },
+            Chart = new Chart
+            {
+                ForeColor = textColor
+            }
+        };
     }
 
     // Chart data classes for ApexCharts

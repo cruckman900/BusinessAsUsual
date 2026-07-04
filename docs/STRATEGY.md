@@ -6,9 +6,10 @@ This document outlines the architectural vision, workflow strategy, and onboardi
 
 ## 🎯 Project Intentions
 
-- Build a clean, scalable ASP.NET Core MVC application
+- Build a clean, scalable ASP.NET Core platform on **.NET 9**
+- Deliver the UI with **Blazor + MudBlazor** (interactive component model)
 - Architect with Clean Architecture principles
-- Modularize components for future microservices
+- Modularize components as independently deployable microservices
 - Containerize with Docker for consistent dev environments
 - Deploy to AWS using ECS, ECR, RDS, and CodePipeline
 - Maintain expressive documentation and creative branding
@@ -20,9 +21,9 @@ This document outlines the architectural vision, workflow strategy, and onboardi
 ```
 BusinessAsUsual/
 ├── frontend/
-│   ├── BusinessAsUsual.Admin/           # MVC frontend (UI Layer) Admin Site
+│   ├── BusinessAsUsual.Admin/           # Blazor + MudBlazor (UI Layer) Admin Site
 │       └── Dockerfile 
-│   └── BusinessAsUsual.Web/             # MVC frontend (UI Layer) Client Site
+│   └── BusinessAsUsual.Web/             # Blazor + MudBlazor (UI Layer) Client Shell
 │       └── Dockerfile 
 ├── backend/
 │   ├── BusinessAsUsual.API/             # Public-facing APIs (API Layer)
@@ -30,6 +31,11 @@ BusinessAsUsual/
 │   ├── BusinessAsUsual.Application/     # Use cases, interfaces (Application Layer)
 │   ├── BusinessAsUsual.Domain/          # Entities, enums, value objects (Domain Layer)
 │   └── BusinessAsUsual.Infrastructure/  # EF Core, external services (Infrastructure Layer)
+├── BusinessAsUsual.Core/                # Shared kernel, module catalog & discovery
+├── services/                            # Independently deployable modules
+│   ├── HR/                              # Domain/Application/API/Infrastructure/Web
+│   ├── CRM/                             # Domain/Application/API/Web
+│   └── ModuleRegistry/                  # Module discovery & UI injection
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                       # GitHub Actions workflow
@@ -51,14 +57,24 @@ BusinessAsUsual/
 - **Domain**: Core business logic, entities, value objects
 - **Application**: Use cases, service contracts, interfaces
 - **Infrastructure**: EF Core, external APIs, file systems
-- **UI**: MVC frontend, Razor Pages, controllers
+- **UI**: Blazor + MudBlazor components, rendered through the client shell
 
-### Microservices (Planned)
+### Microservices
 
-- Auth
-- Billing
-- Products
-- Notifications
+**Built:** HR, CRM, Module Registry (see [MODULE_STATUS.md](MODULE_STATUS.md))
+
+**Planned:** Auth, Billing, Products, Notifications, AI (see [AI-PriorityQueue.md](AI-PriorityQueue.md))
+
+### AI Strategy (Positioning & Go‑to‑Market)
+
+- Positioning: BAU will be marketed as a modular, .NET‑native business platform with built-in AI that accelerates user workflows (search, summarize, recommend) and can be self‑hosted or run in customers' clouds. This appeals to mid‑market customers and Microsoft‑centric organizations that require customizability and data control.
+- Go‑to‑Market priorities:
+  1. Ship high‑value, low‑cost AI features (SmartCRM Assistant, Summarization, Smart Search) as part of the core offering.
+  2. Offer paid integrations and managed hosting for customers who prefer zero‑ops.
+  3. Publish developer SDKs and marketplace modules to grow the ecosystem.
+- Messaging pillars: Ownership (self‑host), Extensibility (modules), Productivity (AI), and Microsoft stack synergy (.NET + Azure integration).
+
+Refer to `/docs/CloudProud.md` and `/docs/AI-PriorityQueue.md` for an actionable roadmap and prioritized AI initiatives.
 
 Each service will be independently deployable, containerized, and optionally split into its own repo.
 

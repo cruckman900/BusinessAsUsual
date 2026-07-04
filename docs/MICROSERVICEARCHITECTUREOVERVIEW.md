@@ -285,6 +285,34 @@ Instead, they query the Module Registry Service (MRS), which returns:
 
 This allows modules to be added or removed without modifying the core UI.
 
+## AI Microservice in the Service Topology
+
+The AI microservice is an optional but first-class service in BAU's microservice topology. It provides semantic search, summarization, and predictive APIs that other modules (CRM, HR, etc.) can call. Below is a simple integration sketch and example endpoints.
+
+```mermaid
+flowchart LR
+    Client[Browser / Mobile] --> MainApp[Admin/Main App]
+    MainApp --> ModuleRegistry[MRS]
+    MainApp --> Gateway[API Gateway]
+    Gateway --> CRM[CRM Service]
+    Gateway --> AI[AI Microservice]
+    AI --> VectorDB[(Vector DB - Qdrant/FAISS)]
+    CRM --> DB[(CRM Database)]
+    AI --> ExternalModel[LLM Provider (optional)]
+```
+
+Example AI endpoints (minimal):
+
+- `POST /api/ai/embeddings/upsert` — upsert embeddings for resource payload: { id, tenantId, text, metadata }
+- `POST /api/ai/embeddings/query` — semantic query: { query, tenantId, topK }
+- `POST /api/ai/summarize` — summarize text: { text, maxSentences }
+- `POST /api/ai/predict/lead-score` — score a lead DTO for conversion probability
+
+Design notes:
+- The AI microservice should authenticate requests using the same JWT/OIDC system as other services and validate tenant scoping on every request.
+- Prefer small, focused endpoints that return structured data (answer + sources + confidence) rather than freeform text.
+
+
 ## Tenant Isolation Strategy
 BAU uses a **tenant‑per‑database** model.  
 Each module connects to the tenant’s database using credentials resolved at runtime.

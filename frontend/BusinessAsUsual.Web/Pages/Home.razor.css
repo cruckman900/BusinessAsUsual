@@ -81,7 +81,7 @@
     font-size: 1.125rem !important;
     font-weight: 600 !important;
     background: white !important;
-    color: #00345B !important; /* Brand blue text */
+    color: var(--mud-palette-primary) !important; /* Brand primary text */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
     transition: all 0.3s ease !important;
     position: relative;
@@ -101,7 +101,7 @@
     font-weight: 600 !important;
     border: 2px solid white !important;
     background: #ffffff !important; /* Solid white background */
-    color: #00345B !important; /* Brand blue text */
+    color: var(--mud-palette-primary) !important; /* Brand primary text */
     transition: all 0.3s ease !important;
     position: relative;
     z-index: 1000 !important; /* Much higher z-index */
@@ -155,7 +155,7 @@
 .login-widget {
     padding: 2.5rem !important;
     border-radius: 16px !important;
-    background: white !important;
+    background: var(--mud-palette-surface) !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
     opacity: 1 !important;
     position: relative;
@@ -166,7 +166,7 @@
     margin-bottom: 2rem !important;
     display: flex;
     align-items: center;
-    color: #00345B;
+    color: var(--mud-palette-primary);
     font-weight: 600;
 }
 
@@ -213,7 +213,7 @@
 /* Spacing for the signup prompt */
 .signup-prompt {
     margin-top: 1rem !important;
-    color: #666;
+    color: var(--mud-palette-text-secondary);
 }
 
 /* Divider spacing */
@@ -226,19 +226,19 @@
     margin-bottom: 2rem !important;
     display: flex;
     align-items: center;
-    color: #00345B;
+    color: var(--mud-palette-primary);
     font-weight: 600;
 }
 
 .signup-prompt {
     margin-top: 1rem !important;
-    color: #666;
+    color: var(--mud-palette-text-secondary);
 }
 
 /* Features Section */
 .features-section {
     padding: 6rem 2rem;
-    background: white;
+    background: var(--mud-palette-surface);
 }
 
 .section-header {
@@ -248,11 +248,11 @@
 .section-title {
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #1e293b;
+    color: var(--mud-palette-text-primary);
 }
 
 .section-subtitle {
-    color: #64748b;
+    color: var(--mud-palette-text-secondary);
     max-width: 600px;
     margin: 0 auto;
 }
@@ -293,12 +293,12 @@
 
 .feature-title {
     margin-bottom: 0.75rem;
-    color: #1e293b;
+    color: var(--mud-palette-text-primary);
     font-weight: 600;
 }
 
 .feature-description {
-    color: #64748b;
+    color: var(--mud-palette-text-secondary);
     line-height: 1.6;
 }
 
@@ -334,7 +334,7 @@
     font-size: 1.125rem !important;
     font-weight: 600 !important;
     background: white !important;
-    color: #667eea !important;
+    color: var(--mud-palette-primary) !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
 }
 

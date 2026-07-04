@@ -257,9 +257,9 @@ After route standardization, verify:
 ---
 
 ## Related Documentation
-- [HR Module Layout Fix Success](./HR_MODULE_LAYOUT_FIX_SUCCESS.md) - Layout migration from IframeLayout to MainLayout
-- [Architecture Fix: No Iframes](./ARCHITECTURE_FIX_NO_IFRAMES.md) - Clarification that the app doesn't use iframes
-- [Navigation Integration Fix](./NAVIGATION_INTEGRATION_FIX.md) - Sidebar and reports dashboard implementation
+- [HR Module Layout Fix Success](./archive/HR_MODULE_LAYOUT_FIX_SUCCESS.md) - Layout migration from IframeLayout to MainLayout _(archived)_
+- [Architecture Fix: No Iframes](./archive/ARCHITECTURE_FIX_NO_IFRAMES.md) - Clarification that the app doesn't use iframes _(archived)_
+- [Navigation Integration Fix](./archive/NAVIGATION_INTEGRATION_FIX.md) - Sidebar and reports dashboard implementation _(archived)_
 
 ---
 

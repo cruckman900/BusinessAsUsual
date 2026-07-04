@@ -11,6 +11,30 @@ This file walks new collaborators through the setup process with clarity, speed,
 - Run frontend (npm run dev) and backend (dotnet run)
 - Confirm health endpoints and splash screen trigger
 
+### AI Developer Quickstart (local)
+
+1. Start the main solution services (APIs and frontend) using Visual Studio or `dotnet run` for each project.
+2. Start the AI microservice (services/AI/AI.Api). From the solution root:
+
+```powershell
+cd "services/AI/AI.Api"
+dotnet run
+```
+
+3. (Optional) Start a local vector DB for development. Recommended options:
+   - Qdrant: run `docker run -p 6333:6333 qdrant/qdrant` and use port 6333
+   - FAISS (local): use the provided utility scripts to create an on-disk index
+
+4. Seed embeddings using the helper endpoint (future): POST to `/api/ai/embeddings/upsert` with sample CRM data. For now, the AI API accepts placeholder payloads.
+
+5. Run the Blazor frontend and verify the AI assistant icon appears in the top bar. Use the assistant to send a test query (placeholder response currently).
+
+6. Telemetry: enable Application Insights or Prometheus options described in docs/ARCHITECTURE.md to capture AI latency and usage.
+
+Troubleshooting:
+- If the assistant isn't visible, ensure `frontend/BusinessAsUsual.Web/wwwroot/js/ai-assistant.js` and `css/ai-assistant.css` are included in the published assets and that `AiAssistant` component is compiled.
+- For vector DB connection issues, check firewall/port and ensure the container is running.
+
 🐳 Docker Setup
 - Build and run containers for frontend and backend
 - Use .env files for local secrets
