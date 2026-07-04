@@ -1,4 +1,5 @@
 ﻿@using BusinessAsUsual.Web.Modules._Shared
+@inject IConfiguration Configuration
 @* ============================
    DESKTOP TOP BAR
    ============================ *@
@@ -33,9 +34,12 @@
         </div>
 
         <MudSpacer />
-
         <TenantDisplay CurrentTenant="@CurrentTenant" />
         <UserMenu />
+        <!-- AI Assistant toggle is injected here so it's always available but unobtrusive -->
+        <div class="ai-assistant-host">
+            <AiAssistant CompanyId="@AiTestCompanyId" />
+        </div>
     </div>
 </MudHidden>
 
@@ -96,4 +100,18 @@
     private bool _mobileMenuOpen = false;
 
     void CloseMobileMenu() => _mobileMenuOpen = false;
+
+    /// <summary>
+    /// Optional test company id for the AI assistant. Populated only from the development
+    /// config key "AiService:TestCompanyId" so paid-tier routing can be exercised from the UI.
+    /// The key is absent in production, so this stays null and the assistant uses the demo tier.
+    /// Replace with the authenticated user's real company id once auth is wired up.
+    /// </summary>
+    // TODO (auth): Replace this dev-only config lookup with the authenticated user's real
+    // company id to become the genuine paid-tier gate. Tracked in docs/TODO.md
+    // ("AI Assistant - Wire Real Company Id (Paid Tier Gate)").
+    private Guid? AiTestCompanyId =>
+        Guid.TryParse(Configuration["AiService:TestCompanyId"], out var id) && id != Guid.Empty
+            ? id
+            : null;
 }

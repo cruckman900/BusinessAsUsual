@@ -232,16 +232,16 @@
                             <MudText Typo="Typo.body2">1.0.0</MudText>
                         </div>
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Lead Breakdown</MudText>
-                            <MudText Typo="Typo.body2">New: @_newLeads | Qualified: @_qualifiedLeads | Converted: @_convertedLeads</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Total Pages</MudText>
+                            <MudText Typo="Typo.body2">10 pages</MudText>
                         </div>
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Pipeline Breakdown</MudText>
-                            <MudText Typo="Typo.body2">Prospecting: @_prospectingOpps | Negotiation: @_negotiationOpps</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
+                            <MudText Typo="Typo.body2">5004</MudText>
                         </div>
                         <div>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Won This Month</MudText>
-                            <MudText Typo="Typo.body2">@_wonOpps opportunities</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Web UI Port</MudText>
+                            <MudText Typo="Typo.body2">5003</MudText>
                         </div>
                         <div>
                             <MudText Typo="Typo.caption" Color="Color.Secondary">Mobile Support</MudText>
@@ -275,12 +275,6 @@
     private int _activeOpportunities;
     private int _totalCustomers;
     private decimal _pipelineValue;
-    private int _newLeads;
-    private int _qualifiedLeads;
-    private int _convertedLeads;
-    private int _prospectingOpps;
-    private int _negotiationOpps;
-    private int _wonOpps;
 
     protected override async Task OnInitializedAsync()
     {
@@ -292,16 +286,6 @@
         _activeOpportunities = opportunities.Count(o => !o.IsWon && !o.IsLost);
         _totalCustomers = customers.Count();
         _pipelineValue = opportunities.Where(o => !o.IsWon && !o.IsLost).Sum(o => o.Amount);
-
-        // Lead breakdown
-        _newLeads = leads.Count(l => l.Status == "New");
-        _qualifiedLeads = leads.Count(l => l.Status == "Qualified");
-        _convertedLeads = leads.Count(l => l.Status == "Converted");
-
-        // Opportunity breakdown
-        _prospectingOpps = opportunities.Count(o => o.Stage == "Prospecting");
-        _negotiationOpps = opportunities.Count(o => o.Stage == "Negotiation");
-        _wonOpps = opportunities.Count(o => o.IsWon && o.ExpectedCloseDate?.Month == DateTime.Now.Month);
 
         _loading = false;
     }

@@ -62,6 +62,16 @@ namespace BusinessAsUsual.Web
             // Register Module Discovery Service
             builder.Services.AddHttpClient<IModuleDiscoveryService, ModuleDiscoveryService>();
 
+            // Register named HttpClient for the AI microservice (services/AI/AI.Api).
+            // The floating AI assistant resolves this via IHttpClientFactory so a bare
+            // HttpClient is never required from DI (which Blazor Server does not provide).
+            var aiServiceUrl = builder.Configuration["AiService:Url"] ?? "http://localhost:5300";
+            builder.Services.AddHttpClient("AiApi", client =>
+            {
+                client.BaseAddress = new Uri(aiServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
             // Register Master Navigation Orchestrator
             builder.Services.AddScoped<ModuleRouteInterceptor>();
 

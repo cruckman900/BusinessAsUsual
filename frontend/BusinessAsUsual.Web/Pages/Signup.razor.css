@@ -1,7 +1,7 @@
 /* Signup Container */
 .signup-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--mud-palette-background);
     padding: 2rem 1rem;
     position: relative;
     overflow: hidden;
@@ -37,18 +37,18 @@
 }
 
 .signup-title {
-    color: white;
+    color: var(--mud-palette-text-primary);
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
 .signup-subtitle {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--mud-palette-text-secondary);
 }
 
 /* Stepper */
 .signup-stepper {
-    background: white !important;
+    background: var(--mud-palette-surface) !important;
     border-radius: 16px !important;
     padding: 2.5rem !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
@@ -61,12 +61,12 @@
 
 .step-title {
     margin-bottom: 1.5rem;
-    color: #1e293b;
+    color: var(--mud-palette-text-primary);
     font-weight: 600;
 }
 
 .step-subtitle {
-    color: #64748b;
+    color: var(--mud-palette-text-secondary);
     margin-bottom: 2rem;
 }
 
@@ -135,11 +135,11 @@
 .module-name {
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #1e293b;
+    color: var(--mud-palette-text-primary);
 }
 
 .module-desc {
-    color: #64748b;
+    color: var(--mud-palette-text-secondary);
     font-size: 0.875rem;
 }
 
@@ -160,14 +160,14 @@
 
 .review-section-title {
     font-weight: 600;
-    color: #667eea;
+    color: var(--mud-palette-primary);
     margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
 }
 
 .review-table {
-    background: white;
+    background: var(--mud-palette-surface);
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid rgba(102, 126, 234, 0.1);
@@ -184,7 +184,7 @@
 
 .review-table td:first-child {
     width: 40%;
-    color: #64748b;
+    color: var(--mud-palette-text-secondary);
     font-weight: 500;
 }
 

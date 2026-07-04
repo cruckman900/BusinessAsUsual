@@ -47,6 +47,13 @@ All detailed documentation lives in the `/docs` directory:
 - **Changelog:** `/docs/CHANGELOG.md`  
 - **Splash Logic, Badges, and More:** See additional files in `/docs`
 
+### AI & Roadmap
+
+- **CloudProud Roadmap:** `/docs/CloudProud.md` — strategic product roadmap including AI priorities and sprint guidance
+- **AI Priority Queue:** `/docs/AI-PriorityQueue.md` — ranked AI initiatives with deliverables and estimates
+
+These live alongside the architecture docs and should be the canonical source for AI-related work.
+
 This keeps the root README clean while giving contributors a clear map of the system.
 
 ## 🛠️ Setup & Onboarding

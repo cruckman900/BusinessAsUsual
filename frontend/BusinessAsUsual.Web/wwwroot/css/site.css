@@ -135,18 +135,18 @@ body {
     }
 
 /* Buttons */
-.mud-button {
+/*.mud-button {
     color: var(--mud-palette-text-primary) !important;
 }
-
+*/
     .mud-button.mud-button-outlined {
         color: var(--mud-palette-primary) !important;
         border-color: var(--mud-palette-primary) !important;
     }
 
     .mud-button.mud-button-filled {
-        color: var(--mud-palette-primary-contrast-text) !important;
-        background-color: var(--mud-palette-primary) !important;
+/*        color: var(--mud-palette-primary-contrast-text) !important;
+        background-color: var(--mud-palette-primary) !important;*/
     }
 
 /* ============================================================

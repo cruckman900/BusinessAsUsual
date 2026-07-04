@@ -1,0 +1,172 @@
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
+@inject ILogger<AiAssistant> Logger
+
+<div id="ai-assistant-container" class="ai-assistant hidden">
+    <button class="ai-toggle" @onclick="ToggleOpen" title="AI Assistant" aria-label="Toggle AI Assistant">
+        <span class="ai-toggle-icon">@(_open ? "✕" : "🤖")</span>
+    </button>
+
+    <div class="ai-panel" style="display:none;">
+        <div class="ai-header">
+            <div class="ai-header-info">
+                <div class="ai-avatar">🤖</div>
+                <div class="ai-header-text">
+                    <span class="ai-title">AI Assistant</span>
+                    <span class="ai-subtitle"><span class="ai-status-dot"></span> Online</span>
+                </div>
+            </div>
+            <button class="ai-close" @onclick="ToggleOpen" aria-label="Close">✕</button>
+        </div>
+
+        <div class="ai-messages" id="ai-messages">
+            @if (_messages.Count == 0 && string.IsNullOrWhiteSpace(QueryText))
+            {
+                <div class="ai-empty">
+                    <div class="ai-empty-icon">💬</div>
+                    <p class="ai-empty-title">How can I help?</p>
+                    <p class="ai-empty-hint">Ask me about leads, customers, or anything in the app.</p>
+                    <div class="ai-suggestions">
+                        <button class="ai-chip" @onclick='() => QuickAsk("Summarize my open leads")'>Summarize my open leads</button>
+                        <button class="ai-chip" @onclick='() => QuickAsk("Who are my top customers?")'>Who are my top customers?</button>
+                        <button class="ai-chip" @onclick='() => QuickAsk("What can you do?")'>What can you do?</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var msg in _messages)
+                {
+                    <div class="ai-msg @(msg.IsUser ? "ai-msg-user" : "ai-msg-bot")">
+                        @if (!msg.IsUser)
+                        {
+                            <div class="ai-msg-avatar">🤖</div>
+                        }
+                        <div class="ai-bubble">@msg.Text</div>
+                    </div>
+                }
+            }
+
+            @if (_busy)
+            {
+                <div class="ai-msg ai-msg-bot">
+                    <div class="ai-msg-avatar">🤖</div>
+                    <div class="ai-bubble ai-typing"><span></span><span></span><span></span></div>
+                </div>
+            }
+        </div>
+
+        <div class="ai-input">
+            <textarea @bind="QueryText" @bind:event="oninput"
+                      class="ai-textarea" placeholder="Ask me anything..." rows="1"
+                      disabled="@_busy"></textarea>
+            <button class="ai-send" @onclick="SendQuery"
+                    disabled="@(_busy || string.IsNullOrWhiteSpace(QueryText))" aria-label="Send">
+                ➤
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Optional provisioned company id. When supplied and valid, the AI service routes to the
+    /// paid tier (Claude Haiku); otherwise the free demo tier is used. Left null for the public
+    /// admin/password test case until real auth supplies it.
+    /// </summary>
+    [Parameter] public Guid? CompanyId { get; set; }
+
+    private bool _open;
+    private bool _busy;
+    private string QueryText { get; set; } = string.Empty;
+    private readonly List<ChatMessage> _messages = new();
+
+    private sealed record ChatMessage(string Text, bool IsUser);
+
+    private async Task ToggleOpen()
+    {
+        _open = !_open;
+        try
+        {
+            await JS.InvokeVoidAsync("aiAssistant.toggle", _open);
+        }
+        catch (Exception ex)
+        {
+            // JS interop can fail during prerender/disconnect - never let it bubble to the ErrorBoundary.
+            Logger.LogWarning(ex, "AI assistant toggle interop failed.");
+        }
+    }
+
+    private async Task QuickAsk(string prompt)
+    {
+        QueryText = prompt;
+        await SendQuery();
+    }
+
+    private async Task SendQuery()
+    {
+        var text = QueryText?.Trim();
+        if (string.IsNullOrWhiteSpace(text) || _busy)
+        {
+            return;
+        }
+
+        _messages.Add(new ChatMessage(text, true));
+        QueryText = string.Empty;
+        _busy = true;
+        await ScrollToBottomAsync();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AiApi");
+            var res = await client.PostAsJsonAsync("api/ai/chat", new { query = text, companyId = CompanyId });
+
+            string answer;
+            if (res.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                answer = "⏳ You're sending messages too quickly. Please wait a moment and try again.";
+            }
+            else if (!res.IsSuccessStatusCode)
+            {
+                answer = $"⚠️ AI service unavailable ({(int)res.StatusCode}). Please try again later.";
+            }
+            else
+            {
+                var obj = await res.Content.ReadFromJsonAsync<JsonElement>();
+                answer = obj.ValueKind != JsonValueKind.Undefined && obj.TryGetProperty("answer", out var ans)
+                    ? ans.GetString() ?? "No answer returned."
+                    : "No answer returned.";
+            }
+
+            _messages.Add(new ChatMessage(answer, false));
+        }
+        catch (HttpRequestException ex)
+        {
+            Logger.LogWarning(ex, "AI service request failed.");
+            _messages.Add(new ChatMessage("⚠️ The AI service is offline right now. Start AI.Api or try again later.", false));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Unexpected error querying the AI service.");
+            _messages.Add(new ChatMessage("⚠️ Something went wrong contacting the AI service.", false));
+        }
+        finally
+        {
+            _busy = false;
+            await ScrollToBottomAsync();
+        }
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("aiAssistant.scrollToBottom");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "AI assistant scroll interop failed.");
+        }
+    }
+}

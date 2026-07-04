@@ -65,6 +65,32 @@ Shared behaviors that apply across layers:
 
 These are implemented in Infrastructure or Presentation but designed to be reusable across modules.
 
+## AI Microservice & Data Flow
+
+Business As Usual includes a lightweight AI microservice intended to provide retrieval‑augmented generation (RAG), summarization, and predictive features. The AI microservice is optional at runtime but recommended for advanced UX features such as the SmartCRM Assistant and Summarization.
+
+Key ideas:
+- The AI microservice exposes a small set of HTTP endpoints (`/api/ai/*`) for embeddings upsert, semantic query, summarization, and predictions.
+- The retrieval pipeline should use a vector database (Qdrant, FAISS, or similar) that stores embeddings and associated metadata. The vector DB may be run locally for development or as a managed service in production.
+- For inference, prefer a hybrid approach: local quantized open models for cheap inference and a managed LLM provider (OpenAI / Azure) as a fallback for higher-quality queries.
+
+Security & governance:
+- Tenant isolation: every index entry is scoped by tenant id. The AI microservice must filter vector search results by tenant.
+- PII & redaction: redact or avoid indexing sensitive fields (SSNs, payment info). Provide a configuration-driven allowlist for indexed fields.
+- Audit logging: store query text (or hashed), user id, model version, and top‑k sources for traceability.
+- Rate limiting & cost controls: implement per-tenant and global quotas and sampling for expensive LLM calls.
+
+Data flow (high level):
+1. App event or admin action triggers an embeddings upsert for a resource (lead, customer, note).
+2. The AI microservice computes embeddings (or calls embedding provider) and stores vectors in the vector DB with metadata (tenantId, sourceId, resourceType).
+3. On query, the AI microservice retrieves top‑k results scoped to tenantId, assembles a prompt with context, and calls the LLM or local model to produce an answer.
+4. The answer and sources are returned to the UI; any data-changing actions must be confirmed by the user before persistence.
+
+Operational notes:
+- Monitoring: capture latency, token usage (if using paid LLMs), and retrieval precision. Use OpenTelemetry to surface these metrics.
+- Local development: provide a docker-compose profile that includes the AI microservice and a lightweight vector DB or FAISS fallback.
+
+
 # 🏗️ Modular Structure
 
 Each major business capability (HR, Orders, Inventory, Billing, Scheduling, etc.) is implemented as a module with its own:

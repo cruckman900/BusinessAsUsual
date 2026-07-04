@@ -35,6 +35,27 @@
 
 ---
 
+### AI Assistant - Wire Real Company Id (Paid Tier Gate)
+**Status**: Blocked (waiting on auth)  
+**Priority**: High  
+**Description**: The AI assistant paid-tier routing (Claude Haiku via Bedrock) is gated on a provisioned `companyId`. Currently the UI supplies a dev-only test company id from config so the paid path can be exercised locally. Once authentication is further along, replace this with the authenticated user's real company id.
+
+**Current dev-only scaffolding (to be replaced)**:
+- `frontend/BusinessAsUsual.Web/Components/Layout/Sections/MainTopBar.razor` — `AiTestCompanyId` reads `AiService:TestCompanyId` and passes it to `<AiAssistant CompanyId="..." />`
+- `frontend/BusinessAsUsual.Web/appsettings.Development.json` — `AiService:TestCompanyId` (dev only; absent in production, so the UI defaults to the demo tier)
+- `services/AI/AI.Api/appsettings.Development.json` — `Ai:Dev:UseStubPaidClient` + `Ai:Dev:TestCompanyIds` (stub paid client, no AWS cost)
+- `services/AI/AI.Api/Services/TestCompanyDirectory.cs` and `services/AI/AI.Api/Services/Providers/StubChatClient.cs` — dev-only helpers (registered only when `IsDevelopment()`)
+
+**Remaining**:
+- [ ] Replace `AiTestCompanyId` in `MainTopBar.razor` with the authenticated user's real company id
+- [ ] Set `Ai:Dev:UseStubPaidClient` to `false` and confirm real Bedrock Claude Haiku responses (requires AWS creds + Bedrock model access)
+- [ ] Remove/retire the dev-only test company id config once real auth supplies it
+- [ ] Verify `AWS_SQL_CONNECTION_STRING` is present so `SqlCompanyDirectory` validates real provisioned companies
+
+**Reference**: `docs/AI_ASSISTANT_SETUP.md`
+
+---
+
 ## Medium Priority
 
 ### HR Module - Additional Reports

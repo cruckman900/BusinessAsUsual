@@ -481,7 +481,7 @@ GET http://localhost:5001/api/hr/mobile/navigation
 
 ## Documentation
 
-- [Mobile UI Contract Implementation](./MOBILE_UI_CONTRACT_IMPLEMENTATION.md)
+- [Mobile UI Contract Implementation](./archive/MOBILE_UI_CONTRACT_IMPLEMENTATION.md) _(archived)_
 - [Module Registry Guide](./MODULE_REGISTRY_AND_UI_INJECTION.md)
 - [Microservice Architecture](./MICROSERVICEARCHITECTUREOVERVIEW.md)
 
