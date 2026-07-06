@@ -122,3 +122,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+// Exposed so WebApplicationFactory<Program> can bootstrap the API in functional tests.
+public partial class Program { }

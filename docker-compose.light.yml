@@ -1,0 +1,69 @@
+# =============================================================================
+# LIGHT INSTANCE  (recommended: t3.micro / 1 GB RAM)
+# -----------------------------------------------------------------------------
+# Hosts the lighter, less-frequently-used microservices:
+#   - ModuleRegistry.API  (host 5100 -> container 80)
+#   - AI.Api              (host 5300 -> container 80)
+#
+# ModuleRegistry is the service discovery hub: HR.API (heavy instance) and the
+# Web shell (main instance) register with / query it, so it must be reachable
+# on the private network from the other instances.
+#
+# Cross-instance + secret values come from a local .env file on the instance
+# (see .env.light.example). Never commit real connection strings or API keys.
+# =============================================================================
+
+services:
+  module-registry-api:
+    build:
+      context: .
+      dockerfile: services/ModuleRegistry/ModuleRegistry.API/Dockerfile
+    image: bau/module-registry-api:latest
+    container_name: bau-module-registry-api
+    restart: unless-stopped
+    networks:
+      - bau-light
+    ports:
+      - "5100:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL). Leave UseInMemoryDatabase=true to run without a DB.
+      - UseInMemoryDatabase=${MRS_USE_INMEMORY:-false}
+      - MRS_SQL_CONNECTION_STRING=${MRS_SQL_CONNECTION_STRING}
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  ai-api:
+    build:
+      context: .
+      dockerfile: services/AI/AI.Api/Dockerfile
+    image: bau/ai-api:latest
+    container_name: bau-ai-api
+    restart: unless-stopped
+    networks:
+      - bau-light
+    ports:
+      - "5300:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Paid-tier company gate validates against the provisioning master DB (shared RDS)
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Demo tier (GitHub Models) token
+      - Ai__Demo__ApiKey=${AI_DEMO_APIKEY}
+      # Paid tier (Amazon Bedrock) region + model; credentials come from the
+      # instance's IAM role (preferred) or AWS_* env vars.
+      - Ai__Paid__Provider=${AI_PAID_PROVIDER:-Bedrock}
+      - Ai__Paid__Region=${AI_PAID_REGION:-us-east-1}
+      - Ai__Paid__Model=${AI_PAID_MODEL:-anthropic.claude-3-haiku-20240307-v1:0}
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+networks:
+  bau-light:
+    driver: bridge

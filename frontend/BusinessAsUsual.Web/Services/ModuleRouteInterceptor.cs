@@ -34,7 +34,7 @@ public class ModuleRouteInterceptor : IDisposable
     /// Parses a URL and determines if it's a module route
     /// Returns (moduleKey, internalRoute) or (null, null) if not a module route
     /// </summary>
-    public async Task<(string? moduleKey, string? internalRoute)> ParseModuleRoute(string url)
+    public Task<(string? moduleKey, string? internalRoute)> ParseModuleRoute(string url)
     {
         var uri = new Uri(url);
         var path = uri.AbsolutePath;
@@ -63,11 +63,11 @@ public class ModuleRouteInterceptor : IDisposable
                 }
 
                 Console.WriteLine($"[RouteInterceptor] Detected module route - Key: {moduleKey}, Internal: {internalRoute}");
-                return (moduleKey, internalRoute);
+                return Task.FromResult<(string? moduleKey, string? internalRoute)>((moduleKey, internalRoute));
             }
         }
 
-        return (null, null);
+        return Task.FromResult<(string? moduleKey, string? internalRoute)>((null, null));
     }
 
     /// <summary>

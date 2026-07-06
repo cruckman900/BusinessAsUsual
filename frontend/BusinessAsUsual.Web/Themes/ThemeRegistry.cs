@@ -825,5 +825,32 @@ namespace BusinessAsUsual.Web.Themes
                 }
             },
         };
+
+        /// <summary>
+        /// Ensures every theme's appbar (top nav) text color contrasts with its appbar
+        /// background. The top navigation lives inside the MudAppBar, so its links inherit
+        /// <c>--mud-palette-appbar-text</c>. None of the palettes set AppbarText explicitly,
+        /// so MudBlazor would otherwise default it to a dark color that bleeds into the
+        /// colored bar. We compute a readable value once for all current (and future) themes.
+        /// </summary>
+        static ThemeRegistry()
+        {
+            foreach (var theme in Themes.Values)
+            {
+                ApplyReadableAppbarText(theme.PaletteLight);
+                ApplyReadableAppbarText(theme.PaletteDark);
+            }
+        }
+
+        /// <summary>
+        /// Picks white for dark appbar backgrounds and near-black for light ones, using
+        /// perceived luminance (ITU-R BT.601) so the nav never bleeds into the bar.
+        /// </summary>
+        private static void ApplyReadableAppbarText(Palette palette)
+        {
+            var bg = palette.AppbarBackground;
+            var luminance = (0.299 * bg.R) + (0.587 * bg.G) + (0.114 * bg.B);
+            palette.AppbarText = luminance < 150 ? "#FFFFFF" : "#212121";
+        }
     }
 }

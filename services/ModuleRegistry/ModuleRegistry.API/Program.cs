@@ -112,3 +112,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+// Exposed so WebApplicationFactory<Program> can bootstrap the API in functional tests.
+public partial class Program { }

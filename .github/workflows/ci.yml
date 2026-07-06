@@ -6,18 +6,23 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  DOTNET_VERSION: "9.0.x"
+  # Minimum line coverage (%) required for the build to pass. Tune as suites grow.
+  COVERAGE_THRESHOLD: "90"
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
         run: dotnet restore
@@ -25,5 +30,56 @@ jobs:
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests
-        run: dotnet test --no-build --configuration Release --logger "trx"
+      # Runs every *.Tests project in the solution. Coverage is collected via the
+      # coverlet data collector using the shared coverage.runsettings (excludes
+      # Migrations/Program/test projects). Each project emits a Cobertura file.
+      - name: Run tests with coverage
+        run: >
+          dotnet test --no-build --configuration Release
+          --settings coverage.runsettings
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./TestResults
+          --collect:"XPlat Code Coverage"
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      # Merge all per-project Cobertura reports and emit a text summary we can gate on.
+      - name: Merge coverage reports
+        run: >
+          reportgenerator
+          -reports:"./TestResults/**/coverage.cobertura.xml"
+          -targetdir:"./TestResults/coverage-report"
+          -reporttypes:"Html;TextSummary;MarkdownSummaryGithub"
+
+      - name: Publish coverage to job summary
+        if: always()
+        run: cat ./TestResults/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Enforce coverage threshold
+        run: |
+          summary="./TestResults/coverage-report/Summary.txt"
+          if [ ! -f "$summary" ]; then
+            echo "::error::Coverage summary not found; did any tests run?"
+            exit 1
+          fi
+          line=$(grep -m1 'Line coverage:' "$summary" | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)
+          echo "Measured line coverage: ${line}% (threshold: ${COVERAGE_THRESHOLD}%)"
+          awk -v c="$line" -v t="$COVERAGE_THRESHOLD" 'BEGIN { exit (c+0 < t+0) ? 1 : 0 }' \
+            || { echo "::error::Line coverage ${line}% is below the ${COVERAGE_THRESHOLD}% threshold."; exit 1; }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./TestResults/**/*.trx
+          if-no-files-found: ignore
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./TestResults/coverage-report
+          if-no-files-found: ignore

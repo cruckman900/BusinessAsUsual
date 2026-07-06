@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Shared coverage settings used by CI (see .github/workflows/ci.yml) and locally:
+	dotnet test --settings coverage.runsettings --collect:"XPlat Code Coverage"
+
+  Excludes generated code, EF migrations, Program/startup bootstrapping, and the
+  test assemblies themselves so the reported percentage reflects real logic.
+-->
+<RunSettings>
+  <RunConfiguration>
+	<DisableAppDomain>false</DisableAppDomain>
+	<DisableShadowCopy>false</DisableShadowCopy>
+  </RunConfiguration>
+
+  <DataCollectionRunSettings>
+	<DataCollectors>
+	  <DataCollector friendlyName="XPlat Code Coverage">
+		<Configuration>
+		  <Format>cobertura</Format>
+		  <!-- Exclude test projects and third-party code from the denominator -->
+		  <Exclude>[*.Tests]*,[*]*.Migrations.*</Exclude>
+		  <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+		  <ExcludeByFile>**/Migrations/**/*.cs,**/Program.cs,**/*.g.cs,**/*.razor.g.cs</ExcludeByFile>
+		  <SkipAutoProps>true</SkipAutoProps>
+		  <UseSourceLink>true</UseSourceLink>
+		</Configuration>
+	  </DataCollector>
+	</DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

@@ -1,0 +1,79 @@
+name: Deploy Light Instance (ModuleRegistry + AI)
+
+# Deploys the lighter microservices (ModuleRegistry.API, AI.Api) to the t3.micro
+# EC2 instance using docker-compose.light.yml.
+#
+# Trigger: manual (workflow_dispatch) plus automatically on pushes to main that
+# touch the light services.
+#
+# Required repository secrets:
+#   LIGHT_EC2_HOST            public DNS/IP of the light instance
+#   LIGHT_EC2_SSH_KEY         private SSH key (PEM) for ec2-user on that instance
+#   AWS_SQL_CONNECTION_STRING shared RDS connection string (AI company gate)
+#   MRS_SQL_CONNECTION_STRING shared RDS connection string for the Module Registry
+#   AI_DEMO_APIKEY            GitHub Models token for the demo tier
+# Optional (fall back to sensible defaults if unset):
+#   AI_PAID_REGION, AI_PAID_MODEL
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "services/ModuleRegistry/**"
+      - "services/AI/**"
+      - "docker-compose.light.yml"
+      - ".github/workflows/deploy-light.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.LIGHT_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add EC2 to known hosts
+        run: ssh-keyscan -H "${{ secrets.LIGHT_EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      # Build the on-box .env on the runner (GitHub expands the secrets here), then
+      # rsync it to the instance so docker compose picks it up. This avoids fragile
+      # remote heredoc variable expansion. Optional secrets fall back to defaults.
+      - name: Generate .env
+        env:
+          AI_PAID_REGION: ${{ secrets.AI_PAID_REGION || 'us-east-1' }}
+          AI_PAID_MODEL: ${{ secrets.AI_PAID_MODEL || 'anthropic.claude-3-haiku-20240307-v1:0' }}
+        run: |
+          cat > .env << ENV
+          ASPNETCORE_ENVIRONMENT=Production
+          MRS_USE_INMEMORY=false
+          MRS_SQL_CONNECTION_STRING=${{ secrets.MRS_SQL_CONNECTION_STRING }}
+          AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}
+          AI_DEMO_APIKEY=${{ secrets.AI_DEMO_APIKEY }}
+          AI_PAID_PROVIDER=Bedrock
+          AI_PAID_REGION=${AI_PAID_REGION}
+          AI_PAID_MODEL=${AI_PAID_MODEL}
+          ENV
+
+      - name: Sync repo to EC2
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            ./ \
+            ec2-user@${{ secrets.LIGHT_EC2_HOST }}:/home/ec2-user/BusinessAsUsual/
+
+      - name: Deploy on EC2
+        run: |
+          ssh ec2-user@${{ secrets.LIGHT_EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
+            set -e
+            cd /home/ec2-user/BusinessAsUsual
+            docker compose -f docker-compose.light.yml down
+            docker compose -f docker-compose.light.yml up -d --build
+            docker image prune -f
+          EOF

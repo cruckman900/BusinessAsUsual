@@ -1,0 +1,71 @@
+name: Deploy Heavy Instance (CRM + HR)
+
+# Deploys the "heavy lifter" microservices (CRM.API/Web, HR.API/Web) to the
+# t3.small EC2 instance using docker-compose.heavy.yml.
+#
+# Trigger: manual (workflow_dispatch) so you control when the new instances get
+# updated, plus automatically on pushes to main that touch the heavy services.
+#
+# Required repository secrets:
+#   HEAVY_EC2_HOST            public DNS/IP of the heavy instance
+#   HEAVY_EC2_SSH_KEY         private SSH key (PEM) for ec2-user on that instance
+#   AWS_SQL_CONNECTION_STRING shared RDS connection string (provisioning master DB)
+#   HR_SQL_CONNECTION_STRING  shared RDS connection string for the HR database
+#   MODULE_REGISTRY_URL       private URL of the Module Registry on the light instance
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "services/CRM/**"
+      - "services/HR/**"
+      - "docker-compose.heavy.yml"
+      - ".github/workflows/deploy-heavy.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HEAVY_EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add EC2 to known hosts
+        run: ssh-keyscan -H "${{ secrets.HEAVY_EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      # Build the on-box .env on the runner (GitHub expands the secrets here), then
+      # rsync it to the instance so docker compose picks it up. This avoids fragile
+      # remote heredoc variable expansion.
+      - name: Generate .env
+        run: |
+          cat > .env << ENV
+          ASPNETCORE_ENVIRONMENT=Production
+          AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}
+          HR_SQL_CONNECTION_STRING=${{ secrets.HR_SQL_CONNECTION_STRING }}
+          HR_WEB_USE_INMEMORY=false
+          MODULE_REGISTRY_URL=${{ secrets.MODULE_REGISTRY_URL }}
+          ENV
+
+      - name: Sync repo to EC2
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            ./ \
+            ec2-user@${{ secrets.HEAVY_EC2_HOST }}:/home/ec2-user/BusinessAsUsual/
+
+      - name: Deploy on EC2
+        run: |
+          ssh ec2-user@${{ secrets.HEAVY_EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
+            set -e
+            cd /home/ec2-user/BusinessAsUsual
+            docker compose -f docker-compose.heavy.yml down
+            docker compose -f docker-compose.heavy.yml up -d --build
+            docker image prune -f
+          EOF

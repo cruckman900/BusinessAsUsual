@@ -17,9 +17,10 @@ builder.Services.AddMudServices();
 builder.Services.AddApexCharts();
 
 // Configure HttpClient for API calls
+var crmApiUrl = builder.Configuration["CrmApi:Url"] ?? "http://localhost:5004";
 builder.Services.AddScoped(sp => new HttpClient 
 { 
-    BaseAddress = new Uri("http://localhost:5004") 
+    BaseAddress = new Uri(crmApiUrl) 
 });
 
 // Register CRM services
