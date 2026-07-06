@@ -67,11 +67,11 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
         return _cachedModules ?? Enumerable.Empty<ModuleDto>();
     }
 
-    private async Task RefreshCacheIfNeeded()
+    private Task RefreshCacheIfNeeded()
     {
         if (_cachedModules != null && DateTime.UtcNow - _lastCacheUpdate < _cacheExpiration)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         // TEMPORARY: Force use of fallback data with correct routes
@@ -79,7 +79,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
         _cachedModules = GetFallbackModules();
         _lastCacheUpdate = DateTime.UtcNow;
         _logger.LogInformation("Using fallback module data (registry temporarily disabled)");
-        return;
+        return Task.CompletedTask;
 
         /* Original registry lookup - disabled temporarily
         try

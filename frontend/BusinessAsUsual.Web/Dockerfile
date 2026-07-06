@@ -9,6 +9,15 @@ COPY frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj frontend/BusinessAs
 COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
 COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
 COPY backend/BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj backend/BusinessAsUsual.Infrastructure/
+# HR service projects referenced by the web shell
+COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
+COPY services/HR/HR.Application/HR.Application.csproj services/HR/HR.Application/
+COPY services/HR/HR.Infrastructure/HR.Infrastructure.csproj services/HR/HR.Infrastructure/
+COPY services/HR/HR.Web/HR.Web.csproj services/HR/HR.Web/
+# CRM service projects referenced by the web shell
+COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
+COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
+COPY services/CRM/CRM.Web/CRM.Web.csproj services/CRM/CRM.Web/
 
 # Restore
 RUN dotnet restore frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj
@@ -18,6 +27,15 @@ COPY frontend/BusinessAsUsual.Web frontend/BusinessAsUsual.Web
 COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
 COPY backend/BusinessAsUsual.Infrastructure backend/BusinessAsUsual.Infrastructure
+# HR service source
+COPY services/HR/HR.Domain services/HR/HR.Domain
+COPY services/HR/HR.Application services/HR/HR.Application
+COPY services/HR/HR.Infrastructure services/HR/HR.Infrastructure
+COPY services/HR/HR.Web services/HR/HR.Web
+# CRM service source
+COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
+COPY services/CRM/CRM.Application services/CRM/CRM.Application
+COPY services/CRM/CRM.Web services/CRM/CRM.Web
 
 # Publish
 RUN dotnet publish frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj -c Release -o /app/publish

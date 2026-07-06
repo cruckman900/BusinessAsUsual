@@ -1,0 +1,114 @@
+# =============================================================================
+# HEAVY INSTANCE  (recommended: t3.small / 2 GB RAM)
+# -----------------------------------------------------------------------------
+# Hosts the "heavy lifter" microservices that talk to the shared RDS database:
+#   - CRM.API   (host 5004 -> container 80)
+#   - CRM.Web   (host 5005 -> container 80)
+#   - HR.API    (host 5041 -> container 80)
+#   - HR.Web    (host 5002 -> container 80)
+#
+# NOTE ON SIZING: The user referenced a "T3 Mini". AWS has no t3.mini size; the
+# closest 2 GB option is t3.small. If you truly want the smallest/cheapest, use
+# t3.micro (1 GB) but watch memory - four .NET containers on 1 GB is very tight.
+# See docs/AWS-DEPLOYMENT.md for details and per-container memory limits.
+#
+# Cross-instance + secret values come from a local .env file on the instance
+# (see .env.heavy.example). Never commit real connection strings.
+# =============================================================================
+
+services:
+  crm-api:
+    build:
+      context: .
+      dockerfile: services/CRM/CRM.API/Dockerfile
+    image: bau/crm-api:latest
+    container_name: bau-crm-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5004:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  crm-web:
+    build:
+      context: .
+      dockerfile: services/CRM/CRM.Web/Dockerfile
+    image: bau/crm-web:latest
+    container_name: bau-crm-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5005:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # CRM.Web calls CRM.API over the internal compose network
+      - CrmApi__Url=http://crm-api:80
+    depends_on:
+      - crm-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  hr-api:
+    build:
+      context: .
+      dockerfile: services/HR/HR.API/Dockerfile
+    image: bau/hr-api:latest
+    container_name: bau-hr-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5041:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - HR_SQL_CONNECTION_STRING=${HR_SQL_CONNECTION_STRING}
+      # HR.API registers itself with the Module Registry, which runs on the
+      # LIGHT instance. Point this at that instance's private IP/DNS.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  hr-web:
+    build:
+      context: .
+      dockerfile: services/HR/HR.Web/Dockerfile
+    image: bau/hr-web:latest
+    container_name: bau-hr-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # HR.Web defaults to an in-memory database; override to use the shared RDS
+      - UseInMemoryDatabase=${HR_WEB_USE_INMEMORY:-true}
+      - ConnectionStrings__HRDatabase=${HR_SQL_CONNECTION_STRING}
+    depends_on:
+      - hr-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+networks:
+  bau-heavy:
+    driver: bridge

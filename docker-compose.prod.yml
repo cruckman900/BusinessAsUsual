@@ -12,6 +12,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - API_URL=http://backend:80
+      # Module Registry + AI run on the LIGHT instance - point at its private IP/DNS.
+      # Provided via the on-box .env file (see .env.prod.example).
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+      - AiService__Url=${AI_SERVICE_URL}
     depends_on:
       - backend
       - admin

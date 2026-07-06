@@ -193,7 +193,7 @@
         await LoadCustomers(); // Refresh metrics
     }
 
-    private Color GetStatusColor(string status) => status switch
+    private Color GetStatusColor(string? status) => status switch
     {
         "Active" => Color.Success,
         "Inactive" => Color.Default,
