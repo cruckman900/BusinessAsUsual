@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Shared coverage settings used by CI (see .github/workflows/ci.yml) and locally:
-	dotnet test --settings coverage.runsettings --collect:"XPlat Code Coverage"
+	Shared coverage settings used by CI (see .github/workflows/ci.yml) and locally.
+	Pass this file to "dotnet test" via the settings option together with the
+	"XPlat Code Coverage" collector.
 
-  Excludes generated code, EF migrations, Program/startup bootstrapping, and the
-  test assemblies themselves so the reported percentage reflects real logic.
+	Excludes generated code, EF migrations, Program/startup bootstrapping, and the
+	test assemblies themselves so the reported percentage reflects real logic.
 -->
 <RunSettings>
   <RunConfiguration>

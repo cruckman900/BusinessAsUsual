@@ -51,7 +51,7 @@ jobs:
         run: |
           cat > .env << ENV
           ASPNETCORE_ENVIRONMENT=Production
-          MRS_USE_INMEMORY=false
+          MRS_USE_INMEMORY=true
           MRS_SQL_CONNECTION_STRING=${{ secrets.MRS_SQL_CONNECTION_STRING }}
           AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}
           AI_DEMO_APIKEY=${{ secrets.AI_DEMO_APIKEY }}
