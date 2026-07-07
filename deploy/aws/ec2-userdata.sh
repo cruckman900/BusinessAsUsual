@@ -6,6 +6,16 @@ set -euxo pipefail
 dnf update -y
 dnf install -y docker rsync
 
+# Add 2 GB swap so memory spikes during `docker compose build` of several .NET
+# images do not OOM the smaller instances (t3.micro/t3.small).
+if [ ! -f /swapfile ]; then
+  dd if=/dev/zero of=/swapfile bs=1M count=2048
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
 systemctl enable --now docker
 usermod -aG docker ec2-user
 
