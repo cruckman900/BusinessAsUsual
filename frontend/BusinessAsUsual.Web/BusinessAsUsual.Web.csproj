@@ -49,4 +49,21 @@
     <ProjectReference Include="..\..\services\CRM\CRM.Web\CRM.Web.csproj" />
   </ItemGroup>
 
+  <!-- This app references HR.Web and CRM.Web only to load their Razor component
+       assemblies (see App.razor). Those projects are standalone Web SDK apps that
+       each ship their own appsettings*.json and wwwroot template assets (bootstrap,
+       etc.) at the same relative paths, which collide during publish (NETSDK1152).
+       The host app provides its own appsettings and static assets, and referenced
+       component scoped CSS is bundled into this app's .styles.css automatically, so
+       drop the duplicate content that originates from the referenced web projects. -->
+  <Target Name="RemoveDuplicateReferencedWebContent" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))
+                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/')) )
+                   And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))
+                         Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
+    </ItemGroup>
+  </Target>
+
 </Project>
