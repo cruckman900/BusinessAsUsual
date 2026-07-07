@@ -17,7 +17,8 @@ public class HrApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Production skips the dev-only migration/Swagger blocks in Program.cs.
+        // Use Production and force the in-memory provider so startup takes the
+        // EnsureCreated() path instead of applying SQL Server migrations.
         builder.UseEnvironment("Production");
 
         builder.ConfigureAppConfiguration((_, config) =>

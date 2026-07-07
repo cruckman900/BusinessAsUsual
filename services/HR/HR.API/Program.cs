@@ -79,33 +79,25 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Auto-migrate database on startup (development only)
-if (app.Environment.IsDevelopment())
+// Initialize database on startup. Runs in all environments so the shared RDS
+// database is created/migrated on first deploy (Production included). The
+// in-memory path is used only when UseInMemoryDatabase=true.
 {
     try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<HRDbContext>();
 
-        if (useInMemory)
+        if (db.Database.IsRelational())
         {
-            Console.WriteLine("✓ In-memory database ready for HR Service");
-            db.Database.EnsureCreated();
+            Console.WriteLine("Applying HR database migrations...");
+            db.Database.Migrate();
+            Console.WriteLine("✓ HR database migrations applied");
         }
         else
         {
-            Console.WriteLine("Checking HR database connection...");
-            if (db.Database.CanConnect())
-            {
-                Console.WriteLine("✓ HR database connection successful");
-                Console.WriteLine("Applying migrations...");
-                db.Database.Migrate();
-                Console.WriteLine("✓ HR database migrations applied");
-            }
-            else
-            {
-                Console.WriteLine("⚠️  Warning: Cannot connect to HR database. Set UseInMemoryDatabase=true in appsettings.");
-            }
+            Console.WriteLine("✓ In-memory database ready for HR Service");
+            db.Database.EnsureCreated();
         }
     }
     catch (Exception ex)
