@@ -5,6 +5,7 @@ namespace HR.Contracts.Specifications;
 /// </summary>
 public class EmployeeListSpec
 {
+    public string Type { get; set; } = "list";
     public string Title { get; set; } = "Employees";
     public string SearchPlaceholder { get; set; } = "Search employees...";
     public bool EnableSearch { get; set; } = true;

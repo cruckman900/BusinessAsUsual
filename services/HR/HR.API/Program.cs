@@ -46,6 +46,9 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
 
+// Keep the module registered (retry on startup + heartbeat to survive registry restarts)
+builder.Services.AddHostedService<HR.API.Services.ModuleRegistrationHostedService>();
+
 // CORS configuration
 builder.Services.AddCors(options =>
 {
@@ -106,12 +109,8 @@ app.MapHealthChecks("/health");
     }
 }
 
-// Register with Module Registry Service
-using (var scope = app.Services.CreateScope())
-{
-    var registrationService = scope.ServiceProvider.GetRequiredService<IModuleRegistrationService>();
-    await registrationService.RegisterWithModuleRegistryAsync();
-}
+// Module registration is handled by ModuleRegistrationHostedService
+// (retries on startup and re-registers periodically so the module survives a registry restart).
 
 app.Run();
 
