@@ -1,0 +1,38 @@
+{
+  "family": "bau-hr",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "__CPU__",
+  "memory": "__MEM__",
+  "executionRoleArn": "__EXEC_ROLE_ARN__",
+  "containerDefinitions": [
+    {
+      "name": "hr",
+      "image": "__IMG_HR__",
+      "essential": true,
+      "portMappings": [{ "containerPort": 80, "protocol": "tcp" }],
+      "environment": [
+        { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production" },
+        { "name": "UseInMemoryDatabase", "value": "false" },
+        { "name": "ModuleRegistry__Url", "value": "http://__ALB_DNS__" },
+        { "name": "HR__ApiBaseUrl", "value": "http://__ALB_DNS__" },
+        { "name": "HR__UiEntryPoint", "value": "http://__ALB_DNS__" }
+      ],
+      "secrets": [
+        { "name": "HR_SQL_CONNECTION_STRING", "valueFrom": "__SSM_HR_CONN__" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"],
+        "interval": 30, "timeout": 5, "retries": 3, "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "__LOG_GROUP__",
+          "awslogs-region": "__REGION__",
+          "awslogs-stream-prefix": "hr"
+        }
+      }
+    }
+  ]
+}
