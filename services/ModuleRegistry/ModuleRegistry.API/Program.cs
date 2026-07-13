@@ -64,16 +64,18 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Module Registry Service API v1"));
+    // HTTPS redirection only in dev; in Production the ALB terminates TLS and forwards HTTP.
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Auto-migrate database on startup (development only)
-if (app.Environment.IsDevelopment())
+// Initialize database on startup in ALL environments so the shared RDS database
+// is created/migrated on first deploy (Production included). In-memory is used
+// only when UseInMemoryDatabase=true.
 {
     try
     {
@@ -87,27 +89,16 @@ if (app.Environment.IsDevelopment())
         }
         else
         {
-            Console.WriteLine("Checking database connection...");
-            if (db.Database.CanConnect())
-            {
-                Console.WriteLine("✓ Database connection successful");
-                Console.WriteLine("Applying migrations...");
-                db.Database.Migrate();
-                Console.WriteLine("✓ Database migrations applied");
-            }
-            else
-            {
-                Console.WriteLine("⚠️  Warning: Cannot connect to database. The service will start but database operations will fail.");
-                Console.WriteLine("   Connection string: " + connectionString);
-                Console.WriteLine("   Make sure SQL Server is running or set UseInMemoryDatabase=true in appsettings.");
-            }
+            Console.WriteLine("Applying ModuleRegistry database migrations...");
+            db.Database.Migrate();
+            Console.WriteLine("✓ ModuleRegistry database migrations applied");
         }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"⚠️  Warning: Database initialization failed: {ex.Message}");
         Console.WriteLine("   The service will start but database operations will fail.");
-        Console.WriteLine("   Make sure SQL Server is running or set UseInMemoryDatabase=true in appsettings.");
+        Console.WriteLine("   Make sure SQL Server/RDS is reachable or set UseInMemoryDatabase=true.");
     }
 }
 

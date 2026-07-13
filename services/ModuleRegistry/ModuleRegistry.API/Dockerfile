@@ -28,8 +28,17 @@ RUN dotnet publish services/ModuleRegistry/ModuleRegistry.API/ModuleRegistry.API
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
+# curl is used by the container HEALTHCHECK below
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 80
+
+# Container-level health probe (ECS/ALB also probe /health independently)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -fsS http://localhost:80/health || exit 1
 
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "ModuleRegistry.API.dll"]

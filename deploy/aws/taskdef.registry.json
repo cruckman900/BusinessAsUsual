@@ -1,0 +1,35 @@
+{
+  "family": "bau-registry",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "__CPU__",
+  "memory": "__MEM__",
+  "executionRoleArn": "__EXEC_ROLE_ARN__",
+  "containerDefinitions": [
+    {
+      "name": "registry",
+      "image": "__IMG_REGISTRY__",
+      "essential": true,
+      "portMappings": [{ "containerPort": 80, "protocol": "tcp" }],
+      "environment": [
+        { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production" },
+        { "name": "UseInMemoryDatabase", "value": "false" }
+      ],
+      "secrets": [
+        { "name": "MRS_SQL_CONNECTION_STRING", "valueFrom": "__SSM_MRS_CONN__" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"],
+        "interval": 30, "timeout": 5, "retries": 3, "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "__LOG_GROUP__",
+          "awslogs-region": "__REGION__",
+          "awslogs-stream-prefix": "registry"
+        }
+      }
+    }
+  ]
+}
