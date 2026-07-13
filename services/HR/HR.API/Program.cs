@@ -74,9 +74,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HR Service API v1"));
+    // HTTPS redirection only in dev; in Production the ALB terminates TLS and forwards HTTP.
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
