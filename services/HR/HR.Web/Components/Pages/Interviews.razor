@@ -1,6 +1,8 @@
 @page "/hr/interviews"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Interviews - HR</PageTitle>
 
@@ -255,8 +257,14 @@
 
     private async Task DeleteInterview(string id)
     {
-        // TODO: Implement delete confirmation dialog
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete Interview",
+            "Are you sure you want to delete this interview? This action cannot be undone.",
+            yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true) return;
+
         allInterviews.RemoveAll(i => i.Id == id);
+        Snackbar.Add("Interview deleted", Severity.Success);
         FilterInterviews();
         await Task.CompletedTask;
     }

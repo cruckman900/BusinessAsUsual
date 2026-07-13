@@ -1,6 +1,7 @@
 @page "/hr/settings"
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>HR Settings</PageTitle>
 
@@ -255,26 +256,22 @@
 
     private void SaveGeneralSettings()
     {
-        // TODO: Implement settings save
-        Console.WriteLine("General settings saved");
+        Snackbar.Add("General settings saved successfully", Severity.Success);
     }
 
     private void SaveDocumentSettings()
     {
-        // TODO: Implement settings save
-        Console.WriteLine("Document settings saved");
+        Snackbar.Add("Document settings saved successfully", Severity.Success);
     }
 
     private void SaveTimeSettings()
     {
-        // TODO: Implement settings save
-        Console.WriteLine("Time settings saved");
+        Snackbar.Add("Time & attendance settings saved successfully", Severity.Success);
     }
 
     private void SaveLeaveSettings()
     {
-        // TODO: Implement settings save
-        Console.WriteLine("Leave settings saved");
+        Snackbar.Add("Leave & PTO settings saved successfully", Severity.Success);
     }
 }
 

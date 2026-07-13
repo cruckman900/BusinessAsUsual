@@ -1,6 +1,8 @@
 @page "/hr/goals"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Goals - HR</PageTitle>
 
@@ -303,8 +305,14 @@
 
     private async Task DeleteGoal(string id)
     {
-        // TODO: Implement delete confirmation dialog
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete Goal",
+            "Are you sure you want to delete this goal? This action cannot be undone.",
+            yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true) return;
+
         allGoals.RemoveAll(g => g.Id == id);
+        Snackbar.Add("Goal deleted", Severity.Success);
         FilterGoals();
         await Task.CompletedTask;
     }
