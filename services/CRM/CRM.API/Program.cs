@@ -23,6 +23,15 @@ builder.Services.AddScoped<ILeadService, MockLeadService>();
 builder.Services.AddScoped<IOpportunityService, MockOpportunityService>();
 builder.Services.AddScoped<ICustomerService, MockCustomerService>();
 
+// Register HTTP client for module registration
+builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
+
+// Keep the module registered (retry on startup + heartbeat to survive registry restarts)
+builder.Services.AddHostedService<CRM.API.Services.ModuleRegistrationHostedService>();
+
+// Health checks
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -35,6 +44,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
 
