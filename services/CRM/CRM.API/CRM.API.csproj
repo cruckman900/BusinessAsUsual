@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CRM.Application\CRM.Application.csproj" />
+    <ProjectReference Include="..\CRM.Contracts\CRM.Contracts.csproj" />
     <ProjectReference Include="..\CRM.Domain\CRM.Domain.csproj" />
   </ItemGroup>
 
