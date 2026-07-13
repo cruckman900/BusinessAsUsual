@@ -1,6 +1,8 @@
 @page "/hr/timesheets"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Timesheets - HR</PageTitle>
 
@@ -275,8 +277,14 @@
 
     private async Task DeleteTimesheet(string id)
     {
-        // TODO: Implement delete confirmation dialog
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete Timesheet",
+            "Are you sure you want to delete this timesheet? This action cannot be undone.",
+            yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true) return;
+
         allTimesheets.RemoveAll(t => t.Id == id);
+        Snackbar.Add("Timesheet deleted", Severity.Success);
         FilterTimesheets();
         await Task.CompletedTask;
     }
