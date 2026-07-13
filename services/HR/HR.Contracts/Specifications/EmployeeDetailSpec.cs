@@ -5,6 +5,7 @@ namespace HR.Contracts.Specifications;
 /// </summary>
 public class EmployeeDetailSpec
 {
+    public string Type { get; set; } = "detail";
     public string Title { get; set; } = "Employee Details";
     public List<SectionDefinition> Sections { get; set; } = new();
     public List<ActionButton> Actions { get; set; } = new();

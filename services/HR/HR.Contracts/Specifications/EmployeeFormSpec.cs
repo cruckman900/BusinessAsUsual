@@ -5,6 +5,7 @@ namespace HR.Contracts.Specifications;
 /// </summary>
 public class EmployeeFormSpec
 {
+    public string Type { get; set; } = "form";
     public string Title { get; set; } = "Employee Form";
     public List<FormSectionDefinition> Sections { get; set; } = new();
     public List<ActionButton> Actions { get; set; } = new();
