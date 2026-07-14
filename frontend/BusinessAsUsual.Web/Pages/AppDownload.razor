@@ -107,11 +107,12 @@
         {
             try
             {
+                // JS side polls until the CDN library + element are ready.
                 _qrRendered = await JS.InvokeAsync<bool>("bauQr.render", "app-qr-code", InstallUrl, 220);
             }
             catch (JSException)
             {
-                // QR library not loaded yet; will retry on next render.
+                // Interop not ready yet; will retry on the next render pass.
             }
         }
     }
