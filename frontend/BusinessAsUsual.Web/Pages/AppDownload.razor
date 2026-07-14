@@ -1,0 +1,126 @@
+@page "/get-app/{Platform}"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Components.Shared
+@using BusinessAsUsual.Web.Configuration
+@layout SplashLayout
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<link href="css/organizational-background.css" rel="stylesheet" />
+
+<div class="app-download-container">
+    <OrganizationalBackground />
+    <MudContainer MaxWidth="MaxWidth.Small" Class="app-download-content">
+        <div class="app-download-header">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           Color="Color.Primary"
+                           Href="/"
+                           Class="back-button" />
+            <img src="images/logo.png" class="app-download-logo" alt="BAU Logo" />
+        </div>
+
+        <MudPaper Class="app-download-card pa-6" Elevation="8">
+            <div class="platform-icon" style="@PlatformIconStyle">
+                <MudIcon Icon="@PlatformIcon" Size="Size.Large" Color="Color.Surface" />
+            </div>
+
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="app-download-title">
+                @AppLinks.AppName
+            </MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="app-download-subtitle">
+                @PlatformLabel App
+            </MudText>
+
+            <div class="app-meta">
+                <div class="app-meta-item">
+                    <MudText Typo="Typo.caption" Class="app-meta-label">Version</MudText>
+                    <MudText Typo="Typo.body2" Class="app-meta-value">@AppLinks.AppVersion</MudText>
+                </div>
+                <div class="app-meta-item">
+                    <MudText Typo="Typo.caption" Class="app-meta-label">Requires</MudText>
+                    <MudText Typo="Typo.body2" Class="app-meta-value">@MinOs</MudText>
+                </div>
+                <div class="app-meta-item">
+                    <MudText Typo="Typo.caption" Class="app-meta-label">Size</MudText>
+                    <MudText Typo="Typo.body2" Class="app-meta-value">@AppSize</MudText>
+                </div>
+            </div>
+
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="app-download-description">
+                Take Business As Usual with you. Manage HR, CRM, and more from your
+                @PlatformLabel device with the same real-time modules you use on the web.
+            </MudText>
+
+            @if (IsAvailable)
+            {
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Download"
+                           Href="@InstallUrl"
+                           Target="_blank"
+                           Class="install-button mt-4">
+                    Download &amp; Install
+                </MudButton>
+
+                <div class="qr-section">
+                    <MudText Typo="Typo.body2" Align="Align.Center" Class="qr-caption">
+                        Or scan to install on your device
+                    </MudText>
+                    <div class="qr-frame">
+                        <div id="app-qr-code"></div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-4">
+                    The @PlatformLabel app is coming soon. Check back shortly!
+                </MudAlert>
+            }
+        </MudPaper>
+    </MudContainer>
+</div>
+
+@code {
+    [Parameter] public string Platform { get; set; } = "android";
+
+    private bool _qrRendered;
+
+    private bool IsAndroid => string.Equals(Platform, "ios", StringComparison.OrdinalIgnoreCase) == false;
+    private bool IsAvailable => AppLinks.IsAvailable(Platform);
+    private string? InstallUrl => AppLinks.InstallUrlFor(Platform);
+
+    private string PlatformLabel => IsAndroid ? "Android" : "iOS";
+    private string MinOs => IsAndroid ? AppLinks.AndroidMinOs : AppLinks.IosMinOs;
+    private string AppSize => IsAndroid ? "19 MB" : "—";
+    private string PlatformIcon => IsAndroid ? Icons.Material.Filled.Android : Icons.Custom.Brands.Apple;
+    private string PlatformIconStyle => IsAndroid
+        ? "background: linear-gradient(135deg, #3ddc84 0%, #0f9d58 100%);"
+        : "background: linear-gradient(135deg, #555 0%, #000 100%);";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Render (or re-render) the QR whenever an install URL is available.
+        if (IsAvailable && InstallUrl is not null && !_qrRendered)
+        {
+            try
+            {
+                _qrRendered = await JS.InvokeAsync<bool>("bauQr.render", "app-qr-code", InstallUrl, 220);
+            }
+            catch (JSException)
+            {
+                // QR library not loaded yet; will retry on next render.
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Reset so the QR re-renders if the platform changes via navigation.
+        _qrRendered = false;
+    }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}

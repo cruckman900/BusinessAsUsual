@@ -1,0 +1,127 @@
+/* App Download Container */
+.app-download-container {
+    min-height: 100vh;
+    background: var(--mud-palette-background);
+    padding: 2rem 1rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-download-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header */
+.app-download-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: white !important;
+}
+
+.app-download-logo {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    display: block;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Card */
+.app-download-card {
+    border-radius: 20px;
+    text-align: center;
+}
+
+.platform-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.app-download-title {
+    font-weight: 700;
+    color: var(--mud-palette-text-primary);
+}
+
+.app-download-subtitle {
+    color: var(--mud-palette-text-secondary);
+    margin-bottom: 1.25rem;
+}
+
+/* Meta row */
+.app-meta {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--mud-palette-divider);
+    border-bottom: 1px solid var(--mud-palette-divider);
+    margin-bottom: 1.25rem;
+}
+
+.app-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.app-meta-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mud-palette-text-secondary);
+}
+
+.app-meta-value {
+    font-weight: 600;
+    color: var(--mud-palette-text-primary);
+}
+
+.app-download-description {
+    color: var(--mud-palette-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.install-button {
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* QR section */
+.qr-section {
+    margin-top: 1.75rem;
+}
+
+.qr-caption {
+    color: var(--mud-palette-text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.qr-frame {
+    display: flex;
+    justify-content: center;
+}
+
+.qr-frame > div {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    line-height: 0;
+}
