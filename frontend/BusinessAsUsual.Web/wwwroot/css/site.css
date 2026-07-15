@@ -416,6 +416,59 @@ body {
         border-left: 3px solid currentColor;
     }
 
+/* Mobile drawer chrome: branded header, spacing, and pinned footer so the drawer
+   reads as a proper navigation panel on phones instead of a bare list of links. */
+.mobile-nav-drawer .mud-drawer-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.mobile-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 16px;
+    min-height: 56px;
+    background-color: var(--mud-palette-appbar-background);
+    color: var(--mud-palette-appbar-text, #fff);
+}
+
+.mobile-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+    .mobile-nav-brand .mud-typography {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.mobile-nav-header .mud-icon-button {
+    color: var(--mud-palette-appbar-text, #fff);
+}
+
+.mobile-nav-menu {
+    padding: 8px;
+}
+
+    .mobile-nav-menu .mud-nav-link {
+        margin: 2px 4px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+.mobile-nav-footer {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .brand {
     display: flex;
     align-items: center;
