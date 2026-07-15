@@ -65,27 +65,56 @@
 @* ============================
    MOBILE DRAWER
    ============================ *@
-<MudDrawer Anchor="Anchor.Left"
-           Open="@_mobileMenuOpen"
+<MudDrawer @bind-Open="_mobileMenuOpen"
+           Anchor="Anchor.Left"
            Variant="DrawerVariant.Temporary"
-           Elevation="1"
+           Elevation="2"
+           Width="280px"
            Class="mobile-nav-drawer">
 
-    <MudNavMenu>
+    <div class="mobile-nav-header">
+        <div class="mobile-nav-brand">
+            <img src="images/logo.png" alt="BAU Logo" class="brand-logo" />
+            <MudText Typo="Typo.subtitle1">Business As Usual</MudText>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                       Size="Size.Small"
+                       Color="Color.Inherit"
+                       OnClick="@CloseMobileMenu"
+                       aria-label="Close menu" />
+    </div>
+
+    <MudDivider />
+
+    <MudNavMenu Class="mobile-nav-menu">
         @foreach (var module in Modules)
         {
             <MudNavLink Href="@module.Route"
                         Match="NavLinkMatch.Prefix"
+                        Icon="@module.Icon"
+                        OnClick="@CloseMobileMenu">
+                @module.Name
+            </MudNavLink>
+        }
+        @foreach (var module in OverflowModules)
+        {
+            <MudNavLink Href="@module.Route"
+                        Match="NavLinkMatch.Prefix"
+                        Icon="@module.Icon"
                         OnClick="@CloseMobileMenu">
                 @module.Name
             </MudNavLink>
         }
     </MudNavMenu>
 
+    <MudSpacer />
+
     <MudDivider />
 
-    <TenantSelector Compact="true" />
-    <UserMenu Compact="true" />
+    <div class="mobile-nav-footer">
+        <TenantSelector Compact="true" />
+        <UserMenu Compact="true" />
+    </div>
 </MudDrawer>
 
 
