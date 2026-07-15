@@ -219,3 +219,38 @@ Website wiring for the AppsOnAir link lives in:
 - **Adding a module later:** build its image, add a service + gateway
   `location /api/<mod>/` block, set its `*__ApiBaseUrl` to the public origin,
   redeploy. See `docs/MODULE_BLUEPRINT.md`.
+
+## 8. Two independent stacks share this box — don't cross the streams
+
+The EC2 host runs **two separate Docker Compose stacks**. They are unrelated
+and must be started/stopped independently.
+
+| Stack | Compose file(s) | Serves |
+|-------|-----------------|--------|
+| Monolith | `docker-compose.prod.yml` | `businessasusual.work` (web :3000), `admin.businessasusual.work` (admin :8080), backend :5000 |
+| Microservices | `docker-compose.microservices.yml` + `docker-compose.microservices.prod.yml` | `api.businessasusual.work` (gateway :8088) |
+
+- **NEVER use `--remove-orphans`** when tearing down one stack. Because both
+  stacks live on the same host, `--remove-orphans` deletes the *other* stack's
+  containers (this is exactly what caused a 502 on `businessasusual.work` /
+  `admin.businessasusual.work` — the monolith containers on :3000/:8080 were
+  removed while restarting the microservices API).
+- Safe microservices restart (leaves the monolith alone):
+  ```bash
+  docker compose -f docker-compose.microservices.yml -f docker-compose.microservices.prod.yml down
+  docker compose -f docker-compose.microservices.yml -f docker-compose.microservices.prod.yml up --build -d
+  ```
+- If the monolith ever gets stopped, bring it back with:
+  ```bash
+  docker compose -f docker-compose.prod.yml up -d
+  ```
+- Both stacks now set `restart: unless-stopped`, so containers auto-recover on
+  reboot/crash — but that does **not** protect against `--remove-orphans`, which
+  deletes the container outright.
+- Quick health probe for all upstreams:
+  ```bash
+  curl -s -o /dev/null -w "web(3000): %{http_code}\n"   localhost:3000/
+  curl -s -o /dev/null -w "admin(8080): %{http_code}\n" localhost:8080/
+  curl -s -o /dev/null -w "api(8088): %{http_code}\n"   localhost:8088/health
+  ```
+

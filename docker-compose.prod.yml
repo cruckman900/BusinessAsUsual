@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: frontend/BusinessAsUsual.Web/Dockerfile
+    restart: unless-stopped
     networks:
       - BusinessAsUsual
     ports:
@@ -24,6 +25,7 @@ services:
     build:
       context: .
       dockerfile: frontend/BusinessAsUsual.Admin/Dockerfile
+    restart: unless-stopped
     networks:
       - BusinessAsUsual
     ports:
@@ -39,6 +41,7 @@ services:
     build:
       context: .
       dockerfile: backend/BusinessAsUsual.API/Dockerfile
+    restart: unless-stopped
     networks:
       - BusinessAsUsual
     ports:
