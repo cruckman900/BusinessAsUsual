@@ -154,22 +154,58 @@ All should return `200` with JSON (not the old 404).
 
 ---
 
-## 6. Point the Android app at the domain
+## 6. Point the Android app at the domain (done)
 
-In the Android repo, edit
-`data/build.gradle.kts` so the release build's AWS URLs use the domain:
+In the Android repo, `data/build.gradle.kts` release build's AWS URLs now use
+the public domain:
 
 ```kotlin
 buildConfigField("String", "AWS_HR_URL",       "\"https://api.businessasusual.work/\"")
 buildConfigField("String", "AWS_REGISTRY_URL",  "\"https://api.businessasusual.work/\"")
 ```
 
-Then rebuild the release APK:
+In a **release** build `AWS_FIRST` puts the domain first, and
+`FailoverInterceptor` rewrites the scheme/host/port to HTTPS:443 automatically.
+
+### 6.1 Release signing (required to install)
+
+The `release` build type previously produced `app-release-unsigned.apk`, which
+a device will refuse to install. Signing is now wired up:
+
+- Keystore: `app/bau-release.jks` (alias `bau`)
+- Credentials: `keystore.properties` (git-ignored)
+- `app/build.gradle.kts` loads `keystore.properties` into a
+  `signingConfigs.release` and applies it to the `release` build type.
+
+> ⚠️ **Back up `app/bau-release.jks` and `keystore.properties`.** They are
+> git-ignored, so if lost you cannot ship signed updates to the same app
+> identity. AppsOnAir requires every update to keep the same signature.
+
+### 6.2 Build the signed APK
+
 ```powershell
 cd "D:\Android Projects\BusinessAsUsual_Android"
 .\gradlew.bat :app:assembleRelease
 ```
-Install the new APK and confirm modules load and the nav/hamburger work.
+
+Output (signed, installable):
+
+```
+D:\Android Projects\BusinessAsUsual_Android\app\build\outputs\apk\release\app-release.apk
+```
+
+### 6.3 Distribute via AppsOnAir
+
+1. Upload `app-release.apk` to AppsOnAir.
+2. AppsOnAir gives you a public install/download URL and a QR code.
+3. Update the website to point at that URL (see below), then install from the
+   AppsOnAir link / QR and confirm modules load and the nav/hamburger work.
+
+Website wiring for the AppsOnAir link lives in:
+- `frontend/BusinessAsUsual.Web/Configuration/AppLinks.cs` — set
+  `AndroidInstallUrl` to the AppsOnAir install URL.
+- `frontend/BusinessAsUsual.Web/Pages/AppDownload.razor` — renders the install
+  button + QR image from that URL.
 
 ---
 
