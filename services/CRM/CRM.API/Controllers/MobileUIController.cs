@@ -258,7 +258,7 @@ public class MobileUIController : ControllerBase
         StdRowActions("/crm/opportunities", "opportunity"),
         Col("name", "Opportunity", width: 220, sortable: true), Col("customerName", "Customer", width: 180),
         Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
-        Col("probability", "Probability", width: 120), Col("expectedCloseDate", "Close Date", "date", 140));
+        Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140));
 
     private ListScreenSpec GetCustomerListSpec() => ListSpec(
         "Customers", "Search customers...", "New Customer", "/crm/customers/new", "No customers found.",
