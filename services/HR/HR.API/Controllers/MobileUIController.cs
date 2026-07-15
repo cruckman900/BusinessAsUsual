@@ -433,7 +433,7 @@ public class MobileUIController : ControllerBase
         "Goals", "Search goals...", "New Goal", "/hr/goals/new", "No goals set.",
         StdRowActions("/hr/goals", "goal"),
         Col("employeeName", "Employee", width: 180, sortable: true), Col("goal", "Goal", width: 240),
-        Col("category", "Category", width: 140), Col("progress", "Progress", width: 110),
+        Col("category", "Category", width: 140), Col("progress", "Progress", "progress", 130),
         Col("dueDate", "Due", "date", 130), Col("status", "Status", "badge", 110));
 
     private EmployeeListSpec GetCourseListSpec() => ListSpec(
@@ -597,7 +597,7 @@ public class MobileUIController : ControllerBase
                 new ColumnDefinition { Name = "jobTitle", Label = "Title", Type = "text", Width = 180 },
                 new ColumnDefinition { Name = "startDate", Label = "Start Date", Type = "date", Sortable = true, Width = 150 },
                 new ColumnDefinition { Name = "buddy", Label = "Buddy", Type = "text", Width = 170 },
-                new ColumnDefinition { Name = "progress", Label = "Progress", Type = "text", Width = 120 },
+                new ColumnDefinition { Name = "progress", Label = "Progress", Type = "progress", Width = 130 },
                 new ColumnDefinition { Name = "status", Label = "Status", Type = "badge", Width = 120 }
             },
             Actions = new List<ActionButton>
