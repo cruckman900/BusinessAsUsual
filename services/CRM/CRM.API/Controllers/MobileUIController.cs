@@ -42,6 +42,7 @@ public class MobileUIController : ControllerBase
                 { "opportunity-list", GetOpportunityListSpec() },
                 { "customer-list", GetCustomerListSpec() },
                 { "activity-list", GetActivityListSpec() },
+                { "activity-timeline", GetActivityTimelineSpec() },
                 { "lead-detail", GetLeadDetailSpec() },
                 { "lead-form", GetLeadFormSpec() },
                 { "report-dashboard", GetReportDashboardSpec() }
@@ -81,6 +82,7 @@ public class MobileUIController : ControllerBase
             "opportunity-list" => await GetOpportunityRows(),
             "customer-list" => await GetCustomerRows(),
             "activity-list" => GetActivityRows(),
+            "activity-timeline" => GetActivityRows(),
             _ => new List<Dictionary<string, string>>()
         };
 
@@ -166,9 +168,10 @@ public class MobileUIController : ControllerBase
     }
 
     private static List<Dictionary<string, string>> GetActivityRows() => Rows(
-        new() { ["subject"] = "Discovery call", ["type"] = "Call", ["relatedTo"] = "Contoso Ltd", ["owner"] = "Marcus Lee", ["dueDate"] = "2026-07-14", ["status"] = "Open" },
-        new() { ["subject"] = "Send proposal", ["type"] = "Email", ["relatedTo"] = "Northwind Traders", ["owner"] = "Marcus Lee", ["dueDate"] = "2026-07-16", ["status"] = "Open" },
-        new() { ["subject"] = "Contract review", ["type"] = "Meeting", ["relatedTo"] = "Fabrikam Inc", ["owner"] = "Dana White", ["dueDate"] = "2026-07-10", ["status"] = "Completed" }
+        new() { ["subject"] = "Discovery call", ["type"] = "Call", ["relatedTo"] = "Contoso Ltd", ["owner"] = "Marcus Lee", ["dueDate"] = "2026-07-14", ["status"] = "Open", ["icon"] = "call", ["description"] = "Intro call to understand Contoso's renewal timeline and expansion goals." },
+        new() { ["subject"] = "Send proposal", ["type"] = "Email", ["relatedTo"] = "Northwind Traders", ["owner"] = "Marcus Lee", ["dueDate"] = "2026-07-16", ["status"] = "Open", ["icon"] = "email", ["description"] = "Email the platform renewal proposal with updated pricing tiers." },
+        new() { ["subject"] = "Contract review", ["type"] = "Meeting", ["relatedTo"] = "Fabrikam Inc", ["owner"] = "Dana White", ["dueDate"] = "2026-07-10", ["status"] = "Completed", ["icon"] = "event", ["description"] = "Legal walkthrough of the pilot agreement terms and SLAs." },
+        new() { ["subject"] = "Follow-up on quote", ["type"] = "Call", ["relatedTo"] = "Northwind Traders", ["owner"] = "Dana White", ["dueDate"] = "2026-07-06", ["status"] = "Overdue", ["icon"] = "call", ["description"] = "Check in on the outstanding expansion quote awaiting sign-off." }
     );
 
     private static List<Dictionary<string, string>> Rows(params Dictionary<string, string>[] rows) => rows.ToList();
@@ -187,7 +190,7 @@ public class MobileUIController : ControllerBase
                 new NavigationItem { Id = "leads", Label = "Leads", Icon = "person_search", Screen = "lead-list", Route = "/crm/leads" },
                 new NavigationItem { Id = "opportunities", Label = "Opportunities", Icon = "trending_up", Screen = "opportunity-list", Route = "/crm/opportunities" },
                 new NavigationItem { Id = "customers", Label = "Customers", Icon = "business", Screen = "customer-list", Route = "/crm/customers" },
-                new NavigationItem { Id = "activities", Label = "Activities", Icon = "event", Screen = "activity-list", Route = "/crm/activities" },
+                new NavigationItem { Id = "activities", Label = "Activities", Icon = "event", Screen = "activity-timeline", Route = "/crm/activities" },
                 new NavigationItem { Id = "analytics", Label = "Analytics", Icon = "insights", Screen = "report-dashboard", Route = "/crm/analytics" }
             }
         };
@@ -274,6 +277,39 @@ public class MobileUIController : ControllerBase
         Col("subject", "Subject", width: 220, sortable: true), Col("type", "Type", width: 120),
         Col("relatedTo", "Related To", width: 180), Col("owner", "Owner", width: 160),
         Col("dueDate", "Due", "date", 130), Col("status", "Status", "badge", 110));
+
+    private static List<StatCard> GetActivityStats() => new()
+    {
+        new StatCard { Id = "overdue", Label = "Overdue", Value = "1", Icon = "warning", Tone = "negative" },
+        new StatCard { Id = "week", Label = "This Week", Value = "2", Icon = "schedule", Tone = "warning" },
+        new StatCard { Id = "pending", Label = "Pending", Value = "2", Icon = "hourglass_empty", Tone = "info" },
+        new StatCard { Id = "completed", Label = "Completed", Value = "1", Icon = "check_circle", Tone = "positive" },
+    };
+
+    private TimelineScreenSpec GetActivityTimelineSpec() => new()
+    {
+        Title = "Activity Timeline",
+        SearchPlaceholder = "Search activities...",
+        EnableSearch = true,
+        Stats = GetActivityStats(),
+        ItemFields = new TimelineItemFieldMap
+        {
+            TitleField = "subject",
+            SubtitleField = "relatedTo",
+            DescriptionField = "description",
+            TimestampField = "dueDate",
+            StatusField = "status",
+            TypeField = "type",
+            OwnerField = "owner",
+            IconField = "icon",
+        },
+        Actions = new List<ActionButton>
+        {
+            new ActionButton { Id = "add", Label = "New Activity", Icon = "add", Action = "navigate", NavigateTo = "/crm/activities/new" },
+            RowView("/crm/activities"), RowEdit("/crm/activities"), RowDelete("/crm/activities", "activity")
+        },
+        EmptyStateMessage = "No activities found matching the selected filters.",
+    };
 
     // ---- Detail screen ----
 

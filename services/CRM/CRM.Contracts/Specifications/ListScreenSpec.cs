@@ -13,6 +13,7 @@ public class ListScreenSpec
     public List<ColumnDefinition> Columns { get; set; } = new();
     public List<ActionButton> Actions { get; set; } = new();
     public List<FilterOption> Filters { get; set; } = new();
+    public List<StatCard> Stats { get; set; } = new();
     public string EmptyStateMessage { get; set; } = "No records found";
 }
 
