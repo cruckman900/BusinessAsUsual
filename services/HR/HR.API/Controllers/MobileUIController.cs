@@ -27,6 +27,7 @@ public class MobileUIController : ControllerBase
         {
             ModuleId = "hr",
             ModuleName = "Human Resources",
+            DisplayName = "HR",
             Version = "1.0.0",
             Navigation = GetNavigationMap(),
             Screens = new Dictionary<string, object>
@@ -184,9 +185,9 @@ public class MobileUIController : ControllerBase
     );
 
     private static List<Dictionary<string, string>> GetReviewRows() => Rows(
-        new() { ["employeeName"] = "Alice Johnson", ["reviewer"] = "CTO", ["period"] = "H1 2026", ["rating"] = "Exceeds", ["dueDate"] = "2026-07-01", ["status"] = "Complete" },
-        new() { ["employeeName"] = "Marcus Lee", ["reviewer"] = "VP Sales", ["period"] = "H1 2026", ["rating"] = "Meets", ["dueDate"] = "2026-06-15", ["status"] = "Overdue" },
-        new() { ["employeeName"] = "Priya Nair", ["reviewer"] = "CEO", ["period"] = "H1 2026", ["rating"] = "—", ["dueDate"] = "2026-07-20", ["status"] = "Pending" }
+        new() { ["employeeName"] = "Alice Johnson", ["reviewer"] = "CTO", ["period"] = "H1 2026", ["rating"] = "4.5", ["dueDate"] = "2026-07-01", ["status"] = "Complete" },
+        new() { ["employeeName"] = "Marcus Lee", ["reviewer"] = "VP Sales", ["period"] = "H1 2026", ["rating"] = "3", ["dueDate"] = "2026-06-15", ["status"] = "Overdue" },
+        new() { ["employeeName"] = "Priya Nair", ["reviewer"] = "CEO", ["period"] = "H1 2026", ["rating"] = "0", ["dueDate"] = "2026-07-20", ["status"] = "Pending" }
     );
 
     private static List<Dictionary<string, string>> GetGoalRows() => Rows(
@@ -195,9 +196,9 @@ public class MobileUIController : ControllerBase
     );
 
     private static List<Dictionary<string, string>> GetCourseRows() => Rows(
-        new() { ["title"] = "Security Awareness", ["category"] = "Compliance", ["format"] = "Online", ["duration"] = "1h", ["enrolled"] = "150", ["status"] = "Active" },
-        new() { ["title"] = "Leadership 101", ["category"] = "Development", ["format"] = "Workshop", ["duration"] = "4h", ["enrolled"] = "36", ["status"] = "Active" },
-        new() { ["title"] = "Kotlin for Teams", ["category"] = "Technical", ["format"] = "Self-paced", ["duration"] = "6h", ["enrolled"] = "22", ["status"] = "Active" }
+        new() { ["title"] = "Security Awareness", ["category"] = "Compliance", ["format"] = "Online", ["duration"] = "1h", ["enrolled"] = "150/150", ["completionRate"] = "95%", ["status"] = "Active" },
+        new() { ["title"] = "Leadership 101", ["category"] = "Development", ["format"] = "Workshop", ["duration"] = "4h", ["enrolled"] = "36/50", ["completionRate"] = "68%", ["status"] = "Active" },
+        new() { ["title"] = "Kotlin for Teams", ["category"] = "Technical", ["format"] = "Self-paced", ["duration"] = "6h", ["enrolled"] = "22/40", ["completionRate"] = "42%", ["status"] = "Active" }
     );
 
     private static List<Dictionary<string, string>> GetCertificationRows() => Rows(
@@ -412,7 +413,7 @@ public class MobileUIController : ControllerBase
         ApprovableRowActions("/hr/applicants", "applicant"),
         Col("name", "Candidate", width: 200, sortable: true), Col("position", "Position", width: 180),
         Col("source", "Source", width: 130), Col("appliedDate", "Applied", "date", 130),
-        Col("stage", "Stage", width: 130), Col("rating", "Rating", width: 100),
+        Col("stage", "Stage", width: 130), Col("rating", "Rating", "rating", 130),
         Col("status", "Status", "badge", 110));
 
     private EmployeeListSpec GetInterviewListSpec() => ListSpec(
@@ -426,7 +427,7 @@ public class MobileUIController : ControllerBase
         "Performance Reviews", "Search reviews...", "New Review", "/hr/reviews/new", "No reviews found.",
         ApprovableRowActions("/hr/reviews", "review"),
         Col("employeeName", "Employee", width: 200, sortable: true), Col("reviewer", "Reviewer", width: 180),
-        Col("period", "Period", width: 120), Col("rating", "Rating", width: 120),
+        Col("period", "Period", width: 120), Col("rating", "Overall Rating", "rating", 140),
         Col("dueDate", "Due", "date", 130), Col("status", "Status", "badge", 110));
 
     private EmployeeListSpec GetGoalListSpec() => ListSpec(
@@ -441,7 +442,9 @@ public class MobileUIController : ControllerBase
         StdRowActions("/hr/courses", "course"),
         Col("title", "Course", width: 220, sortable: true), Col("category", "Category", width: 150),
         Col("format", "Format", width: 120), Col("duration", "Duration", width: 100),
-        Col("enrolled", "Enrolled", width: 100), Col("status", "Status", "badge", 110));
+        Col("enrolled", "Enrolled / Capacity", "progress", 150),
+        Col("completionRate", "Completion Rate", "percent", 150),
+        Col("status", "Status", "badge", 110));
 
     private EmployeeListSpec GetCertificationListSpec() => ListSpec(
         "Certifications", "Search certifications...", "Add Certification", "/hr/certifications/new", "No certifications tracked.",
@@ -846,6 +849,7 @@ public class MobileUISpecification
 {
     public string ModuleId { get; set; } = string.Empty;
     public string ModuleName { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
     public HRNavigationMap Navigation { get; set; } = new();
     public Dictionary<string, object> Screens { get; set; } = new();

@@ -33,6 +33,7 @@ public class MobileUIController : ControllerBase
         {
             ModuleId = "crm",
             ModuleName = "Customer Relationship Management",
+            DisplayName = "CRM",
             Version = "1.0.0",
             Navigation = GetNavigationMap(),
             Screens = new Dictionary<string, object>
