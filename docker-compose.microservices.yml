@@ -1,0 +1,99 @@
+# ---------------------------------------------------------------------------
+# BusinessAsUsual — deployable microservices stack
+#
+# This compose file runs the contract-driven module services (ModuleRegistry,
+# HR, CRM) behind a single nginx reverse proxy. It is the SAME stack used both
+# for local validation (via ngrok) and for production behind
+# https://api.businessasusual.work.
+#
+# Two audiences for URLs:
+#   * Registry URL (ModuleRegistry__Url) is INTERNAL container-to-container.
+#   * ApiBaseUrl / MobileUISpecUrl are PUBLIC — they are handed to the phone,
+#     so they must be reachable from outside (the PUBLIC_BASE_URL below).
+#
+# Set PUBLIC_BASE_URL to your ngrok URL (validation) or the real domain (prod):
+#   $env:PUBLIC_BASE_URL = "https://api.businessasusual.work"
+#   docker compose -f docker-compose.microservices.yml up --build
+# ---------------------------------------------------------------------------
+
+services:
+  moduleregistry:
+    build:
+      context: .
+      dockerfile: services/ModuleRegistry/ModuleRegistry.API/Dockerfile
+    networks:
+      - bau
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      # In-memory registry: services re-register on startup + heartbeat.
+      - UseInMemoryDatabase=true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  hr-api:
+    build:
+      context: .
+      dockerfile: services/HR/HR.API/Dockerfile
+    networks:
+      - bau
+    depends_on:
+      moduleregistry:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      # INTERNAL: reach the registry over the container network.
+      - ModuleRegistry__Url=http://moduleregistry:80
+      # PUBLIC: what the phone will call. Path-routed by nginx to this service.
+      - HR__ApiBaseUrl=${PUBLIC_BASE_URL}
+      - HR__UiEntryPoint=${PUBLIC_BASE_URL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  crm-api:
+    build:
+      context: .
+      dockerfile: services/CRM/CRM.API/Dockerfile
+    networks:
+      - bau
+    depends_on:
+      moduleregistry:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ModuleRegistry__Url=http://moduleregistry:80
+      - CRM__ApiBaseUrl=${PUBLIC_BASE_URL}
+      - CRM__UiEntryPoint=${PUBLIC_BASE_URL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  gateway:
+    image: nginx:1.28-alpine
+    networks:
+      - bau
+    depends_on:
+      - moduleregistry
+      - hr-api
+      - crm-api
+    ports:
+      - "8088:80"
+    volumes:
+      - ./deploy/nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro
+
+networks:
+  bau:
+    driver: bridge

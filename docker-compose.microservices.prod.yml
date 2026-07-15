@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Production overrides for the BusinessAsUsual MICROSERVICES stack.
+#
+# Pairs with docker-compose.microservices.yml (Registry + HR + CRM + gateway).
+# This is separate from docker-compose.prod.yml, which targets the older
+# monolith (web/admin/backend).
+#
+# Usage on the EC2 host:
+#   docker compose -f docker-compose.microservices.yml \
+#                  -f docker-compose.microservices.prod.yml up --build -d
+#
+# PUBLIC_BASE_URL must be the externally reachable HTTPS origin, because the
+# module registry hands these URLs directly to the Android app. Here we pin it
+# explicitly to the production domain.
+# ---------------------------------------------------------------------------
+
+services:
+  moduleregistry:
+    restart: unless-stopped
+
+  hr-api:
+    restart: unless-stopped
+    environment:
+      - HR__ApiBaseUrl=https://api.businessasusual.work
+      - HR__UiEntryPoint=https://api.businessasusual.work
+
+  crm-api:
+    restart: unless-stopped
+    environment:
+      - CRM__ApiBaseUrl=https://api.businessasusual.work
+      - CRM__UiEntryPoint=https://api.businessasusual.work
+
+  gateway:
+    restart: unless-stopped
+    ports:
+      # The host's edge nginx (TLS via certbot) proxies /api/* to this port.
+      # Bound to loopback so only the edge nginx can reach it.
+      - "127.0.0.1:8088:80"
