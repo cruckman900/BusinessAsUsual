@@ -174,6 +174,7 @@ namespace BusinessAsUsual.Web
             services.AddScoped<CRM.Application.Services.ICustomerService, CRM.Application.Services.MockCustomerService>();
             services.AddScoped<CRM.Application.Interfaces.IReportService, CRM.Application.Services.ReportService>();
             services.AddScoped<CRM.Application.Interfaces.IActivityService, CRM.Application.Services.MockActivityService>();
+            services.AddScoped<CRM.Application.Interfaces.IEmailTemplateService, CRM.Application.Services.MockEmailTemplateService>();
         }
 
         /// <summary>

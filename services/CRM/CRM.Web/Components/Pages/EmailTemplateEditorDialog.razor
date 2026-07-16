@@ -1,0 +1,110 @@
+@using CRM.Application.DTOs
+@using CRM.Application.Interfaces
+@inject IEmailTemplateService EmailTemplateService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_name" Label="Template Name" Required="true"
+                                  RequiredError="Name is required" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_category" Label="Category" Required="true"
+                                  RequiredError="Category is required" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_subject" Label="Subject" Required="true"
+                                  RequiredError="Subject is required" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_body" Label="Body" Lines="10" Required="true"
+                                  RequiredError="Body is required" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Insert merge field:</MudText>
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mt-1">
+                        @foreach (var field in EmailMergeFields.All)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text"
+                                     OnClick="@(() => InsertField(field))">@($"{{{{{field}}}}}")</MudChip>
+                        }
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Value="_isActive" Label="Active" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public EmailTemplateDto? Template { get; set; }
+
+    private MudForm _form = default!;
+    private string _name = "";
+    private string _category = "";
+    private string _subject = "";
+    private string _body = "";
+    private bool _isActive = true;
+
+    protected override void OnInitialized()
+    {
+        if (Template is not null)
+        {
+            _name = Template.Name;
+            _category = Template.Category;
+            _subject = Template.Subject;
+            _body = Template.Body;
+            _isActive = Template.IsActive;
+        }
+    }
+
+    private void InsertField(string field)
+    {
+        _body += $"{{{{{field}}}}}";
+    }
+
+    private async Task Save()
+    {
+        await _form.Validate();
+        if (!_form.IsValid) return;
+
+        if (Template is null)
+        {
+            await EmailTemplateService.CreateTemplateAsync(new CreateEmailTemplateRequest
+            {
+                Name = _name,
+                Category = _category,
+                Subject = _subject,
+                Body = _body,
+                IsActive = _isActive
+            });
+        }
+        else
+        {
+            await EmailTemplateService.UpdateTemplateAsync(Template.Id, new UpdateEmailTemplateRequest
+            {
+                Name = _name,
+                Category = _category,
+                Subject = _subject,
+                Body = _body,
+                IsActive = _isActive
+            });
+        }
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

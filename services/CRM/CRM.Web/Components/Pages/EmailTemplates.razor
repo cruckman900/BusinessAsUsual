@@ -1,0 +1,162 @@
+@page "/crm/email-templates"
+@using CRM.Application.DTOs
+@using CRM.Application.Interfaces
+@inject IEmailTemplateService EmailTemplateService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Email Templates</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Email Templates</MudText>
+    </div>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <div>
+            <MudText Typo="Typo.h5" Class="font-weight-bold">
+                <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-2" Style="vertical-align: text-bottom;" />
+                Email Templates
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Reusable messages with merge fields for fast, personalized outreach.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => OpenEditor(null))">
+            New Template
+        </MudButton>
+    </MudStack>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudTextField @bind-Value="_searchString" Placeholder="Search templates..."
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                      Class="mr-2" Style="max-width: 280px;" />
+        <MudSelect T="string" @bind-Value="_categoryFilter" Label="Category" Dense="true"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px;">
+            <MudSelectItem T="string" Value="@("All")">All Categories</MudSelectItem>
+            @foreach (var cat in _categories)
+            {
+                <MudSelectItem T="string" Value="@cat">@cat</MudSelectItem>
+            }
+        </MudSelect>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (!Filtered.Any())
+    {
+        <MudPaper Class="pa-8" Elevation="0" Outlined="true">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.MarkEmailUnread" Size="Size.Large" Color="Color.Secondary" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary">No templates match your filters.</MudText>
+            </MudStack>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var template in Filtered)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="d-flex flex-column" Style="height: 100%;">
+                        <MudCardContent Class="flex-grow-1">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">@template.Category</MudChip>
+                                @if (!template.IsActive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">Inactive</MudChip>
+                                }
+                            </MudStack>
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold mt-2">@template.Name</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@template.Subject</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2 d-block text-truncate-3">@template.Body</MudText>
+                            @if (template.MergeFields.Any())
+                            {
+                                <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mt-2">
+                                    @foreach (var field in template.MergeFields)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">@field</MudChip>
+                                    }
+                                </MudStack>
+                            }
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(() => OpenEditor(template))">Edit</MudButton>
+                            <MudSpacer />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteTemplate(template))" />
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: pre-line;
+    }
+</style>
+
+@code {
+    private bool _loading = true;
+    private string _searchString = "";
+    private string _categoryFilter = "All";
+    private List<EmailTemplateDto> _templates = new();
+    private List<string> _categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _templates = (await EmailTemplateService.GetAllTemplatesAsync()).ToList();
+        _categories = (await EmailTemplateService.GetCategoriesAsync()).ToList();
+        _loading = false;
+    }
+
+    private IEnumerable<EmailTemplateDto> Filtered =>
+        _templates
+            .Where(t => _categoryFilter == "All" || t.Category == _categoryFilter)
+            .Where(t => string.IsNullOrWhiteSpace(_searchString)
+                || t.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                || t.Subject.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                || t.Body.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
+
+    private async Task OpenEditor(EmailTemplateDto? template)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(EmailTemplateEditorDialog.Template), template }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<EmailTemplateEditorDialog>(
+            template is null ? "New Template" : "Edit Template", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await LoadAsync();
+            Snackbar.Add("Template saved", Severity.Success);
+        }
+    }
+
+    private async Task DeleteTemplate(EmailTemplateDto template)
+    {
+        await EmailTemplateService.DeleteTemplateAsync(template.Id);
+        await LoadAsync();
+        Snackbar.Add($"'{template.Name}' deleted", Severity.Success);
+    }
+}
