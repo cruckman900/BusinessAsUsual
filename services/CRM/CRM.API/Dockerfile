@@ -11,7 +11,13 @@ COPY services/CRM/CRM.Contracts/CRM.Contracts.csproj services/CRM/CRM.Contracts/
 COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
 
 # Restore
-RUN dotnet restore services/CRM/CRM.API/CRM.API.csproj
+# Retry the isolated restore to survive transient NuGet connectivity on small
+# EC2 instances (a flaky network otherwise fails restore with exit code 82).
+RUN for i in 1 2 3; do \
+      dotnet restore services/CRM/CRM.API/CRM.API.csproj && break; \
+      if [ "$i" = "3" ]; then echo "restore failed after 3 attempts"; exit 1; fi; \
+      echo "restore attempt $i failed; retrying in 10s..."; sleep 10; \
+    done
 
 # Copy source
 COPY services/CRM/CRM.API services/CRM/CRM.API
