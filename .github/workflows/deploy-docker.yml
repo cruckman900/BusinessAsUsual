@@ -55,6 +55,7 @@ jobs:
       - name: Deploy on EC2
         run: |
           ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
+            set -e
             cd /home/ec2-user/BusinessAsUsual
             docker-compose -f docker-compose.prod.yml down
             # Reclaim disk BEFORE building: the root volume fills up with dangling
@@ -64,5 +65,15 @@ jobs:
             docker system prune -af
             docker builder prune -af
             df -h /
+            # Web shell / admin / backend (docker-compose.prod.yml).
             docker-compose -f docker-compose.prod.yml up -d --build
+            # Microservices half (crm-api / hr-api / gateway / moduleregistry).
+            # These run in the SAME "businessasusual" compose project as the stack
+            # above, but live in separate compose files that were previously only
+            # ever deployed by hand — which is why CRM/HR code changes never went
+            # live automatically. Rebuild them here so one push updates everything.
+            docker compose \
+              -f docker-compose.microservices.yml \
+              -f docker-compose.microservices.prod.yml \
+              up -d --build
           EOF
