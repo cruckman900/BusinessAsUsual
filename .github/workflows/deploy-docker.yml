@@ -59,4 +59,3 @@ jobs:
             docker-compose -f docker-compose.prod.yml down
             docker-compose -f docker-compose.prod.yml up -d --build
           EOF
-          10.0.1.175
