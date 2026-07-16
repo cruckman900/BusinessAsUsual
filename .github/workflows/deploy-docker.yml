@@ -57,5 +57,12 @@ jobs:
           ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
             cd /home/ec2-user/BusinessAsUsual
             docker-compose -f docker-compose.prod.yml down
+            # Reclaim disk BEFORE building: the root volume fills up with dangling
+            # images/layers and stale build cache over time, which surfaces as
+            # `dotnet restore` exit code 82 ("no space left on device"). Prune
+            # everything not tied to a running container.
+            docker system prune -af
+            docker builder prune -af
+            df -h /
             docker-compose -f docker-compose.prod.yml up -d --build
           EOF
