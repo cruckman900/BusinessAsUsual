@@ -25,13 +25,16 @@ jobs:
       # Build the on-box .env on the runner (GitHub expands the secrets here), then
       # rsync it to the instance so docker compose picks it up. The web shell needs
       # to reach AI.Api and ModuleRegistry, which run on the LIGHT instance.
+      # NOTE: use the LIGHT instance PRIVATE IP for these URLs — the security group
+      # only allows the main SG as a source, which matches in-VPC (private) traffic.
+      # LIGHT_EC2_HOST (public) is still used below for SSH/rsync from the runner.
       - name: Generate .env
         run: |
           cat > .env << ENV
           ASPNETCORE_ENVIRONMENT=Production
           AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}
-          AI_SERVICE_URL=http://${{ secrets.LIGHT_EC2_HOST }}:5300
-          MODULE_REGISTRY_URL=http://${{ secrets.LIGHT_EC2_HOST }}:5100
+          AI_SERVICE_URL=http://${{ secrets.LIGHT_EC2_PRIVATE_IP }}:5300
+          MODULE_REGISTRY_URL=http://${{ secrets.LIGHT_EC2_PRIVATE_IP }}:5100
           ENV
 
       - name: Sync repo to EC2
@@ -56,3 +59,4 @@ jobs:
             docker-compose -f docker-compose.prod.yml down
             docker-compose -f docker-compose.prod.yml up -d --build
           EOF
+          10.0.1.175
