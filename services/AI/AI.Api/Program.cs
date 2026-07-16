@@ -115,7 +115,15 @@ app.MapGet("/health", (AiClientRegistry clients, IOptions<AiOptions> aiOptions) 
         status = "healthy",
         tiers = new
         {
-            demo = new { provider = "GitHubModels", configured = demoConfigured },
+            demo = new
+            {
+                provider = "GitHubModels",
+                model = aiOptions.Value.Demo.Model,
+                configured = demoConfigured,
+                hint = demoConfigured
+                    ? null
+                    : "Set the AI_DEMO_APIKEY env var (Ai__Demo__ApiKey) to a GitHub Models token to enable the free demo model."
+            },
             paid = new
             {
                 provider = stubActive ? "DevStub" : "Bedrock",
