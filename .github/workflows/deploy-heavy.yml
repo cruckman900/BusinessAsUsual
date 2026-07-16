@@ -67,6 +67,13 @@ jobs:
             set -e
             cd /home/ec2-user/BusinessAsUsual
             docker compose -f docker-compose.heavy.yml down
+            # Reclaim disk BEFORE building: the t3.small's small root volume fills
+            # up with dangling images/layers and stale build cache over time,
+            # which surfaces as `dotnet restore` exit code 82 ("no space left on
+            # device"). Prune everything not tied to a running container.
+            docker system prune -af
+            docker builder prune -af
+            df -h /
             # Build one image at a time to keep peak memory low on the t3.small
             # (2 GB). Building all four .NET images in parallel exhausts RAM.
             for svc in crm-api crm-web hr-api hr-web; do
