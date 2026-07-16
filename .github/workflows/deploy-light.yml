@@ -81,6 +81,13 @@ jobs:
             set -e
             cd /home/ec2-user/BusinessAsUsual
             docker compose -f docker-compose.light.yml down
+            # Reclaim disk BEFORE building: the small root volume fills up with
+            # dangling images/layers and stale build cache over time, which
+            # surfaces as `dotnet restore` exit code 82 ("no space left on
+            # device"). Prune everything not tied to a running container.
+            docker system prune -af
+            docker builder prune -af
+            df -h /
             docker compose -f docker-compose.light.yml up -d --build
             docker image prune -f
           EOF
