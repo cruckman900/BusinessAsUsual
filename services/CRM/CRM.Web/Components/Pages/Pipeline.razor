@@ -1,0 +1,287 @@
+@page "/crm/pipeline"
+@using CRM.Application.DTOs
+@using CRM.Domain.Enums
+@inject IOpportunityService OpportunityService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Sales Pipeline</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Pipeline</MudText>
+    </div>
+
+    <!-- Header -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.ViewKanban" Class="mr-2" />
+            Sales Pipeline
+        </MudText>
+        <MudTextField @bind-Value="_searchString"
+                      Placeholder="Search opportunities..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      Class="mr-2"
+                      Style="max-width: 280px;" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/crm/opportunities/new"))">
+            Add Opportunity
+        </MudButton>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+            Drag an opportunity card between columns to move it through the sales stages.
+        </MudText>
+
+        <MudDropContainer T="OpportunityDto"
+                          Items="_opportunities"
+                          ItemsSelector="@((item, column) => item.Stage == column)"
+                          ItemDropped="OnItemDropped"
+                          Class="pipeline-board">
+            <ChildContent>
+                <div class="pipeline-columns">
+                    @foreach (var stage in _stages)
+                    {
+                        var stageItems = FilteredForStage(stage.Value);
+                        var columnCount = stageItems.Count;
+                        var columnValue = stageItems.Sum(o => o.Amount);
+                        <div class="pipeline-column">
+                            <MudPaper Elevation="1" Class="pipeline-column-header pa-3" Style="@ColumnHeaderStyle(stage.Color)">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@stage.Label</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="stage.Color" Variant="Variant.Filled">@columnCount</MudChip>
+                                </MudStack>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@columnValue.ToString("C0")</MudText>
+                            </MudPaper>
+                            <MudDropZone T="OpportunityDto"
+                                         Identifier="@stage.Value"
+                                         Class="pipeline-dropzone"
+                                         AllowReorder="false" />
+                        </div>
+                    }
+                </div>
+            </ChildContent>
+            <ItemRenderer>
+                <MudCard Elevation="2" Class="pipeline-card" @onclick="@(() => OpenOpportunity(context.Id))">
+                    <MudCardContent Class="pa-3">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@context.Name</MudText>
+                        @if (!string.IsNullOrWhiteSpace(context.CustomerName))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-1" Style="vertical-align: text-bottom;" />
+                                @context.CustomerName
+                            </MudText>
+                        }
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mt-2">
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@context.Amount.ToString("C0")</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@ProbabilityColor(context.Probability)" Variant="Variant.Text">
+                                @context.Probability%
+                            </MudChip>
+                        </MudStack>
+                        <MudProgressLinear Color="@ProbabilityColor(context.Probability)"
+                                           Value="@((double)context.Probability)"
+                                           Class="mt-1"
+                                           Rounded="true" />
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mt-2">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" Style="vertical-align: text-bottom;" />
+                                @context.DaysInStage d
+                            </MudText>
+                            @if (context.ExpectedCloseDate.HasValue)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @context.ExpectedCloseDate.Value.ToString("MMM dd")
+                                </MudText>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </ItemRenderer>
+        </MudDropContainer>
+    }
+</MudContainer>
+
+<style>
+    .pipeline-board {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .pipeline-columns {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        min-width: min-content;
+        padding-bottom: 12px;
+    }
+
+    .pipeline-column {
+        display: flex;
+        flex-direction: column;
+        min-width: 260px;
+        max-width: 300px;
+        flex: 1 1 0;
+    }
+
+    .pipeline-column-header {
+        border-radius: 8px 8px 0 0;
+        border-bottom: 3px solid var(--pipeline-accent, transparent);
+    }
+
+    .pipeline-dropzone {
+        min-height: 120px;
+        background-color: var(--mud-palette-background-grey);
+        border-radius: 0 0 8px 8px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-grow: 1;
+    }
+
+    .pipeline-card {
+        cursor: grab;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .pipeline-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+        }
+
+    .mud-drop-item-dragging {
+        opacity: 0.6;
+    }
+</style>
+
+@code {
+    private bool _loading = true;
+    private string _searchString = "";
+    private List<OpportunityDto> _opportunities = new();
+
+    private record StageColumn(OpportunityStage Stage, string Value, string Label, Color Color);
+
+    // Columns mirror the OpportunityStage enum. Value matches the DTO's Stage string
+    // (produced via enum.ToString()), so items land in the correct column.
+    private readonly List<StageColumn> _stages = new()
+    {
+        new(OpportunityStage.Prospecting, nameof(OpportunityStage.Prospecting), "Prospecting", Color.Info),
+        new(OpportunityStage.Qualification, nameof(OpportunityStage.Qualification), "Qualification", Color.Primary),
+        new(OpportunityStage.NeedsAnalysis, nameof(OpportunityStage.NeedsAnalysis), "Needs Analysis", Color.Tertiary),
+        new(OpportunityStage.Proposal, nameof(OpportunityStage.Proposal), "Proposal", Color.Warning),
+        new(OpportunityStage.Negotiation, nameof(OpportunityStage.Negotiation), "Negotiation", Color.Secondary),
+        new(OpportunityStage.ClosedWon, nameof(OpportunityStage.ClosedWon), "Closed Won", Color.Success),
+        new(OpportunityStage.ClosedLost, nameof(OpportunityStage.ClosedLost), "Closed Lost", Color.Error),
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOpportunities();
+    }
+
+    private async Task LoadOpportunities()
+    {
+        try
+        {
+            var opportunities = await OpportunityService.GetAllOpportunitiesAsync();
+            _opportunities = opportunities.ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private List<OpportunityDto> FilteredForStage(string stageValue) =>
+        _opportunities
+            .Where(o => o.Stage == stageValue)
+            .Where(o => string.IsNullOrWhiteSpace(_searchString)
+                || o.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+                || (o.CustomerName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+
+    private async Task OnItemDropped(MudItemDropInfo<OpportunityDto> dropInfo)
+    {
+        var item = dropInfo.Item;
+        if (item is null) return;
+
+        var newStageValue = dropInfo.DropzoneIdentifier;
+        if (item.Stage == newStageValue) return;
+
+        if (!Enum.TryParse<OpportunityStage>(newStageValue, out var newStage)) return;
+
+        var previousStage = item.Stage;
+        item.Stage = newStageValue; // optimistic UI update
+
+        try
+        {
+            await OpportunityService.UpdateOpportunityAsync(item.Id, new UpdateOpportunityRequest
+            {
+                Name = item.Name,
+                CustomerId = item.CustomerId,
+                Stage = newStage,
+                Amount = item.Amount,
+                Probability = item.Probability,
+                ExpectedCloseDate = item.ExpectedCloseDate,
+                Description = item.Description,
+                AssignedToEmployeeId = item.AssignedToEmployeeId,
+                LostReason = item.LostReason,
+                CompetitorName = item.CompetitorName,
+                ProductCategory = item.ProductCategory,
+                ProductDescription = item.ProductDescription,
+                Quantity = item.Quantity,
+                Tags = item.Tags,
+            });
+
+            Snackbar.Add($"'{item.Name}' moved to {NamedStage(newStageValue)}", Severity.Success);
+        }
+        catch (Exception)
+        {
+            item.Stage = previousStage; // revert on failure
+            Snackbar.Add("Failed to move opportunity. Please try again.", Severity.Error);
+        }
+    }
+
+    private void OpenOpportunity(string id) => Navigation.NavigateTo($"/crm/opportunities/{id}");
+
+    private string NamedStage(string stageValue) =>
+        _stages.FirstOrDefault(s => s.Value == stageValue)?.Label ?? stageValue;
+
+    private static string ColumnHeaderStyle(Color color) =>
+        $"--pipeline-accent: var(--mud-palette-{ColorToken(color)});";
+
+    private static string ColorToken(Color color) => color switch
+    {
+        Color.Info => "info",
+        Color.Primary => "primary",
+        Color.Tertiary => "tertiary",
+        Color.Warning => "warning",
+        Color.Secondary => "secondary",
+        Color.Success => "success",
+        Color.Error => "error",
+        _ => "default"
+    };
+
+    private static Color ProbabilityColor(decimal probability) => probability switch
+    {
+        >= 75 => Color.Success,
+        >= 40 => Color.Warning,
+        _ => Color.Error
+    };
+}
