@@ -22,20 +22,37 @@ jobs:
         run: |
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+      # Build the on-box .env on the runner (GitHub expands the secrets here), then
+      # rsync it to the instance so docker compose picks it up. The web shell needs
+      # to reach AI.Api and ModuleRegistry, which run on the LIGHT instance.
+      - name: Generate .env
+        run: |
+          cat > .env << ENV
+          ASPNETCORE_ENVIRONMENT=Production
+          AWS_SQL_CONNECTION_STRING=${{ secrets.AWS_SQL_CONNECTION_STRING }}
+          AI_SERVICE_URL=http://${{ secrets.LIGHT_EC2_HOST }}:5300
+          MODULE_REGISTRY_URL=http://${{ secrets.LIGHT_EC2_HOST }}:5100
+          ENV
+
       - name: Sync repo to EC2
         run: |
           rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.env' \
             -e "ssh -i ~/.ssh/id_rsa" \
             ./ \
             ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/BusinessAsUsual/
+
+      # Copy the generated .env separately so rsync --delete never clobbers it.
+      - name: Copy .env to EC2
+        run: |
+          scp -i ~/.ssh/id_rsa .env \
+            ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/BusinessAsUsual/.env
 
       - name: Deploy on EC2
         run: |
           ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
             cd /home/ec2-user/BusinessAsUsual
-            export AWS_SQL_CONNECTION_STRING="${AWS_SQL_CONNECTION_STRING}"
             docker-compose -f docker-compose.prod.yml down
             docker-compose -f docker-compose.prod.yml up -d --build
           EOF
-        env:
-          AWS_SQL_CONNECTION_STRING: ${{ secrets.AWS_SQL_CONNECTION_STRING }}
