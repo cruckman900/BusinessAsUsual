@@ -7,7 +7,8 @@
 - ✅ **Dashboard** - Polished home page with module cards and quick stats
 - ✅ **Settings** - Basic CRM configuration page
 - ✅ **Reports** - Full analytics dashboard with 5 interactive charts (COMPLETE!)
-- ⏳ **Activities** - Timeline view with filtering and CRUD operations (IN PROGRESS)
+- ✅ **Activities** - Timeline view with filtering and CRUD operations (COMPLETE!)
+- ✅ **Sales Pipeline Kanban** - Drag-and-drop board across opportunity stages (COMPLETE!)
 
 ---
 
@@ -87,30 +88,41 @@
 ---
 
 ## Phase 3: Sales Pipeline Kanban 🎯
-**Status**: TODO
+**Status**: ✅ COMPLETE! (Core board implemented)
 **Goal**: Visual drag-and-drop opportunity management
 
-### 3.1 Kanban Board
-- [ ] Column for each opportunity stage
-- [ ] Drag-and-drop between stages
-- [ ] Opportunity cards with key info
-- [ ] Color coding by value/age
-- [ ] Quick edit from card
+### 3.1 Kanban Board ✅
+- [x] Column for each opportunity stage (Prospecting → Closed Lost)
+- [x] Drag-and-drop between stages (MudDropContainer/MudDropZone)
+- [x] Opportunity cards with key info
+- [x] Color coding by stage and win probability
+- [x] Optimistic UI update with revert-on-failure and snackbar feedback
+- [x] Persists stage change via `UpdateOpportunityAsync`
 
-### 3.2 Board Features
-- [ ] Column totals (count and value)
+### 3.2 Board Features ✅
+- [x] Column totals (count and value)
+- [x] Search opportunities (filters cards across all columns)
+- [x] Responsive layout (horizontal scroll on small screens)
+- [x] "Add Opportunity" and "Open Board" entry points (from CRM Dashboard)
 - [ ] Filter by owner/customer/date
-- [ ] Search opportunities
 - [ ] Collapse/expand columns
-- [ ] Responsive layout (mobile stacks)
 
-### 3.3 Opportunity Cards
-- [ ] Customer name
-- [ ] Deal value
-- [ ] Probability indicator
-- [ ] Days in stage
+### 3.3 Opportunity Cards ✅
+- [x] Customer name
+- [x] Deal value
+- [x] Probability indicator (chip + linear progress)
+- [x] Days in stage
+- [x] Expected close date
+- [x] Click card to open opportunity detail
 - [ ] Owner avatar
 - [ ] Quick actions menu
+
+### 3.4 Features Still TODO
+- [ ] Filter by owner/customer/date range
+- [ ] Collapse/expand columns
+- [ ] Owner avatars on cards
+- [ ] Quick actions menu per card
+- [ ] Mobile Kanban parity in Android app
 
 ---
 
@@ -270,9 +282,10 @@
 9. ✅ Research ApexCharts Blazor API for correct chart bindings
 10. ✅ Convert tables to interactive charts
 11. ✅ Fix namespace collisions and build successfully
-12. 🎯 **Next: Move to Phase 2 (Activities & Timeline)**
-13. 🔜 Implement activity tracking and timeline view
-14. 🔜 Add email templates and campaign management
+12. ✅ Phase 2 (Activities & Timeline) core complete
+13. ✅ Phase 3 (Sales Pipeline Kanban) core complete
+14. 🎯 **Next: Phase 4 (Email Templates & Communication)**
+15. 🔜 Add email templates and campaign management
 
 ---
 
