@@ -1,4 +1,5 @@
 using CRM.Application.Services;
+using CRM.Application.Interfaces;
 using CRM.Contracts.Navigation;
 using CRM.Contracts.Specifications;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +13,18 @@ public class MobileUIController : ControllerBase
     private readonly ILeadService _leadService;
     private readonly IOpportunityService _opportunityService;
     private readonly ICustomerService _customerService;
+    private readonly IEmailTemplateService _emailTemplateService;
 
     public MobileUIController(
         ILeadService leadService,
         IOpportunityService opportunityService,
-        ICustomerService customerService)
+        ICustomerService customerService,
+        IEmailTemplateService emailTemplateService)
     {
         _leadService = leadService;
         _opportunityService = opportunityService;
         _customerService = customerService;
+        _emailTemplateService = emailTemplateService;
     }
 
     /// <summary>
@@ -40,9 +44,11 @@ public class MobileUIController : ControllerBase
             {
                 { "lead-list", GetLeadListSpec() },
                 { "opportunity-list", GetOpportunityListSpec() },
+                { "pipeline-board", GetPipelineBoardSpec() },
                 { "customer-list", GetCustomerListSpec() },
                 { "activity-list", GetActivityListSpec() },
                 { "activity-timeline", GetActivityTimelineSpec() },
+                { "email-template-list", GetEmailTemplateListSpec() },
                 { "lead-detail", GetLeadDetailSpec() },
                 { "lead-form", GetLeadFormSpec() },
                 { "report-dashboard", GetReportDashboardSpec() }
@@ -80,9 +86,11 @@ public class MobileUIController : ControllerBase
         {
             "lead-list" => await GetLeadRows(),
             "opportunity-list" => await GetOpportunityRows(),
+            "pipeline-board" => await GetOpportunityRows(),
             "customer-list" => await GetCustomerRows(),
             "activity-list" => GetActivityRows(),
             "activity-timeline" => GetActivityRows(),
+            "email-template-list" => await GetEmailTemplateRows(),
             _ => new List<Dictionary<string, string>>()
         };
 
@@ -176,6 +184,29 @@ public class MobileUIController : ControllerBase
 
     private static List<Dictionary<string, string>> Rows(params Dictionary<string, string>[] rows) => rows.ToList();
 
+    private async Task<List<Dictionary<string, string>>> GetEmailTemplateRows()
+    {
+        var templates = await _emailTemplateService.GetAllTemplatesAsync();
+        var rows = templates.Select(t => new Dictionary<string, string>
+        {
+            ["name"] = t.Name,
+            ["category"] = t.Category,
+            ["subject"] = t.Subject,
+            ["status"] = t.IsActive ? "Active" : "Inactive"
+        }).ToList();
+
+        if (rows.Count == 0)
+        {
+            rows = Rows(
+                new() { ["name"] = "Initial Follow-up", ["category"] = "Follow-up", ["subject"] = "Great connecting, {{ContactName}}", ["status"] = "Active" },
+                new() { ["name"] = "Proposal Delivery", ["category"] = "Proposal", ["subject"] = "Your proposal for {{OpportunityName}}", ["status"] = "Active" },
+                new() { ["name"] = "Meeting Request", ["category"] = "Scheduling", ["subject"] = "Time to connect about {{OpportunityName}}?", ["status"] = "Active" }
+            );
+        }
+
+        return rows;
+    }
+
     // ---- Navigation ----
 
     private ModuleNavigationMap GetNavigationMap()
@@ -189,8 +220,10 @@ public class MobileUIController : ControllerBase
             {
                 new NavigationItem { Id = "leads", Label = "Leads", Icon = "person_search", Screen = "lead-list", Route = "/crm/leads" },
                 new NavigationItem { Id = "opportunities", Label = "Opportunities", Icon = "trending_up", Screen = "opportunity-list", Route = "/crm/opportunities" },
+                new NavigationItem { Id = "pipeline", Label = "Pipeline", Icon = "view_kanban", Screen = "pipeline-board", Route = "/crm/pipeline" },
                 new NavigationItem { Id = "customers", Label = "Customers", Icon = "business", Screen = "customer-list", Route = "/crm/customers" },
                 new NavigationItem { Id = "activities", Label = "Activities", Icon = "event", Screen = "activity-timeline", Route = "/crm/activities" },
+                new NavigationItem { Id = "email-templates", Label = "Email Templates", Icon = "email", Screen = "email-template-list", Route = "/crm/email-templates" },
                 new NavigationItem { Id = "analytics", Label = "Analytics", Icon = "insights", Screen = "report-dashboard", Route = "/crm/analytics" }
             }
         };
@@ -263,6 +296,47 @@ public class MobileUIController : ControllerBase
         Col("name", "Opportunity", width: 220, sortable: true), Col("customerName", "Customer", width: 180),
         Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
         Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140));
+
+    private ListScreenSpec GetPipelineBoardSpec()
+    {
+        var spec = ListSpec(
+            "Sales Pipeline", "Search opportunities...", "New Opportunity", "/crm/opportunities/new",
+            "No opportunities in the pipeline.",
+            StdRowActions("/crm/opportunities", "opportunity"),
+            Col("name", "Opportunity", width: 220, sortable: true), Col("customerName", "Customer", width: 180),
+            Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
+            Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140));
+
+        spec.EnableFilter = true;
+        spec.Filters = new List<FilterOption>
+        {
+            new FilterOption
+            {
+                Id = "stage",
+                Label = "Stage",
+                Type = "select",
+                Values = new List<FilterValue>
+                {
+                    new() { Id = "all", Label = "All Stages", Value = "" },
+                    new() { Id = "prospecting", Label = "Prospecting", Value = "Prospecting" },
+                    new() { Id = "qualification", Label = "Qualification", Value = "Qualification" },
+                    new() { Id = "needs-analysis", Label = "Needs Analysis", Value = "NeedsAnalysis" },
+                    new() { Id = "proposal", Label = "Proposal", Value = "Proposal" },
+                    new() { Id = "negotiation", Label = "Negotiation", Value = "Negotiation" },
+                    new() { Id = "closed-won", Label = "Closed Won", Value = "ClosedWon" },
+                    new() { Id = "closed-lost", Label = "Closed Lost", Value = "ClosedLost" },
+                }
+            }
+        };
+        return spec;
+    }
+
+    private ListScreenSpec GetEmailTemplateListSpec() => ListSpec(
+        "Email Templates", "Search templates...", "New Template", "/crm/email-templates/new",
+        "No email templates found. Tap + to create your first template.",
+        StdRowActions("/crm/email-templates", "template"),
+        Col("name", "Template", width: 200, sortable: true), Col("category", "Category", "badge", 150),
+        Col("subject", "Subject", width: 240), Col("status", "Status", "badge", 110));
 
     private ListScreenSpec GetCustomerListSpec() => ListSpec(
         "Customers", "Search customers...", "New Customer", "/crm/customers/new", "No customers found.",
