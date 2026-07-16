@@ -278,6 +278,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Opportunities", Route = "/crm/opportunities", Icon = Icons.Material.Filled.List },
+                            new() { Label = "Pipeline Board", Route = "/crm/pipeline", Icon = Icons.Material.Filled.ViewKanban },
                             new() { Label = "Add Opportunity", Route = "/crm/opportunities/new", Icon = Icons.Material.Filled.Add }
                         }
                     },
@@ -298,6 +299,9 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
 
                     // Activities
                     new() { Label = "Activities", Route = "/crm/activities", Icon = Icons.Material.Filled.CalendarToday },
+
+                    // Email Templates
+                    new() { Label = "Email Templates", Route = "/crm/email-templates", Icon = Icons.Material.Filled.Email },
 
                     // Reports
                     new() { Label = "Reports", Route = "/crm/reports", Icon = Icons.Material.Filled.Analytics },
