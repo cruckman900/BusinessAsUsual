@@ -142,6 +142,7 @@ runs `docker compose … up -d --build`.
 |----------|--------|----------|
 | [`deploy-heavy.yml`](../.github/workflows/deploy-heavy.yml) | Heavy | manual + push to `main` touching `services/CRM/**`, `services/HR/**`, `docker-compose.heavy.yml` |
 | [`deploy-light.yml`](../.github/workflows/deploy-light.yml) | Light | manual + push to `main` touching `services/ModuleRegistry/**`, `services/AI/**`, `docker-compose.light.yml` |
+| [`deploy-docker.yml`](../.github/workflows/deploy-docker.yml) | Main (web + backend) | manual + push to `main` |
 
 ### Required repository secrets
 
@@ -151,9 +152,29 @@ runs `docker compose … up -d --build`.
 **Light:** `LIGHT_EC2_HOST`, `LIGHT_EC2_SSH_KEY`, `AWS_SQL_CONNECTION_STRING`,
 `MRS_SQL_CONNECTION_STRING`, `AI_DEMO_APIKEY`. Optional: `AI_PAID_REGION`, `AI_PAID_MODEL`.
 
+**Main (web + backend):** `EC2_HOST`, `AWS_SQL_CONNECTION_STRING`, `LIGHT_EC2_PRIVATE_IP`.
+
+> **Public vs. private light-instance address — read this before touching URLs.**
+> The light instance is referenced by **two different secrets on purpose**:
+>
+> - `LIGHT_EC2_HOST` = the light instance **public** IP/DNS. Used only for SSH/`rsync`
+>   from the GitHub-hosted runner, which lives **outside** the VPC.
+> - `LIGHT_EC2_PRIVATE_IP` = the light instance **private** IP (e.g. `10.0.1.175`). Used
+>   by `deploy-docker.yml` to build `AI_SERVICE_URL=http://<private-ip>:5300` and
+>   `MODULE_REGISTRY_URL=http://<private-ip>:5100` in the web shell's `.env`.
+>
+> The light instance's security group allows ports **5300** and **5100** with the *main
+> instance's security group* as the source. Security-group source rules only match
+> **in-VPC (private-IP) traffic**, so the web shell **must** use the private IP. Pointing
+> it at the public IP causes the connection to hang until timeout (~30s) and the AI chat
+> returns "Something went wrong contacting the AI service." Local Visual Studio runs work
+> regardless because the web shell falls back to `http://localhost:5300`.
+
 > **Why generate `.env` on the runner?** Expanding secrets inside a remote SSH heredoc is
 > fragile (the variables expand on the wrong host or not at all). Building the file on the
-> runner and copying it over is reliable and keeps secrets out of the repo.
+> runner and copying it over is reliable and keeps secrets out of the repo. Both workflows
+> `rsync` with `--exclude '.env'` and copy the generated `.env` via a dedicated `scp` step
+> so the two instances never clobber each other's env files.
 
 ---
 
