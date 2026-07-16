@@ -4,6 +4,7 @@
 @inject IOpportunityService OpportunityService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Sales Pipeline</PageTitle>
 
@@ -31,6 +32,21 @@
                       Immediate="true"
                       Class="mr-2"
                       Style="max-width: 280px;" />
+        <MudSelect T="string" @bind-Value="_ownerFilter" Label="Owner" Dense="true"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-2" Style="max-width: 180px;">
+            <MudSelectItem T="string" Value="@("All")">All Owners</MudSelectItem>
+            @foreach (var owner in _owners)
+            {
+                <MudSelectItem T="string" Value="@owner">@owner</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="string" @bind-Value="_closeFilter" Label="Close Date" Dense="true"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-2" Style="max-width: 170px;">
+            <MudSelectItem T="string" Value="@("All")">Any Time</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Overdue")">Overdue</MudSelectItem>
+            <MudSelectItem T="string" Value="@("30")">Next 30 days</MudSelectItem>
+            <MudSelectItem T="string" Value="@("90")">Next 90 days</MudSelectItem>
+        </MudSelect>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
@@ -51,7 +67,7 @@
 
         <MudDropContainer T="OpportunityDto"
                           Items="_opportunities"
-                          ItemsSelector="@((item, column) => item.Stage == column)"
+                          ItemsSelector="@((item, column) => item.Stage == column && MatchesFilters(item))"
                           ItemDropped="OnItemDropped"
                           Class="pipeline-board">
             <ChildContent>
@@ -78,9 +94,21 @@
                 </div>
             </ChildContent>
             <ItemRenderer>
-                <MudCard Elevation="2" Class="pipeline-card" @onclick="@(() => OpenOpportunity(context.Id))">
+                <MudCard Elevation="2" Class="pipeline-card">
                     <MudCardContent Class="pa-3">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@context.Name</MudText>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="1">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold" @onclick="@(() => OpenOpportunity(context.Id))" Style="cursor: pointer; flex: 1 1 auto;">@context.Name</MudText>
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     Size="Size.Small"
+                                     Dense="true"
+                                     AnchorOrigin="Origin.BottomRight"
+                                     TransformOrigin="Origin.TopRight">
+                                <MudMenuItem Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => OpenOpportunity(context.Id))">View</MudMenuItem>
+                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" OnClick="@(() => OpenOpportunity(context.Id))">Edit</MudMenuItem>
+                                <MudMenuItem Icon="@Icons.Material.Filled.Email" OnClick="@(() => SendEmail(context))">Send Email</MudMenuItem>
+                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="@(() => DeleteOpportunity(context))">Delete</MudMenuItem>
+                            </MudMenu>
+                        </MudStack>
                         @if (!string.IsNullOrWhiteSpace(context.CustomerName))
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
@@ -99,10 +127,17 @@
                                            Class="mt-1"
                                            Rounded="true" />
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mt-2">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" Style="vertical-align: text-bottom;" />
-                                @context.DaysInStage d
-                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudTooltip Text="@(string.IsNullOrWhiteSpace(context.AssignedToEmployeeName) ? "Unassigned" : context.AssignedToEmployeeName)">
+                                    <MudAvatar Size="Size.Small" Color="@AvatarColor(context.AssignedToEmployeeName)" Variant="Variant.Filled">
+                                        @Initials(context.AssignedToEmployeeName)
+                                    </MudAvatar>
+                                </MudTooltip>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" Style="vertical-align: text-bottom;" />
+                                    @context.DaysInStage d
+                                </MudText>
+                            </MudStack>
                             @if (context.ExpectedCloseDate.HasValue)
                             {
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
@@ -173,7 +208,17 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
+    private string _ownerFilter = "All";
+    private string _closeFilter = "All";
     private List<OpportunityDto> _opportunities = new();
+
+    private List<string> _owners => _opportunities
+        .Select(o => o.AssignedToEmployeeName)
+        .Where(n => !string.IsNullOrWhiteSpace(n))
+        .Select(n => n!)
+        .Distinct()
+        .OrderBy(n => n)
+        .ToList();
 
     private record StageColumn(OpportunityStage Stage, string Value, string Label, Color Color);
 
@@ -214,7 +259,24 @@
             .Where(o => string.IsNullOrWhiteSpace(_searchString)
                 || o.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
                 || (o.CustomerName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(o => _ownerFilter == "All" || o.AssignedToEmployeeName == _ownerFilter)
+            .Where(o => MatchesCloseFilter(o))
             .ToList();
+
+    private bool MatchesCloseFilter(OpportunityDto o)
+    {
+        if (_closeFilter == "All") return true;
+        var close = o.ExpectedCloseDate;
+        if (close is null) return false;
+        var today = DateTime.Today;
+        return _closeFilter switch
+        {
+            "Overdue" => close.Value.Date < today,
+            "30" => close.Value.Date >= today && close.Value.Date <= today.AddDays(30),
+            "90" => close.Value.Date >= today && close.Value.Date <= today.AddDays(90),
+            _ => true
+        };
+    }
 
     private async Task OnItemDropped(MudItemDropInfo<OpportunityDto> dropInfo)
     {
@@ -259,6 +321,53 @@
     }
 
     private void OpenOpportunity(string id) => Navigation.NavigateTo($"/crm/opportunities/{id}");
+
+    private async Task SendEmail(OpportunityDto opp)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(SendEmailDialog.Opportunity), opp },
+            { nameof(SendEmailDialog.SenderName), opp.AssignedToEmployeeName ?? "" }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<SendEmailDialog>($"Email — {opp.Name}", parameters, options);
+    }
+
+    private bool MatchesFilters(OpportunityDto o) =>
+        (string.IsNullOrWhiteSpace(_searchString)
+            || o.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+            || (o.CustomerName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false))
+        && (_ownerFilter == "All" || o.AssignedToEmployeeName == _ownerFilter)
+        && MatchesCloseFilter(o);
+
+    private async Task DeleteOpportunity(OpportunityDto opp)
+    {
+        try
+        {
+            await OpportunityService.DeleteOpportunityAsync(opp.Id);            _opportunities.RemoveAll(o => o.Id == opp.Id);
+            Snackbar.Add($"'{opp.Name}' deleted", Severity.Success);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Failed to delete opportunity.", Severity.Error);
+        }
+    }
+
+    private static string Initials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+    }
+
+    private static Color AvatarColor(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return Color.Default;
+        var palette = new[] { Color.Primary, Color.Secondary, Color.Info, Color.Success, Color.Warning, Color.Tertiary };
+        var index = Math.Abs(name.GetHashCode()) % palette.Length;
+        return palette[index];
+    }
 
     private string NamedStage(string stageValue) =>
         _stages.FirstOrDefault(s => s.Value == stageValue)?.Label ?? stageValue;

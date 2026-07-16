@@ -1,0 +1,120 @@
+@using CRM.Application.DTOs
+@using CRM.Application.Interfaces
+@using CRM.Domain.Enums
+@inject IEmailTemplateService EmailTemplateService
+@inject IActivityService ActivityService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudSelect T="string" Label="Start from template" Value="_selectedTemplateId"
+                           ValueChanged="OnTemplateSelected" Dense="true"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true">
+                    @foreach (var t in _templates)
+                    {
+                        <MudSelectItem T="string" Value="@t.Id">@($"{t.Category} — {t.Name}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_to" Label="To" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_subject" Label="Subject" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_body" Label="Message" Lines="12" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Merge fields are resolved automatically from the linked record when you preview or send.
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Visibility" OnClick="Preview">Resolve Fields</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="Send">Send</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Optional opportunity context used to seed recipient and merge-field values.</summary>
+    [Parameter]
+    public OpportunityDto? Opportunity { get; set; }
+
+    /// <summary>Name of the sender, used for the {{SenderName}} merge field.</summary>
+    [Parameter]
+    public string SenderName { get; set; } = "";
+
+    private List<EmailTemplateDto> _templates = new();
+    private string? _selectedTemplateId;
+    private string _to = "";
+    private string _subject = "";
+    private string _body = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _templates = (await EmailTemplateService.GetAllTemplatesAsync())
+            .Where(t => t.IsActive)
+            .ToList();
+    }
+
+    private IReadOnlyDictionary<string, string?> BuildMergeValues() => new Dictionary<string, string?>
+    {
+        [EmailMergeFields.ContactName] = Opportunity?.CustomerName,
+        [EmailMergeFields.CompanyName] = Opportunity?.CustomerName,
+        [EmailMergeFields.OpportunityName] = Opportunity?.Name,
+        [EmailMergeFields.Amount] = Opportunity?.Amount.ToString("C0"),
+        [EmailMergeFields.SenderName] = string.IsNullOrWhiteSpace(SenderName) ? "Your Sales Team" : SenderName,
+    };
+
+    private void OnTemplateSelected(string? templateId)
+    {
+        _selectedTemplateId = templateId;
+        var template = _templates.FirstOrDefault(t => t.Id == templateId);
+        if (template is null) return;
+
+        _subject = template.Subject;
+        _body = template.Body;
+    }
+
+    private void Preview()
+    {
+        var values = BuildMergeValues();
+        _subject = EmailTemplateService.ApplyMergeFields(_subject, values);
+        _body = EmailTemplateService.ApplyMergeFields(_body, values);
+    }
+
+    private async Task Send()
+    {
+        Preview();
+
+        if (string.IsNullOrWhiteSpace(_subject))
+        {
+            Snackbar.Add("Subject is required", Severity.Warning);
+            return;
+        }
+
+        await ActivityService.CreateActivityAsync(new CreateActivityRequest
+        {
+            Type = ActivityType.Email,
+            Subject = _subject,
+            Description = _body,
+            ActivityDate = DateTime.UtcNow,
+            Priority = Priority.Medium,
+            OpportunityId = Opportunity?.Id,
+        });
+
+        Snackbar.Add("Email sent and logged to the timeline", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

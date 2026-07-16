@@ -29,6 +29,7 @@ builder.Services.AddScoped<IOpportunityService, MockOpportunityService>();
 builder.Services.AddScoped<ICustomerService, MockCustomerService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IActivityService, MockActivityService>();
+builder.Services.AddScoped<IEmailTemplateService, MockEmailTemplateService>();
 
 var app = builder.Build();
 

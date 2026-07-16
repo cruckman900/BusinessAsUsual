@@ -9,6 +9,7 @@
 - ✅ **Reports** - Full analytics dashboard with 5 interactive charts (COMPLETE!)
 - ✅ **Activities** - Timeline view with filtering and CRUD operations (COMPLETE!)
 - ✅ **Sales Pipeline Kanban** - Drag-and-drop board across opportunity stages (COMPLETE!)
+- ✅ **Email Templates & Communication** - Template library with merge fields and send-from-pipeline (COMPLETE!)
 
 ---
 
@@ -104,7 +105,8 @@
 - [x] Search opportunities (filters cards across all columns)
 - [x] Responsive layout (horizontal scroll on small screens)
 - [x] "Add Opportunity" and "Open Board" entry points (from CRM Dashboard)
-- [ ] Filter by owner/customer/date
+- [x] Filter by owner
+- [x] Filter by expected close date (overdue / next 30 / next 90 days)
 - [ ] Collapse/expand columns
 
 ### 3.3 Opportunity Cards ✅
@@ -114,35 +116,35 @@
 - [x] Days in stage
 - [x] Expected close date
 - [x] Click card to open opportunity detail
-- [ ] Owner avatar
-- [ ] Quick actions menu
+- [x] Owner avatar (initials + tooltip + color)
+- [x] Quick actions menu (View / Edit / Send Email / Delete)
 
 ### 3.4 Features Still TODO
-- [ ] Filter by owner/customer/date range
 - [ ] Collapse/expand columns
-- [ ] Owner avatars on cards
-- [ ] Quick actions menu per card
 - [ ] Mobile Kanban parity in Android app
 
 ---
 
 ## Phase 4: Email Templates & Communication ✉️
-**Status**: TODO
+**Status**: ✅ CORE COMPLETE!
 **Goal**: Streamline customer communication
 
-### 4.1 Template Management
-- [ ] Email template library
-- [ ] Template categories (Follow-up, Proposal, etc.)
-- [ ] Merge fields for personalization
+### 4.1 Template Management ✅
+- [x] Email template library (`/crm/email-templates`)
+- [x] Template categories (Follow-up, Proposal, Scheduling, Closing)
+- [x] Merge fields for personalization ({{ContactName}}, {{CompanyName}}, {{OpportunityName}}, {{Amount}}, {{SenderName}})
+- [x] Seeded template library (5 starter templates)
+- [x] Create / edit / delete templates (dialog editor with merge-field insertion)
 - [ ] HTML email editor (rich text)
-- [ ] Preview before send
+- [x] Merge-field resolution preview before send
 
-### 4.2 Email Sending
-- [ ] Send email from lead/opportunity/customer page
-- [ ] Select template or write custom
+### 4.2 Email Sending ✅
+- [x] Send email from opportunity (Pipeline card quick action)
+- [x] Select template or write custom
+- [x] Merge-field resolution against the linked record
+- [x] Save sent emails to activity log (logged as Email activity)
 - [ ] Attach files
 - [ ] CC/BCC support
-- [ ] Save sent emails to activity log
 
 ### 4.3 Email Tracking (Basic)
 - [ ] Log sent emails
@@ -284,8 +286,9 @@
 11. ✅ Fix namespace collisions and build successfully
 12. ✅ Phase 2 (Activities & Timeline) core complete
 13. ✅ Phase 3 (Sales Pipeline Kanban) core complete
-14. 🎯 **Next: Phase 4 (Email Templates & Communication)**
-15. 🔜 Add email templates and campaign management
+14. ✅ Phase 3 polish complete (owner avatars, quick actions, owner/close-date filters)
+15. ✅ Phase 4 (Email Templates & Communication) core complete
+16. 🎯 **Next: Phase 5 (Notes & Collaboration)**
 
 ---
 
