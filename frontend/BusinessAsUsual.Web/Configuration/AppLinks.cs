@@ -14,7 +14,7 @@ public static class AppLinks
     /// TODO: Replace with the real AppsOnAir Android install URL after uploading app-debug.apk.
     /// </summary>
     //public const string AndroidInstallUrl = "https://www.appsonair.com/apps/REPLACE_WITH_ANDROID_APP_ID";
-    public const string AndroidInstallUrl = "https://sin1.contabostorage.com/127726bae0334a7b8a8425a4789fb816:appsonair-prod/1fb49565-d637-4e0d-ada6-7c80eb8e03b4/TNd9uHg0Cy-Day2iMpKAL.apk";
+    public const string AndroidInstallUrl = "https://sin1.contabostorage.com/127726bae0334a7b8a8425a4789fb816:appsonair-prod/1fb49565-d637-4e0d-ada6-7c80eb8e03b4/pif1UagsPW15jEhxX4k9b.apk";
 
     /// <summary>
     /// AppsOnAir public install/share URL for the iOS build.
