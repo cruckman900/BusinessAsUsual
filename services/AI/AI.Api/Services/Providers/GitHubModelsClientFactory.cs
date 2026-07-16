@@ -35,6 +35,10 @@ public static class GitHubModelsClientFactory
             new ApiKeyCredential(options.ApiKey),
             clientOptions);
 
+        logger.LogInformation(
+            "Demo tier (GitHub Models) is configured. Endpoint={Endpoint}, Model={Model}.",
+            options.Endpoint, options.Model);
+
         return chatClient.AsIChatClient();
     }
 }
