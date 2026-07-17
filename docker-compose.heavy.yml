@@ -33,6 +33,9 @@ services:
       - ASPNETCORE_URLS=http://+:80
       # Shared RDS (MS SQL) connection string - set in .env on the instance
       - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # CRM.API registers itself with the Module Registry, which runs on the
+      # LIGHT instance. Point this at that instance's private IP/DNS.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
     deploy:
       resources:
         limits:
