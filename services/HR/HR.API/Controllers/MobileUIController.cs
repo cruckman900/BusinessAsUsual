@@ -21,8 +21,12 @@ public class MobileUIController : ControllerBase
     /// Get the complete mobile UI specification for the HR module
     /// </summary>
     [HttpGet("ui-spec")]
-    public ActionResult<MobileUISpecification> GetUISpecification()
+    public async Task<ActionResult<MobileUISpecification>> GetUISpecification()
     {
+        // Live department distribution powers the report charts; falls back to a
+        // representative distribution when the in-memory HR database is empty.
+        var departmentDistribution = await GetDepartmentDistributionAsync();
+
         var spec = new MobileUISpecification
         {
             ModuleId = "hr",
@@ -48,8 +52,8 @@ public class MobileUIController : ControllerBase
                 { "benefits-list", GetBenefitsListSpec() },
                 { "compensation-list", GetCompensationListSpec() },
                 { "report-list", GetReportListSpec() },
-                { "report-detail", GetReportDetailSpec() },
-                { "report-dashboard", GetReportDashboardSpec() }
+                { "report-detail", GetReportDetailSpec(departmentDistribution) },
+                { "report-dashboard", GetReportDashboardSpec(departmentDistribution) }
             }
         };
 
@@ -483,7 +487,7 @@ public class MobileUIController : ControllerBase
         Col("status", "Status", "badge", 110));
 
     // ---- Report detail (chart-driven, mirrors the web "View Report" pages) ----
-    private ChartScreenSpec GetReportDetailSpec()
+    private ChartScreenSpec GetReportDetailSpec(List<ChartDataPoint> departmentDistribution)
     {
         return new ChartScreenSpec
         {
@@ -515,21 +519,14 @@ public class MobileUIController : ControllerBase
                 {
                     Id = "report-breakdown",
                     Title = "Breakdown",
-                    Subtitle = "Distribution by category",
+                    Subtitle = "Headcount by department",
                     ChartType = "donut",
                     Series = new List<ChartSeries>
                     {
                         new ChartSeries
                         {
-                            Name = "Categories",
-                            Points = new List<ChartDataPoint>
-                            {
-                                new() { Label = "Engineering", Value = 84, Color = "#1565C0" },
-                                new() { Label = "Sales", Value = 46, Color = "#1B5E20" },
-                                new() { Label = "Marketing", Value = 28, Color = "#B26A00" },
-                                new() { Label = "Human Resources", Value = 22, Color = "#6A1B9A" },
-                                new() { Label = "Operations", Value = 30, Color = "#00838F" }
-                            }
+                            Name = "Departments",
+                            Points = departmentDistribution,
                         }
                     }
                 }
@@ -537,8 +534,33 @@ public class MobileUIController : ControllerBase
         };
     }
 
+    /// <summary>
+    /// Builds a live headcount-by-department distribution for the report charts.
+    /// Uses the employee roster (including the demo fallback) so the donut always
+    /// reflects real data when the HR database is seeded.
+    /// </summary>
+    private async Task<List<ChartDataPoint>> GetDepartmentDistributionAsync()
+    {
+        var rows = await GetEmployeeRows();
+        var palette = new[] { "#1565C0", "#1B5E20", "#B26A00", "#6A1B9A", "#00838F", "#B3261E", "#4527A0" };
+
+        var grouped = rows
+            .Select(r => r.TryGetValue("department", out var d) && !string.IsNullOrWhiteSpace(d) ? d : "Unassigned")
+            .GroupBy(d => d)
+            .OrderByDescending(g => g.Count())
+            .Select((g, i) => new ChartDataPoint
+            {
+                Label = g.Key,
+                Value = g.Count(),
+                Color = palette[i % palette.Length]
+            })
+            .ToList();
+
+        return grouped;
+    }
+
     // ---- Analytics dashboard (contract-driven charts) ----
-    private ChartScreenSpec GetReportDashboardSpec()
+    private ChartScreenSpec GetReportDashboardSpec(List<ChartDataPoint> departmentDistribution)
     {
         return new ChartScreenSpec
         {
@@ -607,14 +629,7 @@ public class MobileUIController : ControllerBase
                         new ChartSeries
                         {
                             Name = "Departments",
-                            Points = new List<ChartDataPoint>
-                            {
-                                new() { Label = "Engineering", Value = 84, Color = "#1565C0" },
-                                new() { Label = "Sales", Value = 46, Color = "#1B5E20" },
-                                new() { Label = "Marketing", Value = 28, Color = "#B26A00" },
-                                new() { Label = "Human Resources", Value = 22, Color = "#6A1B9A" },
-                                new() { Label = "Operations", Value = 30, Color = "#00838F" }
-                            }
+                            Points = departmentDistribution,
                         }
                     }
                 },
