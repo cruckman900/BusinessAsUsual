@@ -37,6 +37,20 @@ jobs:
           MODULE_REGISTRY_URL=http://${{ secrets.LIGHT_EC2_PRIVATE_IP }}:5100
           ENV
 
+      # Render the gateway reverse-proxy config for the THREE-INSTANCE split.
+      # The gateway runs on MAIN but the upstream services live on other hosts,
+      # so we substitute their private IP:port into the template. This rendered
+      # file is rsynced to the box and mounted by the gateway container.
+      - name: Generate gateway.conf
+        run: |
+          sed \
+            -e "s|\${HR_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5041|g" \
+            -e "s|\${CRM_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5004|g" \
+            -e "s|\${REGISTRY_UPSTREAM}|${{ secrets.LIGHT_EC2_PRIVATE_IP }}:5100|g" \
+            deploy/nginx/gateway.conf.template > deploy/nginx/gateway.conf
+          echo "--- rendered gateway.conf upstreams ---"
+          grep upstream deploy/nginx/gateway.conf
+
       - name: Sync repo to EC2
         run: |
           rsync -avz --delete \
@@ -58,6 +72,16 @@ jobs:
             set -e
             cd /home/ec2-user/BusinessAsUsual
             docker-compose -f docker-compose.prod.yml down
+            # One-time (idempotent) teardown of the leftover microservices stack
+            # that was previously brought up MANUALLY on MAIN under the same
+            # "businessasusual" project. In the three-instance split those
+            # services (crm-api / hr-api / moduleregistry) belong on HEAVY/LIGHT,
+            # and their old gateway also bound 127.0.0.1:8088 — which would clash
+            # with the new prod gateway. Remove them if present.
+            docker compose \
+              -f docker-compose.microservices.yml \
+              -f docker-compose.microservices.prod.yml \
+              down --remove-orphans || true
             # Reclaim disk BEFORE building: the root volume fills up with dangling
             # images/layers and stale build cache over time, which surfaces as
             # `dotnet restore` exit code 82 ("no space left on device"). Prune
@@ -65,15 +89,9 @@ jobs:
             docker system prune -af
             docker builder prune -af
             df -h /
-            # Web shell / admin / backend (docker-compose.prod.yml).
+            # Web shell / admin / backend / gateway only. CRM/HR APIs live on the
+            # HEAVY instance and ModuleRegistry/AI on the LIGHT instance (three-
+            # instance split); this workflow must NOT rebuild those here. The
+            # gateway routes to them cross-instance via the rendered gateway.conf.
             docker-compose -f docker-compose.prod.yml up -d --build
-            # Microservices half (crm-api / hr-api / gateway / moduleregistry).
-            # These run in the SAME "businessasusual" compose project as the stack
-            # above, but live in separate compose files that were previously only
-            # ever deployed by hand — which is why CRM/HR code changes never went
-            # live automatically. Rebuild them here so one push updates everything.
-            docker compose \
-              -f docker-compose.microservices.yml \
-              -f docker-compose.microservices.prod.yml \
-              up -d --build
           EOF
