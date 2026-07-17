@@ -48,6 +48,7 @@ public class MobileUIController : ControllerBase
                 { "benefits-list", GetBenefitsListSpec() },
                 { "compensation-list", GetCompensationListSpec() },
                 { "report-list", GetReportListSpec() },
+                { "report-detail", GetReportDetailSpec() },
                 { "report-dashboard", GetReportDashboardSpec() }
             }
         };
@@ -480,6 +481,61 @@ public class MobileUIController : ControllerBase
         Col("name", "Report", width: 220, sortable: true), Col("category", "Category", width: 160),
         Col("owner", "Owner", width: 170), Col("updated", "Updated", "date", 140),
         Col("status", "Status", "badge", 110));
+
+    // ---- Report detail (chart-driven, mirrors the web "View Report" pages) ----
+    private ChartScreenSpec GetReportDetailSpec()
+    {
+        return new ChartScreenSpec
+        {
+            Title = "Report",
+            EmptyStateMessage = "No data available for this report.",
+            Charts = new List<ChartSpec>
+            {
+                new ChartSpec
+                {
+                    Id = "report-trend",
+                    Title = "Trend",
+                    Subtitle = "Last 6 months",
+                    ChartType = "line",
+                    Labels = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun" },
+                    Series = new List<ChartSeries>
+                    {
+                        new ChartSeries
+                        {
+                            Name = "Value", Color = "#1565C0",
+                            Points = new List<ChartDataPoint>
+                            {
+                                new() { Value = 182 }, new() { Value = 188 }, new() { Value = 191 },
+                                new() { Value = 196 }, new() { Value = 203 }, new() { Value = 210 }
+                            }
+                        }
+                    }
+                },
+                new ChartSpec
+                {
+                    Id = "report-breakdown",
+                    Title = "Breakdown",
+                    Subtitle = "Distribution by category",
+                    ChartType = "donut",
+                    Series = new List<ChartSeries>
+                    {
+                        new ChartSeries
+                        {
+                            Name = "Categories",
+                            Points = new List<ChartDataPoint>
+                            {
+                                new() { Label = "Engineering", Value = 84, Color = "#1565C0" },
+                                new() { Label = "Sales", Value = 46, Color = "#1B5E20" },
+                                new() { Label = "Marketing", Value = 28, Color = "#B26A00" },
+                                new() { Label = "Human Resources", Value = 22, Color = "#6A1B9A" },
+                                new() { Label = "Operations", Value = 30, Color = "#00838F" }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    }
 
     // ---- Analytics dashboard (contract-driven charts) ----
     private ChartScreenSpec GetReportDashboardSpec()
