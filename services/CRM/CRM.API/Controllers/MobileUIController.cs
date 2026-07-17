@@ -97,7 +97,81 @@ public class MobileUIController : ControllerBase
         return Ok(rows);
     }
 
-    // ---- Live data rows (with sample fallback so screens are never empty in a demo) ----
+    /// <summary>
+    /// Get board data grouped into columns for a board-type screen (e.g. the
+    /// sales pipeline grouped by stage). Each group carries its rows plus simple
+    /// aggregates (count and summed amount) so the client can render column
+    /// headers without recomputing. Clients that do not support the board type
+    /// can continue to use the flat <see cref="GetScreenData"/> endpoint.
+    /// </summary>
+    [HttpGet("data-board/{screenKey}")]
+    public async Task<ActionResult<BoardData>> GetBoardData(string screenKey)
+    {
+        switch (screenKey)
+        {
+            case "pipeline-board":
+                var rows = await GetOpportunityRows();
+                return Ok(BuildBoard(rows, "stage", PipelineStages.Select(s => (s.Id, s.Label)).ToArray()));
+            default:
+                return Ok(new BoardData());
+        }
+    }
+
+    /// <summary>
+    /// Buckets flat rows into ordered board groups by <paramref name="groupField"/>.
+    /// Rows whose group value is unknown are placed in a trailing "Other" group.
+    /// </summary>
+    private static BoardData BuildBoard(
+        List<Dictionary<string, string>> rows, string groupField, (string Id, string Label)[] groups)
+    {
+        var board = new BoardData { GroupByField = groupField };
+
+        foreach (var (id, label) in groups)
+        {
+            var groupRows = rows.Where(r => r.TryGetValue(groupField, out var v) && v == id).ToList();
+            board.Groups.Add(new BoardGroup
+            {
+                Id = id,
+                Label = label,
+                Count = groupRows.Count,
+                Total = SumCurrency(groupRows, "amount"),
+                Rows = groupRows
+            });
+        }
+
+        var known = new HashSet<string>(groups.Select(g => g.Id));
+        var others = rows.Where(r => !r.TryGetValue(groupField, out var v) || !known.Contains(v)).ToList();
+        if (others.Count > 0)
+        {
+            board.Groups.Add(new BoardGroup
+            {
+                Id = "other",
+                Label = "Other",
+                Count = others.Count,
+                Total = SumCurrency(others, "amount"),
+                Rows = others
+            });
+        }
+
+        return board;
+    }
+
+    /// <summary>Sums a currency-formatted string column (e.g. "$85,000") into a display total.</summary>
+    private static string SumCurrency(List<Dictionary<string, string>> rows, string field)
+    {
+        decimal total = 0;
+        foreach (var r in rows)
+        {
+            if (r.TryGetValue(field, out var raw) && !string.IsNullOrWhiteSpace(raw))
+            {
+                var digits = new string(raw.Where(c => char.IsDigit(c) || c == '.' || c == '-').ToArray());
+                if (decimal.TryParse(digits, out var value)) total += value;
+            }
+        }
+        return total.ToString("C0");
+    }
+
+
 
     private async Task<List<Dictionary<string, string>>> GetLeadRows()
     {
@@ -297,46 +371,84 @@ public class MobileUIController : ControllerBase
         Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
         Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140));
 
-    private ListScreenSpec GetPipelineBoardSpec()
+    // Ordered stage definitions shared by the pipeline board columns and the
+    // grouped board data endpoint.
+    private static readonly (string Id, string Label, string Color)[] PipelineStages =
     {
-        var spec = ListSpec(
-            "Sales Pipeline", "Search opportunities...", "New Opportunity", "/crm/opportunities/new",
-            "No opportunities in the pipeline.",
-            StdRowActions("/crm/opportunities", "opportunity"),
-            Col("name", "Opportunity", width: 220, sortable: true), Col("customerName", "Customer", width: 180),
-            Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
-            Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140));
+        ("Prospecting",   "Prospecting",    "#64748B"),
+        ("Qualification", "Qualification",  "#0EA5E9"),
+        ("NeedsAnalysis", "Needs Analysis", "#6366F1"),
+        ("Proposal",      "Proposal",       "#F59E0B"),
+        ("Negotiation",   "Negotiation",    "#F97316"),
+        ("ClosedWon",     "Closed Won",     "#22C55E"),
+        ("ClosedLost",    "Closed Lost",    "#EF4444"),
+    };
 
-        spec.EnableFilter = true;
-        spec.Filters = new List<FilterOption>
+    private BoardScreenSpec GetPipelineBoardSpec()
+    {
+        return new BoardScreenSpec
         {
-            new FilterOption
+            Title = "Sales Pipeline",
+            SearchPlaceholder = "Search opportunities...",
+            EnableSearch = true,
+            GroupByField = "stage",
+            Columns = PipelineStages
+                .Select(s => new BoardColumn { Id = s.Id, Label = s.Label, Color = s.Color })
+                .ToList(),
+            CardLayout = new BoardCardLayout
             {
-                Id = "stage",
-                Label = "Stage",
-                Type = "select",
-                Values = new List<FilterValue>
-                {
-                    new() { Id = "all", Label = "All Stages", Value = "" },
-                    new() { Id = "prospecting", Label = "Prospecting", Value = "Prospecting" },
-                    new() { Id = "qualification", Label = "Qualification", Value = "Qualification" },
-                    new() { Id = "needs-analysis", Label = "Needs Analysis", Value = "NeedsAnalysis" },
-                    new() { Id = "proposal", Label = "Proposal", Value = "Proposal" },
-                    new() { Id = "negotiation", Label = "Negotiation", Value = "Negotiation" },
-                    new() { Id = "closed-won", Label = "Closed Won", Value = "ClosedWon" },
-                    new() { Id = "closed-lost", Label = "Closed Lost", Value = "ClosedLost" },
-                }
+                TitleField = "name",
+                SubtitleField = "customerName",
+                ValueField = "amount",
+                ProgressField = "probability",
+                BadgeField = "stage",
+                MetaField = "expectedCloseDate"
+            },
+            Actions = new List<ActionButton>
+            {
+                new ActionButton { Id = "add", Label = "New Opportunity", Icon = "add", Action = "navigate", NavigateTo = "/crm/opportunities/new" }
+            },
+            EnableDragToMove = true,
+            MoveEndpoint = "/api/crm/opportunities/{id}/stage/{group}",
+            EmptyStateMessage = "No opportunities in the pipeline.",
+            // Backward-compatible list rendering for clients that do not yet
+            // understand the "board" type.
+            FallbackColumns = new List<ColumnDefinition>
+            {
+                Col("name", "Opportunity", width: 220, sortable: true), Col("customerName", "Customer", width: 180),
+                Col("stage", "Stage", "badge", 140), Col("amount", "Amount", width: 130),
+                Col("probability", "Probability", "progress", 130), Col("expectedCloseDate", "Close Date", "date", 140)
             }
         };
-        return spec;
     }
 
-    private ListScreenSpec GetEmailTemplateListSpec() => ListSpec(
-        "Email Templates", "Search templates...", "New Template", "/crm/email-templates/new",
-        "No email templates found. Tap + to create your first template.",
-        StdRowActions("/crm/email-templates", "template"),
-        Col("name", "Template", width: 200, sortable: true), Col("category", "Category", "badge", 150),
-        Col("subject", "Subject", width: 240), Col("status", "Status", "badge", 110));
+    private CardCollectionScreenSpec GetEmailTemplateListSpec() => new CardCollectionScreenSpec
+    {
+        Title = "Email Templates",
+        SearchPlaceholder = "Search templates...",
+        EnableSearch = true,
+        PreferredColumns = 1,
+        CardLayout = new CardLayout
+        {
+            TitleField = "name",
+            SubtitleField = "subject",
+            BadgeField = "category",
+            StatusField = "status"
+        },
+        Actions = new List<ActionButton>
+        {
+            new ActionButton { Id = "add", Label = "New Template", Icon = "add", Action = "navigate", NavigateTo = "/crm/email-templates/new" }
+        },
+        CardActions = StdRowActions("/crm/email-templates", "template").ToList(),
+        EmptyStateMessage = "No email templates found. Tap + to create your first template.",
+        // Backward-compatible list rendering for clients that do not yet
+        // understand the "card-collection" type.
+        FallbackColumns = new List<ColumnDefinition>
+        {
+            Col("name", "Template", width: 200, sortable: true), Col("category", "Category", "badge", 150),
+            Col("subject", "Subject", width: 240), Col("status", "Status", "badge", 110)
+        }
+    };
 
     private ListScreenSpec GetCustomerListSpec() => ListSpec(
         "Customers", "Search customers...", "New Customer", "/crm/customers/new", "No customers found.",

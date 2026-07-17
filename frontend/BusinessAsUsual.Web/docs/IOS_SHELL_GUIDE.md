@@ -151,3 +151,47 @@ curl -s https://api.businessasusual.work/api/crm/mobile/ui-spec | jq
 - API/gateway cost is unchanged — iOS is purely a new client.
 - Simulator work is free; defer the $99 Apple account until device testing.
 - Keep the first milestone tiny (Steps 1–5) to prove value before spending.
+
+## Rendering rich screen types (board & card-collection)
+
+The contract now includes richer screen types so the pipeline and email
+templates look native instead of plain lists (see
+[docs/MOBILE_UI_CONTRACT_SYSTEM.md](../../../docs/MOBILE_UI_CONTRACT_SYSTEM.md#rich-screen-types-board--card-collection)).
+Render by switching on the spec's `type`:
+
+```swift
+enum ScreenType: String { case list, board, cardCollection = "card-collection" }
+
+@ViewBuilder
+func screenView(for type: String, key: String) -> some View {
+    switch ScreenType(rawValue: type) {
+    case .board:          PipelineBoardView(screenKey: key)   // horizontal columns of cards
+    case .cardCollection: CardCollectionView(screenKey: key)  // vertical grid of preview cards
+    default:              ListView(screenKey: key)            // existing list fallback
+    }
+}
+```
+
+### Board (`type: "board"`) — Sales Pipeline
+- Fetch grouped data from `GET /api/crm/mobile/data-board/{screenKey}` (returns
+  `groups[]`, each with `label`, `count`, `total`, `rows[]`).
+- Render each group as a column (`ScrollView(.horizontal)`), using `cardLayout`
+  to map fields onto card slots (`titleField`, `subtitleField`, `valueField`,
+  `progressField`, `badgeField`, `metaField`).
+- If `enableDragToMove` is true, a drag onto another column should `POST`/`PUT`
+  to `moveEndpoint` with `{id}` and `{group}` substituted.
+
+### Card collection (`type: "card-collection"`) — Email Templates
+- Fetch flat data from `GET /api/crm/mobile/data/{screenKey}`.
+- Render each row as a preview card using `cardLayout` (`titleField`,
+  `subtitleField`, `badgeField`, `statusField`).
+
+### Backward compatibility (important)
+If the app doesn't recognize a `type`, render `fallbackColumns` as a list — this
+lets you ship the server change now and update the renderer incrementally.
+
+> **Android parity:** the equivalent Android renderer work is tracked as
+> "Mobile Kanban parity in Android app" in
+> [docs/CRM_FEATURE_ROADMAP.md](../../../docs/CRM_FEATURE_ROADMAP.md). Both
+> clients consume the same contract, so the board/card mapping above applies
+> 1:1 to Android (Jetpack Compose: `LazyRow` of columns, `LazyColumn` of cards).

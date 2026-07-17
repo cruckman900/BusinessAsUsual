@@ -487,4 +487,111 @@ GET http://localhost:5001/api/hr/mobile/navigation
 
 ---
 
+## Rich Screen Types (Board & Card Collection)
+
+Beyond the workhorse `list` screen, the contract supports richer screen types so
+mobile apps can render experiences that match the web (e.g. a kanban pipeline or
+email-template preview cards) instead of falling back to a table.
+
+> **Backward compatibility:** every rich screen type carries a `fallbackColumns`
+> array identical to a list screen's `columns`. Clients that do not yet
+> understand the new `type` value should render the fallback columns as a list,
+> so older app builds keep working while updated builds render the rich UI.
+
+### `type: "board"` — kanban / grouped board
+
+Used by the CRM **Sales Pipeline** (`pipeline-board` screen). Cards are grouped
+into ordered columns by `groupByField`.
+
+```jsonc
+{
+  "type": "board",
+  "title": "Sales Pipeline",
+  "groupByField": "stage",
+  "columns": [
+    { "id": "Prospecting",   "label": "Prospecting",    "color": "#64748B" },
+    { "id": "Qualification", "label": "Qualification",  "color": "#0EA5E9" },
+    { "id": "Proposal",      "label": "Proposal",       "color": "#F59E0B" },
+    { "id": "ClosedWon",     "label": "Closed Won",     "color": "#22C55E" }
+    // ...
+  ],
+  "cardLayout": {
+    "titleField": "name",
+    "subtitleField": "customerName",
+    "valueField": "amount",
+    "progressField": "probability",
+    "badgeField": "stage",
+    "metaField": "expectedCloseDate"
+  },
+  "enableDragToMove": true,
+  "moveEndpoint": "/api/crm/opportunities/{id}/stage/{group}",
+  "fallbackColumns": [ /* same shape as a list screen's columns */ ]
+}
+```
+
+Board data is fetched from a dedicated grouped endpoint so the client does not
+have to bucket rows itself:
+
+```
+GET /api/crm/mobile/data-board/pipeline-board
+```
+```jsonc
+{
+  "groupByField": "stage",
+  "groups": [
+    {
+      "id": "Proposal", "label": "Proposal", "count": 3, "total": "$213,000",
+      "rows": [ { "name": "...", "customerName": "...", "amount": "$85,000", "probability": "60%", "stage": "Proposal" } ]
+    }
+    // ...one group per column, plus a trailing "Other" group for unknown values
+  ]
+}
+```
+
+Drag-to-move: when `enableDragToMove` is true, moving a card should call
+`moveEndpoint` with `{id}` = the card id and `{group}` = the destination
+column id.
+
+### `type: "card-collection"` — rich preview cards
+
+Used by CRM **Email Templates** (`email-template-list` screen). Records render
+as preview cards rather than table rows.
+
+```jsonc
+{
+  "type": "card-collection",
+  "title": "Email Templates",
+  "preferredColumns": 1,
+  "cardLayout": {
+    "titleField": "name",
+    "subtitleField": "subject",
+    "badgeField": "category",
+    "statusField": "status"
+  },
+  "actions":     [ { "id": "add", "label": "New Template", "action": "navigate", "navigateTo": "/crm/email-templates/new" } ],
+  "cardActions": [ /* per-card view/edit/delete */ ],
+  "fallbackColumns": [ /* same shape as a list screen's columns */ ]
+}
+```
+
+Card data uses the existing flat endpoint (`GET /api/crm/mobile/data/email-template-list`).
+
+### Client renderer requirements
+
+To display these richly, the Android and iOS apps must switch on the screen
+`type`:
+
+| `type` | Renderer |
+| --- | --- |
+| `list` | existing table/list (unchanged) |
+| `board` | horizontally scrollable columns of cards; optional drag-to-move |
+| `card-collection` | vertical/grid of preview cards |
+
+If the client encounters an unknown `type`, it must render `fallbackColumns` as
+a list. The Android "Mobile Kanban parity" task is tracked in
+[CRM_FEATURE_ROADMAP.md](./CRM_FEATURE_ROADMAP.md); iOS renderer guidance is in
+[frontend/BusinessAsUsual.Web/docs/IOS_SHELL_GUIDE.md](../frontend/BusinessAsUsual.Web/docs/IOS_SHELL_GUIDE.md).
+
+---
+
 **The "Service = API + UI + Mobile Contract" vision is now complete!** 🚀
