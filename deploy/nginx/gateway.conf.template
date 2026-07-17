@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# BusinessAsUsual API gateway (reverse proxy) — TEMPLATE
+#
+# Runs on the MAIN instance. The public edge nginx terminates TLS for
+# api.businessasusual.work and proxies to this gateway on 127.0.0.1:8088.
+#
+# In the THREE-INSTANCE split the upstream services live on OTHER hosts, so we
+# cannot route by Docker service name (that only resolves on one host). Instead
+# the deploy workflow renders this template into deploy/nginx/gateway.conf,
+# substituting the private IP:port of each service:
+#
+#   ${HR_UPSTREAM}        -> HEAVY private IP : hr-api  port   (e.g. 10.0.1.250:5041)
+#   ${CRM_UPSTREAM}       -> HEAVY private IP : crm-api port   (e.g. 10.0.1.250:5004)
+#   ${REGISTRY_UPSTREAM}  -> LIGHT private IP : registry port  (e.g. 10.0.1.175:5100)
+#
+# Route map:
+#   /api/hr/*       -> hr-api        (mobile UI contract: /api/hr/mobile/*)
+#   /api/crm/*      -> crm-api       (mobile UI contract: /api/crm/mobile/*)
+#   /api/modules/*  -> moduleregistry (discovery: /api/modules/mobile)
+#   /health         -> moduleregistry (simple liveness)
+# ---------------------------------------------------------------------------
+
+upstream hr_api        { server ${HR_UPSTREAM}; }
+upstream crm_api       { server ${CRM_UPSTREAM}; }
+upstream registry_api  { server ${REGISTRY_UPSTREAM}; }
+
+server {
+	listen 80;
+	server_name _;
+
+	# Forward original host/scheme so services build correct absolute URLs.
+	proxy_set_header Host              $host;
+	proxy_set_header X-Real-IP         $remote_addr;
+	proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+	proxy_set_header X-Forwarded-Proto $scheme;
+
+	# --- HR module ---------------------------------------------------------
+	location /api/hr/ {
+		proxy_pass http://hr_api;
+	}
+
+	# --- CRM module --------------------------------------------------------
+	location /api/crm/ {
+		proxy_pass http://crm_api;
+	}
+
+	# --- Module Registry (discovery) --------------------------------------
+	location /api/modules/ {
+		proxy_pass http://registry_api;
+	}
+
+	# --- Health ------------------------------------------------------------
+	location = /health {
+		proxy_pass http://registry_api/health;
+	}
+
+	location = / {
+		return 200 "BusinessAsUsual API gateway\n";
+		add_header Content-Type text/plain;
+	}
+}

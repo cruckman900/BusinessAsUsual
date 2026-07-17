@@ -1059,6 +1059,82 @@ for i in {1..50}; do curl -I https://businessasusual.work >/dev/null; done
 - Circuit disconnects
 - SQL latency
 
+## 🗺️ Three-Instance Split (MAIN / HEAVY / LIGHT)
+
+The production stack is split across three EC2 instances in the same VPC. The
+public API gateway lives on **MAIN** and reverse-proxies each module API to the
+instance that hosts it, over the **private** network.
+
+### Topology
+
+| Instance | Private IP | Runs | Published ports |
+| --- | --- | --- | --- |
+| MAIN | `10.0.1.9` | web, admin, backend, **gateway**, host edge nginx (TLS) | edge 80/443; gateway `127.0.0.1:8088` |
+| HEAVY | `10.0.1.250` | crm-api, hr-api (+ crm-web/hr-web) | `5004` (crm-api), `5041` (hr-api) |
+| LIGHT | `10.0.1.175` | moduleregistry, ai-api | `5100` (registry), `5300` (ai) |
+
+Public request path:
+
+```
+api.businessasusual.work → edge nginx (MAIN host) → 127.0.0.1:8088 (gateway container)
+  → /api/crm/*     → 10.0.1.250:5004   (HEAVY crm-api)
+  → /api/hr/*      → 10.0.1.250:5041   (HEAVY hr-api)
+  → /api/modules/* → 10.0.1.175:5100   (LIGHT moduleregistry)
+  → /health        → 10.0.1.175:5100   (LIGHT moduleregistry)
+```
+
+### Gateway config is rendered at deploy time
+
+The gateway upstreams cannot use Docker service names across hosts, so
+`deploy/nginx/gateway.conf` is **generated** by `deploy-docker.yml` from
+`deploy/nginx/gateway.conf.template`, substituting private IP:port:
+
+- `${HR_UPSTREAM}`       → `HEAVY_EC2_PRIVATE_IP:5041`
+- `${CRM_UPSTREAM}`      → `HEAVY_EC2_PRIVATE_IP:5004`
+- `${REGISTRY_UPSTREAM}` → `LIGHT_EC2_PRIVATE_IP:5100`
+
+Do not hand-edit the rendered `gateway.conf`; edit the `.template` instead.
+
+### Required GitHub secrets
+
+| Secret | Value | Used by |
+| --- | --- | --- |
+| `EC2_HOST` | MAIN public DNS/IP | deploy-docker (SSH/rsync) |
+| `HEAVY_EC2_HOST` | HEAVY public DNS/IP | deploy-heavy (SSH/rsync) |
+| `HEAVY_EC2_PRIVATE_IP` | `10.0.1.250` | deploy-docker (gateway.conf render) |
+| `LIGHT_EC2_HOST` | LIGHT public DNS/IP | deploy-light (SSH/rsync) |
+| `LIGHT_EC2_PRIVATE_IP` | `10.0.1.175` | deploy-docker (.env + gateway.conf) |
+| `MODULE_REGISTRY_URL` | `http://10.0.1.175:5100` | deploy-heavy (HR self-registration) |
+
+### Required security-group rules (in-VPC only)
+
+Security groups: MAIN = `bau-prod-sg`, HEAVY = `bau-heavy-sg`, LIGHT = `bau-light-sg`.
+Reference the SG by name/ID as the source (not a raw IP) so rules survive IP changes.
+
+| On this SG | Type | Port | Source SG | Why |
+| --- | --- | --- | --- | --- |
+| `bau-heavy-sg` | Custom TCP | 5004 | `bau-prod-sg` | gateway → CRM API |
+| `bau-heavy-sg` | Custom TCP | 5041 | `bau-prod-sg` | gateway → HR API |
+| `bau-light-sg` | Custom TCP | 5100 | `bau-prod-sg` | gateway → Module Registry |
+| `bau-light-sg` | Custom TCP | 5100 | `bau-heavy-sg` | HR self-registration |
+| `bau-light-sg` | Custom TCP | 5300 | `bau-heavy-sg` | AI calls (optional) |
+
+Verify from MAIN after deploy: `curl -s -o /dev/null -w "%{http_code}\n" http://10.0.1.250:5004/health`
+(and `:5041`, plus `http://10.0.1.175:5100/health`). Any HTTP response = rule open; a hang = missing rule.
+
+### Deploy order
+
+Bring up dependencies first so registrations resolve:
+
+1. **LIGHT** (`deploy-light.yml`) — registry + AI.
+2. **HEAVY** (`deploy-heavy.yml`) — crm-api + hr-api (registers with LIGHT).
+3. **MAIN** (`deploy-docker.yml`) — web/admin/backend + gateway (renders
+   `gateway.conf`, routes cross-instance).
+
+`deploy-docker.yml` also performs a one-time idempotent teardown of the
+old manually-started microservices stack on MAIN so its leftover containers and
+the duplicate `127.0.0.1:8088` gateway binding do not clash with the new gateway.
+
 <div style="
   position: fixed;
   bottom: 20px;
