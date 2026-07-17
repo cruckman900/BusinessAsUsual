@@ -71,7 +71,7 @@ jobs:
           ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
             set -e
             cd /home/ec2-user/BusinessAsUsual
-            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml down --remove-orphans
             # One-time (idempotent) teardown of the leftover microservices stack
             # that was previously brought up MANUALLY on MAIN under the same
             # "businessasusual" project. In the three-instance split those
@@ -82,6 +82,15 @@ jobs:
               -f docker-compose.microservices.yml \
               -f docker-compose.microservices.prod.yml \
               down --remove-orphans || true
+            # Defensive cleanup: the gateway container has been left behind by a
+            # prior stack under the same name, which makes `up` fail with
+            # "container name is already in use". Force-remove the known project
+            # container names so recreation always succeeds (ignore if absent).
+            docker rm -f \
+              businessasusual-gateway-1 \
+              businessasusual-backend-1 \
+              businessasusual-web-1 \
+              businessasusual-admin-1 || true
             # Reclaim disk BEFORE building: the root volume fills up with dangling
             # images/layers and stale build cache over time, which surfaces as
             # `dotnet restore` exit code 82 ("no space left on device"). Prune
@@ -93,5 +102,5 @@ jobs:
             # HEAVY instance and ModuleRegistry/AI on the LIGHT instance (three-
             # instance split); this workflow must NOT rebuild those here. The
             # gateway routes to them cross-instance via the rendered gateway.conf.
-            docker-compose -f docker-compose.prod.yml up -d --build
+            docker-compose -f docker-compose.prod.yml up -d --build --remove-orphans
           EOF
