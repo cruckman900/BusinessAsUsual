@@ -121,7 +121,7 @@
 
 ### 3.4 Features Still TODO
 - [ ] Collapse/expand columns
-- [ ] Mobile Kanban parity in Android app
+- [ ] Mobile Kanban parity in Android app (server contract ready: `type: "board"` + `data-board` endpoint — see [MOBILE_UI_CONTRACT_SYSTEM.md](./MOBILE_UI_CONTRACT_SYSTEM.md#rich-screen-types-board--card-collection); remaining work is the Android renderer)
 
 ---
 
