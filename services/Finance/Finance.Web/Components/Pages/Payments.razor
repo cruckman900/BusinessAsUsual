@@ -1,0 +1,48 @@
+@page "/finance/payments"
+@inject IPaymentService PaymentService
+
+<PageTitle>Payments</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Payments" Class="mr-2" />
+        Payments
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudTable Items="@_payments" Hover="true" Elevation="2" Dense="true">
+            <HeaderContent>
+                <MudTh>Invoice #</MudTh>
+                <MudTh>Amount</MudTh>
+                <MudTh>Method</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Date</MudTh>
+                <MudTh>Reference</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Invoice #">@(context.InvoiceNumber ?? "-")</MudTd>
+                <MudTd DataLabel="Amount">@context.Amount.ToString("C2")</MudTd>
+                <MudTd DataLabel="Method">@context.Method</MudTd>
+                <MudTd DataLabel="Status">@context.Status</MudTd>
+                <MudTd DataLabel="Date">@context.PaymentDate.ToString("d")</MudTd>
+                <MudTd DataLabel="Reference">@(context.TransactionReference ?? "-")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<PaymentDto> _payments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _payments = (await PaymentService.GetAllPaymentsAsync()).ToList();
+        _loading = false;
+    }
+}

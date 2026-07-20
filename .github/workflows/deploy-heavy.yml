@@ -76,7 +76,7 @@ jobs:
             df -h /
             # Build one image at a time to keep peak memory low on the t3.small
             # (2 GB). Building all four .NET images in parallel exhausts RAM.
-            for svc in crm-api crm-web hr-api hr-web; do
+            for svc in crm-api crm-web hr-api hr-web finance-api finance-web; do
               docker compose -f docker-compose.heavy.yml build "$svc"
             done
             docker compose -f docker-compose.heavy.yml up -d

@@ -1,0 +1,68 @@
+@page "/finance/reports"
+@inject IFinanceReportService ReportService
+
+<PageTitle>Finance Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="mr-2" />
+        Finance Analytics
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_summary is not null)
+    {
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6">Revenue (Last 6 Months)</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTable Items="@_summary.RevenueByMonth" Dense="true" Elevation="0">
+                            <HeaderContent>
+                                <MudTh>Month</MudTh>
+                                <MudTh>Revenue</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Label</MudTd>
+                                <MudTd>@context.Amount.ToString("C0")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6">Invoices by Status</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @foreach (var s in _summary.StatusBreakdown)
+                        {
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                                <MudChip T="string" Size="Size.Small" Style="@($"background-color:{s.Color};color:#fff;")">@s.Status</MudChip>
+                                <MudSpacer />
+                                <MudText Typo="Typo.body2">@s.Count (@s.Amount.ToString("C0"))</MudText>
+                            </MudStack>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private FinanceSummaryDto? _summary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _summary = await ReportService.GetSummaryAsync();
+        _loading = false;
+    }
+}

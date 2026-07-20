@@ -1,12 +1,23 @@
 using CRM.Application.DTOs;
 using CRM.Domain.Entities;
 using CRM.Domain.Enums;
+using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
 
 namespace CRM.Application.Services;
 
 public class MockOpportunityService : IOpportunityService
 {
     private static readonly List<Opportunity> _opportunities = GenerateSampleOpportunities();
+
+    private readonly IEventBus? _eventBus;
+
+    // IEventBus is optional so hosts that don't wire the bus (e.g. CRM.Web)
+    // keep working; when present (CRM.API), won opportunities are published.
+    public MockOpportunityService(IEventBus? eventBus = null)
+    {
+        _eventBus = eventBus;
+    }
 
     public Task<IEnumerable<OpportunityDto>> GetAllOpportunitiesAsync()
     {
@@ -54,6 +65,8 @@ public class MockOpportunityService : IOpportunityService
         var opp = _opportunities.FirstOrDefault(o => o.Id == id);
         if (opp == null) throw new KeyNotFoundException($"Opportunity {id} not found");
 
+        var wasWon = opp.IsWon;
+
         opp.Name = request.Name;
         opp.CustomerId = request.CustomerId;
         opp.Stage = request.Stage;
@@ -72,6 +85,24 @@ public class MockOpportunityService : IOpportunityService
         if (opp.IsClosed && opp.ActualCloseDate == null)
         {
             opp.ActualCloseDate = DateTime.UtcNow;
+        }
+
+        // Publish an integration event on the won transition so downstream
+        // modules (e.g. Finance) can react. Fire-and-forget via the bus.
+        if (!wasWon && opp.IsWon && _eventBus is not null)
+        {
+            _ = _eventBus.PublishAsync(new OpportunityWonIntegrationEvent
+            {
+                OpportunityId = opp.Id,
+                OpportunityName = opp.Name,
+                CustomerId = opp.CustomerId,
+                CustomerName = opp.CustomerId ?? opp.Name,
+                Amount = opp.Amount,
+                ProductCategory = opp.ProductCategory,
+                ProductDescription = opp.ProductDescription,
+                Quantity = opp.Quantity,
+                AssignedToEmployeeId = opp.AssignedToEmployeeId
+            });
         }
 
         return Task.FromResult(MapToDto(opp));
