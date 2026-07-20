@@ -1,0 +1,80 @@
+@page "/finance/invoices"
+@inject IInvoiceService InvoiceService
+@inject ISnackbar Snackbar
+
+<PageTitle>Invoices</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Class="flex-grow-1">
+            <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+            Invoices
+        </MudText>
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudTable Items="@_invoices" Hover="true" Elevation="2" Dense="true">
+            <HeaderContent>
+                <MudTh>Invoice #</MudTh>
+                <MudTh>Customer</MudTh>
+                <MudTh>Total</MudTh>
+                <MudTh>Balance</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Due</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Invoice #">@context.InvoiceNumber</MudTd>
+                <MudTd DataLabel="Customer">@context.CustomerName</MudTd>
+                <MudTd DataLabel="Total">@context.Total.ToString("C2")</MudTd>
+                <MudTd DataLabel="Balance">@context.BalanceDue.ToString("C2")</MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)">@context.Status</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Due">@(context.DueDate?.ToString("d") ?? "-")</MudTd>
+                <MudTd>
+                    @if (context.Status == "Draft")
+                    {
+                        <MudButton Size="Size.Small" Color="Color.Primary" OnClick="@(() => SendAsync(context.Id))">Send</MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<InvoiceDto> _invoices = new();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _invoices = (await InvoiceService.GetAllInvoicesAsync()).ToList();
+        _loading = false;
+    }
+
+    private async Task SendAsync(string id)
+    {
+        await InvoiceService.SendInvoiceAsync(id);
+        Snackbar.Add("Invoice sent", Severity.Success);
+        await LoadAsync();
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        "Draft" => Color.Default,
+        "Sent" => Color.Info,
+        "PartiallyPaid" => Color.Warning,
+        "Paid" => Color.Success,
+        "Overdue" => Color.Error,
+        _ => Color.Default
+    };
+}

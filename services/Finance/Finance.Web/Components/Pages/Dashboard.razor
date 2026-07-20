@@ -1,0 +1,96 @@
+@page "/finance"
+@page "/finance/home"
+@inject IFinanceReportService ReportService
+@inject NavigationManager Navigation
+
+<PageTitle>Finance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-2" />
+        Finance
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manage invoices, record payments, and track revenue
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_summary is not null)
+    {
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Outstanding</MudText>
+                        <MudText Typo="Typo.h5">@_summary.TotalOutstanding.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Overdue</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Error">@_summary.TotalOverdue.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Paid This Month</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Success">@_summary.TotalPaidThisMonth.ToString("C0")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Overdue Invoices</MudText>
+                        <MudText Typo="Typo.h5">@_summary.OverdueCount</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudCard Class="mud-card-hover" Style="height:100%;">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Invoices</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Create and manage customer invoices</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Color="Color.Primary" Href="/finance/invoices">View Invoices</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard Class="mud-card-hover" Style="height:100%;">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Success" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Payments</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Record and reconcile payments</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Color="Color.Primary" Href="/finance/payments">View Payments</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private FinanceSummaryDto? _summary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _summary = await ReportService.GetSummaryAsync();
+        _loading = false;
+    }
+}

@@ -1,5 +1,7 @@
-using CRM.Application.Services;
+using Finance.Application.Services;
 using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
+using Finance.Application.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
@@ -18,22 +20,25 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Register CRM services (using mock implementations for now)
-builder.Services.AddScoped<ILeadService, MockLeadService>();
-builder.Services.AddScoped<IOpportunityService, MockOpportunityService>();
-builder.Services.AddScoped<ICustomerService, MockCustomerService>();
-builder.Services.AddScoped<CRM.Application.Interfaces.IEmailTemplateService, MockEmailTemplateService>();
+// Shared in-memory data store for the mock services (singleton so data persists)
+builder.Services.AddSingleton<FinanceDataStore>();
+
+// Register Finance services (using mock implementations for now)
+builder.Services.AddScoped<IInvoiceService, MockInvoiceService>();
+builder.Services.AddScoped<IPaymentService, MockPaymentService>();
+builder.Services.AddScoped<IFinanceReportService, MockFinanceReportService>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
 
-// In-process event bus so CRM can publish integration events (e.g. OpportunityWon).
-// NOTE: this is in-process only; cross-service delivery to Finance requires a
-// real broker (see docs/FINANCE_MODULE_GUIDE.md).
+// In-process event bus + Finance consumers. When CRM (or a future broker
+// bridge) publishes OpportunityWon into this process, Finance creates a draft
+// invoice. See docs/FINANCE_MODULE_GUIDE.md for cross-service delivery.
 builder.Services.AddInProcessEventBus();
+builder.Services.AddIntegrationEventHandler<OpportunityWonIntegrationEvent, OpportunityWonHandler>();
 
 // Keep the module registered (retry on startup + heartbeat to survive registry restarts)
-builder.Services.AddHostedService<CRM.API.Services.ModuleRegistrationHostedService>();
+builder.Services.AddHostedService<Finance.API.Services.ModuleRegistrationHostedService>();
 
 // Health checks
 builder.Services.AddHealthChecks();
@@ -56,4 +61,3 @@ app.Run();
 
 // Exposed so WebApplicationFactory<Program> can bootstrap the API in functional tests.
 public partial class Program { }
-

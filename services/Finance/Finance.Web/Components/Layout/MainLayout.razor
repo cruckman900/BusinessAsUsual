@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-3" />
+        <MudText Typo="Typo.h6">Finance</MudText>
+        <MudSpacer />
+        <MudButton Href="/finance" Color="Color.Inherit">Dashboard</MudButton>
+        <MudButton Href="/finance/invoices" Color="Color.Inherit">Invoices</MudButton>
+        <MudButton Href="/finance/payments" Color="Color.Inherit">Payments</MudButton>
+        <MudButton Href="/finance/reports" Color="Color.Inherit">Reports</MudButton>
+    </MudAppBar>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>

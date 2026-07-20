@@ -112,6 +112,52 @@ services:
         limits:
           memory: 384M
 
+  finance-api:
+    build:
+      context: .
+      dockerfile: services/Finance/Finance.API/Dockerfile
+    image: bau/finance-api:latest
+    container_name: bau-finance-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5006:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Finance.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  finance-web:
+    build:
+      context: .
+      dockerfile: services/Finance/Finance.Web/Dockerfile
+    image: bau/finance-web:latest
+    container_name: bau-finance-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5009:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Finance.Web calls Finance.API over the internal compose network
+      - FinanceApi__Url=http://finance-api:80
+    depends_on:
+      - finance-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
 networks:
   bau-heavy:
     driver: bridge

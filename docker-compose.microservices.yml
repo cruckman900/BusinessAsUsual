@@ -81,6 +81,28 @@ services:
       retries: 5
       start_period: 20s
 
+  finance-api:
+    build:
+      context: .
+      dockerfile: services/Finance/Finance.API/Dockerfile
+    networks:
+      - bau
+    depends_on:
+      moduleregistry:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ModuleRegistry__Url=http://moduleregistry:80
+      - Finance__ApiBaseUrl=${PUBLIC_BASE_URL}
+      - Finance__UiEntryPoint=${PUBLIC_BASE_URL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   gateway:
     image: nginx:1.28-alpine
     networks:
@@ -89,6 +111,7 @@ services:
       - moduleregistry
       - hr-api
       - crm-api
+      - finance-api
     ports:
       # Loopback-only: the host's edge nginx proxies to this. Identical to the
       # prod override so Compose dedupes instead of binding twice.
