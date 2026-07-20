@@ -17,6 +17,13 @@ public sealed class AiOptions
     /// <summary>Maximum tokens the model may generate per response (cost guard).</summary>
     public int MaxOutputTokens { get; set; } = 512;
 
+    /// <summary>
+    /// Maximum seconds to wait for the provider before failing fast with a clean
+    /// "AI is busy" message instead of letting the request hang until the caller
+    /// (web app) times out. Guards against a slow/unresponsive provider.
+    /// </summary>
+    public int RequestTimeoutSeconds { get; set; } = 20;
+
     /// <summary>Free/demo tier used for the public test case (GitHub Models).</summary>
     public DemoTierOptions Demo { get; set; } = new();
 
