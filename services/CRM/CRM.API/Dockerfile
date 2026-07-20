@@ -9,6 +9,7 @@ COPY services/CRM/CRM.API/CRM.API.csproj services/CRM/CRM.API/
 COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
 COPY services/CRM/CRM.Contracts/CRM.Contracts.csproj services/CRM/CRM.Contracts/
 COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
+COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
 # Retry the isolated restore to survive transient NuGet connectivity on small
@@ -24,6 +25,7 @@ COPY services/CRM/CRM.API services/CRM/CRM.API
 COPY services/CRM/CRM.Application services/CRM/CRM.Application
 COPY services/CRM/CRM.Contracts services/CRM/CRM.Contracts
 COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
+COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
 RUN dotnet publish services/CRM/CRM.API/CRM.API.csproj -c Release -o /app/publish

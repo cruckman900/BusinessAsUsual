@@ -8,6 +8,7 @@ WORKDIR /src
 COPY services/CRM/CRM.Web/CRM.Web.csproj services/CRM/CRM.Web/
 COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
 COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
+COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
 RUN dotnet restore services/CRM/CRM.Web/CRM.Web.csproj
@@ -16,6 +17,7 @@ RUN dotnet restore services/CRM/CRM.Web/CRM.Web.csproj
 COPY services/CRM/CRM.Web services/CRM/CRM.Web
 COPY services/CRM/CRM.Application services/CRM/CRM.Application
 COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
+COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
 RUN dotnet publish services/CRM/CRM.Web/CRM.Web.csproj -c Release -o /app/publish
