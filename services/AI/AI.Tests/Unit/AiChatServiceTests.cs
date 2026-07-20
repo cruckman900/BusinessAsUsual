@@ -17,7 +17,8 @@ public class AiChatServiceTests
     {
         SystemPrompt = "You are a helpful assistant.",
         MaxInputChars = 100,
-        MaxOutputTokens = 256
+        MaxOutputTokens = 256,
+        RequestTimeoutSeconds = 20
     };
 
     private static AiChatService CreateService(
@@ -173,6 +174,21 @@ public class AiChatServiceTests
         var result = await service.AskAsync(new AiChatRequest("hello", null));
 
         Assert.Contains("Something went wrong", result.Answer);
+        Assert.Null(result.Model);
+    }
+
+    [Trait("Category", "Unit")]
+    [Fact]
+    public async Task AskAsync_ReturnsBusyMessage_WhenProviderTimesOut()
+    {
+        var options = DefaultOptions();
+        options.RequestTimeoutSeconds = 1;
+        var demo = new FakeChatClient { Delay = TimeSpan.FromSeconds(5) };
+        var service = CreateService(options, demo, null, new FakeCompanyDirectory());
+
+        var result = await service.AskAsync(new AiChatRequest("hello", null));
+
+        Assert.Contains("taking longer than usual", result.Answer);
         Assert.Null(result.Model);
     }
 

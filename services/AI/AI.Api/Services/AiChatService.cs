@@ -80,7 +80,13 @@ public sealed class AiChatService : IAiChatService
 
         try
         {
-            var response = await client.GetResponseAsync(messages, chatOptions, ct).ConfigureAwait(false);
+            // Fail fast if the provider is slow/unresponsive instead of hanging
+            // until the web caller times out. Link the caller's token with an
+            // internal timeout so either can cancel the provider call.
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, _options.RequestTimeoutSeconds)));
+
+            var response = await client.GetResponseAsync(messages, chatOptions, timeoutCts.Token).ConfigureAwait(false);
             var answer = response.Text;
             if (string.IsNullOrWhiteSpace(answer))
             {
@@ -88,6 +94,17 @@ public sealed class AiChatService : IAiChatService
             }
 
             return new AiChatResult(answer, tier.ToString(), response.ModelId);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Our internal timeout tripped (the caller did not cancel).
+            _logger.LogWarning(
+                "AI provider call timed out after {Timeout}s for tier {Tier}.",
+                _options.RequestTimeoutSeconds, tier);
+            return new AiChatResult(
+                "The AI service is taking longer than usual right now. Please try again in a moment.",
+                tier.ToString(),
+                null);
         }
         catch (Exception ex)
         {

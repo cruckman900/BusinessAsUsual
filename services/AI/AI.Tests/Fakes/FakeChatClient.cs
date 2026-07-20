@@ -20,11 +20,15 @@ public sealed class FakeChatClient : IChatClient
     }
 
     public bool ThrowOnCall { get; set; }
+
+    /// <summary>Optional delay before responding, used to exercise timeout handling.</summary>
+    public TimeSpan Delay { get; set; } = TimeSpan.Zero;
+
     public int CallCount { get; private set; }
     public IReadOnlyList<ChatMessage>? LastMessages { get; private set; }
     public ChatOptions? LastOptions { get; private set; }
 
-    public Task<ChatResponse> GetResponseAsync(
+    public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -38,12 +42,17 @@ public sealed class FakeChatClient : IChatClient
             throw new InvalidOperationException("Simulated provider failure.");
         }
 
+        if (Delay > TimeSpan.Zero)
+        {
+            await Task.Delay(Delay, cancellationToken).ConfigureAwait(false);
+        }
+
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, _responseText))
         {
             ModelId = _modelId,
             FinishReason = ChatFinishReason.Stop
         };
-        return Task.FromResult(response);
+        return response;
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
