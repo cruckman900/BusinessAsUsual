@@ -57,8 +57,8 @@ public sealed class DevTierOptions
 public sealed class DemoTierOptions
 {
     public string Provider { get; set; } = "GitHubModels";
-    public string Endpoint { get; set; } = "https://models.inference.ai.azure.com";
-    public string Model { get; set; } = "gpt-4o-mini";
+    public string Endpoint { get; set; } = "https://models.github.ai/inference";
+    public string Model { get; set; } = "openai/gpt-4o-mini";
 
     /// <summary>
     /// GitHub token. Supplied via user-secrets ("Ai:Demo:ApiKey") in dev or the
