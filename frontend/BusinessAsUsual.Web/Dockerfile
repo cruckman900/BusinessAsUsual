@@ -18,6 +18,8 @@ COPY services/HR/HR.Web/HR.Web.csproj services/HR/HR.Web/
 COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
 COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
 COPY services/CRM/CRM.Web/CRM.Web.csproj services/CRM/CRM.Web/
+# Shared core (event bus, integration events)
+COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
 RUN dotnet restore frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj
@@ -36,6 +38,8 @@ COPY services/HR/HR.Web services/HR/HR.Web
 COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
 COPY services/CRM/CRM.Application services/CRM/CRM.Application
 COPY services/CRM/CRM.Web services/CRM/CRM.Web
+# Shared core source
+COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
 RUN dotnet publish frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj -c Release -o /app/publish
