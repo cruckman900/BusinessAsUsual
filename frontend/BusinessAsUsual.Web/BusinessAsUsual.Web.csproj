@@ -47,6 +47,7 @@
     <ProjectReference Include="..\..\services\HR\HR.Infrastructure\HR.Infrastructure.csproj" />
     <ProjectReference Include="..\..\services\HR\HR.Web\HR.Web.csproj" />
     <ProjectReference Include="..\..\services\CRM\CRM.Web\CRM.Web.csproj" />
+    <ProjectReference Include="..\..\services\Finance\Finance.Web\Finance.Web.csproj" />
   </ItemGroup>
 
   <!-- This app references HR.Web and CRM.Web only to load their Razor component
