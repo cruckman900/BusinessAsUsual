@@ -81,6 +81,9 @@ namespace BusinessAsUsual.Web
             // Register CRM Module services (for embedded CRM.Web components)
             RegisterCRMModuleServices(builder.Services, builder.Configuration);
 
+            // Register Finance Module services (for embedded Finance.Web components)
+            RegisterFinanceModuleServices(builder.Services, builder.Configuration);
+
             if (builder.Environment.IsProduction())
             {
                 builder.Services.AddAWSService<IAmazonCloudWatch>();
@@ -175,6 +178,18 @@ namespace BusinessAsUsual.Web
             services.AddScoped<CRM.Application.Interfaces.IReportService, CRM.Application.Services.ReportService>();
             services.AddScoped<CRM.Application.Interfaces.IActivityService, CRM.Application.Services.MockActivityService>();
             services.AddScoped<CRM.Application.Interfaces.IEmailTemplateService, CRM.Application.Services.MockEmailTemplateService>();
+        }
+
+        /// <summary>
+        /// Registers Finance module services for embedded Finance.Web components.
+        /// Uses in-memory mock services backed by a shared singleton data store.
+        /// </summary>
+        private static void RegisterFinanceModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSingleton<Finance.Application.Services.FinanceDataStore>();
+            services.AddScoped<Finance.Application.Services.IInvoiceService, Finance.Application.Services.MockInvoiceService>();
+            services.AddScoped<Finance.Application.Services.IPaymentService, Finance.Application.Services.MockPaymentService>();
+            services.AddScoped<Finance.Application.Services.IFinanceReportService, Finance.Application.Services.MockFinanceReportService>();
         }
 
         /// <summary>

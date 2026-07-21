@@ -309,6 +309,49 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                     // Settings
                     new() { Label = "Settings", Route = "/crm/settings", Icon = Icons.Material.Filled.Settings }
                 }
+            },
+            new ModuleDto
+            {
+                ModuleId = "finance",
+                Key = "finance",
+                DisplayName = "Finance",
+                Description = "Invoicing, payments, and financial reporting",
+                UiEntryPoint = "/finance",
+                Icon = Icons.Material.Filled.AttachMoney,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Home", Route = "/finance", Icon = Icons.Material.Filled.Dashboard },
+
+                    // Invoices Group
+                    new()
+                    {
+                        Label = "Invoices",
+                        Route = "/finance/invoices",
+                        Icon = Icons.Material.Filled.ReceiptLong,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Invoices", Route = "/finance/invoices", Icon = Icons.Material.Filled.List }
+                        }
+                    },
+
+                    // Payments Group
+                    new()
+                    {
+                        Label = "Payments",
+                        Route = "/finance/payments",
+                        Icon = Icons.Material.Filled.Payments,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Payments", Route = "/finance/payments", Icon = Icons.Material.Filled.List }
+                        }
+                    },
+
+                    // Reports
+                    new() { Label = "Reports", Route = "/finance/reports", Icon = Icons.Material.Filled.Analytics }
+                }
             }
         };
     }
