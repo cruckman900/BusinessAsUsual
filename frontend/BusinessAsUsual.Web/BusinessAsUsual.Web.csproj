@@ -61,7 +61,8 @@
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
         Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/')) )
+                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/'))
+                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Finance.Web/')) )
                    And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))
                          Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
     </ItemGroup>
