@@ -31,6 +31,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Manage customer invoices and collections
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">@(_summary is not null ? _summary.TotalOutstanding.ToString("C0") : "—") Outstanding</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/receivables">
@@ -49,6 +50,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Track vendor bills and outgoing payments
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">@(_summary is not null ? _summary.OverdueCount.ToString() : "0") Overdue</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payables">
@@ -67,6 +69,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Create and manage customer invoices
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@(_summary is not null ? _summary.TotalOverdue.ToString("C0") : "—") Overdue</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/invoices">
@@ -85,6 +88,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Record and reconcile incoming payments
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">@(_summary is not null ? _summary.TotalPaidThisMonth.ToString("C0") : "—") This Month</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payments">
@@ -103,6 +107,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Run pay cycles and manage deductions
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Text">Bi-weekly</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payroll">
@@ -121,6 +126,7 @@
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                         Revenue trends and financial reporting
                     </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">6 Reports</MudChip>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/reports">

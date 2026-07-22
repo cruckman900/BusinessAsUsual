@@ -252,7 +252,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                 IsActive = true,
                 NavigationItems = new List<NavigationItemDto>
                 {
-                    new() { Label = "Home", Route = "/crm", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "Home", Route = "/crm", Icon = Icons.Material.Filled.Home },
 
                     // Leads Group
                     new() 
@@ -321,7 +321,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                 IsActive = true,
                 NavigationItems = new List<NavigationItemDto>
                 {
-                    new() { Label = "Home", Route = "/finance", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "Home", Route = "/finance", Icon = Icons.Material.Filled.Home },
 
                     // Accounts Receivable Group
                     new()
