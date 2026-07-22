@@ -323,16 +323,31 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                 {
                     new() { Label = "Home", Route = "/finance", Icon = Icons.Material.Filled.Dashboard },
 
-                    // Invoices Group
+                    // Accounts Receivable Group
                     new()
                     {
-                        Label = "Invoices",
-                        Route = "/finance/invoices",
+                        Label = "Accounts Receivable",
+                        Route = "/finance/receivables",
+                        Icon = Icons.Material.Filled.RequestQuote,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Invoices", Route = "/finance/invoices", Icon = Icons.Material.Filled.ReceiptLong },
+                            new() { Label = "Collections", Route = "/finance/receivables/collections", Icon = Icons.Material.Filled.NotificationsActive }
+                        }
+                    },
+
+                    // Accounts Payable Group
+                    new()
+                    {
+                        Label = "Accounts Payable",
+                        Route = "/finance/payables",
                         Icon = Icons.Material.Filled.ReceiptLong,
                         ExpandedByDefault = true,
                         Children = new List<NavigationItemDto>
                         {
-                            new() { Label = "All Invoices", Route = "/finance/invoices", Icon = Icons.Material.Filled.List }
+                            new() { Label = "Bills", Route = "/finance/payables/bills", Icon = Icons.Material.Filled.Description },
+                            new() { Label = "Vendor Payments", Route = "/finance/payables/vendor-payments", Icon = Icons.Material.Filled.Payment }
                         }
                     },
 
@@ -346,6 +361,20 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Payments", Route = "/finance/payments", Icon = Icons.Material.Filled.List }
+                        }
+                    },
+
+                    // Payroll Group
+                    new()
+                    {
+                        Label = "Payroll",
+                        Route = "/finance/payroll",
+                        Icon = Icons.Material.Filled.AccountBalanceWallet,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Pay Runs", Route = "/finance/payroll/pay-runs", Icon = Icons.Material.Filled.PlaylistAddCheck },
+                            new() { Label = "Deductions", Route = "/finance/payroll/deductions", Icon = Icons.Material.Filled.RemoveCircleOutline }
                         }
                     },
 
