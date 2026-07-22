@@ -1,0 +1,68 @@
+@page "/finance/payables"
+
+<PageTitle>Accounts Payable</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Accounts Payable</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-2" />
+        Accounts Payable
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Track vendor bills and outgoing payments
+    </MudText>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Bills</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Record and manage vendor bills
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payables/bills">
+                        View Bills
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Payment" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Vendor Payments</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Schedule and issue payments to vendors
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payables/vendor-payments">
+                        View Vendor Payments
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .mud-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mud-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

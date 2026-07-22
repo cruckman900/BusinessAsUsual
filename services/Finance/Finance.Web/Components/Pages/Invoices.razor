@@ -4,13 +4,24 @@
 
 <PageTitle>Invoices</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
-    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-        <MudText Typo="Typo.h4" Class="flex-grow-1">
-            <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
-            Invoices
-        </MudText>
-    </MudStack>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Invoices</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+                Invoices
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Create and manage customer invoices</MudText>
+        </div>
+    </div>
 
     @if (_loading)
     {
