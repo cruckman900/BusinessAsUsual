@@ -9,19 +9,22 @@
 # the deploy workflow renders this template into deploy/nginx/gateway.conf,
 # substituting the private IP:port of each service:
 #
-#   ${HR_UPSTREAM}        -> HEAVY private IP : hr-api  port   (e.g. 10.0.1.250:5041)
-#   ${CRM_UPSTREAM}       -> HEAVY private IP : crm-api port   (e.g. 10.0.1.250:5004)
-#   ${REGISTRY_UPSTREAM}  -> LIGHT private IP : registry port  (e.g. 10.0.1.175:5100)
+#   ${HR_UPSTREAM}        -> HEAVY private IP : hr-api      port (e.g. 10.0.1.250:5041)
+#   ${CRM_UPSTREAM}       -> HEAVY private IP : crm-api     port (e.g. 10.0.1.250:5004)
+#   ${FINANCE_UPSTREAM}   -> HEAVY private IP : finance-api port (e.g. 10.0.1.250:5006)
+#   ${REGISTRY_UPSTREAM}  -> LIGHT private IP : registry    port (e.g. 10.0.1.175:5100)
 #
 # Route map:
 #   /api/hr/*       -> hr-api        (mobile UI contract: /api/hr/mobile/*)
 #   /api/crm/*      -> crm-api       (mobile UI contract: /api/crm/mobile/*)
+#   /api/finance/*  -> finance-api   (mobile UI contract: /api/finance/mobile/*)
 #   /api/modules/*  -> moduleregistry (discovery: /api/modules/mobile)
 #   /health         -> moduleregistry (simple liveness)
 # ---------------------------------------------------------------------------
 
 upstream hr_api        { server ${HR_UPSTREAM}; }
 upstream crm_api       { server ${CRM_UPSTREAM}; }
+upstream finance_api   { server ${FINANCE_UPSTREAM}; }
 upstream registry_api  { server ${REGISTRY_UPSTREAM}; }
 
 server {
@@ -42,6 +45,11 @@ server {
 	# --- CRM module --------------------------------------------------------
 	location /api/crm/ {
 		proxy_pass http://crm_api;
+	}
+
+	# --- Finance module ----------------------------------------------------
+	location /api/finance/ {
+		proxy_pass http://finance_api;
 	}
 
 	# --- Module Registry (discovery) --------------------------------------
