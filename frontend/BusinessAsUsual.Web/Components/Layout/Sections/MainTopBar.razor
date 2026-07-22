@@ -13,6 +13,12 @@
         <MudSpacer />
 
         <div class="module-nav">
+            <MudNavLink Href="/dashboard"
+                        Match="NavLinkMatch.All"
+                        Class="topnav-link">
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-1" />
+                Dashboard
+            </MudNavLink>
             @foreach (var module in Modules)
             {
                 <MudNavLink Href="@module.Route"
@@ -87,6 +93,12 @@
     <MudDivider />
 
     <MudNavMenu Class="mobile-nav-menu">
+        <MudNavLink Href="/dashboard"
+                    Match="NavLinkMatch.All"
+                    Icon="@Icons.Material.Filled.Dashboard"
+                    OnClick="@CloseMobileMenu">
+            Dashboard
+        </MudNavLink>
         @foreach (var module in Modules)
         {
             <MudNavLink Href="@module.Route"
