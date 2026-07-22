@@ -1,0 +1,29 @@
+@page "/finance/payroll/deductions"
+
+<PageTitle>Deductions</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/payroll">Payroll</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Deductions</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.RemoveCircleOutline" Class="mr-2" />
+                Deductions
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage taxes, benefits, and withholdings</MudText>
+        </div>
+    </div>
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Construction">
+        Deductions is coming soon. This submodule is scaffolded and ready for data wiring.
+    </MudAlert>
+</MudContainer>

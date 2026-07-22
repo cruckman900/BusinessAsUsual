@@ -5,84 +5,186 @@
 
 <PageTitle>Finance</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Finance</MudText>
+    </div>
+
     <MudText Typo="Typo.h4" GutterBottom="true">
         <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-2" />
         Finance
     </MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-        Manage invoices, record payments, and track revenue
+        Manage receivables, payables, payroll, and track revenue
     </MudText>
 
-    @if (_loading)
-    {
-        <MudProgressCircular Indeterminate="true" />
-    }
-    else if (_summary is not null)
-    {
-        <MudGrid Class="mb-4">
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Outstanding</MudText>
-                        <MudText Typo="Typo.h5">@_summary.TotalOutstanding.ToString("C0")</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Overdue</MudText>
-                        <MudText Typo="Typo.h5" Color="Color.Error">@_summary.TotalOverdue.ToString("C0")</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Paid This Month</MudText>
-                        <MudText Typo="Typo.h5" Color="Color.Success">@_summary.TotalPaidThisMonth.ToString("C0")</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Overdue Invoices</MudText>
-                        <MudText Typo="Typo.h5">@_summary.OverdueCount</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+    <!-- Main Module Cards Grid -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <!-- Accounts Receivable -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Accounts Receivable</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage customer invoices and collections
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/receivables">
+                        View Receivables
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
 
-        <MudGrid>
-            <MudItem xs="12" md="6">
-                <MudCard Class="mud-card-hover" Style="height:100%;">
-                    <MudCardContent>
-                        <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">Invoices</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Create and manage customer invoices</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Color="Color.Primary" Href="/finance/invoices">View Invoices</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudCard Class="mud-card-hover" Style="height:100%;">
-                    <MudCardContent>
-                        <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Success" Size="Size.Large" />
-                        <MudText Typo="Typo.h6">Payments</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Record and reconcile payments</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Color="Color.Primary" Href="/finance/payments">View Payments</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-    }
+        <!-- Accounts Payable -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Accounts Payable</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Track vendor bills and outgoing payments
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payables">
+                        View Payables
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Invoices -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Invoices</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Create and manage customer invoices
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/invoices">
+                        View Invoices
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Payments -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Payments" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Payments</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Record and reconcile incoming payments
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payments">
+                        View Payments
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Payroll -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Payroll</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Run pay cycles and manage deductions
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payroll">
+                        View Payroll
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Reports -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Reports & Analytics</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Revenue trends and financial reporting
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/reports">
+                        View Reports
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Stats -->
+    <MudPaper Class="pa-4 mb-6" Elevation="1">
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.QueryStats" Class="mr-2" />
+            Quick Stats
+        </MudText>
+        @if (_loading)
+        {
+            <div class="d-flex justify-center align-center" style="min-height: 120px;">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else if (_summary is not null)
+        {
+            <MudGrid Spacing="2">
+                <MudItem xs="6" sm="3">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h4" Color="Color.Primary">@_summary.TotalOutstanding.ToString("C0")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Outstanding</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h4" Color="Color.Error">@_summary.TotalOverdue.ToString("C0")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Overdue</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h4" Color="Color.Success">@_summary.TotalPaidThisMonth.ToString("C0")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Paid This Month</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h4" Color="Color.Warning">@_summary.OverdueCount</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Overdue Invoices</MudText>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudPaper>
 </MudContainer>
+
+<style>
+    .mud-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mud-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
 
 @code {
     private bool _loading = true;
