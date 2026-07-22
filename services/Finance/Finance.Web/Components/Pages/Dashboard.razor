@@ -173,6 +173,79 @@
             </MudGrid>
         }
     </MudPaper>
+
+    <!-- About & Module Info Grid -->
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                    About Finance Module
+                </MudText>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    The Finance module provides comprehensive financial management capabilities including:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Accounts Receivable</strong> - Manage customer invoices and collections
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Accounts Payable</strong> - Track vendor bills and outgoing payments
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Invoicing</strong> - Create, deliver, and track customer invoices
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Payments</strong> - Record and reconcile incoming payments
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Payroll</strong> - Run pay cycles and manage deductions
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Reporting &amp; Analytics</strong> - Revenue trends and financial reporting
+                    </MudListItem>
+                </MudList>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-auto pt-4">
+                    This module is dynamically loaded via the Module Registry Service and provides both web UI and mobile API contracts.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                    Module Info
+                </MudText>
+                <MudStack Spacing="2" Class="flex-grow-1">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Module ID</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">finance</MudChip>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                        <MudText Typo="Typo.body2">1.0.0</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
+                        <MudText Typo="Typo.body2">5006</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Web UI Port</MudText>
+                        <MudText Typo="Typo.body2">5009</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Mobile Support</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Yes</MudChip>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 <style>
