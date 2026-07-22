@@ -1,4 +1,5 @@
 @implements IDisposable
+@inject IJSRuntime JS
 
 <div class="footer-section footer-timeclock">
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -71,6 +72,8 @@
             _clockedIn = true;
             StartTimer();
         }
+
+        _ = SaveStateAsync();
     }
 
     private void StartTimer()
@@ -96,6 +99,78 @@
         }
 
         return $"{(int)value.TotalHours:00}:{value.Minutes:00}:{value.Seconds:00}";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await LoadStateAsync();
+    }
+
+    private async Task LoadStateAsync()
+    {
+        TimeClockState? state = null;
+        try
+        {
+            state = await JS.InvokeAsync<TimeClockState?>("timeClock.load");
+        }
+        catch
+        {
+            // storage unavailable — start fresh
+        }
+
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+        if (state is not null && state.Date == today)
+        {
+            _accumulated = TimeSpan.FromSeconds(Math.Max(0, state.AccumulatedSeconds));
+
+            if (state.ClockedIn && DateTime.TryParse(state.SessionStart, out var start))
+            {
+                _sessionStart = start;
+                _clockedIn = true;
+                StartTimer();
+            }
+        }
+        else if (state is not null)
+        {
+            // Stale day — reset and persist a clean slate
+            await SaveStateAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SaveStateAsync()
+    {
+        var state = new TimeClockState
+        {
+            Date = DateTime.Now.ToString("yyyy-MM-dd"),
+            AccumulatedSeconds = _accumulated.TotalSeconds,
+            ClockedIn = _clockedIn,
+            SessionStart = _clockedIn ? _sessionStart.ToString("o") : null
+        };
+
+        try
+        {
+            await JS.InvokeVoidAsync("timeClock.save", state);
+        }
+        catch
+        {
+            // ignore storage errors
+        }
+    }
+
+    private sealed class TimeClockState
+    {
+        public string Date { get; set; } = string.Empty;
+        public double AccumulatedSeconds { get; set; }
+        public bool ClockedIn { get; set; }
+        public string? SessionStart { get; set; }
     }
 
     public void Dispose() => StopTimer();
