@@ -10,6 +10,7 @@ COPY services/HR/HR.Application/HR.Application.csproj services/HR/HR.Application
 COPY services/HR/HR.Infrastructure/HR.Infrastructure.csproj services/HR/HR.Infrastructure/
 COPY services/HR/HR.Contracts/HR.Contracts.csproj services/HR/HR.Contracts/
 COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
+COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
 RUN dotnet restore services/HR/HR.API/HR.API.csproj
@@ -20,6 +21,7 @@ COPY services/HR/HR.Application services/HR/HR.Application
 COPY services/HR/HR.Infrastructure services/HR/HR.Infrastructure
 COPY services/HR/HR.Contracts services/HR/HR.Contracts
 COPY services/HR/HR.Domain services/HR/HR.Domain
+COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
 RUN dotnet publish services/HR/HR.API/HR.API.csproj -c Release -o /app/publish
