@@ -120,37 +120,26 @@
             ? "You have reached 8 hours for today"
             : $"Approaching 8 hours ({FormatElapsed(DailyLimit - Elapsed)} remaining)";
 
-    private IEnumerable<ClockAction> CurrentActions => _phase switch
+    // Direction-driven choices: when clocked out, every clock-in reason is
+    // available; when clocked in, every clock-out reason is available. The user
+    // picks the reason, not just the next stage of a phase.
+    private static readonly ClockAction[] ClockInActions =
     {
-        ClockPhase.NotStarted => new[]
-        {
-            new ClockAction("Start of day", Icons.Material.Filled.WbSunny, Color.Success, ClockPhase.Working, "start-day", true)
-        },
-        ClockPhase.OnBreak => new[]
-        {
-            new ClockAction("Back from break", Icons.Material.Filled.DirectionsRun, Color.Success, ClockPhase.Working, "return", true)
-        },
-        ClockPhase.OnLunch => new[]
-        {
-            new ClockAction("Back from lunch", Icons.Material.Filled.Restaurant, Color.Success, ClockPhase.Working, "return", true)
-        },
-        ClockPhase.DayEnded => new[]
-        {
-            new ClockAction("Working extra hours", Icons.Material.Filled.MoreTime, Color.Warning, ClockPhase.WorkingExtra, "extra", true)
-        },
-        ClockPhase.Working => new[]
-        {
-            new ClockAction("Take a break", Icons.Material.Filled.Coffee, Color.Info, ClockPhase.OnBreak, "break", false),
-            new ClockAction("Go to lunch", Icons.Material.Filled.LunchDining, Color.Info, ClockPhase.OnLunch, "lunch", false),
-            new ClockAction("Clock out for the day", Icons.Material.Filled.NightsStay, Color.Error, ClockPhase.DayEnded, "end-day", false)
-        },
-        ClockPhase.WorkingExtra => new[]
-        {
-            new ClockAction("Take a break", Icons.Material.Filled.Coffee, Color.Info, ClockPhase.OnBreak, "break", false),
-            new ClockAction("Done for the day", Icons.Material.Filled.NightsStay, Color.Error, ClockPhase.DayEnded, "end-day", false)
-        },
-        _ => Array.Empty<ClockAction>()
+        new ClockAction("Start of day", Icons.Material.Filled.WbSunny, Color.Success, ClockPhase.Working, "start-day", true),
+        new ClockAction("Back from break", Icons.Material.Filled.DirectionsRun, Color.Success, ClockPhase.Working, "return", true),
+        new ClockAction("Back from lunch", Icons.Material.Filled.Restaurant, Color.Success, ClockPhase.Working, "return", true),
+        new ClockAction("Start extra hours", Icons.Material.Filled.MoreTime, Color.Warning, ClockPhase.WorkingExtra, "extra", true)
     };
+
+    private static readonly ClockAction[] ClockOutActions =
+    {
+        new ClockAction("Take a break", Icons.Material.Filled.Coffee, Color.Info, ClockPhase.OnBreak, "break", false),
+        new ClockAction("Go to lunch", Icons.Material.Filled.LunchDining, Color.Info, ClockPhase.OnLunch, "lunch", false),
+        new ClockAction("Clock out for the day", Icons.Material.Filled.NightsStay, Color.Error, ClockPhase.DayEnded, "end-day", false)
+    };
+
+    private IEnumerable<ClockAction> CurrentActions =>
+        _clockedIn ? ClockOutActions : ClockInActions;
 
     private void OpenDialog()
     {
@@ -167,6 +156,13 @@
         }
         else
         {
+            // Starting a brand-new day resets the day's total; other clock-ins
+            // (back from break/lunch, extra hours) resume the running total.
+            if (action.PunchAction == "start-day")
+            {
+                _accumulated = TimeSpan.Zero;
+            }
+
             _sessionStart = DateTime.Now;
             _clockedIn = true;
             StartTimer();
@@ -178,10 +174,10 @@
         _ = SendPunchAsync(action);
     }
 
-    // No auth yet — use a stable placeholder employee until identity is wired in,
-    // consistent with the rest of the app's current dev/stub approach.
-    private const string PlaceholderEmployeeId = "EMP-0001";
-    private const string PlaceholderEmployeeName = "Demo Employee";
+    // No real auth yet — punch under the admin/password test account so the
+    // clock -> HR timesheet -> Finance payroll flow can be exercised end-to-end.
+    private const string PlaceholderEmployeeId = "admin";
+    private const string PlaceholderEmployeeName = "Administrator";
 
     private async Task SendPunchAsync(ClockAction action)
     {

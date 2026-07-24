@@ -40,6 +40,14 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
+// Named HTTP client for the HR API so the Timesheets page can read live
+// punch-based timesheets recorded by the time clock.
+var hrApiUrl = builder.Configuration["HrService:Url"] ?? "http://localhost:5041";
+builder.Services.AddHttpClient("HrApi", client =>
+{
+    client.BaseAddress = new Uri(hrApiUrl);
+});
+
 // CORS configuration for iframe embedding
 builder.Services.AddCors(options =>
 {
