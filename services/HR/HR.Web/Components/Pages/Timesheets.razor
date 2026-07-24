@@ -1,8 +1,10 @@
 @page "/hr/timesheets"
 @rendermode InteractiveServer
+@using System.Net.Http.Json
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Timesheets - HR</PageTitle>
 
@@ -29,6 +31,83 @@
                     Submit Timesheet
                 </MudButton>
             </div>
+
+            <MudPaper Class="pa-4 mb-6" Elevation="1">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.PunchClock" Class="mr-2" />
+                        Time Clock Timesheets (Live)
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="LoadLiveTimesheetsAsync">
+                        Refresh
+                    </MudButton>
+                </div>
+
+                @if (isLoadingLive)
+                {
+                    <div class="d-flex justify-center align-center" style="min-height: 120px;">
+                        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(liveError))
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.CloudOff">
+                        Could not reach HR.API for live punches: @liveError
+                    </MudAlert>
+                }
+                else if (liveTimesheets.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Info">
+                        No time-clock activity yet. Use the footer time clock to punch in and out — entries will appear here.
+                    </MudAlert>
+                }
+                else
+                {
+                    @foreach (var sheet in liveTimesheets.OrderByDescending(t => t.WorkDate))
+                    {
+                        <MudExpansionPanels Elevation="0" Class="mb-2">
+                            <MudExpansionPanel>
+                                <TitleContent>
+                                    <div class="d-flex align-center justify-space-between" style="width: 100%;">
+                                        <div class="d-flex align-center">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                                @GetInitials(sheet.EmployeeName)
+                                            </MudAvatar>
+                                            <div>
+                                                <MudText Typo="Typo.body2">@sheet.EmployeeName</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@sheet.WorkDate.ToString("ddd, MMM dd, yyyy")</MudText>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@sheet.TotalWorkedHours.ToString("0.00") hrs</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="@GetLiveStatusColor(sheet.Status)" Variant="Variant.Filled">@sheet.Status</MudChip>
+                                        </div>
+                                    </div>
+                                </TitleContent>
+                                <ChildContent>
+                                    <MudTimeline TimelinePosition="TimelinePosition.Start">
+                                        @foreach (var entry in sheet.Entries.OrderBy(e => e.PunchedAtUtc))
+                                        {
+                                            <MudTimelineItem Color="@(entry.IsClockIn ? Color.Success : Color.Error)" Size="Size.Small">
+                                                <div class="d-flex align-center justify-space-between">
+                                                    <div>
+                                                        <MudText Typo="Typo.body2">
+                                                            @(entry.IsClockIn ? "Clock In" : "Clock Out") — @FormatAction(entry.Action)
+                                                        </MudText>
+                                                    </div>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @entry.PunchedAtUtc.ToLocalTime().ToString("h:mm:ss tt")
+                                                    </MudText>
+                                                </div>
+                                            </MudTimelineItem>
+                                        }
+                                    </MudTimeline>
+                                </ChildContent>
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    }
+                }
+            </MudPaper>
 
             @if (isLoading)
             {
@@ -191,6 +270,79 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadTimesheetsAsync();
+        await LoadLiveTimesheetsAsync();
+    }
+
+    // ----- Live time-clock timesheets (real punch data from HR.API) -----
+
+    private List<TimesheetDto> liveTimesheets = new();
+    private bool isLoadingLive = true;
+    private string? liveError;
+
+    private async Task LoadLiveTimesheetsAsync()
+    {
+        isLoadingLive = true;
+        liveError = null;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("HrApi");
+            var result = await client.GetFromJsonAsync<List<TimesheetDto>>("api/hr/timeclock/timesheets");
+            liveTimesheets = result ?? new List<TimesheetDto>();
+        }
+        catch (Exception ex)
+        {
+            liveError = ex.Message;
+            liveTimesheets = new List<TimesheetDto>();
+        }
+        finally
+        {
+            isLoadingLive = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string FormatAction(string action) => action switch
+    {
+        "start-day" => "Start of day",
+        "end-day" => "End of day",
+        "break" => "Break",
+        "lunch" => "Lunch",
+        "return" => "Return",
+        "extra" => "Extra hours",
+        _ => action
+    };
+
+    private static Color GetLiveStatusColor(string status) => status switch
+    {
+        "Submitted" => Color.Info,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Default
+    };
+
+    public class TimesheetDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
+        public string EmployeeName { get; set; } = string.Empty;
+        public DateTime WorkDate { get; set; }
+        public decimal TotalWorkedHours { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public DateTime? SubmittedAtUtc { get; set; }
+        public List<TimeEntryDto> Entries { get; set; } = new();
+    }
+
+    public class TimeEntryDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
+        public string EmployeeName { get; set; } = string.Empty;
+        public DateTime WorkDate { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public bool IsClockIn { get; set; }
+        public DateTime PunchedAtUtc { get; set; }
     }
 
     private async Task LoadTimesheetsAsync()
