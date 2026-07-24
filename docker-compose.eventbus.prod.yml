@@ -1,0 +1,70 @@
+version: "3.8"
+
+# ============================================================================
+# PRODUCTION event-bus stack — Amazon MQ for RabbitMQ (managed, replicated, TLS)
+# ============================================================================
+#
+# Unlike docker-compose.eventbus.yml (which bundles a self-hosted RabbitMQ for
+# local/fallback use), this file DOES NOT run a broker. It expects a managed
+# Amazon MQ for RabbitMQ broker to already exist, and points the HR and Finance
+# APIs at it over TLS (amqps / 5671).
+#
+# All broker host/credentials come from the environment (inject via your CI/CD,
+# ECS task definition, or a gitignored .env pulled from AWS Secrets Manager).
+# Nothing sensitive is committed. See .env.example for the required variables.
+#
+# Usage (after populating .env from Secrets Manager):
+#   docker compose --env-file .env -f docker-compose.eventbus.prod.yml up --build -d
+#
+# Required env vars:
+#   MQ_HOST        e.g. b-xxxxxxxx-xxxx.mq.us-east-1.amazonaws.com  (no scheme)
+#   MQ_USERNAME    Amazon MQ broker user
+#   MQ_PASSWORD    Amazon MQ broker password (from Secrets Manager)
+#   MQ_VHOST       virtual host (default "/")
+
+services:
+  hr-api:
+    build:
+      context: .
+      dockerfile: services/HR/HR.API/Dockerfile
+    restart: unless-stopped
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5041:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - EventBus__Provider=Broker
+      - EventBus__RabbitMq__Host=${MQ_HOST:?MQ_HOST is required}
+      - EventBus__RabbitMq__Port=5671
+      - EventBus__RabbitMq__UseSsl=true
+      - EventBus__RabbitMq__VirtualHost=${MQ_VHOST:-/}
+      - EventBus__RabbitMq__Username=${MQ_USERNAME:?MQ_USERNAME is required}
+      - EventBus__RabbitMq__Password=${MQ_PASSWORD:?MQ_PASSWORD is required}
+      - EventBus__RabbitMq__RetryLimit=${MQ_RETRY_LIMIT:-5}
+
+  finance-api:
+    build:
+      context: .
+      dockerfile: services/Finance/Finance.API/Dockerfile
+    restart: unless-stopped
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5051:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - EventBus__Provider=Broker
+      - EventBus__RabbitMq__Host=${MQ_HOST:?MQ_HOST is required}
+      - EventBus__RabbitMq__Port=5671
+      - EventBus__RabbitMq__UseSsl=true
+      - EventBus__RabbitMq__VirtualHost=${MQ_VHOST:-/}
+      - EventBus__RabbitMq__Username=${MQ_USERNAME:?MQ_USERNAME is required}
+      - EventBus__RabbitMq__Password=${MQ_PASSWORD:?MQ_PASSWORD is required}
+      - EventBus__RabbitMq__RetryLimit=${MQ_RETRY_LIMIT:-5}
+
+networks:
+  BusinessAsUsual:
+    driver: bridge

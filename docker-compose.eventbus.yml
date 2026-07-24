@@ -1,0 +1,80 @@
+version: "3.8"
+
+# Event-bus stack: RabbitMQ broker plus the HR and Finance APIs wired to publish
+# and consume integration events across process boundaries.
+#
+# Usage:
+#   docker compose -f docker-compose.eventbus.yml up --build
+#
+# RabbitMQ management UI: http://localhost:15672  (user: bau)
+# Override RABBITMQ_PASSWORD via environment before running in anything real.
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-bau}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-bau-dev-password}
+    volumes:
+      # Durable storage so queued messages and definitions survive restarts.
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  hr-api:
+    build:
+      context: .
+      dockerfile: services/HR/HR.API/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5041:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - EventBus__Provider=Broker
+      - EventBus__RabbitMq__Host=rabbitmq
+      - EventBus__RabbitMq__Port=5672
+      - EventBus__RabbitMq__UseSsl=false
+      - EventBus__RabbitMq__Username=${RABBITMQ_USER:-bau}
+      - EventBus__RabbitMq__Password=${RABBITMQ_PASSWORD:-bau-dev-password}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  finance-api:
+    build:
+      context: .
+      dockerfile: services/Finance/Finance.API/Dockerfile
+    networks:
+      - BusinessAsUsual
+    ports:
+      - "5051:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - EventBus__Provider=Broker
+      - EventBus__RabbitMq__Host=rabbitmq
+      - EventBus__RabbitMq__Port=5672
+      - EventBus__RabbitMq__UseSsl=false
+      - EventBus__RabbitMq__Username=${RABBITMQ_USER:-bau}
+      - EventBus__RabbitMq__Password=${RABBITMQ_PASSWORD:-bau-dev-password}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  BusinessAsUsual:
+    driver: bridge
