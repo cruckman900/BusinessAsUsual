@@ -72,6 +72,26 @@ namespace BusinessAsUsual.Web
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 
+            // Register named HttpClient for the HR microservice (services/HR/HR.API).
+            // The footer time-clock widget resolves this via IHttpClientFactory to POST
+            // punches to HR, which records timesheets and drives the HR -> Finance flow.
+            var hrServiceUrl = builder.Configuration["HrService:Url"] ?? "http://localhost:5041";
+            builder.Services.AddHttpClient("HrApi", client =>
+            {
+                client.BaseAddress = new Uri(hrServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // Register named HttpClient for the Finance microservice (services/Finance/Finance.API).
+            // The Pay Runs page reaches payroll data over HTTP because the PayrollDataStore /
+            // TimesheetSubmittedHandler live in the Finance.API process, not in this frontend host.
+            var financeServiceUrl = builder.Configuration["FinanceService:Url"] ?? "http://localhost:5007";
+            builder.Services.AddHttpClient("FinanceApi", client =>
+            {
+                client.BaseAddress = new Uri(financeServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
             // Register Master Navigation Orchestrator
             builder.Services.AddScoped<ModuleRouteInterceptor>();
 
