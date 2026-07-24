@@ -1,3 +1,4 @@
+using BusinessAsUsual.Core.Events;
 using HR.Application.Services;
 using HR.Domain.Repositories;
 using HR.Infrastructure;
@@ -42,6 +43,15 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+// Event bus (in-process by default, or a real broker when EventBus:Provider=Broker)
+// + HR timekeeping. Time-clock punches are recorded into an in-memory (EF-ready)
+// store and published as integration events; on an end-of-day punch HR closes the
+// timesheet and publishes TimesheetSubmitted so Finance can hold it as pending
+// payroll. HR is a publisher only, so no handlers are declared here.
+builder.Services.AddEventBus(builder.Configuration, _ => { });
+builder.Services.AddSingleton<TimekeepingDataStore>();
+builder.Services.AddScoped<ITimekeepingService, TimekeepingService>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();

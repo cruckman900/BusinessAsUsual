@@ -23,6 +23,10 @@ builder.Services.AddCors(options =>
 // Shared in-memory data store for the mock services (singleton so data persists)
 builder.Services.AddSingleton<FinanceDataStore>();
 
+// Payroll: in-memory store for HR-submitted timesheets and pay runs.
+builder.Services.AddSingleton<PayrollDataStore>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
+
 // Register Finance services (using mock implementations for now)
 builder.Services.AddScoped<IInvoiceService, MockInvoiceService>();
 builder.Services.AddScoped<IPaymentService, MockPaymentService>();
@@ -31,11 +35,15 @@ builder.Services.AddScoped<IFinanceReportService, MockFinanceReportService>();
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
 
-// In-process event bus + Finance consumers. When CRM (or a future broker
-// bridge) publishes OpportunityWon into this process, Finance creates a draft
-// invoice. See docs/FINANCE_MODULE_GUIDE.md for cross-service delivery.
-builder.Services.AddInProcessEventBus();
-builder.Services.AddIntegrationEventHandler<OpportunityWonIntegrationEvent, OpportunityWonHandler>();
+// Event bus (in-process by default, or a real broker when EventBus:Provider=Broker)
+// + Finance consumers. When CRM publishes OpportunityWon, Finance creates a draft
+// invoice; when HR publishes TimesheetSubmitted, Finance holds it as pending payroll.
+// In broker mode these arrive cross-process over RabbitMQ. See the WIP doc for details.
+builder.Services.AddEventBus(builder.Configuration, bus =>
+{
+    bus.AddHandler<OpportunityWonIntegrationEvent, OpportunityWonHandler>();
+    bus.AddHandler<TimesheetSubmittedIntegrationEvent, TimesheetSubmittedHandler>();
+});
 
 // Keep the module registered (retry on startup + heartbeat to survive registry restarts)
 builder.Services.AddHostedService<Finance.API.Services.ModuleRegistrationHostedService>();

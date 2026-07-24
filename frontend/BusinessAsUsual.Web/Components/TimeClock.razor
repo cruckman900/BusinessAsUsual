@@ -1,14 +1,25 @@
 @implements IDisposable
+@using System.Net.Http.Json
 @inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
+@inject ILogger<TimeClock> Logger
+
+<style>
+    /* Footer sits at the bottom of the viewport, so its tooltips must open
+       upward and float above the footer seam instead of pushing the page. */
+    .footer-timeclock-tooltip {
+        z-index: var(--mud-zindex-tooltip, 1600) !important;
+    }
+</style>
 
 <div class="footer-section footer-timeclock">
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-        <MudTooltip Text="@(_clockedIn ? "Clock out" : "Clock in")">
+        <MudTooltip Text="@(_clockedIn ? "Clock out" : "Clock in")" Placement="Placement.Top" Class="footer-timeclock-tooltip">
             <MudButton Variant="Variant.Filled"
                        Size="Size.Small"
                        Color="@(_clockedIn ? Color.Error : Color.Success)"
                        StartIcon="@(_clockedIn ? Icons.Material.Filled.StopCircle : Icons.Material.Filled.PlayCircle)"
-                       OnClick="ToggleClock">
+                       OnClick="OpenDialog">
                 @(_clockedIn ? "Clock Out" : "Clock In")
             </MudButton>
         </MudTooltip>
@@ -24,21 +35,61 @@
 
         @if (IsNearLimit)
         {
-            <MudTooltip Text="@LimitTooltip">
+            <MudTooltip Text="@LimitTooltip" Placement="Placement.Top" Class="footer-timeclock-tooltip">
                 <MudIcon Icon="@Icons.Material.Filled.Warning" Color="@TimeColor" Size="Size.Small" />
             </MudTooltip>
         }
     </MudStack>
 </div>
 
+<MudDialog @bind-Visible="_dialogOpen" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="d-flex align-center">
+            <MudIcon Icon="@(_clockedIn ? Icons.Material.Filled.StopCircle : Icons.Material.Filled.PlayCircle)"
+                     Color="@(_clockedIn ? Color.Error : Color.Success)"
+                     Class="mr-2" />
+            @(_clockedIn ? "Clock Out" : "Clock In")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+            @DialogPrompt
+        </MudText>
+        <MudStack Spacing="2">
+            @foreach (var action in CurrentActions)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="@action.Color"
+                           FullWidth="true"
+                           StartIcon="@action.Icon"
+                           OnClick="@(() => SelectAction(action))">
+                    @action.Label
+                </MudButton>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _dialogOpen = false)">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private static readonly TimeSpan DailyLimit = TimeSpan.FromHours(8);
     private static readonly TimeSpan WarningThreshold = TimeSpan.FromHours(7);
 
     private bool _clockedIn;
+    private ClockPhase _phase = ClockPhase.NotStarted;
     private DateTime _sessionStart;
     private TimeSpan _accumulated = TimeSpan.Zero;
     private System.Threading.Timer? _timer;
+
+    private bool _dialogOpen;
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
 
     private TimeSpan Elapsed =>
         _clockedIn ? _accumulated + (DateTime.Now - _sessionStart) : _accumulated;
@@ -50,15 +101,63 @@
         Elapsed >= WarningThreshold ? Color.Warning :
         Color.Primary;
 
-    private string StatusText =>
-        _clockedIn ? "Clocked in" : "Clocked out";
+    private string StatusText => _phase switch
+    {
+        ClockPhase.NotStarted => "Not started",
+        ClockPhase.Working => "Clocked in",
+        ClockPhase.OnBreak => "On break",
+        ClockPhase.OnLunch => "At lunch",
+        ClockPhase.DayEnded => "Day ended",
+        ClockPhase.WorkingExtra => "Extra hours",
+        _ => _clockedIn ? "Clocked in" : "Clocked out"
+    };
+
+    private string DialogPrompt =>
+        _clockedIn ? "What are you clocking out for?" : "What are you clocking in for?";
 
     private string LimitTooltip =>
         Elapsed >= DailyLimit
             ? "You have reached 8 hours for today"
             : $"Approaching 8 hours ({FormatElapsed(DailyLimit - Elapsed)} remaining)";
 
-    private void ToggleClock()
+    private IEnumerable<ClockAction> CurrentActions => _phase switch
+    {
+        ClockPhase.NotStarted => new[]
+        {
+            new ClockAction("Start of day", Icons.Material.Filled.WbSunny, Color.Success, ClockPhase.Working, "start-day", true)
+        },
+        ClockPhase.OnBreak => new[]
+        {
+            new ClockAction("Back from break", Icons.Material.Filled.DirectionsRun, Color.Success, ClockPhase.Working, "return", true)
+        },
+        ClockPhase.OnLunch => new[]
+        {
+            new ClockAction("Back from lunch", Icons.Material.Filled.Restaurant, Color.Success, ClockPhase.Working, "return", true)
+        },
+        ClockPhase.DayEnded => new[]
+        {
+            new ClockAction("Working extra hours", Icons.Material.Filled.MoreTime, Color.Warning, ClockPhase.WorkingExtra, "extra", true)
+        },
+        ClockPhase.Working => new[]
+        {
+            new ClockAction("Take a break", Icons.Material.Filled.Coffee, Color.Info, ClockPhase.OnBreak, "break", false),
+            new ClockAction("Go to lunch", Icons.Material.Filled.LunchDining, Color.Info, ClockPhase.OnLunch, "lunch", false),
+            new ClockAction("Clock out for the day", Icons.Material.Filled.NightsStay, Color.Error, ClockPhase.DayEnded, "end-day", false)
+        },
+        ClockPhase.WorkingExtra => new[]
+        {
+            new ClockAction("Take a break", Icons.Material.Filled.Coffee, Color.Info, ClockPhase.OnBreak, "break", false),
+            new ClockAction("Done for the day", Icons.Material.Filled.NightsStay, Color.Error, ClockPhase.DayEnded, "end-day", false)
+        },
+        _ => Array.Empty<ClockAction>()
+    };
+
+    private void OpenDialog()
+    {
+        _dialogOpen = true;
+    }
+
+    private void SelectAction(ClockAction action)
     {
         if (_clockedIn)
         {
@@ -73,7 +172,52 @@
             StartTimer();
         }
 
+        _phase = action.ResultPhase;
+        _dialogOpen = false;
         _ = SaveStateAsync();
+        _ = SendPunchAsync(action);
+    }
+
+    // No auth yet — use a stable placeholder employee until identity is wired in,
+    // consistent with the rest of the app's current dev/stub approach.
+    private const string PlaceholderEmployeeId = "EMP-0001";
+    private const string PlaceholderEmployeeName = "Demo Employee";
+
+    private async Task SendPunchAsync(ClockAction action)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("HrApi");
+            var payload = new PunchPayload
+            {
+                EmployeeId = PlaceholderEmployeeId,
+                EmployeeName = PlaceholderEmployeeName,
+                Action = action.PunchAction,
+                IsClockIn = action.IsClockIn
+            };
+
+            var response = await client.PostAsJsonAsync("api/hr/timeclock/punch", payload);
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.LogWarning(
+                    "Time-clock punch '{Action}' failed with status {StatusCode}",
+                    action.PunchAction, (int)response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            // The clock's local UI state is authoritative for the widget; a failed
+            // punch post should not break the user's experience.
+            Logger.LogWarning(ex, "Time-clock punch '{Action}' could not reach HR.API", action.PunchAction);
+        }
+    }
+
+    private sealed class PunchPayload
+    {
+        public string EmployeeId { get; set; } = string.Empty;
+        public string EmployeeName { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public bool IsClockIn { get; set; }
     }
 
     private void StartTimer()
@@ -128,6 +272,7 @@
         if (state is not null && state.Date == today)
         {
             _accumulated = TimeSpan.FromSeconds(Math.Max(0, state.AccumulatedSeconds));
+            _phase = state.Phase;
 
             if (state.ClockedIn && DateTime.TryParse(state.SessionStart, out var start))
             {
@@ -152,7 +297,8 @@
             Date = DateTime.Now.ToString("yyyy-MM-dd"),
             AccumulatedSeconds = _accumulated.TotalSeconds,
             ClockedIn = _clockedIn,
-            SessionStart = _clockedIn ? _sessionStart.ToString("o") : null
+            SessionStart = _clockedIn ? _sessionStart.ToString("o") : null,
+            Phase = _phase
         };
 
         try
@@ -171,7 +317,20 @@
         public double AccumulatedSeconds { get; set; }
         public bool ClockedIn { get; set; }
         public string? SessionStart { get; set; }
+        public ClockPhase Phase { get; set; } = ClockPhase.NotStarted;
     }
+
+    private enum ClockPhase
+    {
+        NotStarted,
+        Working,
+        OnBreak,
+        OnLunch,
+        DayEnded,
+        WorkingExtra
+    }
+
+    private sealed record ClockAction(string Label, string Icon, Color Color, ClockPhase ResultPhase, string PunchAction, bool IsClockIn);
 
     public void Dispose() => StopTimer();
 }

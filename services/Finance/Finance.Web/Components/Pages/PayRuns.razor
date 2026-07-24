@@ -1,4 +1,8 @@
 @page "/finance/payroll/pay-runs"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
 
 <PageTitle>Pay Runs</PageTitle>
 
@@ -21,9 +25,134 @@
             </MudText>
             <MudText Typo="Typo.body1" Color="Color.Secondary">Process and review payroll cycles</MudText>
         </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.PlayArrow"
+                   Disabled="_running"
+                   OnClick="RunPayroll">
+            @(_running ? "Running..." : "Run Payroll")
+        </MudButton>
     </div>
 
-    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Construction">
-        Pay Runs is coming soon. This submodule is scaffolded and ready for data wiring.
-    </MudAlert>
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="5">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    Pending Timesheets
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-2">@_pending.Count</MudChip>
+                </MudText>
+                @if (_pending.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        No timesheets waiting. When employees clock out for the day, their timesheets land here.
+                    </MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Work Date</th>
+                                <th style="text-align:right">Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in _pending)
+                            {
+                                <tr>
+                                    <td>@t.EmployeeName</td>
+                                    <td>@t.WorkDate.ToShortDateString()</td>
+                                    <td style="text-align:right">@t.TotalWorkedHours.ToString("0.00")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6" GutterBottom="true">Recent Pay Runs</MudText>
+                @if (_payRuns.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">No pay runs yet.</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>Run Date</th>
+                                <th style="text-align:right">Employees</th>
+                                <th style="text-align:right">Hours</th>
+                                <th style="text-align:right">Gross Pay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in _payRuns)
+                            {
+                                <tr>
+                                    <td>@r.RunDateUtc.ToLocalTime().ToString("g")</td>
+                                    <td style="text-align:right">@r.EmployeeCount</td>
+                                    <td style="text-align:right">@r.TotalHours.ToString("0.00")</td>
+                                    <td style="text-align:right">@r.TotalGrossPay.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
+
+@code {
+    private List<PendingTimesheetDto> _pending = new();
+    private List<PayRunDto> _payRuns = new();
+    private bool _running;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            _pending = await http.GetFromJsonAsync<List<PendingTimesheetDto>>("api/finance/payroll/pending") ?? new();
+            _payRuns = await http.GetFromJsonAsync<List<PayRunDto>>("api/finance/payroll/pay-runs") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load payroll data: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task RunPayroll()
+    {
+        _running = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var response = await http.PostAsync("api/finance/payroll/run", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Payroll run completed.", Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add($"Run payroll failed: {response.StatusCode}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Run payroll failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+}
