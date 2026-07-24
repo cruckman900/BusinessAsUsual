@@ -88,6 +88,9 @@ public static class EventBusServiceCollectionExtensions
         var username = rabbit["Username"] ?? "guest";
         var password = rabbit["Password"] ?? "guest";
         var retryLimit = rabbit.GetValue("RetryLimit", 5);
+        var useSsl = rabbit.GetValue("UseSsl", false);
+        // Amazon MQ for RabbitMQ requires amqps on 5671; plain RabbitMQ uses 5672.
+        var port = rabbit.GetValue<ushort>("Port", (ushort)(useSsl ? 5671 : 5672));
 
         services.AddMassTransit(x =>
         {
@@ -98,10 +101,15 @@ public static class EventBusServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(host, virtualHost, h =>
+                cfg.Host(host, port, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);
+
+                    if (useSsl)
+                    {
+                        h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                    }
                 });
 
                 // Exponential-backoff retry. When the limit is exhausted MassTransit
