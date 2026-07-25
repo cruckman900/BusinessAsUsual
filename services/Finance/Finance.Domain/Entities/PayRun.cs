@@ -21,6 +21,9 @@ public class PayRun
 
     public decimal TotalHours => Lines.Sum(l => l.TotalHours);
     public decimal TotalGrossPay => Lines.Sum(l => l.GrossPay);
+    public decimal TotalTaxes => Lines.Sum(l => l.Taxes);
+    public decimal TotalDeductions => Lines.Sum(l => l.Deductions);
+    public decimal TotalNetPay => Lines.Sum(l => l.NetPay);
     public int EmployeeCount => Lines.Count;
 }
 
@@ -34,6 +37,15 @@ public class PayRunLine
     public decimal TotalHours { get; set; }
     public decimal HourlyRate { get; set; }
     public decimal GrossPay { get; set; }
+
+    /// <summary>Tax withheld from gross pay.</summary>
+    public decimal Taxes { get; set; }
+
+    /// <summary>Other deductions (benefits, etc.) taken from gross pay.</summary>
+    public decimal Deductions { get; set; }
+
+    /// <summary>Take-home pay after taxes and deductions.</summary>
+    public decimal NetPay { get; set; }
 
     /// <summary>The received timesheet ids that were rolled into this line.</summary>
     public List<string> TimesheetIds { get; set; } = new();

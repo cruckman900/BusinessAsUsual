@@ -1,0 +1,212 @@
+@page "/hr/timesheets/create"
+@rendermode InteractiveServer
+@using System.Net.Http.Json
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+
+<PageTitle>Submit Timesheet - HR</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-2">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/hr/timesheets">Timesheets</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Submit</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.PostAdd" Class="mr-2" />
+        Submit Timesheet
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manually record a day's clock in/out punches for an employee. Rows must
+        alternate In then Out; the day is submitted to payroll on save.
+    </MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="_employeeId" Label="Employee ID" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="_employeeName" Label="Employee Name" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudDatePicker @bind-Date="_workDate" Label="Work Date" Required="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <div class="d-flex justify-space-between align-center mb-3">
+            <MudText Typo="Typo.h6">Punches</MudText>
+            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRow">
+                Add Punch
+            </MudButton>
+        </div>
+
+        @foreach (var row in _rows)
+        {
+            <MudGrid Class="align-center mb-2">
+                <MudItem xs="4">
+                    <MudSelect T="bool" @bind-Value="row.IsClockIn" Label="Direction" Dense="true">
+                        <MudSelectItem T="bool" Value="true">Clock In</MudSelectItem>
+                        <MudSelectItem T="bool" Value="false">Clock Out</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudSelect T="string" @bind-Value="row.Action" Label="Reason" Dense="true">
+                        @foreach (var a in row.IsClockIn ? ClockInReasons : ClockOutReasons)
+                        {
+                            <MudSelectItem T="string" Value="@a.Value">@a.Label</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudTimePicker @bind-Time="row.Time" Label="Time" Dense="true" />
+                </MudItem>
+                <MudItem xs="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                   Size="Size.Small" OnClick="@(() => RemoveRow(row))" />
+                </MudItem>
+            </MudGrid>
+        }
+
+        @if (_rows.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Add at least one Clock In and one Clock Out punch.
+            </MudAlert>
+        }
+    </MudPaper>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+
+    <div class="d-flex justify-end gap-2">
+        <MudButton Variant="Variant.Text" OnClick="@(() => Navigation.NavigateTo("/hr/timesheets"))">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="_submitting" OnClick="SubmitAsync">
+            @(_submitting ? "Submitting..." : "Submit Timesheet")
+        </MudButton>
+    </div>
+</MudContainer>
+
+@code {
+    private string _employeeId = "admin";
+    private string _employeeName = "Administrator";
+    private DateTime? _workDate = DateTime.Today;
+    private readonly List<PunchRow> _rows = new();
+    private bool _submitting;
+    private string? _error;
+
+    private static readonly (string Label, string Value)[] ClockInReasons =
+    {
+        ("Start of day", "start-day"),
+        ("Back from break", "return"),
+        ("Back from lunch", "return"),
+        ("Start extra hours", "extra"),
+    };
+
+    private static readonly (string Label, string Value)[] ClockOutReasons =
+    {
+        ("Take a break", "break"),
+        ("Go to lunch", "lunch"),
+        ("Clock out for the day", "end-day"),
+    };
+
+    protected override void OnInitialized()
+    {
+        // Seed a sensible default day: in at 09:00, out at 17:00.
+        _rows.Add(new PunchRow { IsClockIn = true, Action = "start-day", Time = new TimeSpan(9, 0, 0) });
+        _rows.Add(new PunchRow { IsClockIn = false, Action = "end-day", Time = new TimeSpan(17, 0, 0) });
+    }
+
+    private void AddRow() => _rows.Add(new PunchRow { IsClockIn = true, Action = "start-day", Time = new TimeSpan(9, 0, 0) });
+
+    private void RemoveRow(PunchRow row) => _rows.Remove(row);
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+
+        if (string.IsNullOrWhiteSpace(_employeeId) || string.IsNullOrWhiteSpace(_employeeName) || _workDate is null)
+        {
+            _error = "Employee ID, name, and work date are required.";
+            return;
+        }
+
+        if (_rows.Count < 2)
+        {
+            _error = "Add at least one Clock In and one Clock Out punch.";
+            return;
+        }
+
+        // Send punches in chronological order so intervals pair correctly.
+        if (_rows.Any(r => r.Time is null))
+        {
+            _error = "Every punch needs a time.";
+            return;
+        }
+
+        var ordered = _rows.OrderBy(r => r.Time!.Value).ToList();
+
+        // Ensure the day is submitted to payroll: the last punch must be end-day.
+        if (ordered[^1].IsClockIn || ordered[^1].Action != "end-day")
+        {
+            _error = "The final punch must be 'Clock out for the day' so the timesheet is submitted.";
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("HrApi");
+            var date = _workDate.Value.Date;
+
+            foreach (var row in ordered)
+            {
+                var punchedAtUtc = DateTime.SpecifyKind(date.Add(row.Time!.Value), DateTimeKind.Local).ToUniversalTime();
+                var payload = new
+                {
+                    EmployeeId = _employeeId,
+                    EmployeeName = _employeeName,
+                    Action = row.Action,
+                    IsClockIn = row.IsClockIn,
+                    PunchedAtUtc = punchedAtUtc
+                };
+
+                var response = await client.PostAsJsonAsync("api/hr/timeclock/punch", payload);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _error = $"HR API rejected a punch ({(int)response.StatusCode}). Timesheet may be incomplete.";
+                    return;
+                }
+            }
+
+            Snackbar.Add("Timesheet submitted to payroll.", Severity.Success);
+            Navigation.NavigateTo("/hr/timesheets");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not reach HR API: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private sealed class PunchRow
+    {
+        public bool IsClockIn { get; set; } = true;
+        public string Action { get; set; } = "start-day";
+        public TimeSpan? Time { get; set; }
+    }
+}

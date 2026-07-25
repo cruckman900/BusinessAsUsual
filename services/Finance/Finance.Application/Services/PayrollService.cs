@@ -94,7 +94,11 @@ public sealed class PayrollService : IPayrollService
         foreach (var group in unprocessed.GroupBy(t => t.EmployeeId))
         {
             var hours = group.Sum(t => t.TotalWorkedHours);
-            var rate = _store.DefaultHourlyRate;
+            var rate = _store.GetHourlyRate(group.Key);
+            var gross = Math.Round(hours * rate, 2);
+            var taxes = Math.Round(gross * _store.TaxRate, 2);
+            var deductions = Math.Round(gross * _store.DeductionRate, 2);
+            var net = gross - taxes - deductions;
 
             payRun.Lines.Add(new PayRunLine
             {
@@ -102,7 +106,10 @@ public sealed class PayrollService : IPayrollService
                 EmployeeName = group.First().EmployeeName,
                 TotalHours = hours,
                 HourlyRate = rate,
-                GrossPay = Math.Round(hours * rate, 2),
+                GrossPay = gross,
+                Taxes = taxes,
+                Deductions = deductions,
+                NetPay = net,
                 TimesheetIds = group.Select(t => t.SourceTimesheetId).ToList()
             });
 
@@ -116,8 +123,8 @@ public sealed class PayrollService : IPayrollService
         _store.PayRuns[payRun.Id] = payRun;
 
         _logger.LogInformation(
-            "Ran payroll {PayRunId}: {Employees} employees, {Hours}h, {Gross:C} gross",
-            payRun.Id, payRun.EmployeeCount, payRun.TotalHours, payRun.TotalGrossPay);
+            "Ran payroll {PayRunId}: {Employees} employees, {Hours}h, {Gross:C} gross, {Net:C} net",
+            payRun.Id, payRun.EmployeeCount, payRun.TotalHours, payRun.TotalGrossPay, payRun.TotalNetPay);
 
         return Task.FromResult(MapPayRun(payRun));
     }
@@ -144,6 +151,9 @@ public sealed class PayrollService : IPayrollService
         Status = run.Status.ToString(),
         TotalHours = run.TotalHours,
         TotalGrossPay = run.TotalGrossPay,
+        TotalTaxes = run.TotalTaxes,
+        TotalDeductions = run.TotalDeductions,
+        TotalNetPay = run.TotalNetPay,
         EmployeeCount = run.EmployeeCount,
         Lines = run.Lines.Select(l => new PayRunLineDto
         {
@@ -153,6 +163,9 @@ public sealed class PayrollService : IPayrollService
             TotalHours = l.TotalHours,
             HourlyRate = l.HourlyRate,
             GrossPay = l.GrossPay,
+            Taxes = l.Taxes,
+            Deductions = l.Deductions,
+            NetPay = l.NetPay,
             TimesheetIds = l.TimesheetIds
         }).ToList()
     };

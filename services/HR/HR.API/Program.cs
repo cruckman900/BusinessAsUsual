@@ -20,14 +20,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Database configuration from environment variable
-var connectionString = ConfigLoader.Get("HR_SQL_CONNECTION_STRING")
-    ?? "Server=localhost;Database=BusinessAsUsual_HR;Trusted_Connection=True;TrustServerCertificate=True;";
+var connectionString = ConfigLoader.Get("HR_SQL_CONNECTION_STRING");
 
-var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase", false);
+// Fall back to in-memory when no HR connection string is configured (or when
+// explicitly requested) so the container stays healthy without a reachable
+// SQL Server. In-memory data is non-persistent across restarts.
+var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase", false)
+    || string.IsNullOrWhiteSpace(connectionString);
 
 if (useInMemory)
 {
-    Console.WriteLine("⚠️  Using in-memory database for HR Service");
+    Console.WriteLine("⚠️  HR_SQL_CONNECTION_STRING not set — using in-memory database for HR Service (non-persistent)");
     builder.Services.AddDbContext<HRDbContext>(options =>
         options.UseInMemoryDatabase("HR"));
 }

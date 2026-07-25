@@ -35,7 +35,8 @@ public sealed class TimekeepingService : ITimekeepingService
         ArgumentNullException.ThrowIfNull(request);
 
         var nowUtc = DateTime.UtcNow;
-        var workDate = nowUtc.Date;
+        var punchedAtUtc = request.PunchedAtUtc ?? nowUtc;
+        var workDate = punchedAtUtc.Date;
 
         var sheet = _store.GetOrCreateOpenTimesheet(request.EmployeeId, request.EmployeeName, workDate);
 
@@ -46,7 +47,7 @@ public sealed class TimekeepingService : ITimekeepingService
             WorkDate = workDate,
             Action = request.Action,
             IsClockIn = request.IsClockIn,
-            PunchedAtUtc = nowUtc
+            PunchedAtUtc = punchedAtUtc
         };
         sheet.Entries.Add(entry);
         sheet.TotalWorkedHours = CalculateWorkedHours(sheet);
@@ -58,7 +59,7 @@ public sealed class TimekeepingService : ITimekeepingService
             Action = request.Action,
             IsClockIn = request.IsClockIn,
             WorkDate = workDate.ToString("yyyy-MM-dd"),
-            PunchedAtUtc = nowUtc
+            PunchedAtUtc = punchedAtUtc
         }, cancellationToken);
 
         _logger.LogInformation(

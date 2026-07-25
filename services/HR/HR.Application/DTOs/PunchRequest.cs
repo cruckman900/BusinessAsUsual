@@ -13,4 +13,10 @@ public class PunchRequest
 
     /// <summary>True when the punch opens a working interval; false when it closes one.</summary>
     public bool IsClockIn { get; set; }
+
+    /// <summary>
+    /// Optional explicit punch timestamp (UTC). Used by manual timesheet entry to
+    /// backfill specific times/dates. When null the service stamps the current time.
+    /// </summary>
+    public DateTime? PunchedAtUtc { get; set; }
 }

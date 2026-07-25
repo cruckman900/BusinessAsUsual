@@ -21,6 +21,9 @@ public class PayRunLineDto
     public decimal TotalHours { get; set; }
     public decimal HourlyRate { get; set; }
     public decimal GrossPay { get; set; }
+    public decimal Taxes { get; set; }
+    public decimal Deductions { get; set; }
+    public decimal NetPay { get; set; }
     public List<string> TimesheetIds { get; set; } = new();
 }
 
@@ -33,6 +36,9 @@ public class PayRunDto
     public string Status { get; set; } = string.Empty;
     public decimal TotalHours { get; set; }
     public decimal TotalGrossPay { get; set; }
+    public decimal TotalTaxes { get; set; }
+    public decimal TotalDeductions { get; set; }
+    public decimal TotalNetPay { get; set; }
     public int EmployeeCount { get; set; }
     public List<PayRunLineDto> Lines { get; set; } = new();
 }
