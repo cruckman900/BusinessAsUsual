@@ -1,0 +1,154 @@
+@page "/inventory/reports"
+@using MudBlazor
+
+<PageTitle>Inventory Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory">Inventory</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Reports</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Assessment" Class="mr-2" />
+                Inventory Reports
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Generate reports and analytics for inventory performance and valuation
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Inventory Valuation</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Current inventory value by product and location
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Low Stock Report</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Products below reorder point
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.SwapVert" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Movement History</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Track inventory movements over time
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Turnover Analysis</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Inventory turnover rates by category
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Tertiary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Aging Report</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Identify slow-moving and obsolete inventory
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Secondary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Supplier Performance</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Analyze supplier delivery and quality metrics
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Disabled="true">
+                        Generate Report
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudCard Class="mt-6">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">Custom Reports</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudAlert Severity="Severity.Info">
+                Advanced reporting features in development:
+                <ul>
+                    <li>Custom report builder with flexible filters and grouping</li>
+                    <li>Export to PDF, Excel, and CSV formats</li>
+                    <li>Scheduled report generation and email delivery</li>
+                    <li>Interactive charts and visualizations</li>
+                    <li>Saved report templates</li>
+                </ul>
+            </MudAlert>
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+
+}

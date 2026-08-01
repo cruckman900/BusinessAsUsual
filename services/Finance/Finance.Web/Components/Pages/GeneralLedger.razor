@@ -1,0 +1,193 @@
+@page "/finance/gl"
+@page "/finance/gl/dashboard"
+@inject NavigationManager Navigation
+
+<PageTitle>General Ledger - Finance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">General Ledger</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+        General Ledger
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manage chart of accounts, journal entries, and financial reporting
+    </MudText>
+
+    <!-- Main GL Module Cards -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <!-- Chart of Accounts -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Chart of Accounts</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage account hierarchy and structure
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/gl/chart-of-accounts">
+                        Manage Accounts
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Journal Entries -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Journal Entries</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Record manual entries and adjustments
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/gl/journal-entries">
+                        View Entries
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Trial Balance -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Trial Balance</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Verify ledger balance integrity
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/gl/trial-balance">
+                        View Report
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Account History (Coming Soon) -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Account History</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        View detailed transaction history for any account
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Disabled="true">
+                        View History
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Financial Statements (Coming Soon) -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Financial Statements</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        P&L, Balance Sheet, and Cash Flow reports
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Disabled="true">
+                        View Statements
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Budgets (Coming Soon) -->
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Budgets</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Budget planning and variance analysis
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Disabled="true">
+                        Manage Budgets
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- About General Ledger -->
+    <MudPaper Class="pa-4" Elevation="1">
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+            About General Ledger
+        </MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            The General Ledger is the core of your accounting system, providing a complete record of all financial transactions.
+        </MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                <strong>Chart of Accounts</strong> - Define and organize your account structure across all five account types (Assets, Liabilities, Equity, Revenue, Expenses)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                <strong>Journal Entries</strong> - Record manual entries, adjustments, and corrections with full debit/credit validation
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                <strong>Trial Balance</strong> - Verify your books are in balance with real-time debit and credit totals
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule">
+                <strong>Account History</strong> - Drill down into any account to see detailed transaction history (Coming Soon)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule">
+                <strong>Financial Statements</strong> - Generate P&L, Balance Sheet, and Cash Flow statements (Coming Soon)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule">
+                <strong>Budgets</strong> - Create budgets and track actual vs. budgeted performance (Coming Soon)
+            </MudListItem>
+        </MudList>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <strong>Key Features:</strong>
+        </MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+            • <strong>Double-Entry Accounting</strong> - Every transaction maintains the fundamental accounting equation
+        </MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            • <strong>Auto-Posting</strong> - Invoices, bills, and payments automatically create journal entries
+        </MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            • <strong>Real-Time Balances</strong> - Account balances update instantly as entries are posted
+        </MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            • <strong>Audit Trail</strong> - Complete history of all entries with source tracking and void capability
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    // No code needed for dashboard
+}

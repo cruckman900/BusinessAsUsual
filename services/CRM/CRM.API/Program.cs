@@ -23,6 +23,7 @@ builder.Services.AddScoped<ILeadService, MockLeadService>();
 builder.Services.AddScoped<IOpportunityService, MockOpportunityService>();
 builder.Services.AddScoped<ICustomerService, MockCustomerService>();
 builder.Services.AddScoped<CRM.Application.Interfaces.IEmailTemplateService, MockEmailTemplateService>();
+builder.Services.AddScoped<ILeadScoringService, LeadScoringService>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();

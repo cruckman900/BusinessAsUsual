@@ -1,0 +1,269 @@
+@page "/inventory/stock/items"
+@using System.Net.Http.Json
+@using MudBlazor
+@using Inventory.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Stock Items</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory">Inventory</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory/stock">Stock Management</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Stock Items</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.ListAlt" Class="mr-2" />
+                Stock Items
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                View detailed stock levels by product, warehouse, and bin location
+            </MudText>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else
+    {
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <CustomDataGrid TItem="StockItemDto"
+                                Items="@FilteredStockItems"
+                                Loading="@_loading"
+                                SearchPlaceholder="Search by product name or SKU..."
+                                RowsPerPage="25"
+                                Striped="true"
+                                Filterable="true">
+                    <ToolbarContent>
+                        <MudSelect @bind-Value="_warehouseFilter" Label="Warehouse" Variant="Variant.Outlined" Margin="Margin.Dense" T="Guid?" Clearable="true" Style="min-width: 200px;" Class="mr-2">
+                            @foreach (var warehouse in _warehouses)
+                            {
+                                <MudSelectItem Value="@((Guid?)warehouse.Id)">@warehouse.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect @bind-Value="_stockFilter" Label="Stock Status" Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Clearable="true" Style="min-width: 200px;" Class="mr-2">
+                            <MudSelectItem Value="@("in-stock")">In Stock</MudSelectItem>
+                            <MudSelectItem Value="@("low-stock")">Low Stock</MudSelectItem>
+                            <MudSelectItem Value="@("out-of-stock")">Out of Stock</MudSelectItem>
+                            <MudSelectItem Value="@("over-allocated")">Over Allocated</MudSelectItem>
+                        </MudSelect>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ClearFilters">Clear</MudButton>
+                    </ToolbarContent>
+                    <ChildContent>
+                        <PropertyColumn Property="x => x.ProductName" Title="Product" T="StockItemDto" TProperty="string">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2"><strong>@context.Item.ProductName</strong></MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ProductSKU" Title="SKU" T="StockItemDto" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small">@context.Item.ProductSKU</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.WarehouseName" Title="Warehouse" T="StockItemDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.BinLocationCode" Title="Bin Location" T="StockItemDto" TProperty="string">
+                            <CellTemplate>
+                                @if (!string.IsNullOrEmpty(context.Item.BinLocationCode))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Item.BinLocationCode</MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">General</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.QuantityOnHand" Title="On Hand" T="StockItemDto" TProperty="int">
+                            <CellTemplate>
+                                <strong>@context.Item.QuantityOnHand</strong>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.QuantityAllocated" Title="Allocated" T="StockItemDto" TProperty="int">
+                            <CellTemplate>
+                                @if (context.Item.QuantityAllocated > 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.Item.QuantityAllocated</MudChip>
+                                }
+                                else
+                                {
+                                    <span>0</span>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.QuantityAvailable" Title="Available" T="StockItemDto" TProperty="int">
+                            <CellTemplate>
+                                @if (context.Item.QuantityAvailable <= 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error">@context.Item.QuantityAvailable</MudChip>
+                                }
+                                else if (context.Item.QuantityAvailable < 10)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.Item.QuantityAvailable</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.Item.QuantityAvailable</MudChip>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.AverageCost" Title="Avg Cost" Format="C2" T="StockItemDto" TProperty="decimal" />
+                        <TemplateColumn Title="Total Value" T="StockItemDto">
+                            <CellTemplate>
+                                <strong>@((context.Item.QuantityOnHand * context.Item.AverageCost).ToString("C"))</strong>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.LastStockDate" Title="Last Updated" T="StockItemDto" TProperty="DateTime">
+                            <CellTemplate>
+                                <MudText Typo="Typo.caption">@context.Item.LastStockDate.ToString("MMM dd, yyyy")</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+
+                @if (!FilteredStockItems.Any())
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4">No stock items found matching your filters.</MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+                Stock Summary
+            </MudText>
+            <MudGrid>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Stock Locations</MudText>
+                    <MudText Typo="Typo.h6">@_stockItems.Count</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total On Hand</MudText>
+                    <MudText Typo="Typo.h6">@_stockItems.Sum(s => s.QuantityOnHand)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Allocated</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Warning">@_stockItems.Sum(s => s.QuantityAllocated)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Available</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Success">@_stockItems.Sum(s => s.QuantityAvailable)</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Inventory Value</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">@_stockItems.Sum(s => s.QuantityOnHand * s.AverageCost).ToString("C")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Unique Products</MudText>
+                    <MudText Typo="Typo.h5">@_stockItems.Select(s => s.ProductId).Distinct().Count()</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<StockItemDto> _stockItems = new();
+    private List<WarehouseDto> _warehouses = new();
+    private Guid? _warehouseFilter = null;
+    private string? _stockFilter = null;
+    private string? _errorMessage;
+
+    private IEnumerable<StockItemDto> FilteredStockItems
+    {
+        get
+        {
+            var items = _stockItems.AsEnumerable();
+
+            if (_warehouseFilter.HasValue)
+            {
+                items = items.Where(s => s.WarehouseId == _warehouseFilter.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_stockFilter))
+            {
+                items = _stockFilter switch
+                {
+                    "in-stock" => items.Where(s => s.QuantityAvailable > 0),
+                    "low-stock" => items.Where(s => s.QuantityAvailable > 0 && s.QuantityAvailable < 10),
+                    "out-of-stock" => items.Where(s => s.QuantityOnHand == 0),
+                    "over-allocated" => items.Where(s => s.QuantityAvailable < 0),
+                    _ => items
+                };
+            }
+
+            return items;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+            _stockItems = await client.GetFromJsonAsync<List<StockItemDto>>("api/inventory/stock/items") ?? new();
+            _warehouses = await client.GetFromJsonAsync<List<WarehouseDto>>("api/inventory/warehouses") ?? new();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading stock items: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ClearFilters()
+    {
+        _warehouseFilter = null;
+        _stockFilter = null;
+    }
+
+    public class StockItemDto
+    {
+        public Guid Id { get; set; }
+        public Guid ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductSKU { get; set; } = string.Empty;
+        public Guid WarehouseId { get; set; }
+        public string WarehouseName { get; set; } = string.Empty;
+        public Guid? BinLocationId { get; set; }
+        public string? BinLocationCode { get; set; }
+        public int QuantityOnHand { get; set; }
+        public int QuantityAllocated { get; set; }
+        public int QuantityAvailable { get; set; }
+        public decimal AverageCost { get; set; }
+        public DateTime LastStockDate { get; set; }
+    }
+
+    public class WarehouseDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+}
+

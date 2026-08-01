@@ -1,0 +1,261 @@
+@using System.Net.Http.Json
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="Product.Name"
+                                  Label="Product Name"
+                                  Required="true"
+                                  RequiredError="Product name is required"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Product.SKU"
+                                  Label="SKU"
+                                  Required="true"
+                                  RequiredError="SKU is required"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="Unique product code" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Product.Description"
+                                  Label="Description"
+                                  Lines="3"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Product.Barcode"
+                                  Label="Barcode"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.QrCodeScanner" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Product.Category"
+                                  Label="Category"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Product.Cost"
+                                     Label="Cost"
+                                     Format="C2"
+                                     Min="0m"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="$" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="Product.Price"
+                                     Label="Selling Price"
+                                     Format="C2"
+                                     Min="0m"
+                                     Required="true"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="$" />
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Product.UnitOfMeasure"
+                                  Label="Unit of Measure"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="e.g., EA, BOX, LB" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="Product.ReorderPoint"
+                                     Label="Reorder Point"
+                                     Min="0"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     HelperText="Alert when stock falls below this" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="Product.ReorderQuantity"
+                                     Label="Reorder Quantity"
+                                     Min="0"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     HelperText="Default PO quantity" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="Product.IsTrackedInventory"
+                               Label="Track Inventory"
+                               Color="Color.Primary" />
+                </MudItem>
+
+                @if (IsEdit)
+                {
+                    <MudItem xs="12" md="6">
+                        <MudSwitch @bind-Value="Product.IsActive"
+                                   Label="Active"
+                                   Color="Color.Success" />
+                    </MudItem>
+                }
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Product.ImageUrl"
+                                  Label="Image URL (optional)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Image" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@(!_isValid || _saving)">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            @(IsEdit ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public ProductFormModel Product { get; set; } = new();
+    [Parameter] public bool IsEdit { get; set; } = false;
+
+    private MudForm _form = null!;
+    private bool _isValid = false;
+    private bool _saving = false;
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (!_isValid) return;
+
+        _saving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+
+            if (IsEdit)
+            {
+                var updateDto = new UpdateProductDto
+                {
+                    Id = Product.Id,
+                    Name = Product.Name,
+                    Description = Product.Description,
+                    SKU = Product.SKU,
+                    Barcode = Product.Barcode,
+                    Cost = Product.Cost,
+                    Price = Product.Price,
+                    ReorderPoint = Product.ReorderPoint,
+                    ReorderQuantity = Product.ReorderQuantity,
+                    Category = Product.Category,
+                    UnitOfMeasure = Product.UnitOfMeasure,
+                    IsTrackedInventory = Product.IsTrackedInventory,
+                    IsActive = Product.IsActive,
+                    ImageUrl = Product.ImageUrl
+                };
+                var response = await client.PutAsJsonAsync($"api/inventory/products/{Product.Id}", updateDto);
+                response.EnsureSuccessStatusCode();
+                Snackbar.Add("Product updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createDto = new CreateProductDto
+                {
+                    Name = Product.Name,
+                    Description = Product.Description,
+                    SKU = Product.SKU,
+                    Barcode = Product.Barcode,
+                    Cost = Product.Cost,
+                    Price = Product.Price,
+                    ReorderPoint = Product.ReorderPoint,
+                    ReorderQuantity = Product.ReorderQuantity,
+                    Category = Product.Category,
+                    UnitOfMeasure = Product.UnitOfMeasure,
+                    IsTrackedInventory = Product.IsTrackedInventory,
+                    ImageUrl = Product.ImageUrl
+                };
+                var response = await client.PostAsJsonAsync("api/inventory/products", createDto);
+                response.EnsureSuccessStatusCode();
+                Snackbar.Add("Product created successfully", Severity.Success);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public class ProductFormModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string SKU { get; set; } = string.Empty;
+        public string? Barcode { get; set; }
+        public decimal Cost { get; set; }
+        public decimal Price { get; set; }
+        public int ReorderPoint { get; set; } = 10;
+        public int ReorderQuantity { get; set; } = 50;
+        public string? Category { get; set; }
+        public string UnitOfMeasure { get; set; } = "EA";
+        public bool IsActive { get; set; } = true;
+        public bool IsTrackedInventory { get; set; } = true;
+        public string? ImageUrl { get; set; }
+    }
+
+    public class CreateProductDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string SKU { get; set; } = string.Empty;
+        public string? Barcode { get; set; }
+        public decimal Cost { get; set; }
+        public decimal Price { get; set; }
+        public int ReorderPoint { get; set; }
+        public int ReorderQuantity { get; set; }
+        public string? Category { get; set; }
+        public string UnitOfMeasure { get; set; } = "EA";
+        public bool IsTrackedInventory { get; set; } = true;
+        public string? ImageUrl { get; set; }
+    }
+
+    public class UpdateProductDto : CreateProductDto
+    {
+        public Guid Id { get; set; }
+        public bool IsActive { get; set; }
+    }
+}

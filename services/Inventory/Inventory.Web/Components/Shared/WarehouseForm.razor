@@ -1,0 +1,124 @@
+@using System.Net.Http.Json
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="Warehouse.Name" Label="Warehouse Name" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="Warehouse.Code" Label="Code" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Warehouse.Address" Label="Address" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Warehouse.City" Label="City" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="Warehouse.State" Label="State/Province" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="Warehouse.ZipCode" Label="Zip/Postal Code" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Warehouse.Country" Label="Country" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Warehouse.ManagerName" Label="Manager Name" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Warehouse.Phone" Label="Phone" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="Warehouse.Email" Label="Email" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" />
+                </MudItem>
+                @if (IsEdit)
+                {
+                    <MudItem xs="12">
+                        <MudSwitch @bind-Value="Warehouse.IsActive" Label="Active" Color="Color.Success" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!_isValid || _saving)">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            @(IsEdit ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public WarehouseFormModel Warehouse { get; set; } = new();
+    [Parameter] public bool IsEdit { get; set; } = false;
+
+    private MudForm _form = null!;
+    private bool _isValid = false;
+    private bool _saving = false;
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (!_isValid) return;
+
+        _saving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+
+            if (IsEdit)
+            {
+                var updateDto = new { Id = Warehouse.Id, Name = Warehouse.Name, Code = Warehouse.Code, Address = Warehouse.Address, City = Warehouse.City, State = Warehouse.State, ZipCode = Warehouse.ZipCode, Country = Warehouse.Country, ManagerName = Warehouse.ManagerName, Phone = Warehouse.Phone, Email = Warehouse.Email, IsActive = Warehouse.IsActive };
+                var response = await client.PutAsJsonAsync($"api/inventory/warehouses/{Warehouse.Id}", updateDto);
+                response.EnsureSuccessStatusCode();
+                Snackbar.Add("Warehouse updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createDto = new { Name = Warehouse.Name, Code = Warehouse.Code, Address = Warehouse.Address, City = Warehouse.City, State = Warehouse.State, ZipCode = Warehouse.ZipCode, Country = Warehouse.Country, ManagerName = Warehouse.ManagerName, Phone = Warehouse.Phone, Email = Warehouse.Email };
+                var response = await client.PostAsJsonAsync("api/inventory/warehouses", createDto);
+                response.EnsureSuccessStatusCode();
+                Snackbar.Add("Warehouse created successfully", Severity.Success);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public class WarehouseFormModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? ZipCode { get; set; }
+        public string? Country { get; set; }
+        public string? ManagerName { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+}

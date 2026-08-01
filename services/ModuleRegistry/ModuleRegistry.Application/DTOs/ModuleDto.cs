@@ -129,4 +129,14 @@ public class NavigationItemDto
     /// Gets or sets the icon for the navigation item, which is used for visual representation in the UI.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the navigation group should be expanded by default.
+    /// </summary>
+    public bool ExpandedByDefault { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the list of child navigation items, which is used for nested navigation menus.
+    /// </summary>
+    public List<NavigationItemDto>? Children { get; set; }
 }

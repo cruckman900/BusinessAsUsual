@@ -1,0 +1,425 @@
+@page "/inventory"
+@using System.Net.Http.Json
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Inventory Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Inventory</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Class="mr-2" />
+        Inventory Dashboard
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manage products, warehouses, stock levels, and purchase orders
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+        <MudText Class="mt-2">Loading dashboard data...</MudText>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+            <MudText>@_errorMessage</MudText>
+            <MudText Class="mt-2">Please ensure Inventory.API is running and accessible.</MudText>
+        </MudAlert>
+    }
+    else if (_summary != null)
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Products</MudText>
+                                <MudText Typo="Typo.h5">@_summary.TotalProducts</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Warehouses</MudText>
+                                <MudText Typo="Typo.h5">@_summary.TotalWarehouses</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" Size="Size.Large" Color="Color.Secondary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Inventory Value</MudText>
+                                <MudText Typo="Typo.h5">@_summary.TotalInventoryValue.ToString("C")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Items in Stock</MudText>
+                                <MudText Typo="Typo.h5">@_summary.TotalItemsInStock.ToString("N0")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Info" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Low Stock Alerts</MudText>
+                                <MudText Typo="Typo.h5">@_summary.LowStockCount</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active Purchase Orders</MudText>
+                                <MudText Typo="Typo.h5">@_summary.ActivePurchaseOrders</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Tertiary" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Module Navigation Cards -->
+        <MudGrid Class="mt-6">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5" Class="mb-4">Inventory Management</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/products"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Products</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Manage product catalog, SKUs, pricing, and categories
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/products">
+                            View Products
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/warehouses"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Warehouses</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Manage warehouse locations, capacity, and bin locations
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/warehouses">
+                            View Warehouses
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/stock"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Stock Management</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            View stock levels, adjustments, and transfers
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/stock">
+                            Manage Stock
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/purchase-orders"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Purchase Orders</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Create and track purchase orders to suppliers
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/purchase-orders">
+                            View Orders
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/suppliers"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Suppliers</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Manage supplier information and vendor relationships
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/suppliers">
+                            View Suppliers
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/reports"))">
+                    <MudCardContent>
+                        <div class="d-flex align-center mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                            <MudText Typo="Typo.h6">Reports</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Generate inventory reports and analytics
+                        </MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/reports">
+                            View Reports
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Class="mt-6">
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Quick Actions</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudStack Spacing="2">
+                            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" Href="/inventory/products" FullWidth="true" Class="justify-start">
+                                Add New Product
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Edit" Href="/inventory/stock/adjustments" FullWidth="true" Class="justify-start">
+                                Stock Adjustment
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.SwapHoriz" Href="/inventory/stock/transfers" FullWidth="true" Class="justify-start">
+                                Transfer Stock
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ShoppingCart" Href="/inventory/purchase-orders" FullWidth="true" Class="justify-start">
+                                Create Purchase Order
+                            </MudButton>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Alerts & Notifications</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_summary.LowStockCount > 0)
+                        {
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-2">
+                                <MudText>@_summary.LowStockCount products are below reorder point</MudText>
+                            </MudAlert>
+                        }
+                        @if (_summary.ActivePurchaseOrders > 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Filled">
+                                <MudText>@_summary.ActivePurchaseOrders purchase orders awaiting receipt</MudText>
+                            </MudAlert>
+                        }
+                        @if (_summary.LowStockCount == 0 && _summary.ActivePurchaseOrders == 0)
+                        {
+                            <MudAlert Severity="Severity.Success" Variant="Variant.Filled">
+                                <MudText>All inventory levels are healthy</MudText>
+                            </MudAlert>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- About & Module Info Grid -->
+        <MudGrid Class="mt-6">
+            <MudItem xs="12" md="8">
+                <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                        About Inventory Module
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4">
+                        The Inventory module provides comprehensive inventory and warehouse management capabilities including:
+                    </MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Product Management</strong> - Maintain product catalog, SKUs, pricing, and categories
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Warehouse Operations</strong> - Manage multiple warehouse locations and bin assignments
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Stock Control</strong> - Track stock levels, adjustments, and transfers between locations
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Purchase Orders</strong> - Create and track purchase orders to suppliers
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Supplier Management</strong> - Maintain vendor relationships and contact information
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            <strong>Reporting &amp; Analytics</strong> - Stock valuation, movement history, and alerts
+                        </MudListItem>
+                    </MudList>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-auto pt-4">
+                        This module is dynamically loaded via the Module Registry Service and provides both web UI and mobile API contracts.
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                    <MudText Typo="Typo.h6" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                        Module Info
+                    </MudText>
+                    <MudStack Spacing="2" Class="flex-grow-1">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Module ID</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">inventory</MudChip>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                            <MudText Typo="Typo.body2">1.0.0</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
+                            <MudText Typo="Typo.body2">5142 (HTTP) / 7079 (HTTPS)</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Web UI Port</MudText>
+                            <MudText Typo="Typo.body2">5009</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Mobile Support</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Yes</MudChip>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                        </div>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Warning">
+            <MudText>No dashboard data available</MudText>
+        </MudAlert>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private InventorySummary? _summary;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("InventoryApi");
+            _summary = await httpClient.GetFromJsonAsync<InventorySummary>("/api/inventory/dashboard/summary");
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = $"Failed to connect to Inventory API: {ex.Message}";
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading dashboard: {ex.Message}";
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void NavigateTo(string url)
+    {
+        Navigation.NavigateTo(url);
+    }
+
+    public class InventorySummary
+    {
+        public int TotalProducts { get; set; }
+        public int TotalWarehouses { get; set; }
+        public decimal TotalInventoryValue { get; set; }
+        public int TotalItemsInStock { get; set; }
+        public int LowStockCount { get; set; }
+        public int ActivePurchaseOrders { get; set; }
+    }
+}
+
+<style>
+    .mud-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mud-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

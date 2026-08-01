@@ -64,7 +64,7 @@
         /// <summary>
         /// Gets or sets whether this navigation group should be expanded by default.
         /// </summary>
-        public bool ExpandedByDefault { get; set; } = true;
+        public bool ExpandedByDefault { get; set; } = false;
     }
 
 }

@@ -1,4 +1,5 @@
 @page "/finance/invoices"
+@using Finance.Web.Components.Shared
 @inject IInvoiceService InvoiceService
 @inject ISnackbar Snackbar
 
@@ -21,6 +22,12 @@
             </MudText>
             <MudText Typo="Typo.body1" Color="Color.Secondary">Create and manage customer invoices</MudText>
         </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/finance/invoices/create">
+            Create Invoice
+        </MudButton>
     </div>
 
     @if (_loading)
@@ -29,33 +36,41 @@
     }
     else
     {
-        <MudTable Items="@_invoices" Hover="true" Elevation="2" Dense="true">
-            <HeaderContent>
-                <MudTh>Invoice #</MudTh>
-                <MudTh>Customer</MudTh>
-                <MudTh>Total</MudTh>
-                <MudTh>Balance</MudTh>
-                <MudTh>Status</MudTh>
-                <MudTh>Due</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Invoice #">@context.InvoiceNumber</MudTd>
-                <MudTd DataLabel="Customer">@context.CustomerName</MudTd>
-                <MudTd DataLabel="Total">@context.Total.ToString("C2")</MudTd>
-                <MudTd DataLabel="Balance">@context.BalanceDue.ToString("C2")</MudTd>
-                <MudTd DataLabel="Status">
-                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)">@context.Status</MudChip>
-                </MudTd>
-                <MudTd DataLabel="Due">@(context.DueDate?.ToString("d") ?? "-")</MudTd>
-                <MudTd>
-                    @if (context.Status == "Draft")
-                    {
-                        <MudButton Size="Size.Small" Color="Color.Primary" OnClick="@(() => SendAsync(context.Id))">Send</MudButton>
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+        <CustomDataGrid TItem="InvoiceDto" Items="@_invoices" Title="Invoices" 
+                        ShowSearch="true" SearchPlaceholder="Search invoices..." 
+                        Filterable="true" Hideable="true" SortMode="SortMode.Multiple"
+                        RowsPerPage="25" Elevation="2">
+            <ChildContent>
+                <PropertyColumn T="InvoiceDto" TProperty="string" Property="@(x => x.InvoiceNumber)" Title="Invoice #" />
+                <PropertyColumn T="InvoiceDto" TProperty="string" Property="@(x => x.CustomerName)" Title="Customer" />
+                <PropertyColumn T="InvoiceDto" TProperty="decimal" Property="@(x => x.Total)" Title="Total" Format="C2" />
+                <PropertyColumn T="InvoiceDto" TProperty="decimal" Property="@(x => x.BalanceDue)" Title="Balance" Format="C2" />
+                <TemplateColumn T="InvoiceDto" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Status)">@context.Item.Status</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InvoiceDto" Title="Due">
+                    <CellTemplate>
+                        @(context.Item.DueDate?.ToString("d") ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="InvoiceDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Href="@($"/finance/invoices/edit/{context.Item.Id}")"
+                                           Title="Edit" />
+                            @if (context.Item.Status == "Draft")
+                            {
+                                <MudButton Color="Color.Info" OnClick="@(() => SendAsync(context.Item.Id))">Send</MudButton>
+                            }
+                        </MudButtonGroup>
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
     }
 </MudContainer>
 

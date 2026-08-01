@@ -64,4 +64,43 @@ public class PayrollController : ControllerBase
         var run = await _payrollService.RunPayrollAsync();
         return Ok(run);
     }
+
+    /// <summary>Get all employee-specific wage configurations.</summary>
+    [HttpGet("config/wages")]
+    [ProducesResponseType(typeof(IEnumerable<EmployeeWageDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<EmployeeWageDto>>> GetEmployeeWages()
+    {
+        var wages = await _payrollService.GetEmployeeWagesAsync();
+        return Ok(wages);
+    }
+
+    /// <summary>Get global payroll rates (default wage, tax, deductions).</summary>
+    [HttpGet("config/rates")]
+    [ProducesResponseType(typeof(PayrollRatesDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PayrollRatesDto>> GetPayrollRates()
+    {
+        var rates = await _payrollService.GetPayrollRatesAsync();
+        return Ok(rates);
+    }
+
+    /// <summary>Update a specific employee's hourly wage.</summary>
+    [HttpPut("config/wages/{employeeId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UpdateEmployeeWage(string employeeId, [FromBody] UpdateEmployeeWageRequest request)
+    {
+        await _payrollService.UpdateEmployeeWageAsync(employeeId, request.HourlyRate);
+        return NoContent();
+    }
+
+    /// <summary>Update global payroll rates.</summary>
+    [HttpPut("config/rates")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UpdatePayrollRates([FromBody] UpdatePayrollRatesRequest request)
+    {
+        await _payrollService.UpdatePayrollRatesAsync(
+            request.DefaultHourlyRate,
+            request.TaxRate,
+            request.DeductionRate);
+        return NoContent();
+    }
 }

@@ -1,0 +1,320 @@
+@page "/finance/gl/chart-of-accounts"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@using Finance.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Chart of Accounts - Finance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/gl">General Ledger</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Chart of Accounts</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+                Chart of Accounts
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage account hierarchy and structure</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => OpenCreateDialog())">
+            Add Account
+        </MudButton>
+    </div>
+
+    <!-- Filters -->
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudSelect T="AccountType?" @bind-Value="_filterType" Label="Filter by Type" Clearable="true">
+                    @foreach (AccountType type in Enum.GetValues(typeof(AccountType)))
+                    {
+                        <MudSelectItem T="AccountType?" Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="_searchText" Label="Search" Placeholder="Account number or name..."
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-4">
+            @foreach (AccountType type in Enum.GetValues(typeof(AccountType)))
+            {
+                var count = _accounts.Count(a => a.AccountType == type);
+                var total = _accounts.Where(a => a.AccountType == type).Sum(a => a.Balance);
+                <MudItem xs="12" sm="6" md="4" lg="2">
+                    <MudCard>
+                        <MudCardContent Class="pa-3">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@type</MudText>
+                            <MudText Typo="Typo.h6">@count</MudText>
+                            <MudText Typo="Typo.caption">@total.ToString("C0")</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <!-- Accounts Table -->
+        <CustomDataGrid TItem="AccountDto"
+                        Items="@FilteredAccounts"
+                        Hover="true"
+                        Dense="true"
+                        Striped="true"
+                        Elevation="2"
+                        ShowToolbar="false"
+                        ShowSearch="false">
+            <ChildContent>
+                <PropertyColumn Property="x => x.AccountNumber" Title="Number" T="AccountDto" TProperty="string">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="font-weight: bold">@context.Item.AccountNumber</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.AccountName" Title="Name" T="AccountDto" TProperty="string" />
+                <PropertyColumn Property="x => x.AccountType" Title="Type" T="AccountDto" TProperty="AccountType">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(context.Item.AccountType)">@context.Item.AccountType</MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Description" Title="Description" T="AccountDto" TProperty="string">
+                    <CellTemplate>
+                        <MudText Typo="Typo.caption">@context.Item.Description</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Balance" Title="Balance" T="AccountDto" TProperty="decimal">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Color="@(context.Item.Balance < 0 ? Color.Error : Color.Default)">
+                            @context.Item.Balance.ToString("C2")
+                        </MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="AccountDto">
+                    <CellTemplate>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => OpenEditDialog(context.Item))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.History" Color="Color.Info" Size="Size.Small"
+                                       OnClick="@(() => ViewHistory(context.Item.Id))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                       OnClick="@(() => DeleteAccount(context.Item.Id))" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+<!-- Create/Edit Dialog -->
+<MudDialog @bind-Visible="_dialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">@(_editingAccount == null ? "Create Account" : "Edit Account")</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_formAccountNumber" Label="Account Number *" Variant="Variant.Outlined"
+                              Disabled="@(_editingAccount != null)" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="AccountType" @bind-Value="_formAccountType" Label="Account Type *" Variant="Variant.Outlined"
+                           Disabled="@(_editingAccount != null)">
+                    @foreach (AccountType type in Enum.GetValues(typeof(AccountType)))
+                    {
+                        <MudSelectItem T="AccountType" Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_formAccountName" Label="Account Name *" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_formDescription" Label="Description" Variant="Variant.Outlined"
+                              Lines="2" />
+            </MudItem>
+            @if (_editingAccount != null)
+            {
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Value="_formIsActive" Label="Active" Color="Color.Primary" />
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _dialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAccount">
+            @(_editingAccount == null ? "Create" : "Update")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private HttpClient _httpClient = default!;
+    private List<AccountDto> _accounts = new();
+    private bool _loading = true;
+    private AccountType? _filterType;
+    private string _searchText = string.Empty;
+
+    // Dialog state
+    private bool _dialogVisible;
+    private AccountDto? _editingAccount;
+    private string _formAccountNumber = string.Empty;
+    private string _formAccountName = string.Empty;
+    private string _formDescription = string.Empty;
+    private AccountType _formAccountType = AccountType.Asset;
+    private bool _formIsActive = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("FinanceApi");
+        await LoadAccountsAsync();
+    }
+
+    private IEnumerable<AccountDto> FilteredAccounts
+    {
+        get
+        {
+            var filtered = _accounts.AsEnumerable();
+
+            if (_filterType.HasValue)
+                filtered = filtered.Where(a => a.AccountType == _filterType.Value);
+
+            if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                var search = _searchText.ToLower();
+                filtered = filtered.Where(a =>
+                    a.AccountNumber.ToLower().Contains(search) ||
+                    a.AccountName.ToLower().Contains(search));
+            }
+
+            return filtered.OrderBy(a => a.AccountNumber);
+        }
+    }
+
+    private async Task LoadAccountsAsync()
+    {
+        _loading = true;
+        try
+        {
+            _accounts = await _httpClient.GetFromJsonAsync<List<AccountDto>>("api/generalledger/accounts") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load accounts: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        _editingAccount = null;
+        _formAccountNumber = string.Empty;
+        _formAccountName = string.Empty;
+        _formDescription = string.Empty;
+        _formAccountType = AccountType.Asset;
+        _formIsActive = true;
+        _dialogVisible = true;
+    }
+
+    private void OpenEditDialog(AccountDto account)
+    {
+        _editingAccount = account;
+        _formAccountNumber = account.AccountNumber;
+        _formAccountName = account.AccountName;
+        _formDescription = account.Description;
+        _formAccountType = account.AccountType;
+        _formIsActive = account.IsActive;
+        _dialogVisible = true;
+    }
+
+    private async Task SaveAccount()
+    {
+        try
+        {
+            if (_editingAccount == null)
+            {
+                // Create
+                var request = new CreateAccountRequest
+                {
+                    AccountNumber = _formAccountNumber,
+                    AccountName = _formAccountName,
+                    AccountType = _formAccountType,
+                    Description = _formDescription
+                };
+
+                await _httpClient.PostAsJsonAsync("api/generalledger/accounts", request);
+                Snackbar.Add("Account created", Severity.Success);
+            }
+            else
+            {
+                // Update
+                var request = new UpdateAccountRequest
+                {
+                    AccountName = _formAccountName,
+                    Description = _formDescription,
+                    IsActive = _formIsActive
+                };
+
+                await _httpClient.PutAsJsonAsync($"api/generalledger/accounts/{_editingAccount.Id}", request);
+                Snackbar.Add("Account updated", Severity.Success);
+            }
+
+            _dialogVisible = false;
+            await LoadAccountsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to save account: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteAccount(int id)
+    {
+        try
+        {
+            await _httpClient.DeleteAsync($"api/generalledger/accounts/{id}");
+            Snackbar.Add("Account deleted", Severity.Success);
+            await LoadAccountsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to delete account: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ViewHistory(int accountId)
+    {
+        // TODO: Navigate to account history page or open dialog
+        Snackbar.Add("Account history coming soon", Severity.Info);
+    }
+
+    private static Color GetTypeColor(AccountType type) => type switch
+    {
+        AccountType.Asset => Color.Success,
+        AccountType.Liability => Color.Error,
+        AccountType.Equity => Color.Info,
+        AccountType.Revenue => Color.Primary,
+        AccountType.Expense => Color.Warning,
+        _ => Color.Default
+    };
+}

@@ -169,4 +169,60 @@ public sealed class PayrollService : IPayrollService
             TimesheetIds = l.TimesheetIds
         }).ToList()
     };
+
+    public Task<IEnumerable<EmployeeWageDto>> GetEmployeeWagesAsync()
+    {
+        var wages = _store.EmployeeHourlyRates
+            .Select(kvp => new EmployeeWageDto
+            {
+                EmployeeId = kvp.Key,
+                HourlyRate = kvp.Value
+            })
+            .OrderBy(w => w.EmployeeId)
+            .ToList();
+
+        return Task.FromResult<IEnumerable<EmployeeWageDto>>(wages);
+    }
+
+    public Task<PayrollRatesDto> GetPayrollRatesAsync()
+    {
+        var rates = new PayrollRatesDto
+        {
+            DefaultHourlyRate = _store.DefaultHourlyRate,
+            TaxRate = _store.TaxRate,
+            DeductionRate = _store.DeductionRate
+        };
+
+        return Task.FromResult(rates);
+    }
+
+    public Task UpdateEmployeeWageAsync(string employeeId, decimal hourlyRate)
+    {
+        _store.EmployeeHourlyRates[employeeId] = hourlyRate;
+        _logger.LogInformation("Updated wage for {EmployeeId}: {Rate:C}/hr", employeeId, hourlyRate);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdatePayrollRatesAsync(decimal? defaultRate, decimal? taxRate, decimal? deductionRate)
+    {
+        if (defaultRate.HasValue)
+        {
+            _store.DefaultHourlyRate = defaultRate.Value;
+            _logger.LogInformation("Updated default hourly rate: {Rate:C}/hr", defaultRate.Value);
+        }
+
+        if (taxRate.HasValue)
+        {
+            _store.TaxRate = taxRate.Value;
+            _logger.LogInformation("Updated tax rate: {Rate:P}", taxRate.Value);
+        }
+
+        if (deductionRate.HasValue)
+        {
+            _store.DeductionRate = deductionRate.Value;
+            _logger.LogInformation("Updated deduction rate: {Rate:P}", deductionRate.Value);
+        }
+
+        return Task.CompletedTask;
+    }
 }

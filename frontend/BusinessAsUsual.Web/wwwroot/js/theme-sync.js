@@ -96,9 +96,19 @@ window.registerSidebarNavigationHandler = function(dotNetRef) {
     console.log('[ThemeSync] Sidebar navigation handler registered');
 };
 
+window.clearSidebarNavigationHandler = function() {
+    window.sidebarRef = null;
+    console.log('[ThemeSync] Sidebar navigation handler cleared');
+};
+
 window.addEventListener('iframe-navigation', (event) => {
     if (window.sidebarRef) {
-        window.sidebarRef.invokeMethodAsync('OnIframeNavigation', event.detail.route);
+        try {
+            window.sidebarRef.invokeMethodAsync('OnIframeNavigation', event.detail.route);
+        } catch (error) {
+            console.warn('[ThemeSync] Failed to invoke OnIframeNavigation (circuit may be disposed):', error);
+            window.sidebarRef = null; // Clear stale reference
+        }
     }
 });
 

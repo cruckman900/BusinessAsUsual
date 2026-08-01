@@ -117,10 +117,9 @@
 
         <!-- Active Onboardings Table -->
         <MudPaper Elevation="2">
-            <MudTable Items="@onboardings" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Active Onboarding List</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all onboarding records">
                             <MudButton Color="@(filterStatus == null ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = null)">All</MudButton>
@@ -132,62 +131,75 @@
                             <MudButton Color="@(filterStatus == "Completed" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Completed")">Completed</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>New Hire</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Start Date</MudTh>
-                    <MudTh>Progress</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh>Assigned To</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="New Hire">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
-                                @context.Initials
-                            </MudAvatar>
-                            <div>
-                                <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Position</MudText>
-                            </div>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Start Date">
-                        <MudText Typo="Typo.body2">@context.StartDate.ToString("MMM dd, yyyy")</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@GetDaysUntilStart(context.StartDate)</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Progress">
-                        <div class="d-flex align-center gap-2">
-                            <MudProgressLinear Color="@GetProgressColor(context.Progress)" Value="@context.Progress" Size="Size.Medium" Style="width: 100px;" />
-                            <MudText Typo="Typo.body2">@context.Progress%</MudText>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudBadge Content="@context.Status" Color="@GetStatusColor(context.Status)" />
-                    </MudTd>
-                    <MudTd DataLabel="Assigned To">
-                        <MudText Typo="Typo.body2">@context.AssignedTo</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View onboarding details">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit onboarding process">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Mark as complete">
-                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="OnboardingRecord"
+                                Items="@onboardings"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="New Hire" Sortable="false" Filterable="false" T="OnboardingRecord">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @context.Item.Initials
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body1"><strong>@context.Item.Name</strong></MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Position</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Department" Title="Department" T="OnboardingRecord" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Start Date" Sortable="false" Filterable="false" T="OnboardingRecord">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@context.Item.StartDate.ToString("MMM dd, yyyy")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@GetDaysUntilStart(context.Item.StartDate)</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Progress" Title="Progress" T="OnboardingRecord" TProperty="int">
+                            <CellTemplate>
+                                <div class="d-flex align-center gap-2">
+                                    <MudProgressLinear Color="@GetProgressColor(context.Item.Progress)" Value="@context.Item.Progress" Size="Size.Medium" Style="width: 100px;" />
+                                    <MudText Typo="Typo.body2">@context.Item.Progress%</MudText>
+                                </div>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Status" Title="Status" T="OnboardingRecord" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Status" Color="@GetStatusColor(context.Item.Status)" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.AssignedTo" Title="Assigned To" T="OnboardingRecord" TProperty="string" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="OnboardingRecord">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View onboarding details">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Edit onboarding process">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Mark as complete">
+                                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

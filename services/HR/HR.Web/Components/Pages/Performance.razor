@@ -220,10 +220,9 @@
 
         <!-- Performance Reviews Table -->
         <MudPaper Elevation="2">
-            <MudTable Items="@performanceReviews" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Employee Performance Reviews</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all reviews">
                             <MudButton Color="@(filterStatus == null ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = null)">All</MudButton>
@@ -238,63 +237,77 @@
                             <MudButton Color="@(filterStatus == "Overdue" ? Color.Primary : Color.Default)" OnClick="@(() => filterStatus = "Overdue")">Overdue</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Manager</MudTh>
-                    <MudTh>Self-Assessment</MudTh>
-                    <MudTh>Rating</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh>Due Date</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.EmployeeName</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Manager">@context.Manager</MudTd>
-                    <MudTd DataLabel="Self-Assessment">
-                        <MudBadge Content="@context.SelfAssessment" Color="@(context.SelfAssessment == "Complete" ? Color.Success : Color.Warning)" />
-                    </MudTd>
-                    <MudTd DataLabel="Rating">
-                        @if (context.Rating.HasValue)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="@GetRatingColor(context.Rating.Value)">
-                                <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />
-                                @context.Rating.Value
-                            </MudChip>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudBadge Content="@context.Status" Color="@GetReviewStatusColor(context.Status)" />
-                    </MudTd>
-                    <MudTd DataLabel="Due Date">@context.DueDate.ToString("MMM dd, yyyy")</MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View review details">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit review">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Submit review">
-                                <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small" Color="Color.Success" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="PerformanceReview"
+                                Items="@performanceReviews"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="PerformanceReview">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                    <strong>@context.Item.EmployeeName</strong>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Department" Title="Department" T="PerformanceReview" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Manager" Title="Manager" T="PerformanceReview" TProperty="string" />
+                        <PropertyColumn Property="x => x.SelfAssessment" Title="Self-Assessment" T="PerformanceReview" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.SelfAssessment" Color="@(context.Item.SelfAssessment == "Complete" ? Color.Success : Color.Warning)" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Rating" Title="Rating" T="PerformanceReview" TProperty="decimal?">
+                            <CellTemplate>
+                                @if (context.Item.Rating.HasValue)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="@GetRatingColor(context.Item.Rating.Value)">
+                                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />
+                                        @context.Item.Rating.Value
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Status" Title="Status" T="PerformanceReview" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Status" Color="@GetReviewStatusColor(context.Item.Status)" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.DueDate" Title="Due Date" Format="MMM dd, yyyy" T="PerformanceReview" TProperty="DateTime" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="PerformanceReview">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View review details">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Edit review">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Submit review">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small" Color="Color.Success" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

@@ -1,0 +1,289 @@
+@page "/finance/payables/bills/edit/{BillId}"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Edit Bill</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/payables/bills">Bills</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Edit</MudText>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_bill == null)
+    {
+        <MudAlert Severity="Severity.Error">Bill not found.</MudAlert>
+    }
+    else
+    {
+        <div class="d-flex justify-space-between align-center">
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                Edit Bill @_bill.BillNumber
+            </MudText>
+            <MudChip T="string" Color="@StatusColor(_bill.Status)" Size="Size.Large">
+                @_bill.Status
+            </MudChip>
+        </div>
+
+        <MudPaper Class="pa-4 mt-4" Elevation="2">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-2">Vendor Information</MudText>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_vendorName" Label="Vendor Name" Required="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_vendorEmail" Label="Vendor Email" InputType="InputType.Email" Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" Class="mt-4">
+                    <MudText Typo="Typo.h6" Class="mb-2">Bill Details</MudText>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="string" @bind-Value="_status" Label="Status" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("Draft")">Draft</MudSelectItem>
+                        <MudSelectItem Value="@("Received")">Received</MudSelectItem>
+                        <MudSelectItem Value="@("PartiallyPaid")">Partially Paid</MudSelectItem>
+                        <MudSelectItem Value="@("Paid")">Paid</MudSelectItem>
+                        <MudSelectItem Value="@("Overdue")">Overdue</MudSelectItem>
+                        <MudSelectItem Value="@("Cancelled")">Cancelled</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="string" @bind-Value="_currency" Label="Currency" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("USD")">USD</MudSelectItem>
+                        <MudSelectItem Value="@("EUR")">EUR</MudSelectItem>
+                        <MudSelectItem Value="@("GBP")">GBP</MudSelectItem>
+                        <MudSelectItem Value="@("CAD")">CAD</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker @bind-Date="_dueDate" Label="Due Date" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_assignedToEmployeeId" Label="Assigned To (Employee ID)" Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" Class="mt-4">
+                    <div class="d-flex justify-space-between align-center mb-2">
+                        <MudText Typo="Typo.h6">Line Items</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="AddLineItem">Add Item</MudButton>
+                    </div>
+                </MudItem>
+
+                @foreach (var (item, index) in _lineItems.Select((item, i) => (item, i)))
+                {
+                    <MudItem xs="12">
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="item.Description" Label="Description" Required="true" Variant="Variant.Outlined" />
+                                </MudItem>
+                                <MudItem xs="6" md="2">
+                                    <MudNumericField @bind-Value="item.Quantity" Label="Qty" Min="0m" Variant="Variant.Outlined" Format="N2" />
+                                </MudItem>
+                                <MudItem xs="6" md="2">
+                                    <MudNumericField @bind-Value="item.UnitPrice" Label="Unit Price" Min="0m" Variant="Variant.Outlined" Format="C2" />
+                                </MudItem>
+                                <MudItem xs="6" md="1">
+                                    <MudNumericField @bind-Value="item.TaxPercent" Label="Tax %" Min="0m" Variant="Variant.Outlined" Format="N1" />
+                                </MudItem>
+                                <MudItem xs="6" md="1" Class="d-flex align-end">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveLineItem(index))" />
+                                    <MudText Typo="Typo.body2" Class="ml-2 mt-2">@CalculateLineTotal(item).ToString("C2")</MudText>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                }
+
+                <MudItem xs="12" Class="mt-4">
+                    <MudPaper Class="pa-3" Outlined="true">
+                        <MudGrid>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.body1">Subtotal:</MudText></MudItem>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.body1">@_subtotal.ToString("C2")</MudText></MudItem>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.body1">Tax:</MudText></MudItem>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.body1">@_totalTax.ToString("C2")</MudText></MudItem>
+                            <MudItem xs="12"><MudDivider /></MudItem>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.h6">Total:</MudText></MudItem>
+                            <MudItem xs="6" Class="text-right"><MudText Typo="Typo.h6" Color="Color.Warning">@_total.ToString("C2")</MudText></MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_notes" Label="Notes" Lines="3" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_terms" Label="Payment Terms" Lines="3" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_error</MudAlert>
+        }
+
+        <div class="d-flex justify-space-between mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteAsync">Delete</MudButton>
+            <div class="d-flex gap-2">
+                <MudButton Variant="Variant.Text" OnClick="@(() => Navigation.NavigateTo("/finance/payables/bills"))">Cancel</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Disabled="_submitting" OnClick="SaveAsync">
+                    @(_submitting ? "Saving..." : "Save Changes")
+                </MudButton>
+            </div>
+        </div>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public string BillId { get; set; } = "";
+
+    private bool _loading = true;
+    private BillDto? _bill;
+    private string _vendorName = "";
+    private string _vendorEmail = "";
+    private string _status = "Draft";
+    private string _currency = "USD";
+    private DateTime? _dueDate;
+    private string _assignedToEmployeeId = "";
+    private string _notes = "";
+    private string _terms = "";
+    private List<LineItemModel> _lineItems = new();
+    private bool _submitting;
+    private string? _error;
+
+    private decimal _subtotal => _lineItems.Sum(i => i.Quantity * i.UnitPrice);
+    private decimal _totalTax => _lineItems.Sum(i => (i.Quantity * i.UnitPrice) * (i.TaxPercent / 100m));
+    private decimal _total => _subtotal + _totalTax;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            _bill = await http.GetFromJsonAsync<BillDto>($"api/bills/{BillId}");
+
+            if (_bill != null)
+            {
+                _vendorName = _bill.VendorName;
+                _vendorEmail = _bill.VendorEmail ?? "";
+                _status = _bill.Status;
+                _currency = _bill.Currency;
+                _dueDate = _bill.DueDate;
+                _assignedToEmployeeId = _bill.AssignedToEmployeeId ?? "";
+                _notes = _bill.Notes ?? "";
+                _terms = _bill.Terms ?? "";
+                _lineItems = _bill.LineItems.Select(li => new LineItemModel
+                {
+                    Description = li.Description,
+                    Quantity = li.Quantity,
+                    UnitPrice = li.UnitPrice,
+                    TaxPercent = li.TaxPercent,
+                    ExpenseCategory = li.ExpenseCategory
+                }).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load bill: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void AddLineItem() => _lineItems.Add(new LineItemModel());
+    private void RemoveLineItem(int index) { if (_lineItems.Count > 0) _lineItems.RemoveAt(index); }
+    private decimal CalculateLineTotal(LineItemModel item) => (item.Quantity * item.UnitPrice) * (1 + item.TaxPercent / 100m);
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_vendorName)) { _error = "Vendor name is required."; return; }
+        if (_lineItems.Count == 0 || _lineItems.All(i => string.IsNullOrWhiteSpace(i.Description))) { _error = "Add at least one line item."; return; }
+
+        _submitting = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new
+            {
+                VendorName = _vendorName,
+                VendorEmail = string.IsNullOrWhiteSpace(_vendorEmail) ? null : _vendorEmail,
+                Status = _status switch { "Draft" => 0, "Received" => 1, "PartiallyPaid" => 2, "Paid" => 3, "Overdue" => 4, "Cancelled" => 5, _ => 0 },
+                Currency = _currency switch { "USD" => 0, "EUR" => 1, "GBP" => 2, "CAD" => 3, _ => 0 },
+                DueDate = _dueDate,
+                Notes = _notes,
+                Terms = _terms,
+                AssignedToEmployeeId = string.IsNullOrWhiteSpace(_assignedToEmployeeId) ? null : _assignedToEmployeeId,
+                LineItems = _lineItems.Where(i => !string.IsNullOrWhiteSpace(i.Description)).Select(i => new { i.Description, i.Quantity, i.UnitPrice, i.TaxPercent, i.ExpenseCategory }).ToList()
+            };
+
+            var response = await http.PutAsJsonAsync($"api/bills/{BillId}", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Bill updated successfully", Severity.Success);
+                Navigation.NavigateTo("/finance/payables/bills");
+            }
+            else _error = $"Failed to update bill: {response.StatusCode}";
+        }
+        catch (Exception ex) { _error = $"Error updating bill: {ex.Message}"; }
+        finally { _submitting = false; }
+    }
+
+    private async Task DeleteAsync()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var response = await http.DeleteAsync($"api/bills/{BillId}");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Bill deleted successfully", Severity.Success);
+                Navigation.NavigateTo("/finance/payables/bills");
+            }
+            else Snackbar.Add($"Failed to delete bill: {response.StatusCode}", Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add($"Error deleting bill: {ex.Message}", Severity.Error); }
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        "Draft" => Color.Default,
+        "Received" => Color.Info,
+        "PartiallyPaid" => Color.Warning,
+        "Paid" => Color.Success,
+        "Overdue" => Color.Error,
+        "Cancelled" => Color.Dark,
+        _ => Color.Default
+    };
+
+    private class LineItemModel
+    {
+        public string Description { get; set; } = "";
+        public decimal Quantity { get; set; } = 1m;
+        public decimal UnitPrice { get; set; } = 0m;
+        public decimal TaxPercent { get; set; } = 0m;
+        public string? ExpenseCategory { get; set; }
+    }
+}

@@ -37,4 +37,6 @@ public class NavigationItem
     public string Label { get; set; } = string.Empty;
     public string Route { get; set; } = string.Empty;
     public string? Icon { get; set; }
+    public bool ExpandedByDefault { get; set; } = false;
+    public List<NavigationItem>? Children { get; set; }
 }

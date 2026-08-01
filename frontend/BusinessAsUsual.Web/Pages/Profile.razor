@@ -1,0 +1,417 @@
+@page "/profile"
+@using BusinessAsUsual.Web.Services
+@inject AuthenticationService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>User Profile - Business As Usual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">User Profile</MudText>
+    </div>
+
+    @if (AuthService.CurrentUser != null)
+    {
+        <MudText Typo="Typo.h4" GutterBottom="true">User Profile</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+            Manage your account settings and preferences
+        </MudText>
+
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+
+            <!-- Personal Information Tab -->
+            <MudTabPanel Text="Personal Information" Icon="@Icons.Material.Filled.Person">
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" md="4" Class="text-center">
+                        <MudAvatar Size="Size.Large" Class="mb-3" Style="width: 120px; height: 120px; font-size: 3rem;">
+                            @GetInitials()
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6">@AuthService.CurrentUser.FullName</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@AuthService.CurrentUser.Role</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Success" Class="mt-2">● Active</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="8">
+                        <MudPaper Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-4">Personal Details</MudText>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_fullName" 
+                                                  Label="Full Name" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_email" 
+                                                  Label="Email Address" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true"
+                                                  InputType="InputType.Email" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_phoneNumber" 
+                                                  Label="Phone Number" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField Value="@AuthService.CurrentUser.Username" 
+                                                  Label="Username" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true"
+                                                  Disabled="true" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_jobTitle" 
+                                                  Label="Job Title" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_department" 
+                                                  Label="Department" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Primary" 
+                                               OnClick="SavePersonalInfo"
+                                               StartIcon="@Icons.Material.Filled.Save">
+                                        Save Changes
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <!-- Preferences Tab -->
+            <MudTabPanel Text="Preferences" Icon="@Icons.Material.Filled.Settings">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">User Preferences</MudText>
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" md="6">
+                            <MudSelect @bind-Value="_language" Label="Language" Variant="Variant.Outlined">
+                                <MudSelectItem Value="@("en-US")">English (US)</MudSelectItem>
+                                <MudSelectItem Value="@("en-GB")">English (UK)</MudSelectItem>
+                                <MudSelectItem Value="@("es-ES")">Spanish</MudSelectItem>
+                                <MudSelectItem Value="@("fr-FR")">French</MudSelectItem>
+                                <MudSelectItem Value="@("de-DE")">German</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect @bind-Value="_timeZone" Label="Time Zone" Variant="Variant.Outlined">
+                                <MudSelectItem Value="@("UTC")">UTC</MudSelectItem>
+                                <MudSelectItem Value="@("America/New_York")">Eastern Time</MudSelectItem>
+                                <MudSelectItem Value="@("America/Chicago")">Central Time</MudSelectItem>
+                                <MudSelectItem Value="@("America/Denver")">Mountain Time</MudSelectItem>
+                                <MudSelectItem Value="@("America/Los_Angeles")">Pacific Time</MudSelectItem>
+                                <MudSelectItem Value="@("Europe/London")">London</MudSelectItem>
+                                <MudSelectItem Value="@("Europe/Paris")">Paris</MudSelectItem>
+                                <MudSelectItem Value="@("Asia/Tokyo")">Tokyo</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect @bind-Value="_dateFormat" Label="Date Format" Variant="Variant.Outlined">
+                                <MudSelectItem Value="@("MM/dd/yyyy")">MM/dd/yyyy</MudSelectItem>
+                                <MudSelectItem Value="@("dd/MM/yyyy")">dd/MM/yyyy</MudSelectItem>
+                                <MudSelectItem Value="@("yyyy-MM-dd")">yyyy-MM-dd</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect @bind-Value="_timeFormat" Label="Time Format" Variant="Variant.Outlined">
+                                <MudSelectItem Value="@("12h")">12 Hour (AM/PM)</MudSelectItem>
+                                <MudSelectItem Value="@("24h")">24 Hour</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudNumericField @bind-Value="_itemsPerPage" 
+                                             Label="Items Per Page" 
+                                             Variant="Variant.Outlined"
+                                             Min="10"
+                                             Max="100"
+                                             Step="5" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.subtitle1" Class="mb-3">Notification Settings</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSwitch @bind-Value="_emailNotifications" 
+                                       Label="Email Notifications" 
+                                       Color="Color.Primary" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSwitch @bind-Value="_pushNotifications" 
+                                       Label="Push Notifications" 
+                                       Color="Color.Primary" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       OnClick="SavePreferences"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                Save Preferences
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudTabPanel>
+
+            <!-- Security Tab -->
+            <MudTabPanel Text="Security" Icon="@Icons.Material.Filled.Security">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Security Settings</MudText>
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Change Password</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Update your password to keep your account secure
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_currentPassword" 
+                                          Label="Current Password" 
+                                          Variant="Variant.Outlined" 
+                                          InputType="InputType.Password"
+                                          FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_newPassword" 
+                                          Label="New Password" 
+                                          Variant="Variant.Outlined" 
+                                          InputType="InputType.Password"
+                                          FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_confirmPassword" 
+                                          Label="Confirm New Password" 
+                                          Variant="Variant.Outlined" 
+                                          InputType="InputType.Password"
+                                          FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       OnClick="ChangePassword"
+                                       StartIcon="@Icons.Material.Filled.Lock">
+                                Update Password
+                            </MudButton>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Two-Factor Authentication</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Add an extra layer of security to your account
+                            </MudText>
+                            <MudSwitch @bind-Value="_twoFactorEnabled" 
+                                       Label="Enable Two-Factor Authentication" 
+                                       Color="Color.Primary" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Active Sessions</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                Logged in since: @AuthService.CurrentUser.LoginTime.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Error" 
+                                       OnClick="LogoutAllSessions"
+                                       StartIcon="@Icons.Material.Filled.Logout">
+                                Logout All Other Sessions
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudTabPanel>
+
+            <!-- Activity Tab -->
+            <MudTabPanel Text="Activity" Icon="@Icons.Material.Filled.History">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-4">Recent Activity</MudText>
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
+                        <MudTimelineItem Color="Color.Success" Size="Size.Small">
+                            <ItemOpposite>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">2 hours ago</MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudText Typo="Typo.body1">Logged in from Chrome on Windows</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">IP: 192.168.1.100</MudText>
+                            </ItemContent>
+                        </MudTimelineItem>
+                        <MudTimelineItem Color="Color.Info" Size="Size.Small">
+                            <ItemOpposite>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">1 day ago</MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudText Typo="Typo.body1">Updated profile information</MudText>
+                            </ItemContent>
+                        </MudTimelineItem>
+                        <MudTimelineItem Color="Color.Warning" Size="Size.Small">
+                            <ItemOpposite>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">3 days ago</MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudText Typo="Typo.body1">Password changed successfully</MudText>
+                            </ItemContent>
+                        </MudTimelineItem>
+                        <MudTimelineItem Color="Color.Success" Size="Size.Small">
+                            <ItemOpposite>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">5 days ago</MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudText Typo="Typo.body1">Logged in from Mobile App</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">IP: 192.168.1.50</MudText>
+                            </ItemContent>
+                        </MudTimelineItem>
+                    </MudTimeline>
+                </MudPaper>
+            </MudTabPanel>
+
+        </MudTabs>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Warning">
+            You need to be logged in to view this page.
+            <MudButton Color="Color.Primary" Href="/login" Class="ml-3">Go to Login</MudButton>
+        </MudAlert>
+    }
+</MudContainer>
+
+@code {
+    // Personal Info
+    private string _fullName = "";
+    private string _email = "";
+    private string? _phoneNumber;
+    private string? _jobTitle;
+    private string? _department;
+
+    // Preferences
+    private string _language = "en-US";
+    private string _timeZone = "UTC";
+    private string _dateFormat = "MM/dd/yyyy";
+    private string _timeFormat = "12h";
+    private int _itemsPerPage = 25;
+    private bool _emailNotifications = true;
+    private bool _pushNotifications = true;
+
+    // Security
+    private string _currentPassword = "";
+    private string _newPassword = "";
+    private string _confirmPassword = "";
+    private bool _twoFactorEnabled = false;
+
+    protected override void OnInitialized()
+    {
+        if (AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        LoadUserData();
+    }
+
+    private void LoadUserData()
+    {
+        if (AuthService.CurrentUser != null)
+        {
+            _fullName = AuthService.CurrentUser.FullName;
+            _email = AuthService.CurrentUser.Email;
+            _phoneNumber = AuthService.CurrentUser.PhoneNumber;
+            _jobTitle = AuthService.CurrentUser.JobTitle;
+            _department = AuthService.CurrentUser.Department;
+
+            var prefs = AuthService.CurrentUser.Preferences;
+            _language = prefs.Language;
+            _timeZone = prefs.TimeZone;
+            _dateFormat = prefs.DateFormat;
+            _timeFormat = prefs.TimeFormat;
+            _itemsPerPage = prefs.ItemsPerPage;
+            _emailNotifications = prefs.EmailNotifications;
+            _pushNotifications = prefs.PushNotifications;
+        }
+    }
+
+    private string GetInitials()
+    {
+        if (AuthService.CurrentUser == null) return "?";
+
+        var parts = AuthService.CurrentUser.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "?";
+        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
+    private void SavePersonalInfo()
+    {
+        AuthService.UpdateProfile(_fullName, _email, _phoneNumber, _jobTitle, _department);
+        Snackbar.Add("Personal information updated successfully", Severity.Success);
+    }
+
+    private void SavePreferences()
+    {
+        var preferences = new UserPreferences
+        {
+            Language = _language,
+            TimeZone = _timeZone,
+            DateFormat = _dateFormat,
+            TimeFormat = _timeFormat,
+            ItemsPerPage = _itemsPerPage,
+            EmailNotifications = _emailNotifications,
+            PushNotifications = _pushNotifications
+        };
+
+        AuthService.UpdatePreferences(preferences);
+        Snackbar.Add("Preferences saved successfully", Severity.Success);
+    }
+
+    private void ChangePassword()
+    {
+        if (string.IsNullOrWhiteSpace(_currentPassword) || 
+            string.IsNullOrWhiteSpace(_newPassword) || 
+            string.IsNullOrWhiteSpace(_confirmPassword))
+        {
+            Snackbar.Add("Please fill in all password fields", Severity.Warning);
+            return;
+        }
+
+        if (_newPassword != _confirmPassword)
+        {
+            Snackbar.Add("New passwords do not match", Severity.Error);
+            return;
+        }
+
+        if (_newPassword.Length < 8)
+        {
+            Snackbar.Add("Password must be at least 8 characters long", Severity.Warning);
+            return;
+        }
+
+        // In a real app, this would call an API to change the password
+        Snackbar.Add("Password changed successfully", Severity.Success);
+        _currentPassword = "";
+        _newPassword = "";
+        _confirmPassword = "";
+    }
+
+    private void LogoutAllSessions()
+    {
+        Snackbar.Add("All other sessions have been logged out", Severity.Success);
+    }
+}

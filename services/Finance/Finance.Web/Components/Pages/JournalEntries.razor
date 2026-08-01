@@ -1,0 +1,419 @@
+@page "/finance/gl/journal-entries"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@using Finance.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Journal Entries - Finance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/gl">General Ledger</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Journal Entries</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+                Journal Entries
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Record and manage general ledger transactions</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => OpenCreateDialog())">
+            New Entry
+        </MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="4">
+                <MudCard>
+                    <MudCardContent Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Entries</MudText>
+                        <MudText Typo="Typo.h5">@_journalEntries.Count</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard>
+                    <MudCardContent Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Draft</MudText>
+                        <MudText Typo="Typo.h5">@_journalEntries.Count(e => e.Status == JournalEntryStatus.Draft)</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard>
+                    <MudCardContent Class="pa-3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Posted</MudText>
+                        <MudText Typo="Typo.h5">@_journalEntries.Count(e => e.Status == JournalEntryStatus.Posted)</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Entries Table -->
+        <CustomDataGrid TItem="JournalEntryDto"
+                        Items="@_journalEntries.OrderByDescending(e => e.EntryDate)"
+                        Hover="true"
+                        Dense="true"
+                        Striped="true"
+                        Elevation="2"
+                        ShowToolbar="false"
+                        ShowSearch="false">
+            <ChildContent>
+                <PropertyColumn Property="x => x.EntryNumber" Title="Entry #" T="JournalEntryDto" TProperty="string">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Style="font-weight: bold">@context.Item.EntryNumber</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.EntryDate" Title="Date" Format="MMM dd, yyyy" T="JournalEntryDto" TProperty="DateTime" />
+                <PropertyColumn Property="x => x.Description" Title="Description" T="JournalEntryDto" TProperty="string" />
+                <PropertyColumn Property="x => x.Reference" Title="Reference" T="JournalEntryDto" TProperty="string" />
+                <PropertyColumn Property="x => x.Source" Title="Source" T="JournalEntryDto" TProperty="JournalEntrySource">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small">@context.Item.Source</MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Status" Title="Status" T="JournalEntryDto" TProperty="JournalEntryStatus">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">@context.Item.Status</MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.TotalDebits" Title="Debits" Format="C2" T="JournalEntryDto" TProperty="decimal" />
+                <PropertyColumn Property="x => x.TotalCredits" Title="Credits" Format="C2" T="JournalEntryDto" TProperty="decimal" />
+                <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="JournalEntryDto">
+                    <CellTemplate>
+                        @if (context.Item.Status == JournalEntryStatus.Draft)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small"
+                                           OnClick="@(() => PostEntry(context.Item.Id))" Title="Post Entry" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                           OnClick="@(() => VoidEntry(context.Item.Id))" Title="Delete Draft" />
+                        }
+                        else if (context.Item.Status == JournalEntryStatus.Posted)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Block" Color="Color.Warning" Size="Size.Small"
+                                           OnClick="@(() => VoidEntry(context.Item.Id))" Title="Void Entry" />
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small"
+                                       OnClick="@(() => ViewEntry(context.Item))" Title="View Details" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+<!-- Create Entry Dialog -->
+<MudDialog @bind-Visible="_createDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Create Journal Entry</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="_formEntryDate" Label="Entry Date *" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_formReference" Label="Reference" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_formDescription" Label="Description *" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-4" />
+        <MudText Typo="Typo.h6" Class="mb-2">Lines</MudText>
+
+        @foreach (var line in _formLines)
+        {
+            var index = _formLines.IndexOf(line);
+            <MudPaper Class="pa-3 mb-2" Elevation="1">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" md="4">
+                        <MudSelect T="int?" @bind-Value="line.AccountId" Label="Account *" Variant="Variant.Outlined">
+                            @foreach (var account in _accounts.OrderBy(a => a.AccountNumber))
+                            {
+                                <MudSelectItem T="int?" Value="@account.Id">@account.AccountNumber - @account.AccountName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudNumericField @bind-Value="line.DebitAmount" Label="Debit" Variant="Variant.Outlined" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudNumericField @bind-Value="line.CreditAmount" Label="Credit" Variant="Variant.Outlined" Min="0" />
+                    </MudItem>
+                    <MudItem xs="12" md="2" Class="d-flex align-center">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                       OnClick="@(() => _formLines.RemoveAt(index))" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="line.Description" Label="Line Description" Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+
+        <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="AddLine" Class="mt-2">
+            Add Line
+        </MudButton>
+
+        <MudDivider Class="my-4" />
+        <MudGrid>
+            <MudItem xs="6">
+                <MudText Typo="Typo.h6">Total Debits: @TotalDebits.ToString("C2")</MudText>
+            </MudItem>
+            <MudItem xs="6">
+                <MudText Typo="Typo.h6">Total Credits: @TotalCredits.ToString("C2")</MudText>
+            </MudItem>
+        </MudGrid>
+        @if (!IsBalanced)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2">Debits and Credits must be equal!</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _createDialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateEntry" Disabled="@(!IsBalanced)">
+            Create Entry
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- View Entry Dialog -->
+<MudDialog @bind-Visible="_viewDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        @if (_viewingEntry != null)
+        {
+            <MudText Typo="Typo.h6" Class="mb-4">@_viewingEntry.EntryNumber</MudText>
+            <MudSimpleTable Dense="true">
+                <tbody>
+                    <tr>
+                        <td><strong>Date:</strong></td>
+                        <td>@_viewingEntry.EntryDate.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Description:</strong></td>
+                        <td>@_viewingEntry.Description</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reference:</strong></td>
+                        <td>@_viewingEntry.Reference</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status:</strong></td>
+                        <td><MudChip T="string" Size="Size.Small" Color="@GetStatusColor(_viewingEntry.Status)">@_viewingEntry.Status</MudChip></td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
+
+            <MudText Typo="Typo.h6" Class="mt-4 mb-2">Lines</MudText>
+            <CustomDataGrid TItem="JournalLineDto"
+                            Items="@_viewingEntry.Lines"
+                            Dense="true"
+                            Elevation="0"
+                            ShowToolbar="false"
+                            ShowSearch="false">
+                <ChildContent>
+                    <TemplateColumn Title="Account" Sortable="false" Filterable="false" T="JournalLineDto">
+                        <CellTemplate>
+                            @context.Item.AccountNumber - @context.Item.AccountName
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Description" Title="Description" T="JournalLineDto" TProperty="string" />
+                    <TemplateColumn Title="Debit" Sortable="false" Filterable="false" T="JournalLineDto">
+                        <CellTemplate>
+                            @(context.Item.DebitAmount > 0 ? context.Item.DebitAmount.ToString("C2") : "")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Credit" Sortable="false" Filterable="false" T="JournalLineDto">
+                        <CellTemplate>
+                            @(context.Item.CreditAmount > 0 ? context.Item.CreditAmount.ToString("C2") : "")
+                        </CellTemplate>
+                    </TemplateColumn>
+                </ChildContent>
+            </CustomDataGrid>
+            <MudPaper Class="pa-2 mt-2" Elevation="0">
+                <MudGrid>
+                    <MudItem xs="6" Style="text-align: right"><strong>Total Debits:</strong></MudItem>
+                    <MudItem xs="6"><strong>@_viewingEntry.TotalDebits.ToString("C2")</strong></MudItem>
+                    <MudItem xs="6" Style="text-align: right"><strong>Total Credits:</strong></MudItem>
+                    <MudItem xs="6"><strong>@_viewingEntry.TotalCredits.ToString("C2")</strong></MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _viewDialogVisible = false)">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private HttpClient _httpClient = default!;
+    private List<JournalEntryDto> _journalEntries = new();
+    private List<AccountDto> _accounts = new();
+    private bool _loading = true;
+
+    // Create dialog
+    private bool _createDialogVisible;
+    private DateTime? _formEntryDate = DateTime.Now;
+    private string _formDescription = string.Empty;
+    private string _formReference = string.Empty;
+    private List<JournalLineForm> _formLines = new();
+
+    // View dialog
+    private bool _viewDialogVisible;
+    private JournalEntryDto? _viewingEntry;
+
+    private decimal TotalDebits => _formLines.Sum(l => l.DebitAmount);
+    private decimal TotalCredits => _formLines.Sum(l => l.CreditAmount);
+    private bool IsBalanced => TotalDebits == TotalCredits && TotalDebits > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("FinanceApi");
+        await Task.WhenAll(LoadEntriesAsync(), LoadAccountsAsync());
+    }
+
+    private async Task LoadEntriesAsync()
+    {
+        _loading = true;
+        try
+        {
+            _journalEntries = await _httpClient.GetFromJsonAsync<List<JournalEntryDto>>("api/generalledger/journal-entries") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load entries: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadAccountsAsync()
+    {
+        try
+        {
+            _accounts = await _httpClient.GetFromJsonAsync<List<AccountDto>>("api/generalledger/accounts") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load accounts: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        _formEntryDate = DateTime.Now;
+        _formDescription = string.Empty;
+        _formReference = string.Empty;
+        _formLines = new List<JournalLineForm>
+        {
+            new JournalLineForm(),
+            new JournalLineForm()
+        };
+        _createDialogVisible = true;
+    }
+
+    private void AddLine()
+    {
+        _formLines.Add(new JournalLineForm());
+    }
+
+    private async Task CreateEntry()
+    {
+        try
+        {
+            var request = new CreateJournalEntryRequest
+            {
+                EntryDate = _formEntryDate ?? DateTime.Now,
+                Description = _formDescription,
+                Reference = _formReference,
+                Lines = _formLines.Select(l => new CreateJournalLineRequest
+                {
+                    AccountId = l.AccountId ?? 0,
+                    DebitAmount = l.DebitAmount,
+                    CreditAmount = l.CreditAmount,
+                    Description = l.Description
+                }).ToList()
+            };
+
+            await _httpClient.PostAsJsonAsync("api/generalledger/journal-entries", request);
+            Snackbar.Add("Journal entry created", Severity.Success);
+            _createDialogVisible = false;
+            await LoadEntriesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to create entry: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task PostEntry(int id)
+    {
+        try
+        {
+            await _httpClient.PostAsync($"api/generalledger/journal-entries/{id}/post", null);
+            Snackbar.Add("Entry posted successfully", Severity.Success);
+            await LoadEntriesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to post entry: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task VoidEntry(int id)
+    {
+        try
+        {
+            await _httpClient.PostAsync($"api/generalledger/journal-entries/{id}/void", null);
+            Snackbar.Add("Entry voided", Severity.Success);
+            await LoadEntriesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to void entry: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ViewEntry(JournalEntryDto entry)
+    {
+        _viewingEntry = entry;
+        _viewDialogVisible = true;
+    }
+
+    private static Color GetStatusColor(JournalEntryStatus status) => status switch
+    {
+        JournalEntryStatus.Draft => Color.Warning,
+        JournalEntryStatus.Posted => Color.Success,
+        JournalEntryStatus.Void => Color.Error,
+        _ => Color.Default
+    };
+
+    private class JournalLineForm
+    {
+        public int? AccountId { get; set; }
+        public decimal DebitAmount { get; set; }
+        public decimal CreditAmount { get; set; }
+        public string Description { get; set; } = string.Empty;
+    }
+}

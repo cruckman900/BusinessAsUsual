@@ -1,5 +1,10 @@
 @page "/finance/payments"
-@inject IPaymentService PaymentService
+@using Finance.Application.DTOs
+@using Finance.Web.Components.Shared
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Payments</PageTitle>
 
@@ -20,42 +25,220 @@
             </MudText>
             <MudText Typo="Typo.body1" Color="Color.Secondary">Record and reconcile incoming payments</MudText>
         </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => _createDialogVisible = true)">
+            Record Payment
+        </MudButton>
     </div>
 
     @if (_loading)
     {
         <MudProgressCircular Indeterminate="true" />
     }
+    else if (_payments.Any())
+    {
+        <CustomDataGrid TItem="PaymentDto" Items="@_payments" Title="Payments" 
+                        ShowSearch="true" SearchPlaceholder="Search payments..." 
+                        Filterable="true" Hideable="true" SortMode="SortMode.Multiple"
+                        RowsPerPage="25">
+            <ChildContent>
+                <TemplateColumn T="PaymentDto" Title="Invoice #">
+                    <CellTemplate>
+                        @(context.Item.InvoiceNumber ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="PaymentDto" TProperty="decimal" Property="@(x => x.Amount)" Title="Amount" Format="C2" />
+                <PropertyColumn T="PaymentDto" TProperty="string" Property="@(x => x.Method)" Title="Method" />
+                <TemplateColumn T="PaymentDto" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Status)">
+                            @context.Item.Status
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="PaymentDto" TProperty="DateTime" Property="@(x => x.PaymentDate)" Title="Date" Format="d" />
+                <TemplateColumn T="PaymentDto" Title="Reference">
+                    <CellTemplate>
+                        @(context.Item.TransactionReference ?? "-")
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="PaymentDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeletePaymentAsync(context.Item.Id))" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
     else
     {
-        <MudTable Items="@_payments" Hover="true" Elevation="2" Dense="true">
-            <HeaderContent>
-                <MudTh>Invoice #</MudTh>
-                <MudTh>Amount</MudTh>
-                <MudTh>Method</MudTh>
-                <MudTh>Status</MudTh>
-                <MudTh>Date</MudTh>
-                <MudTh>Reference</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Invoice #">@(context.InvoiceNumber ?? "-")</MudTd>
-                <MudTd DataLabel="Amount">@context.Amount.ToString("C2")</MudTd>
-                <MudTd DataLabel="Method">@context.Method</MudTd>
-                <MudTd DataLabel="Status">@context.Status</MudTd>
-                <MudTd DataLabel="Date">@context.PaymentDate.ToString("d")</MudTd>
-                <MudTd DataLabel="Reference">@(context.TransactionReference ?? "-")</MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled">
+            No payments recorded yet. Record your first payment to get started.
+        </MudAlert>
     }
 </MudContainer>
+
+<MudDialog @bind-Visible="_createDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Record Payment</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_invoiceId" Label="Invoice ID (optional)" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="_amount" Label="Amount" Min="0m" Variant="Variant.Outlined" Format="C2" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" @bind-Value="_method" Label="Payment Method" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("CreditCard")">Credit Card</MudSelectItem>
+                    <MudSelectItem Value="@("BankTransfer")">Bank Transfer</MudSelectItem>
+                    <MudSelectItem Value="@("Cash")">Cash</MudSelectItem>
+                    <MudSelectItem Value="@("Check")">Check</MudSelectItem>
+                    <MudSelectItem Value="@("PayPal")">PayPal</MudSelectItem>
+                    <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" @bind-Value="_status" Label="Status" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Pending")">Pending</MudSelectItem>
+                    <MudSelectItem Value="@("Completed")">Completed</MudSelectItem>
+                    <MudSelectItem Value="@("Failed")">Failed</MudSelectItem>
+                    <MudSelectItem Value="@("Refunded")">Refunded</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="_paymentDate" Label="Payment Date" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_transactionReference" Label="Transaction Reference" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_notes" Label="Notes" Lines="2" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _createDialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RecordPaymentAsync" Disabled="_submitting">
+            @(_submitting ? "Recording..." : "Record Payment")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     private bool _loading = true;
     private List<PaymentDto> _payments = new();
 
-    protected override async Task OnInitializedAsync()
+    private bool _createDialogVisible;
+    private string _invoiceId = "";
+    private decimal _amount = 0m;
+    private string _method = "BankTransfer";
+    private string _status = "Completed";
+    private DateTime? _paymentDate = DateTime.Today;
+    private string _transactionReference = "";
+    private string _notes = "";
+    private bool _submitting;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
     {
-        _payments = (await PaymentService.GetAllPaymentsAsync()).ToList();
-        _loading = false;
+        _loading = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var result = await http.GetFromJsonAsync<List<PaymentDto>>("api/payments");
+            _payments = result ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load payments: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
+
+    private async Task RecordPaymentAsync()
+    {
+        _error = null;
+        if (_amount <= 0) { _error = "Amount must be greater than zero."; return; }
+
+        _submitting = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new
+            {
+                InvoiceId = string.IsNullOrWhiteSpace(_invoiceId) ? null : _invoiceId,
+                Amount = _amount,
+                Currency = 0,
+                Method = _method switch { "CreditCard" => 1, "BankTransfer" => 2, "Cash" => 3, "Check" => 4, "PayPal" => 5, _ => 6 },
+                Status = _status switch { "Pending" => 0, "Completed" => 1, "Failed" => 2, "Refunded" => 3, _ => 1 },
+                PaymentDate = _paymentDate,
+                TransactionReference = _transactionReference,
+                Notes = _notes
+            };
+
+            var response = await http.PostAsJsonAsync("api/payments", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Payment recorded successfully", Severity.Success);
+                _createDialogVisible = false;
+                ResetForm();
+                await LoadAsync();
+            }
+            else _error = $"Failed to record payment: {response.StatusCode}";
+        }
+        catch (Exception ex) { _error = $"Error recording payment: {ex.Message}"; }
+        finally { _submitting = false; }
+    }
+
+    private async Task DeletePaymentAsync(string id)
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var response = await http.DeleteAsync($"api/payments/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Payment deleted", Severity.Success);
+                await LoadAsync();
+            }
+            else Snackbar.Add($"Failed to delete payment", Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+    }
+
+    private void ResetForm()
+    {
+        _invoiceId = "";
+        _amount = 0m;
+        _method = "BankTransfer";
+        _status = "Completed";
+        _paymentDate = DateTime.Today;
+        _transactionReference = "";
+        _notes = "";
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        "Pending" => Color.Warning,
+        "Completed" => Color.Success,
+        "Failed" => Color.Error,
+        "Refunded" => Color.Info,
+        _ => Color.Default
+    };
 }
+

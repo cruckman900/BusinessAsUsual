@@ -1,4 +1,5 @@
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace BusinessAsUsual.Web.Themes;
 
@@ -40,6 +41,14 @@ public class ThemeSyncService : IAsyncDisposable
             await _jsRuntime.InvokeVoidAsync("ThemeSync.broadcastTheme", 
                 _themeContext.ThemeName, 
                 _themeContext.IsDarkMode);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected, this is expected during navigation
+        }
+        catch (TaskCanceledException)
+        {
+            // Navigation interrupted the operation
         }
         catch (Exception ex)
         {

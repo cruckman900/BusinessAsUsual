@@ -1,4 +1,10 @@
 @page "/finance/payables/bills"
+@using Finance.Application.DTOs
+@using Finance.Web.Components.Shared
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Bills</PageTitle>
 
@@ -21,9 +27,105 @@
             </MudText>
             <MudText Typo="Typo.body1" Color="Color.Secondary">Record and manage vendor bills</MudText>
         </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="/finance/payables/bills/create">
+            Create Bill
+        </MudButton>
     </div>
 
-    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Construction">
-        Bills is coming soon. This submodule is scaffolded and ready for data wiring.
-    </MudAlert>
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_bills.Any())
+    {
+        <CustomDataGrid TItem="BillDto" Items="_bills" Title="Bills" 
+                        ShowSearch="true" SearchPlaceholder="Search bills..." 
+                        Filterable="true" Hideable="true" SortMode="SortMode.Multiple"
+                        RowsPerPage="25">
+            <ChildContent>
+                <PropertyColumn T="BillDto" TProperty="string" Property="@(x => x.BillNumber)" Title="Bill Number" />
+                <PropertyColumn T="BillDto" TProperty="string" Property="@(x => x.VendorName)" Title="Vendor" />
+                <PropertyColumn T="BillDto" TProperty="decimal" Property="@(x => x.Total)" Title="Total" Format="C2" />
+                <TemplateColumn T="BillDto" Title="Balance Due">
+                    <CellTemplate>
+                        <MudText Color="@(context.Item.BalanceDue > 0 ? Color.Warning : Color.Success)">
+                            @context.Item.BalanceDue.ToString("C2")
+                        </MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BillDto" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Status)">
+                            @context.Item.Status
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BillDto" Title="Due Date">
+                    <CellTemplate>
+                        @if (context.Item.DueDate.HasValue)
+                        {
+                            <span class="@(context.Item.IsOverdue ? "text-error" : "")">
+                                @context.Item.DueDate.Value.ToString("MMM dd, yyyy")
+                            </span>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="BillDto" Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Href="@($"/finance/payables/bills/edit/{context.Item.Id}")"
+                                       Title="Edit" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled">
+            No bills found. Create your first bill to get started.
+        </MudAlert>
+    }
 </MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<BillDto> _bills = new();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var result = await http.GetFromJsonAsync<List<BillDto>>("api/bills");
+            _bills = result ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load bills: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        "Draft" => Color.Default,
+        "Received" => Color.Info,
+        "PartiallyPaid" => Color.Warning,
+        "Paid" => Color.Success,
+        "Overdue" => Color.Error,
+        "Cancelled" => Color.Dark,
+        _ => Color.Default
+    };
+}
+

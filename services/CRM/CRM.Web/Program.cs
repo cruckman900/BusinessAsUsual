@@ -30,6 +30,7 @@ builder.Services.AddScoped<ICustomerService, MockCustomerService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IActivityService, MockActivityService>();
 builder.Services.AddScoped<IEmailTemplateService, MockEmailTemplateService>();
+builder.Services.AddScoped<ILeadScoringService, LeadScoringService>();
 
 var app = builder.Build();
 

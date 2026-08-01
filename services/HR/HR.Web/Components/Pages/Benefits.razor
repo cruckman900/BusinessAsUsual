@@ -175,10 +175,9 @@
 
         <!-- Benefits Plans Table -->
         <MudPaper Elevation="2">
-            <MudTable Items="@benefits" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Benefits Plans</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all benefit plans">
                             <MudButton Color="@(filterCategory == null ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = null)">All</MudButton>
@@ -196,63 +195,77 @@
                             <MudButton Color="@(filterCategory == "401k" ? Color.Primary : Color.Default)" OnClick="@(() => filterCategory = "401k")">401(k)</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Plan Name</MudTh>
-                    <MudTh>Category</MudTh>
-                    <MudTh>Provider</MudTh>
-                    <MudTh>Enrollments</MudTh>
-                    <MudTh>Employee Cost</MudTh>
-                    <MudTh>Company Cost</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Plan Name">
-                        <div class="d-flex align-center">
-                            <MudIcon Icon="@GetCategoryIcon(context.Category)" Size="Size.Small" Class="mr-2" Color="@GetCategoryColor(context.Category)" />
-                            <div>
-                                <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Code</MudText>
-                            </div>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Category">
-                        <MudBadge Content="@context.Category" Color="@GetCategoryColor(context.Category)" />
-                    </MudTd>
-                    <MudTd DataLabel="Provider">
-                        <MudText Typo="Typo.body2">@context.Provider</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Enrollments">
-                        <div class="d-flex align-center gap-2">
-                            <MudProgressLinear Color="Color.Success" Value="@context.EnrollmentPercentage" Size="Size.Small" Style="width: 60px;" />
-                            <MudText Typo="Typo.body2">@context.Enrollments/@totalEmployees</MudText>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Employee Cost">
-                        <MudText Typo="Typo.body2">$@context.EmployeeCost/mo</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Company Cost">
-                        <MudText Typo="Typo.body2" Color="Color.Warning">$@context.CompanyCost/mo</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudBadge Content="@(context.IsActive ? "Active" : "Inactive")" Color="@(context.IsActive ? Color.Success : Color.Default)" />
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View benefit plan details">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit benefit plan">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Manage enrollments">
-                                <MudIconButton Icon="@Icons.Material.Filled.Group" Size="Size.Small" Color="Color.Info" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="BenefitPlan"
+                                Items="@benefits"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Plan Name" Sortable="false" Filterable="false" T="BenefitPlan">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@GetCategoryIcon(context.Item.Category)" Size="Size.Small" Class="mr-2" Color="@GetCategoryColor(context.Item.Category)" />
+                                    <div>
+                                        <MudText Typo="Typo.body1"><strong>@context.Item.Name</strong></MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Code</MudText>
+                                    </div>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Category" Title="Category" T="BenefitPlan" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Category" Color="@GetCategoryColor(context.Item.Category)" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Provider" Title="Provider" T="BenefitPlan" TProperty="string" />
+                        <TemplateColumn Title="Enrollments" Sortable="false" Filterable="false" T="BenefitPlan">
+                            <CellTemplate>
+                                <div class="d-flex align-center gap-2">
+                                    <MudProgressLinear Color="Color.Success" Value="@context.Item.EnrollmentPercentage" Size="Size.Small" Style="width: 60px;" />
+                                    <MudText Typo="Typo.body2">@context.Item.Enrollments/@totalEmployees</MudText>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.EmployeeCost" Title="Employee Cost" T="BenefitPlan" TProperty="decimal">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">$@context.Item.EmployeeCost/mo</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.CompanyCost" Title="Company Cost" T="BenefitPlan" TProperty="decimal">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Color="Color.Warning">$@context.Item.CompanyCost/mo</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.IsActive" Title="Status" T="BenefitPlan" TProperty="bool">
+                            <CellTemplate>
+                                <MudBadge Content="@(context.Item.IsActive ? "Active" : "Inactive")" Color="@(context.Item.IsActive ? Color.Success : Color.Default)" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="BenefitPlan">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View benefit plan details">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Edit benefit plan">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Manage enrollments">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Group" Size="Size.Small" Color="Color.Info" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

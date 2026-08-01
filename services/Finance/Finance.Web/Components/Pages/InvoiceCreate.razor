@@ -1,0 +1,352 @@
+@page "/finance/invoices/create"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Create Invoice</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/invoices">Invoices</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Create</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" />
+        Create Invoice
+    </MudText>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="2">
+        <MudGrid Spacing="3">
+            <!-- Customer Information -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6" Class="mb-2">Customer Information</MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_customerName"
+                              Label="Customer Name"
+                              Required="true"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_customerEmail"
+                              Label="Customer Email"
+                              InputType="InputType.Email"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+
+            <!-- Invoice Details -->
+            <MudItem xs="12" Class="mt-4">
+                <MudText Typo="Typo.h6" Class="mb-2">Invoice Details</MudText>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudSelect T="string" @bind-Value="_currency" Label="Currency" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("USD")">USD - US Dollar</MudSelectItem>
+                    <MudSelectItem Value="@("EUR")">EUR - Euro</MudSelectItem>
+                    <MudSelectItem Value="@("GBP")">GBP - British Pound</MudSelectItem>
+                    <MudSelectItem Value="@("CAD")">CAD - Canadian Dollar</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudDatePicker @bind-Date="_dueDate"
+                               Label="Due Date"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudTextField @bind-Value="_assignedToEmployeeId"
+                              Label="Assigned To (Employee ID)"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+
+            <!-- Line Items -->
+            <MudItem xs="12" Class="mt-4">
+                <div class="d-flex justify-space-between align-center mb-2">
+                    <MudText Typo="Typo.h6">Line Items</MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="AddLineItem">
+                        Add Item
+                    </MudButton>
+                </div>
+            </MudItem>
+
+            @foreach (var (item, index) in _lineItems.Select((item, i) => (item, i)))
+            {
+                <MudItem xs="12">
+                    <MudPaper Class="pa-3" Outlined="true">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="5">
+                                <MudTextField @bind-Value="item.Description"
+                                              Label="Description"
+                                              Required="true"
+                                              Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudNumericField @bind-Value="item.Quantity"
+                                                 Label="Qty"
+                                                 Min="0m"
+                                                 Variant="Variant.Outlined"
+                                                 Format="N2" />
+                            </MudItem>
+                            <MudItem xs="6" md="2">
+                                <MudNumericField @bind-Value="item.UnitPrice"
+                                                 Label="Unit Price"
+                                                 Min="0m"
+                                                 Variant="Variant.Outlined"
+                                                 Format="C2" />
+                            </MudItem>
+                            <MudItem xs="6" md="1">
+                                <MudNumericField @bind-Value="item.DiscountPercent"
+                                                 Label="Disc %"
+                                                 Min="0m"
+                                                 Max="100m"
+                                                 Variant="Variant.Outlined"
+                                                 Format="N1" />
+                            </MudItem>
+                            <MudItem xs="6" md="1">
+                                <MudNumericField @bind-Value="item.TaxPercent"
+                                                 Label="Tax %"
+                                                 Min="0m"
+                                                 Variant="Variant.Outlined"
+                                                 Format="N1" />
+                            </MudItem>
+                            <MudItem xs="12" md="1" Class="d-flex align-end">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               OnClick="@(() => RemoveLineItem(index))" />
+                                <MudText Typo="Typo.body2" Class="ml-2 mt-2">
+                                    @CalculateLineTotal(item).ToString("C2")
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            }
+
+            @if (_lineItems.Count == 0)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Add at least one line item to create the invoice.
+                    </MudAlert>
+                </MudItem>
+            }
+
+            <!-- Totals -->
+            <MudItem xs="12" Class="mt-4">
+                <MudPaper Class="pa-3" Outlined="true">
+                    <MudGrid>
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1">Subtotal:</MudText>
+                        </MudItem>
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1">@_subtotal.ToString("C2")</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1" Color="Color.Warning">Discount:</MudText>
+                        </MudItem>
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1" Color="Color.Warning">-@_totalDiscount.ToString("C2")</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1">Tax:</MudText>
+                        </MudItem>
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.body1">@_totalTax.ToString("C2")</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12"><MudDivider /></MudItem>
+
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.h6">Total:</MudText>
+                        </MudItem>
+                        <MudItem xs="6" Class="text-right">
+                            <MudText Typo="Typo.h6" Color="Color.Success">@_total.ToString("C2")</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Notes and Terms -->
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_notes"
+                              Label="Notes"
+                              Lines="3"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_terms"
+                              Label="Payment Terms"
+                              Lines="3"
+                              Variant="Variant.Outlined"
+                              Placeholder="e.g., Net 30, Due upon receipt..." />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <MudAlert Severity="Severity.Error" Class="mt-4">@_error</MudAlert>
+    }
+
+    <div class="d-flex justify-end gap-2 mt-4">
+        <MudButton Variant="Variant.Text"
+                   OnClick="@(() => Navigation.NavigateTo("/finance/invoices"))">
+            Cancel
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="_submitting"
+                   OnClick="SaveAsync">
+            @(_submitting ? "Creating..." : "Create Invoice")
+        </MudButton>
+    </div>
+</MudContainer>
+
+@code {
+    private string _customerName = "";
+    private string _customerEmail = "";
+    private string _currency = "USD";
+    private DateTime? _dueDate = DateTime.Today.AddDays(30);
+    private string _assignedToEmployeeId = "";
+    private string _notes = "";
+    private string _terms = "Net 30";
+    private List<LineItemModel> _lineItems = new();
+    private bool _submitting;
+    private string? _error;
+
+    private decimal _subtotal => _lineItems.Sum(i => i.Quantity * i.UnitPrice);
+    private decimal _totalDiscount => _lineItems.Sum(i => (i.Quantity * i.UnitPrice) * (i.DiscountPercent / 100m));
+    private decimal _totalTax => _lineItems.Sum(i => 
+    {
+        var afterDiscount = (i.Quantity * i.UnitPrice) * (1 - i.DiscountPercent / 100m);
+        return afterDiscount * (i.TaxPercent / 100m);
+    });
+    private decimal _total => _subtotal - _totalDiscount + _totalTax;
+
+    protected override void OnInitialized()
+    {
+        // Start with one empty line item
+        AddLineItem();
+    }
+
+    private void AddLineItem()
+    {
+        _lineItems.Add(new LineItemModel());
+    }
+
+    private void RemoveLineItem(int index)
+    {
+        if (_lineItems.Count > 0)
+            _lineItems.RemoveAt(index);
+    }
+
+    private decimal CalculateLineTotal(LineItemModel item)
+    {
+        var subtotal = item.Quantity * item.UnitPrice;
+        var discount = subtotal * (item.DiscountPercent / 100m);
+        var afterDiscount = subtotal - discount;
+        var tax = afterDiscount * (item.TaxPercent / 100m);
+        return afterDiscount + tax;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+
+        if (string.IsNullOrWhiteSpace(_customerName))
+        {
+            _error = "Customer name is required.";
+            return;
+        }
+
+        if (_lineItems.Count == 0 || _lineItems.All(i => string.IsNullOrWhiteSpace(i.Description)))
+        {
+            _error = "Add at least one line item with a description.";
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+
+            var request = new
+            {
+                CustomerName = _customerName,
+                CustomerEmail = string.IsNullOrWhiteSpace(_customerEmail) ? null : _customerEmail,
+                Currency = _currency switch
+                {
+                    "USD" => 0,
+                    "EUR" => 1,
+                    "GBP" => 2,
+                    "CAD" => 3,
+                    _ => 0
+                },
+                DueDate = _dueDate,
+                Notes = _notes,
+                Terms = _terms,
+                AssignedToEmployeeId = string.IsNullOrWhiteSpace(_assignedToEmployeeId) ? null : _assignedToEmployeeId,
+                LineItems = _lineItems
+                    .Where(i => !string.IsNullOrWhiteSpace(i.Description))
+                    .Select(i => new
+                    {
+                        i.Description,
+                        i.Quantity,
+                        i.UnitPrice,
+                        i.DiscountPercent,
+                        i.TaxPercent,
+                        i.ProductCategory
+                    })
+                    .ToList()
+            };
+
+            var response = await http.PostAsJsonAsync("api/invoices", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Invoice created successfully", Severity.Success);
+                Navigation.NavigateTo("/finance/invoices");
+            }
+            else
+            {
+                _error = $"Failed to create invoice: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error creating invoice: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private class LineItemModel
+    {
+        public string Description { get; set; } = "";
+        public decimal Quantity { get; set; } = 1m;
+        public decimal UnitPrice { get; set; } = 0m;
+        public decimal DiscountPercent { get; set; } = 0m;
+        public decimal TaxPercent { get; set; } = 0m;
+        public string? ProductCategory { get; set; }
+    }
+}

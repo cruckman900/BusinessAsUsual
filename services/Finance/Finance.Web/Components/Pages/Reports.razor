@@ -1,4 +1,5 @@
 @page "/finance/reports"
+@using Finance.Web.Components.Shared
 @inject IFinanceReportService ReportService
 
 <PageTitle>Finance Reports</PageTitle>
@@ -35,16 +36,17 @@
                         <MudText Typo="Typo.h6">Revenue (Last 6 Months)</MudText>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudTable Items="@_summary.RevenueByMonth" Dense="true" Elevation="0">
-                            <HeaderContent>
-                                <MudTh>Month</MudTh>
-                                <MudTh>Revenue</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd>@context.Label</MudTd>
-                                <MudTd>@context.Amount.ToString("C0")</MudTd>
-                            </RowTemplate>
-                        </MudTable>
+                        <CustomDataGrid TItem="RevenuePointDto"
+                                        Items="@_summary.RevenueByMonth"
+                                        Dense="true"
+                                        Elevation="0"
+                                        ShowToolbar="false"
+                                        ShowSearch="false">
+                            <ChildContent>
+                                <PropertyColumn Property="x => x.Label" Title="Month" T="RevenuePointDto" TProperty="string" />
+                                <PropertyColumn Property="x => x.Amount" Title="Revenue" Format="C0" T="RevenuePointDto" TProperty="decimal" />
+                            </ChildContent>
+                        </CustomDataGrid>
                     </MudCardContent>
                 </MudCard>
             </MudItem>

@@ -1,0 +1,379 @@
+@page "/finance/payroll/config"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Payroll Configuration</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance/payroll">Payroll</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Configuration</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+        Payroll Configuration
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Manage employee wages, tax rates, and deduction rates
+    </MudText>
+
+    <MudGrid Spacing="3">
+        <!-- Global Rates -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6" GutterBottom="true">Global Rates</MudText>
+
+                <MudNumericField @bind-Value="_defaultRate" 
+                                 Label="Default Hourly Rate" 
+                                 Variant="Variant.Outlined"
+                                 Format="C2"
+                                 Adornment="Adornment.Start"
+                                 AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                 Class="mb-3" />
+
+                <MudNumericField @bind-Value="_taxRatePercent" 
+                                 Label="Tax Rate (%)" 
+                                 Variant="Variant.Outlined"
+                                 Format="N1"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 Class="mb-3" />
+
+                <MudNumericField @bind-Value="_deductionRatePercent" 
+                                 Label="Other Deductions (%)" 
+                                 Variant="Variant.Outlined"
+                                 Format="N1"
+                                 Adornment="Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Percent"
+                                 Class="mb-3" />
+
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="_savingRates"
+                           OnClick="SaveGlobalRatesAsync"
+                           FullWidth="true">
+                    @(_savingRates ? "Saving..." : "Save Global Rates")
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Employee Wages -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6">Employee Wages</MudText>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Size="Size.Small"
+                               OnClick="OpenAddEmployeeDialog">
+                        Add Employee
+                    </MudButton>
+                </div>
+
+                @if (_wages.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        No employee-specific wages configured. Employees will use the default rate.
+                    </MudText>
+                }
+                else
+                {
+                    <MudList T="string" Dense="true">
+                        @foreach (var wage in _wages)
+                        {
+                            <MudListItem T="string">
+                                <div class="d-flex justify-space-between align-center">
+                                    <div>
+                                        <MudText Typo="Typo.body1">@wage.EmployeeId</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            @wage.HourlyRate.ToString("C2")/hr
+                                        </MudText>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenEditEmployeeDialog(wage))" />
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<!-- Add/Edit Employee Wage Dialog -->
+<MudDialog @bind-Visible="_showEmployeeDialog" Options="_dialogOptions">
+    <DialogContent>
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            @(_editingWage == null ? "Add Employee Wage" : "Edit Employee Wage")
+        </MudText>
+
+        @if (_editingWage == null)
+        {
+            <MudSwitch @bind-Value="_useEmployeeLookup" Color="Color.Primary" Class="mb-3">
+                @(_useEmployeeLookup ? "Lookup Employee" : "Enter Employee ID")
+            </MudSwitch>
+
+            @if (_useEmployeeLookup)
+            {
+                <MudAutocomplete T="EmployeeLookupDto"
+                                 @bind-Value="_selectedEmployee"
+                                 SearchFunc="SearchEmployeesAsync"
+                                 ToStringFunc="@(e => e == null ? "" : $"{e.FirstName} {e.LastName} ({e.Id})")"
+                                 Label="Select Employee"
+                                 Variant="Variant.Outlined"
+                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                 AdornmentColor="Color.Primary"
+                                 Class="mb-3"
+                                 ResetValueOnEmptyText="true"
+                                 CoerceText="true"
+                                 CoerceValue="false" />
+            }
+            else
+            {
+                <MudTextField @bind-Value="_employeeId" 
+                              Label="Employee ID" 
+                              Variant="Variant.Outlined"
+                              Class="mb-3" />
+            }
+        }
+        else
+        {
+            <MudTextField Value="@_editingWage.EmployeeId" 
+                          Label="Employee ID" 
+                          Variant="Variant.Outlined"
+                          Disabled="true"
+                          Class="mb-3" />
+        }
+
+        <MudNumericField @bind-Value="_employeeRate" 
+                         Label="Hourly Rate" 
+                         Variant="Variant.Outlined"
+                         Format="C2"
+                         Adornment="Adornment.Start"
+                         AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseEmployeeDialog">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled"
+                   Disabled="_savingWage"
+                   OnClick="SaveEmployeeWageAsync">
+            @(_savingWage ? "Saving..." : "Save")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<EmployeeWageDto> _wages = new();
+    private decimal _defaultRate = 25m;
+    private decimal _taxRatePercent = 20m;
+    private decimal _deductionRatePercent = 5m;
+
+    private bool _savingRates;
+    private bool _savingWage;
+    private bool _showEmployeeDialog;
+    private bool _useEmployeeLookup = true;
+    private EmployeeWageDto? _editingWage;
+    private EmployeeLookupDto? _selectedEmployee;
+    private string _employeeId = "";
+    private decimal _employeeRate = 25m;
+    private List<EmployeeLookupDto> _allEmployees = new();
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true
+    };
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+
+            _wages = await http.GetFromJsonAsync<List<EmployeeWageDto>>("api/finance/payroll/config/wages") ?? new();
+
+            var rates = await http.GetFromJsonAsync<PayrollRatesDto>("api/finance/payroll/config/rates");
+            if (rates != null)
+            {
+                _defaultRate = rates.DefaultHourlyRate;
+                _taxRatePercent = rates.TaxRate * 100m;
+                _deductionRatePercent = rates.DeductionRate * 100m;
+            }
+
+            // Load employees for lookup
+            await LoadEmployeesAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load configuration: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        try
+        {
+            var hrHttp = HttpClientFactory.CreateClient("HrApi");
+            var employees = await hrHttp.GetFromJsonAsync<List<EmployeeLookupDto>>("api/hr/employees");
+            _allEmployees = employees ?? new();
+        }
+        catch (Exception ex)
+        {
+            // HR API might not be available, log but don't fail
+            Console.WriteLine($"Could not load employees from HR API: {ex.Message}");
+        }
+    }
+
+    private async Task<IEnumerable<EmployeeLookupDto>> SearchEmployeesAsync(string searchText, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return _allEmployees.Take(10);
+
+        return _allEmployees
+            .Where(e => 
+                e.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                e.FirstName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                e.LastName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                e.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+    }
+
+    private async Task SaveGlobalRatesAsync()
+    {
+        _savingRates = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new
+            {
+                DefaultHourlyRate = _defaultRate,
+                TaxRate = _taxRatePercent / 100m,
+                DeductionRate = _deductionRatePercent / 100m
+            };
+
+            var response = await http.PutAsJsonAsync("api/finance/payroll/config/rates", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Global rates updated successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Failed to update rates: {response.StatusCode}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving rates: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingRates = false;
+        }
+    }
+
+    private void OpenAddEmployeeDialog()
+    {
+        _editingWage = null;
+        _selectedEmployee = null;
+        _employeeId = "";
+        _employeeRate = _defaultRate;
+        _useEmployeeLookup = true;
+        _showEmployeeDialog = true;
+    }
+
+    private void OpenEditEmployeeDialog(EmployeeWageDto wage)
+    {
+        _editingWage = wage;
+        _selectedEmployee = null;
+        _employeeId = wage.EmployeeId;
+        _employeeRate = wage.HourlyRate;
+        _showEmployeeDialog = true;
+    }
+
+    private void CloseEmployeeDialog()
+    {
+        _showEmployeeDialog = false;
+        _editingWage = null;
+        _selectedEmployee = null;
+    }
+
+    private async Task SaveEmployeeWageAsync()
+    {
+        string employeeIdToSave;
+
+        if (_editingWage != null)
+        {
+            employeeIdToSave = _editingWage.EmployeeId;
+        }
+        else if (_useEmployeeLookup)
+        {
+            if (_selectedEmployee == null)
+            {
+                Snackbar.Add("Please select an employee", Severity.Warning);
+                return;
+            }
+            employeeIdToSave = _selectedEmployee.Id;
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(_employeeId))
+            {
+                Snackbar.Add("Employee ID is required", Severity.Warning);
+                return;
+            }
+            employeeIdToSave = _employeeId;
+        }
+
+        _savingWage = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new { HourlyRate = _employeeRate };
+
+            var response = await http.PutAsJsonAsync($"api/finance/payroll/config/wages/{employeeIdToSave}", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Wage for {employeeIdToSave} updated successfully", Severity.Success);
+                await LoadAsync();
+                CloseEmployeeDialog();
+            }
+            else
+            {
+                Snackbar.Add($"Failed to update wage: {response.StatusCode}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving wage: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _savingWage = false;
+        }
+    }
+
+    // Simple DTO for employee lookup
+    private class EmployeeLookupDto
+    {
+        public string Id { get; set; } = "";
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}

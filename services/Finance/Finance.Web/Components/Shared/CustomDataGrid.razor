@@ -1,0 +1,238 @@
+@typeparam TItem
+@using MudBlazor
+
+<MudDataGrid @ref="dataGrid"
+             T="TItem"
+             Items="@Items"
+             Filterable="@Filterable"
+             FilterMode="@FilterMode"
+             SortMode="@SortMode"
+             Hideable="@Hideable"
+             ColumnResizeMode="@ColumnResizeMode"
+             Dense="@Dense"
+             Hover="@Hover"
+             Striped="@Striped"
+             Bordered="@Bordered"
+             Loading="@Loading"
+             LoadingProgressColor="@LoadingProgressColor"
+             Height="@Height"
+             FixedHeader="@FixedHeader"
+             RowsPerPage="@RowsPerPage"
+             QuickFilter="@InternalQuickFilter"
+             Elevation="@Elevation"
+             Class="@Class">
+    <ToolBarContent>
+        @if (ShowToolbar)
+        {
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <MudText Typo="Typo.h6">@Title</MudText>
+                <MudSpacer />
+            }
+            @if (ShowSearch)
+            {
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="@SearchPlaceholder"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              Clearable="true"
+                              Class="mt-0" />
+            }
+            @if (ToolbarContent != null)
+            {
+                @ToolbarContent
+            }
+        }
+    </ToolBarContent>
+    <Columns>
+        @ChildContent
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="TItem" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private MudDataGrid<TItem>? dataGrid;
+    private string searchString = string.Empty;
+
+    /// <summary>
+    /// The collection of items to display in the grid.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// Column definitions for the grid.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Optional toolbar content (additional buttons, filters, etc.).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ToolbarContent { get; set; }
+
+    /// <summary>
+    /// Title displayed in the toolbar.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether to show the toolbar.
+    /// </summary>
+    [Parameter]
+    public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show the search box.
+    /// </summary>
+    [Parameter]
+    public bool ShowSearch { get; set; } = true;
+
+    /// <summary>
+    /// Placeholder text for the search box.
+    /// </summary>
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Search...";
+
+    /// <summary>
+    /// Quick filter function for searching across rows.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? QuickFilterFunc { get; set; }
+
+    /// <summary>
+    /// Whether columns are filterable.
+    /// </summary>
+    [Parameter]
+    public bool Filterable { get; set; } = true;
+
+    /// <summary>
+    /// Filter mode for the data grid.
+    /// </summary>
+    [Parameter]
+    public DataGridFilterMode FilterMode { get; set; } = DataGridFilterMode.Simple;
+
+    /// <summary>
+    /// Sort mode for the data grid.
+    /// </summary>
+    [Parameter]
+    public SortMode SortMode { get; set; } = SortMode.Multiple;
+
+    /// <summary>
+    /// Whether columns can be hidden.
+    /// </summary>
+    [Parameter]
+    public bool Hideable { get; set; } = true;
+
+    /// <summary>
+    /// Column resize mode.
+    /// </summary>
+    [Parameter]
+    public ResizeMode ColumnResizeMode { get; set; } = ResizeMode.Column;
+
+    /// <summary>
+    /// Whether to use dense padding.
+    /// </summary>
+    [Parameter]
+    public bool Dense { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show hover effect on rows.
+    /// </summary>
+    [Parameter]
+    public bool Hover { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show striped rows.
+    /// </summary>
+    [Parameter]
+    public bool Striped { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show borders.
+    /// </summary>
+    [Parameter]
+    public bool Bordered { get; set; } = false;
+
+    /// <summary>
+    /// Whether the grid is in loading state.
+    /// </summary>
+    [Parameter]
+    public bool Loading { get; set; } = false;
+
+    /// <summary>
+    /// Color of the loading progress indicator.
+    /// </summary>
+    [Parameter]
+    public Color LoadingProgressColor { get; set; } = Color.Primary;
+
+    /// <summary>
+    /// Fixed height for the grid (enables scrolling).
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Whether to fix the header when scrolling.
+    /// </summary>
+    [Parameter]
+    public bool FixedHeader { get; set; } = true;
+
+    /// <summary>
+    /// Number of rows per page.
+    /// </summary>
+    [Parameter]
+    public int RowsPerPage { get; set; } = 10;
+
+    /// <summary>
+    /// Elevation of the grid paper.
+    /// </summary>
+    [Parameter]
+    public int Elevation { get; set; } = 1;
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    // Internal quick filter that uses the search string
+    private Func<TItem, bool> InternalQuickFilter => item =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (QuickFilterFunc != null)
+            return QuickFilterFunc(item);
+
+        return DefaultQuickFilter(item);
+    };
+
+    private bool DefaultQuickFilter(TItem item)
+    {
+        if (item == null)
+            return false;
+
+        // Default behavior: search all public string properties
+        var properties = typeof(TItem).GetProperties()
+            .Where(p => p.PropertyType == typeof(string));
+
+        foreach (var prop in properties)
+        {
+            var value = prop.GetValue(item) as string;
+            if (!string.IsNullOrEmpty(value) &&
+                value.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

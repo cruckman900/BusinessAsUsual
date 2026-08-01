@@ -1,0 +1,169 @@
+@page "/help"
+@using BusinessAsUsual.Web.Services
+@inject AuthenticationService AuthService
+
+<PageTitle>Help & Support - Business As Usual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Help & Support</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">Help & Support</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+        Find answers, tutorials, and contact support
+    </MudText>
+
+    <MudGrid Spacing="3">
+
+        <!-- Quick Links -->
+        <MudItem xs="12" md="6" lg="4">
+            <MudPaper Class="pa-4" Elevation="2" Style="height: 100%;">
+                <div class="d-flex align-center mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Book" Color="Color.Primary" Size="Size.Large" Class="me-2" />
+                    <MudText Typo="Typo.h6">Documentation</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Browse our comprehensive guides and tutorials
+                </MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true">
+                    View Docs
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6" lg="4">
+            <MudPaper Class="pa-4" Elevation="2" Style="height: 100%;">
+                <div class="d-flex align-center mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.VideoLibrary" Color="Color.Success" Size="Size.Large" Class="me-2" />
+                    <MudText Typo="Typo.h6">Video Tutorials</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Watch step-by-step video guides
+                </MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Success" FullWidth="true">
+                    Watch Videos
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6" lg="4">
+            <MudPaper Class="pa-4" Elevation="2" Style="height: 100%;">
+                <div class="d-flex align-center mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Forum" Color="Color.Warning" Size="Size.Large" Class="me-2" />
+                    <MudText Typo="Typo.h6">Community Forum</MudText>
+                </div>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Connect with other users and share tips
+                </MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Warning" FullWidth="true">
+                    Join Forum
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- FAQ Section -->
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5" Class="mb-3">Frequently Asked Questions</MudText>
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="How do I create a new invoice?">
+                    <MudText Typo="Typo.body2">
+                        Navigate to Finance > Accounts Receivable > Invoices and click the "Create Invoice" button. 
+                        Fill in the customer details, line items, and payment terms, then save.
+                    </MudText>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="How do I manage employee timesheets?">
+                    <MudText Typo="Typo.body2">
+                        Go to HR > Time Tracking to view and approve employee timesheets. You can also run payroll 
+                        from the Payroll section after timesheets are approved.
+                    </MudText>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="How do I generate financial reports?">
+                    <MudText Typo="Typo.body2">
+                        Access Finance > General Ledger > Trial Balance or Financial Statements. Select your date range 
+                        and click "Generate Report". You can export to Excel or PDF.
+                    </MudText>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="How do I add new users to the system?">
+                    <MudText Typo="Typo.body2">
+                        Administrators can add users from Settings > User Management. Enter the user's details, 
+                        assign roles and permissions, then send them an invitation email.
+                    </MudText>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="How do I change my password?">
+                    <MudText Typo="Typo.body2">
+                        Click your profile icon in the top right, go to My Profile, then select the Security tab. 
+                        Enter your current password and new password, then click "Update Password".
+                    </MudText>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudItem>
+
+        <!-- Contact Support -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Contact Support</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                    Can't find what you're looking for? Our support team is here to help.
+                </MudText>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" md="6">
+                        <div class="d-flex align-center pa-3" style="background-color: var(--mud-palette-background-grey); border-radius: 8px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" Class="me-3" />
+                            <div>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">Email Support</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">support@businessasusual.com</MudText>
+                            </div>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <div class="d-flex align-center pa-3" style="background-color: var(--mud-palette-background-grey); border-radius: 8px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone" Color="Color.Success" Class="me-3" />
+                            <div>
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">Phone Support</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">1-800-BAU-HELP</MudText>
+                            </div>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.ChatBubble"
+                           Class="mt-4">
+                    Start Live Chat
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- System Information -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">System Status</MudText>
+                <div class="d-flex align-center mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" Class="me-2" />
+                    <MudText Typo="Typo.body2">All Systems Operational</MudText>
+                </div>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Last updated: @DateTime.Now.ToString("MMM dd, yyyy hh:mm tt")
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Version Information</MudText>
+                <MudText Typo="Typo.body2" Class="mb-1">Version: 2024.1.0</MudText>
+                <MudText Typo="Typo.body2" Class="mb-1">Build: 20240115.1</MudText>
+                <MudText Typo="Typo.body2">Released: January 15, 2024</MudText>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>

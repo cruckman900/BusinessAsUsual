@@ -27,4 +27,10 @@ public interface IPayrollService
 
     /// <summary>Roll all unprocessed timesheets into a new completed pay run.</summary>
     Task<PayRunDto> RunPayrollAsync(CancellationToken cancellationToken = default);
+
+    // Configuration endpoints
+    Task<IEnumerable<EmployeeWageDto>> GetEmployeeWagesAsync();
+    Task<PayrollRatesDto> GetPayrollRatesAsync();
+    Task UpdateEmployeeWageAsync(string employeeId, decimal hourlyRate);
+    Task UpdatePayrollRatesAsync(decimal? defaultRate, decimal? taxRate, decimal? deductionRate);
 }

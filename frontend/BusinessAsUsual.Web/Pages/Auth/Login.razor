@@ -1,7 +1,9 @@
 ﻿@page "/login"
 @using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Services
 @layout LoginLayout
 @inject NavigationManager NavigationManager
+@inject AuthenticationService AuthService
 
 
 <div class="login-wrapper">
@@ -93,6 +95,14 @@
     {
         if (Username == "admin" && Password == "password")
         {
+            // Login the user with the AuthenticationService
+            AuthService.Login(
+                username: Username,
+                email: "admin@businessasusual.com",
+                fullName: "Admin User",
+                role: "Administrator"
+            );
+
             NavigationManager.NavigateTo("/dashboard");
         }
         else

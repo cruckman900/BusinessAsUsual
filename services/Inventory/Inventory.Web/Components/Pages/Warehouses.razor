@@ -1,0 +1,212 @@
+@page "/inventory/warehouses"
+@using System.Net.Http.Json
+@using MudBlazor
+@using Inventory.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Warehouses</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory">Inventory</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Warehouses</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Warehouse" Class="mr-2" />
+                Warehouses
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage warehouse locations, capacity, and operations
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+            Add Warehouse
+        </MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else
+    {
+        <MudCard>
+            <MudCardContent>
+                <CustomDataGrid TItem="WarehouseDto"
+                                Items="@_warehouses"
+                                Loading="@_loading"
+                                SearchPlaceholder="Search warehouses by name, code, or city..."
+                                RowsPerPage="25"
+                                Striped="true"
+                                Filterable="true">
+                    <ChildContent>
+                        <PropertyColumn Property="x => x.Code" Title="Code" T="WarehouseDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.Name" Title="Name" T="WarehouseDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.City" Title="Location" T="WarehouseDto" TProperty="string">
+                            <CellTemplate>
+                                @if (!string.IsNullOrEmpty(context.Item.City) || !string.IsNullOrEmpty(context.Item.State))
+                                {
+                                    <MudText Typo="Typo.body2">@context.Item.City@((!string.IsNullOrEmpty(context.Item.City) && !string.IsNullOrEmpty(context.Item.State)) ? ", " : "")@context.Item.State</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ManagerName" Title="Manager" T="WarehouseDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.TotalStockItems" Title="Stock Items" T="WarehouseDto" TProperty="int" />
+                        <PropertyColumn Property="x => x.BinLocationCount" Title="Bin Locations" T="WarehouseDto" TProperty="int" />
+                        <PropertyColumn Property="x => x.IsActive" Title="Status" Sortable="false" Filterable="false" T="WarehouseDto" TProperty="bool">
+                            <CellTemplate>
+                                @if (context.Item.IsActive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="WarehouseDto">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               OnClick="@(() => OpenEditDialog(context.Item))"
+                                               Title="Edit" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Size="Size.Small"
+                                               Color="Color.Error"
+                                               OnClick="@(() => DeleteWarehouse(context.Item))"
+                                               Title="Delete" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+
+                @if (!_warehouses.Any())
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4">No warehouses found.</MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudPaper Class="pa-4 mt-4">
+            <MudText Typo="Typo.h6" GutterBottom="true"><MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />Quick Stats</MudText>
+            <MudGrid>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Warehouses</MudText>
+                    <MudText Typo="Typo.h6">@_warehouses.Count</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Active</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Success">@_warehouses.Count(w => w.IsActive)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Stock Items</MudText>
+                    <MudText Typo="Typo.h6">@_warehouses.Sum(w => w.TotalStockItems)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Bin Locations</MudText>
+                    <MudText Typo="Typo.h6">@_warehouses.Sum(w => w.BinLocationCount)</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<WarehouseDto> _warehouses = new();
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync() => await LoadWarehouses();
+
+    private async Task LoadWarehouses()
+    {
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+            _warehouses = await client.GetFromJsonAsync<List<WarehouseDto>>("api/inventory/warehouses") ?? new();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading warehouses: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters { { "Warehouse", new WarehouseForm.WarehouseFormModel() }, { "IsEdit", false } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<WarehouseForm>("Create Warehouse", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled) await LoadWarehouses();
+    }
+
+    private async Task OpenEditDialog(WarehouseDto warehouse)
+    {
+        var model = new WarehouseForm.WarehouseFormModel { Id = warehouse.Id, Name = warehouse.Name, Code = warehouse.Code, Address = warehouse.Address, City = warehouse.City, State = warehouse.State, ZipCode = warehouse.ZipCode, Country = warehouse.Country, ManagerName = warehouse.ManagerName, Phone = warehouse.Phone, Email = warehouse.Email, IsActive = warehouse.IsActive };
+        var parameters = new DialogParameters { { "Warehouse", model }, { "IsEdit", true } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<WarehouseForm>("Edit Warehouse", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled) await LoadWarehouses();
+    }
+
+    private async Task DeleteWarehouse(WarehouseDto warehouse)
+    {
+        var parameters = new DialogParameters { { "ContentText", $"Are you sure you want to delete '{warehouse.Name}'? This action cannot be undone." }, { "ButtonText", "Delete" }, { "Color", Color.Error } };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Warehouse", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("InventoryApi");
+                var response = await client.DeleteAsync($"api/inventory/warehouses/{warehouse.Id}");
+                response.EnsureSuccessStatusCode();
+                Snackbar.Add($"Warehouse '{warehouse.Name}' deleted successfully", Severity.Success);
+                await LoadWarehouses();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error deleting warehouse: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    public class WarehouseDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? ZipCode { get; set; }
+        public string? Country { get; set; }
+        public string? ManagerName { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public bool IsActive { get; set; }
+        public int TotalStockItems { get; set; }
+        public int BinLocationCount { get; set; }
+    }
+}

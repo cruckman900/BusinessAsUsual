@@ -1,0 +1,480 @@
+@page "/finance/banking"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@using Finance.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Banking</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/finance">Finance</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Banking</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Class="mr-2" />
+                Banking
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage bank accounts and transactions</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => _createAccountDialogVisible = true)">
+            Add Bank Account
+        </MudButton>
+    </div>
+
+    @if (_loadingAccounts)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_accounts.Any())
+    {
+        <MudGrid>
+            @foreach (var account in _accounts)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@account.AccountName</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@account.BankName</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Size="Size.Small" Color="@(account.IsActive ? Color.Success : Color.Default)">
+                                    @(account.IsActive ? "Active" : "Inactive")
+                                </MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@account.AccountType - @account.AccountNumber</MudText>
+                            <MudText Typo="Typo.h5" Class="mt-2" Color="Color.Primary">@account.CurrentBalance.ToString("C2")</MudText>
+                            <MudText Typo="Typo.caption">Available: @account.AvailableBalance.ToString("C2")</MudText>
+                            @if (account.LastReconciledDate.HasValue)
+                            {
+                                <MudText Typo="Typo.caption" Class="mt-2">Last reconciled: @account.LastReconciledDate.Value.ToString("MMM dd, yyyy")</MudText>
+                            }
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Size="Size.Small" Color="Color.Primary" OnClick="@(() => ViewTransactions(account.Id))">View Transactions</MudButton>
+                            <MudButton Size="Size.Small" Color="Color.Secondary" OnClick="@(() => AddTransaction(account.Id))">Add Transaction</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <!-- Selected Account Transactions -->
+        @if (!string.IsNullOrEmpty(_selectedAccountId))
+        {
+            <MudPaper Class="mt-4 pa-4" Elevation="2">
+                <div class="d-flex justify-space-between align-center mb-3">
+                    <MudText Typo="Typo.h6">Transactions - @_accounts.FirstOrDefault(a => a.Id == _selectedAccountId)?.AccountName</MudText>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => _selectedAccountId = null)">Close</MudButton>
+                </div>
+
+                @if (_loadingTransactions)
+                {
+                    <MudProgressCircular Indeterminate="true" />
+                }
+                else if (_transactions.Any())
+                {
+                    <CustomDataGrid TItem="BankTransactionDto"
+                                    Items="_transactions"
+                                    Hover="true"
+                                    Dense="true"
+                                    Striped="true"
+                                    ShowToolbar="false"
+                                    ShowSearch="false">
+                        <ChildContent>
+                            <PropertyColumn Property="x => x.TransactionDate" Title="Date" Format="MMM dd, yyyy" T="BankTransactionDto" TProperty="DateTime" />
+                            <PropertyColumn Property="x => x.Description" Title="Description" T="BankTransactionDto" TProperty="string" />
+                            <PropertyColumn Property="x => x.Reference" Title="Reference" T="BankTransactionDto" TProperty="string">
+                                <CellTemplate>
+                                    @(context.Item.Reference ?? "-")
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn Property="x => x.Type" Title="Type" T="BankTransactionDto" TProperty="string" />
+                            <PropertyColumn Property="x => x.Amount" Title="Amount" T="BankTransactionDto" TProperty="decimal">
+                                <CellTemplate>
+                                    <MudText Color="@(context.Item.Amount > 0 ? Color.Success : Color.Error)">
+                                        @context.Item.Amount.ToString("C2")
+                                    </MudText>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <PropertyColumn Property="x => x.RunningBalance" Title="Balance" Format="C2" T="BankTransactionDto" TProperty="decimal" />
+                            <PropertyColumn Property="x => x.IsReconciled" Title="Status" T="BankTransactionDto" TProperty="bool">
+                                <CellTemplate>
+                                    <MudChip T="string" Size="Size.Small" Color="@(context.Item.IsReconciled ? Color.Success : Color.Warning)">
+                                        @(context.Item.IsReconciled ? "Reconciled" : "Pending")
+                                    </MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="BankTransactionDto">
+                                <CellTemplate>
+                                    @if (!context.Item.IsReconciled)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                                                       Color="Color.Success"
+                                                       Size="Size.Small"
+                                                       Title="Reconcile"
+                                                       OnClick="@(() => ReconcileTransaction(context.Item.Id))" />
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteTransaction(context.Item.Id))" />
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </ChildContent>
+                    </CustomDataGrid>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">No transactions found for this account.</MudAlert>
+                }
+            </MudPaper>
+        }
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled">
+            No bank accounts found. Add your first bank account to get started.
+        </MudAlert>
+    }
+</MudContainer>
+
+<!-- Create Account Dialog -->
+<MudDialog @bind-Visible="_createAccountDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Add Bank Account</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_accountName" Label="Account Name" Required="true" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_bankName" Label="Bank Name" Required="true" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_accountNumber" Label="Account Number" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" @bind-Value="_accountType" Label="Account Type" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Checking")">Checking</MudSelectItem>
+                    <MudSelectItem Value="@("Savings")">Savings</MudSelectItem>
+                    <MudSelectItem Value="@("Credit Card")">Credit Card</MudSelectItem>
+                    <MudSelectItem Value="@("Line of Credit")">Line of Credit</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="_openingBalance" Label="Opening Balance" Variant="Variant.Outlined" Format="C2" />
+            </MudItem>
+        </MudGrid>
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _createAccountDialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAccountAsync" Disabled="_submitting">
+            @(_submitting ? "Creating..." : "Create Account")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Add Transaction Dialog -->
+<MudDialog @bind-Visible="_addTransactionDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Add Transaction</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="_transactionDate" Label="Transaction Date" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="string" @bind-Value="_transactionType" Label="Type" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Credit")">Deposit (Credit)</MudSelectItem>
+                    <MudSelectItem Value="@("Debit")">Withdrawal (Debit)</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_description" Label="Description" Required="true" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField @bind-Value="_transactionAmount" Label="Amount" Min="0m" Required="true" Variant="Variant.Outlined" Format="C2" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_reference" Label="Reference" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="_category" Label="Category" Variant="Variant.Outlined" Placeholder="e.g., Customer Payment, Vendor Payment, Payroll..." />
+            </MudItem>
+        </MudGrid>
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _addTransactionDialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateTransactionAsync" Disabled="_submitting">
+            @(_submitting ? "Adding..." : "Add Transaction")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool _loadingAccounts = true;
+    private bool _loadingTransactions;
+    private List<BankAccountDto> _accounts = new();
+    private List<BankTransactionDto> _transactions = new();
+    private string? _selectedAccountId;
+
+    // Create Account Dialog
+    private bool _createAccountDialogVisible;
+    private string _accountName = "";
+    private string _bankName = "";
+    private string _accountNumber = "";
+    private string _accountType = "Checking";
+    private decimal _openingBalance = 0m;
+
+    // Add Transaction Dialog
+    private bool _addTransactionDialogVisible;
+    private string _transactionAccountId = "";
+    private DateTime? _transactionDate = DateTime.Today;
+    private string _transactionType = "Credit";
+    private string _description = "";
+    private decimal _transactionAmount = 0m;
+    private string _reference = "";
+    private string _category = "";
+
+    private bool _submitting;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAccountsAsync();
+
+    private async Task LoadAccountsAsync()
+    {
+        _loadingAccounts = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var result = await http.GetFromJsonAsync<List<BankAccountDto>>("api/banking/accounts");
+            _accounts = result ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load bank accounts: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingAccounts = false;
+        }
+    }
+
+    private async Task ViewTransactions(string accountId)
+    {
+        _selectedAccountId = accountId;
+        _loadingTransactions = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var result = await http.GetFromJsonAsync<List<BankTransactionDto>>($"api/banking/accounts/{accountId}/transactions");
+            _transactions = result ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load transactions: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingTransactions = false;
+        }
+    }
+
+    private void AddTransaction(string accountId)
+    {
+        _transactionAccountId = accountId;
+        _addTransactionDialogVisible = true;
+    }
+
+    private async Task CreateAccountAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_accountName))
+        {
+            _error = "Account name is required.";
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new
+            {
+                AccountName = _accountName,
+                BankName = _bankName,
+                AccountNumber = _accountNumber,
+                AccountType = _accountType,
+                Currency = "USD",
+                OpeningBalance = _openingBalance
+            };
+
+            var response = await http.PostAsJsonAsync("api/banking/accounts", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Bank account created successfully", Severity.Success);
+                _createAccountDialogVisible = false;
+                ResetAccountForm();
+                await LoadAccountsAsync();
+            }
+            else
+            {
+                _error = $"Failed to create account: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task CreateTransactionAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_description))
+        {
+            _error = "Description is required.";
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var amount = _transactionType == "Debit" ? -_transactionAmount : _transactionAmount;
+
+            var request = new
+            {
+                BankAccountId = _transactionAccountId,
+                TransactionDate = _transactionDate,
+                Description = _description,
+                Reference = _reference,
+                Amount = amount,
+                Type = _transactionType,
+                Category = _category
+            };
+
+            var response = await http.PostAsJsonAsync("api/banking/transactions", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Transaction added successfully", Severity.Success);
+                _addTransactionDialogVisible = false;
+                ResetTransactionForm();
+                await LoadAccountsAsync();
+                if (!string.IsNullOrEmpty(_selectedAccountId))
+                {
+                    await ViewTransactions(_selectedAccountId);
+                }
+            }
+            else
+            {
+                _error = $"Failed to add transaction: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task ReconcileTransaction(string transactionId)
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var request = new { TransactionId = transactionId };
+
+            var response = await http.PostAsJsonAsync("api/banking/reconcile", request);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Transaction reconciled", Severity.Success);
+                if (!string.IsNullOrEmpty(_selectedAccountId))
+                {
+                    await ViewTransactions(_selectedAccountId);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Failed to reconcile transaction", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteTransaction(string transactionId)
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+            var response = await http.DeleteAsync($"api/banking/transactions/{transactionId}");
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Transaction deleted", Severity.Success);
+                await LoadAccountsAsync();
+                if (!string.IsNullOrEmpty(_selectedAccountId))
+                {
+                    await ViewTransactions(_selectedAccountId);
+                }
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete transaction", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ResetAccountForm()
+    {
+        _accountName = "";
+        _bankName = "";
+        _accountNumber = "";
+        _accountType = "Checking";
+        _openingBalance = 0m;
+    }
+
+    private void ResetTransactionForm()
+    {
+        _transactionDate = DateTime.Today;
+        _transactionType = "Credit";
+        _description = "";
+        _transactionAmount = 0m;
+        _reference = "";
+        _category = "";
+    }
+}

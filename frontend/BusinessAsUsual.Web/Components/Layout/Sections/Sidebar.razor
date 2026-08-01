@@ -1,4 +1,5 @@
 ﻿@using BusinessAsUsual.Web.Modules._Shared
+@using Microsoft.JSInterop
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 @implements IDisposable
@@ -65,9 +66,12 @@
 
     private string? _activeRoute;
     private DotNetObjectReference<Sidebar>? _dotNetRef;
+    private bool _disposed;
 
     protected override void OnInitialized()
     {
+        Console.WriteLine($"[Sidebar] Initializing for module: {CurrentModule?.Name}");
+
         // Set initial active route based on current navigation
         UpdateActiveRoute();
 
@@ -77,68 +81,121 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !_disposed)
         {
-            _dotNetRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("registerSidebarNavigationHandler", _dotNetRef);
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("registerSidebarNavigationHandler", _dotNetRef);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit disconnected during initialization, ignore
+            }
         }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        if (_disposed)
+        {
+            Console.WriteLine("[Sidebar] OnLocationChanged ignored - component disposed");
+            return;
+        }
+
+        Console.WriteLine($"[Sidebar] OnLocationChanged: {e.Location}");
+
         // Update active route when navigation occurs
         UpdateActiveRoute();
-        InvokeAsync(StateHasChanged);
+
+        // Use InvokeAsync with proper error handling to avoid circuit corruption during navigation
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                await Task.Yield(); // Let navigation complete first
+                if (!_disposed)
+                {
+                    StateHasChanged();
+                    Console.WriteLine("[Sidebar] StateHasChanged completed successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Sidebar] StateHasChanged failed during navigation: {ex.Message}");
+                // Don't rethrow - allow navigation to complete
+            }
+        });
     }
 
     private void UpdateActiveRoute()
     {
-        // Get current URL path
-        var currentPath = new Uri(Navigation.Uri).PathAndQuery;
-
-        // Try to match against navigation items (including children)
-        if (CurrentModule?.NavigationItems.Any() == true)
+        try
         {
-            // Flatten navigation items including children
-            var allNavItems = CurrentModule.NavigationItems
-                .Concat(CurrentModule.NavigationItems
-                    .Where(item => item.Children?.Any() == true)
-                    .SelectMany(item => item.Children!))
-                .ToList();
+            if (_disposed || CurrentModule == null)
+                return;
 
-            // Try exact match first
-            var matchingItem = allNavItems
-                .FirstOrDefault(item => string.Equals(item.Route, currentPath, StringComparison.OrdinalIgnoreCase));
+            // Get current URL path
+            var currentPath = new Uri(Navigation.Uri).PathAndQuery;
 
-            // If no exact match, find the best prefix match (longest matching route)
-            if (matchingItem == null)
+            // Try to match against navigation items (including children)
+            if (CurrentModule.NavigationItems.Any())
             {
-                matchingItem = allNavItems
-                    .Where(item => currentPath.StartsWith(item.Route, StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(item => item.Route.Length) // Longest route wins
-                    .FirstOrDefault();
-            }
+                // Flatten navigation items including children
+                var allNavItems = CurrentModule.NavigationItems
+                    .Concat(CurrentModule.NavigationItems
+                        .Where(item => item.Children?.Any() == true)
+                        .SelectMany(item => item.Children!))
+                    .ToList();
 
-            if (matchingItem != null)
-            {
-                _activeRoute = matchingItem.Route;
-                Console.WriteLine($"[Sidebar] UpdateActiveRoute - Matched: {_activeRoute} for path: {currentPath}");
-            }
-            else
-            {
-                Console.WriteLine($"[Sidebar] UpdateActiveRoute - No match for: {currentPath}");
-                // Only set to first item if we're at the module root
-                if (currentPath.EndsWith($"/modules/{CurrentModule.Key}", StringComparison.OrdinalIgnoreCase))
+                if (!allNavItems.Any())
+                    return;
+
+                // Try exact match first
+                var matchingItem = allNavItems
+                    .FirstOrDefault(item => string.Equals(item.Route, currentPath, StringComparison.OrdinalIgnoreCase));
+
+                // If no exact match, find the best prefix match (longest matching route)
+                if (matchingItem == null)
                 {
-                    _activeRoute = allNavItems.First().Route;
+                    matchingItem = allNavItems
+                        .Where(item => currentPath.StartsWith(item.Route, StringComparison.OrdinalIgnoreCase))
+                        .OrderByDescending(item => item.Route.Length) // Longest route wins
+                        .FirstOrDefault();
+                }
+
+                if (matchingItem != null)
+                {
+                    _activeRoute = matchingItem.Route;
+                    Console.WriteLine($"[Sidebar] UpdateActiveRoute - Matched: {_activeRoute} for path: {currentPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"[Sidebar] UpdateActiveRoute - No match for: {currentPath}");
+                    // Only set to first item if we're at the module root
+                    if (currentPath.EndsWith($"/modules/{CurrentModule.Key}", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _activeRoute = allNavItems.First().Route;
+                    }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Sidebar] UpdateActiveRoute failed: {ex.Message}");
+            // Don't rethrow - this is just UI state update
         }
     }
 
     [JSInvokable]
     public Task OnIframeNavigation(string route)
     {
+        if (_disposed)
+        {
+            Console.WriteLine($"[Sidebar] Ignoring navigation - component disposed");
+            return Task.CompletedTask;
+        }
+
         Console.WriteLine($"[Sidebar] Iframe navigated to: {route}");
         _activeRoute = route;
         StateHasChanged();
@@ -169,7 +226,23 @@
 
     public void Dispose()
     {
+        if (_disposed)
+            return;
+
+        _disposed = true;
         Navigation.LocationChanged -= OnLocationChanged;
+
+        // Clear the JS reference before disposing
+        try
+        {
+            JS.InvokeVoidAsync("clearSidebarNavigationHandler").AsTask().Wait(TimeSpan.FromMilliseconds(100));
+        }
+        catch
+        {
+            // Ignore - circuit may already be gone
+        }
+
         _dotNetRef?.Dispose();
+        _dotNetRef = null;
     }
 }

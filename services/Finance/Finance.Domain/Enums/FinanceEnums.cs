@@ -11,6 +11,16 @@ public enum InvoiceStatus
     Refunded
 }
 
+public enum BillStatus
+{
+    Draft,
+    Received,
+    PartiallyPaid,
+    Paid,
+    Overdue,
+    Cancelled
+}
+
 public enum PaymentMethod
 {
     Unknown,
@@ -38,3 +48,4 @@ public enum Currency
     CAD,
     AUD
 }
+

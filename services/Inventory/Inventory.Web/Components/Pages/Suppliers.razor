@@ -1,0 +1,173 @@
+@page "/inventory/suppliers"
+@using System.Net.Http.Json
+@using MudBlazor
+@using Inventory.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<PageTitle>Suppliers</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory">Inventory</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Suppliers</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Class="mr-2" />
+                Suppliers
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage supplier directory, contacts, and vendor relationships
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Disabled="true">
+            Add Supplier
+        </MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else
+    {
+        <CustomDataGrid TItem="SupplierDto" Items="@FilteredSuppliers" Title="Suppliers" 
+                        ShowSearch="true" SearchPlaceholder="Search suppliers..." 
+                        Filterable="true" FilterMode="DataGridFilterMode.ColumnFilterRow"
+                        Hideable="true" SortMode="SortMode.Multiple"
+                        ColumnResizeMode="ResizeMode.Container"
+                        RowsPerPage="25">
+            <ChildContent>
+                <TemplateColumn T="SupplierDto" Title="Code">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small">@context.Item.Code</MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="SupplierDto" TProperty="string" Property="@(x => x.Name)" Title="Name">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2"><strong>@context.Item.Name</strong></MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn T="SupplierDto" TProperty="string" Property="@(x => x.ContactName)" Title="Contact Person" />
+                <TemplateColumn T="SupplierDto" Title="Email">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.Email))
+                        {
+                            <MudLink Href="@($"mailto:{context.Item.Email}")">@context.Item.Email</MudLink>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn T="SupplierDto" TProperty="string" Property="@(x => x.Phone)" Title="Phone" />
+                <TemplateColumn T="SupplierDto" Title="Location">
+                    <CellTemplate>
+                        @if (!string.IsNullOrEmpty(context.Item.City) || !string.IsNullOrEmpty(context.Item.State))
+                        {
+                            <MudText Typo="Typo.body2">@context.Item.City@((!string.IsNullOrEmpty(context.Item.City) && !string.IsNullOrEmpty(context.Item.State)) ? ", " : "")@context.Item.State</MudText>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="SupplierDto" Title="Status">
+                    <CellTemplate>
+                        @if (context.Item.IsActive)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Default">Inactive</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+
+        @if (!FilteredSuppliers.Any())
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-4">No suppliers found.</MudAlert>
+        }
+
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                Supplier Summary
+            </MudText>
+            <MudGrid>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Suppliers</MudText>
+                    <MudText Typo="Typo.h6">@_suppliers.Count</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Active</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Success">@_suppliers.Count(s => s.IsActive)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Inactive</MudText>
+                    <MudText Typo="Typo.h6">@_suppliers.Count(s => !s.IsActive)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Countries</MudText>
+                    <MudText Typo="Typo.h6">@_suppliers.Select(s => s.Country).Distinct().Count()</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<SupplierDto> _suppliers = new();
+    private string? _errorMessage;
+
+    private IEnumerable<SupplierDto> FilteredSuppliers => _suppliers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+            _suppliers = await client.GetFromJsonAsync<List<SupplierDto>>("api/inventory/suppliers") ?? new();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading suppliers: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    public class SupplierDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string? ContactName { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? ZipCode { get; set; }
+        public string? Country { get; set; }
+        public bool IsActive { get; set; }
+    }
+}
+

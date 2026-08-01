@@ -30,6 +30,11 @@ builder.Services.AddScoped<IPayrollService, PayrollService>();
 // Register Finance services (using mock implementations for now)
 builder.Services.AddScoped<IInvoiceService, MockInvoiceService>();
 builder.Services.AddScoped<IPaymentService, MockPaymentService>();
+builder.Services.AddScoped<IBillService, MockBillService>();
+builder.Services.AddScoped<IVendorPaymentService, MockVendorPaymentService>();
+builder.Services.AddScoped<ICollectionService, MockCollectionService>();
+builder.Services.AddScoped<IBankingService, MockBankingService>();
+builder.Services.AddScoped<IGeneralLedgerService, MockGeneralLedgerService>();
 builder.Services.AddScoped<IFinanceReportService, MockFinanceReportService>();
 
 // Register HTTP client for module registration

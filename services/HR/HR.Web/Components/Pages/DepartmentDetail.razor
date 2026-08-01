@@ -1,5 +1,6 @@
 @page "/hr/departments/{id}"
 @rendermode InteractiveServer
+@using HR.Application.DTOs
 @inject HR.Application.Services.IDepartmentService DepartmentService
 @inject HR.Application.Services.IEmployeeService EmployeeService
 @inject NavigationManager Navigation
@@ -245,55 +246,57 @@
 
                         @if (departmentEmployees.Any())
                         {
-                            <MudTable Items="@departmentEmployees" 
-                                      Hover="true" 
-                                      Breakpoint="Breakpoint.Sm"
-                                      Dense="true"
-                                      Striped="true">
-                                <HeaderContent>
-                                    <MudTh>Name</MudTh>
-                                    <MudTh>Job Title</MudTh>
-                                    <MudTh>Email</MudTh>
-                                    <MudTh>Hire Date</MudTh>
-                                    <MudTh>Status</MudTh>
-                                    <MudTh Style="text-align: right;">Actions</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Name">
-                                        <div class="d-flex align-center">
-                                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
-                                                @GetInitials(context.FirstName, context.LastName)
-                                            </MudAvatar>
-                                            <MudText Typo="Typo.body2">@context.FirstName @context.LastName</MudText>
-                                        </div>
-                                    </MudTd>
-                                    <MudTd DataLabel="Job Title">@context.JobTitle</MudTd>
-                                    <MudTd DataLabel="Email">@context.Email</MudTd>
-                                    <MudTd DataLabel="Hire Date">@context.HireDate.ToString("MMM dd, yyyy")</MudTd>
-                                    <MudTd DataLabel="Status">
-                                        @if (context.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.Status</MudChip>
-                                        }
-                                    </MudTd>
-                                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                                          Color="Color.Primary" 
-                                                          Size="Size.Small" 
-                                                          Href="@($"/modules/hr/employees/{context.Id}")" />
-                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                                                          Color="Color.Secondary" 
-                                                          Size="Size.Small" 
-                                                          Href="@($"/modules/hr/employees/{context.Id}/edit")" />
-                                        </MudButtonGroup>
-                                    </MudTd>
-                                </RowTemplate>
-                            </MudTable>
+                            <CustomDataGrid TItem="EmployeeDto"
+                                            Items="@departmentEmployees"
+                                            Hover="true"
+                                            Dense="true"
+                                            Striped="true"
+                                            ShowToolbar="false"
+                                            ShowSearch="false">
+                                <ChildContent>
+                                    <TemplateColumn Title="Name" Sortable="false" Filterable="false" T="EmployeeDto">
+                                        <CellTemplate>
+                                            <div class="d-flex align-center">
+                                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                                    @GetInitials(context.Item.FirstName, context.Item.LastName)
+                                                </MudAvatar>
+                                                <MudText Typo="Typo.body2">@context.Item.FirstName @context.Item.LastName</MudText>
+                                            </div>
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="x => x.JobTitle" Title="Job Title" T="EmployeeDto" TProperty="string" />
+                                    <PropertyColumn Property="x => x.Email" Title="Email" T="EmployeeDto" TProperty="string" />
+                                    <PropertyColumn Property="x => x.HireDate" Title="Hire Date" Format="MMM dd, yyyy" T="EmployeeDto" TProperty="DateTime" />
+                                    <PropertyColumn Property="x => x.Status" Title="Status" T="EmployeeDto" TProperty="string">
+                                        <CellTemplate>
+                                            @if (context.Item.Status == nameof(HR.Domain.Entities.EmploymentStatus.Active))
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">@context.Item.Status</MudChip>
+                                            }
+                                        </CellTemplate>
+                                    </PropertyColumn>
+                                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="EmployeeDto">
+                                        <CellTemplate>
+                                            <div style="text-align: right;">
+                                                <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                                                  Color="Color.Primary" 
+                                                                  Size="Size.Small" 
+                                                                  Href="@($"/modules/hr/employees/{context.Item.Id}")" />
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                                  Color="Color.Secondary" 
+                                                                  Size="Size.Small" 
+                                                                  Href="@($"/modules/hr/employees/{context.Item.Id}/edit")" />
+                                                </MudButtonGroup>
+                                            </div>
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                </ChildContent>
+                            </CustomDataGrid>
                         }
                         else
                         {

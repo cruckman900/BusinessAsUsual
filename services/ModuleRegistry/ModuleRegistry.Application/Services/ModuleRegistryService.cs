@@ -67,15 +67,22 @@ public class ModuleRegistryService : IModuleRegistryService
             MobileUISpecUrl = request.MobileUISpecUrl,
             MobileContractVersion = request.MobileContractVersion,
             SupportsMobile = request.SupportsMobile,
-            NavigationItems = request.NavigationItems.Select(nav => new ModuleRegistry.Domain.Entities.NavigationItem
-            {
-                Label = nav.Label,
-                Route = nav.Route,
-                Icon = nav.Icon
-            }).ToList()
+            NavigationItems = request.NavigationItems.Select(nav => MapToNavigationItem(nav)).ToList()
         };
 
         await _repository.AddOrUpdateAsync(module);
+    }
+
+    private static ModuleRegistry.Domain.Entities.NavigationItem MapToNavigationItem(NavigationItemDto dto)
+    {
+        return new ModuleRegistry.Domain.Entities.NavigationItem
+        {
+            Label = dto.Label,
+            Route = dto.Route,
+            Icon = dto.Icon,
+            ExpandedByDefault = dto.ExpandedByDefault,
+            Children = dto.Children?.Select(MapToNavigationItem).ToList()
+        };
     }
 
     private static ModuleDto MapToDto(ModuleMetadata module)
@@ -101,12 +108,19 @@ public class ModuleRegistryService : IModuleRegistryService
             MobileUISpecUrl = module.MobileUISpecUrl,
             MobileContractVersion = module.MobileContractVersion,
             SupportsMobile = module.SupportsMobile,
-            NavigationItems = module.NavigationItems.Select(nav => new NavigationItemDto
-            {
-                Label = nav.Label,
-                Route = nav.Route,
-                Icon = nav.Icon
-            }).ToList()
+            NavigationItems = module.NavigationItems.Select(nav => MapToNavigationItemDto(nav)).ToList()
+        };
+    }
+
+    private static NavigationItemDto MapToNavigationItemDto(ModuleRegistry.Domain.Entities.NavigationItem item)
+    {
+        return new NavigationItemDto
+        {
+            Label = item.Label,
+            Route = item.Route,
+            Icon = item.Icon,
+            ExpandedByDefault = item.ExpandedByDefault,
+            Children = item.Children?.Select(MapToNavigationItemDto).ToList()
         };
     }
 }

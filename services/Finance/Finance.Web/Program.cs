@@ -15,11 +15,18 @@ builder.Services.AddMudServices();
 // Add ApexCharts
 builder.Services.AddApexCharts();
 
-// Configure HttpClient for API calls
+// Configure HttpClient for Finance API calls
 var financeApiUrl = builder.Configuration["FinanceApi:Url"] ?? "http://localhost:5007";
-builder.Services.AddScoped(sp => new HttpClient
+builder.Services.AddHttpClient("FinanceApi", client =>
 {
-    BaseAddress = new Uri(financeApiUrl)
+    client.BaseAddress = new Uri(financeApiUrl);
+});
+
+// Configure HttpClient for HR API calls (for employee lookup)
+var hrApiUrl = builder.Configuration["HrService:Url"] ?? "http://localhost:5041";
+builder.Services.AddHttpClient("HrApi", client =>
+{
+    client.BaseAddress = new Uri(hrApiUrl);
 });
 
 // Register Finance services (mock implementations for now, sharing an in-memory store)

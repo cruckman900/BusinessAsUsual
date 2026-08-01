@@ -16,7 +16,7 @@ public sealed class PayrollDataStore
     public ConcurrentDictionary<string, PayRun> PayRuns { get; } = new();
 
     /// <summary>Default hourly rate used when an employee has no specific rate.</summary>
-    public decimal DefaultHourlyRate { get; } = 25m;
+    public decimal DefaultHourlyRate { get; set; } = 25m;
 
     /// <summary>
     /// Per-employee hourly rates, keyed by EmployeeId. Falls back to
@@ -30,10 +30,10 @@ public sealed class PayrollDataStore
     };
 
     /// <summary>Flat tax rate applied to gross pay (e.g. 0.20 = 20%). Placeholder for real tax tables.</summary>
-    public decimal TaxRate { get; } = 0.20m;
+    public decimal TaxRate { get; set; } = 0.20m;
 
     /// <summary>Flat other-deduction rate applied to gross pay (e.g. benefits) as a fraction.</summary>
-    public decimal DeductionRate { get; } = 0.05m;
+    public decimal DeductionRate { get; set; } = 0.05m;
 
     /// <summary>Resolve an employee's hourly rate, falling back to the default.</summary>
     public decimal GetHourlyRate(string employeeId) =>

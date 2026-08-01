@@ -1,0 +1,348 @@
+@page "/notifications"
+@using BusinessAsUsual.Web.Services
+@inject AuthenticationService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Notifications - Business As Usual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Notifications</MudText>
+    </div>
+
+    @if (AuthService.CurrentUser != null)
+    {
+        <div class="d-flex justify-space-between align-center mb-4">
+            <div>
+                <MudText Typo="Typo.h4" GutterBottom="true">Notifications</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    Stay up to date with your recent activity
+                </MudText>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Primary" 
+                           OnClick="MarkAllAsRead"
+                           StartIcon="@Icons.Material.Filled.DoneAll">
+                    Mark All as Read
+                </MudButton>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Error" 
+                           OnClick="ClearAll"
+                           StartIcon="@Icons.Material.Filled.ClearAll">
+                    Clear All
+                </MudButton>
+            </div>
+        </div>
+
+        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true">
+
+            <MudTabPanel Text="All" Icon="@Icons.Material.Filled.Notifications" BadgeData="@_allCount">
+                <MudPaper Elevation="0" Class="mt-4">
+                    @foreach (var notification in _allNotifications)
+                    {
+                        <NotificationCard Notification="@notification" OnMarkRead="HandleMarkAsRead" OnDelete="HandleDelete" />
+                    }
+                </MudPaper>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Unread" Icon="@Icons.Material.Filled.FiberNew" BadgeData="@_unreadCount">
+                <MudPaper Elevation="0" Class="mt-4">
+                    @foreach (var notification in _allNotifications.Where(n => !n.IsRead))
+                    {
+                        <NotificationCard Notification="@notification" OnMarkRead="HandleMarkAsRead" OnDelete="HandleDelete" />
+                    }
+                    @if (!_allNotifications.Any(n => !n.IsRead))
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.body1" Color="Color.Secondary" Class="pa-8">
+                            No unread notifications
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Important" Icon="@Icons.Material.Filled.PriorityHigh">
+                <MudPaper Elevation="0" Class="mt-4">
+                    @foreach (var notification in _allNotifications.Where(n => n.Priority == NotificationPriority.High))
+                    {
+                        <NotificationCard Notification="@notification" OnMarkRead="HandleMarkAsRead" OnDelete="HandleDelete" />
+                    }
+                    @if (!_allNotifications.Any(n => n.Priority == NotificationPriority.High))
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.body1" Color="Color.Secondary" Class="pa-8">
+                            No important notifications
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudTabPanel>
+
+        </MudTabs>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Warning">
+            You need to be logged in to view this page.
+            <MudButton Color="Color.Primary" Href="/login" Class="ml-3">Go to Login</MudButton>
+        </MudAlert>
+    }
+</MudContainer>
+
+@code {
+    private List<NotificationItem> _allNotifications = new();
+    private int _allCount => _allNotifications.Count;
+    private int _unreadCount => _allNotifications.Count(n => !n.IsRead);
+
+    protected override void OnInitialized()
+    {
+        if (AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        LoadNotifications();
+    }
+
+    private void LoadNotifications()
+    {
+        // Mock notifications
+        _allNotifications = new List<NotificationItem>
+        {
+            new NotificationItem
+            {
+                Id = "1",
+                Title = "New invoice created",
+                Message = "Invoice #INV-2024-001 has been created for Acme Corp",
+                Timestamp = DateTime.Now.AddHours(-2),
+                Type = NotificationType.Invoice,
+                Priority = NotificationPriority.Normal,
+                IsRead = false
+            },
+            new NotificationItem
+            {
+                Id = "2",
+                Title = "Payment received",
+                Message = "Payment of $5,000 received from Tech Solutions Inc.",
+                Timestamp = DateTime.Now.AddHours(-5),
+                Type = NotificationType.Payment,
+                Priority = NotificationPriority.High,
+                IsRead = false
+            },
+            new NotificationItem
+            {
+                Id = "3",
+                Title = "Timesheet approved",
+                Message = "Your timesheet for the week of Jan 15 has been approved",
+                Timestamp = DateTime.Now.AddDays(-1),
+                Type = NotificationType.HR,
+                Priority = NotificationPriority.Normal,
+                IsRead = true
+            },
+            new NotificationItem
+            {
+                Id = "4",
+                Title = "System maintenance scheduled",
+                Message = "System will be down for maintenance on Sunday 2AM-4AM",
+                Timestamp = DateTime.Now.AddDays(-2),
+                Type = NotificationType.System,
+                Priority = NotificationPriority.High,
+                IsRead = false
+            },
+            new NotificationItem
+            {
+                Id = "5",
+                Title = "New lead assigned",
+                Message = "Lead 'Enterprise Solutions Co.' has been assigned to you",
+                Timestamp = DateTime.Now.AddDays(-3),
+                Type = NotificationType.CRM,
+                Priority = NotificationPriority.Normal,
+                IsRead = true
+            }
+        };
+    }
+
+    private void HandleMarkAsRead(string id)
+    {
+        var notification = _allNotifications.FirstOrDefault(n => n.Id == id);
+        if (notification != null)
+        {
+            notification.IsRead = true;
+            StateHasChanged();
+            Snackbar.Add("Marked as read", Severity.Success);
+        }
+    }
+
+    private void HandleDelete(string id)
+    {
+        _allNotifications.RemoveAll(n => n.Id == id);
+        StateHasChanged();
+        Snackbar.Add("Notification deleted", Severity.Success);
+    }
+
+    private void MarkAllAsRead()
+    {
+        foreach (var notification in _allNotifications)
+        {
+            notification.IsRead = true;
+        }
+        StateHasChanged();
+        Snackbar.Add("All notifications marked as read", Severity.Success);
+    }
+
+    private void ClearAll()
+    {
+        _allNotifications.Clear();
+        StateHasChanged();
+        Snackbar.Add("All notifications cleared", Severity.Success);
+    }
+
+    // Notification Component
+    private class NotificationCard : ComponentBase
+    {
+        [Parameter] public NotificationItem Notification { get; set; } = null!;
+        [Parameter] public EventCallback<string> OnMarkRead { get; set; }
+        [Parameter] public EventCallback<string> OnDelete { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<MudPaper>(0);
+            builder.AddAttribute(1, "Class", Notification.IsRead ? "pa-3 mb-2" : "pa-3 mb-2 mud-elevation-2");
+            builder.AddAttribute(2, "Outlined", true);
+            builder.AddAttribute(3, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)(innerBuilder =>
+            {
+                innerBuilder.OpenElement(0, "div");
+                innerBuilder.AddAttribute(1, "class", "d-flex align-start");
+
+                // Icon
+                innerBuilder.OpenComponent<MudIcon>(2);
+                innerBuilder.AddAttribute(3, "Icon", GetNotificationIcon());
+                innerBuilder.AddAttribute(4, "Color", GetNotificationColor());
+                innerBuilder.AddAttribute(5, "Class", "me-3 mt-1");
+                innerBuilder.CloseComponent();
+
+                // Content
+                innerBuilder.OpenElement(6, "div");
+                innerBuilder.AddAttribute(7, "class", "flex-grow-1");
+
+                innerBuilder.OpenComponent<MudText>(8);
+                innerBuilder.AddAttribute(9, "Typo", Typo.body1);
+                innerBuilder.AddAttribute(10, "Style", Notification.IsRead ? "" : "font-weight: 600;");
+                innerBuilder.AddAttribute(11, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)(textBuilder =>
+                {
+                    textBuilder.AddContent(0, Notification.Title);
+                }));
+                innerBuilder.CloseComponent();
+
+                innerBuilder.OpenComponent<MudText>(12);
+                innerBuilder.AddAttribute(13, "Typo", Typo.body2);
+                innerBuilder.AddAttribute(14, "Color", Color.Secondary);
+                innerBuilder.AddAttribute(15, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)(textBuilder =>
+                {
+                    textBuilder.AddContent(0, Notification.Message);
+                }));
+                innerBuilder.CloseComponent();
+
+                innerBuilder.OpenComponent<MudText>(16);
+                innerBuilder.AddAttribute(17, "Typo", Typo.caption);
+                innerBuilder.AddAttribute(18, "Color", Color.Secondary);
+                innerBuilder.AddAttribute(19, "Class", "mt-1");
+                innerBuilder.AddAttribute(20, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)(textBuilder =>
+                {
+                    textBuilder.AddContent(0, FormatTimestamp(Notification.Timestamp));
+                }));
+                innerBuilder.CloseComponent();
+
+                innerBuilder.CloseElement();
+
+                // Actions
+                innerBuilder.OpenElement(21, "div");
+                innerBuilder.AddAttribute(22, "class", "d-flex align-center");
+
+                if (!Notification.IsRead)
+                {
+                    innerBuilder.OpenComponent<MudIconButton>(23);
+                    innerBuilder.AddAttribute(24, "Icon", Icons.Material.Filled.Done);
+                    innerBuilder.AddAttribute(25, "Size", Size.Small);
+                    innerBuilder.AddAttribute(26, "OnClick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => OnMarkRead.InvokeAsync(Notification.Id)));
+                    innerBuilder.CloseComponent();
+                }
+
+                innerBuilder.OpenComponent<MudIconButton>(27);
+                innerBuilder.AddAttribute(28, "Icon", Icons.Material.Filled.Delete);
+                innerBuilder.AddAttribute(29, "Size", Size.Small);
+                innerBuilder.AddAttribute(30, "Color", Color.Error);
+                innerBuilder.AddAttribute(31, "OnClick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => OnDelete.InvokeAsync(Notification.Id)));
+                innerBuilder.CloseComponent();
+
+                innerBuilder.CloseElement();
+
+                innerBuilder.CloseElement();
+            }));
+            builder.CloseComponent();
+        }
+
+        private string GetNotificationIcon()
+        {
+            return Notification.Type switch
+            {
+                NotificationType.Invoice => Icons.Material.Filled.Description,
+                NotificationType.Payment => Icons.Material.Filled.Payment,
+                NotificationType.HR => Icons.Material.Filled.People,
+                NotificationType.CRM => Icons.Material.Filled.Business,
+                NotificationType.System => Icons.Material.Filled.Settings,
+                _ => Icons.Material.Filled.Notifications
+            };
+        }
+
+        private Color GetNotificationColor()
+        {
+            return Notification.Priority switch
+            {
+                NotificationPriority.High => Color.Error,
+                NotificationPriority.Normal => Color.Primary,
+                NotificationPriority.Low => Color.Default,
+                _ => Color.Default
+            };
+        }
+
+        private string FormatTimestamp(DateTime timestamp)
+        {
+            var diff = DateTime.Now - timestamp;
+            if (diff.TotalMinutes < 1) return "Just now";
+            if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} minutes ago";
+            if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} hours ago";
+            if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} days ago";
+            return timestamp.ToString("MMM dd, yyyy");
+        }
+    }
+
+    public class NotificationItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public NotificationType Type { get; set; }
+        public NotificationPriority Priority { get; set; }
+        public bool IsRead { get; set; }
+    }
+
+    public enum NotificationType
+    {
+        Invoice,
+        Payment,
+        HR,
+        CRM,
+        System
+    }
+
+    public enum NotificationPriority
+    {
+        Low,
+        Normal,
+        High
+    }
+}

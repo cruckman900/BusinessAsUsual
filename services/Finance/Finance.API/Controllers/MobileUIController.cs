@@ -62,8 +62,62 @@ public class MobileUIController : ControllerBase
         Icon = "account_balance",
         Items = new List<NavigationItem>
         {
-            new() { Id = "invoices", Label = "Invoices", Icon = "receipt", Screen = "invoice-list", Route = "/finance/invoices" },
+            new() { Id = "dashboard", Label = "Dashboard", Icon = "dashboard", Screen = "dashboard", Route = "/finance" },
+            new() 
+            { 
+                Id = "receivables", 
+                Label = "Accounts Receivable", 
+                Icon = "request_quote", 
+                Screen = "receivables-dashboard", 
+                Route = "/finance/receivables",
+                Children = new List<NavigationItem>
+                {
+                    new() { Id = "invoices", Label = "Invoices", Icon = "receipt", Screen = "invoice-list", Route = "/finance/invoices" },
+                    new() { Id = "collections", Label = "Collections", Icon = "assessment", Screen = "collections-dashboard", Route = "/finance/receivables/collections" }
+                }
+            },
+            new() 
+            { 
+                Id = "payables", 
+                Label = "Accounts Payable", 
+                Icon = "receipt_long", 
+                Screen = "payables-dashboard", 
+                Route = "/finance/payables",
+                Children = new List<NavigationItem>
+                {
+                    new() { Id = "bills", Label = "Bills", Icon = "receipt", Screen = "bills-list", Route = "/finance/payables/bills" },
+                    new() { Id = "vendor-payments", Label = "Vendor Payments", Icon = "payments", Screen = "vendor-payments-list", Route = "/finance/payables/vendor-payments" }
+                }
+            },
+            new() 
+            { 
+                Id = "general-ledger", 
+                Label = "General Ledger", 
+                Icon = "menu_book", 
+                Screen = "gl-dashboard", 
+                Route = "/finance/gl",
+                Children = new List<NavigationItem>
+                {
+                    new() { Id = "chart-of-accounts", Label = "Chart of Accounts", Icon = "account_tree", Screen = "chart-of-accounts", Route = "/finance/gl/chart-of-accounts" },
+                    new() { Id = "journal-entries", Label = "Journal Entries", Icon = "edit_note", Screen = "journal-entries", Route = "/finance/gl/journal-entries" },
+                    new() { Id = "trial-balance", Label = "Trial Balance", Icon = "balance", Screen = "trial-balance", Route = "/finance/gl/trial-balance" }
+                }
+            },
+            new() { Id = "banking", Label = "Banking", Icon = "account_balance", Screen = "banking-dashboard", Route = "/finance/banking" },
             new() { Id = "payments", Label = "Payments", Icon = "payments", Screen = "payment-list", Route = "/finance/payments" },
+            new() 
+            { 
+                Id = "payroll", 
+                Label = "Payroll", 
+                Icon = "account_balance_wallet", 
+                Screen = "payroll-dashboard", 
+                Route = "/finance/payroll",
+                Children = new List<NavigationItem>
+                {
+                    new() { Id = "pay-runs", Label = "Pay Runs", Icon = "account_balance_wallet", Screen = "pay-runs", Route = "/finance/payroll/pay-runs" },
+                    new() { Id = "deductions", Label = "Deductions", Icon = "assessment", Screen = "deductions", Route = "/finance/payroll/deductions" }
+                }
+            },
             new() { Id = "reports", Label = "Reports", Icon = "assessment", Screen = "report-dashboard", Route = "/finance/reports" }
         }
     };

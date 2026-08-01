@@ -60,25 +60,6 @@
             </MudCard>
         </MudItem>
 
-        <!-- Invoices -->
-        <MudItem xs="12" sm="6" md="4" lg="3">
-            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
-                <MudCardContent Class="text-center pa-6 flex-grow-1">
-                    <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Info" Class="mb-4" />
-                    <MudText Typo="Typo.h6" GutterBottom="true">Invoices</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                        Create and manage customer invoices
-                    </MudText>
-                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@(_summary is not null ? _summary.TotalOverdue.ToString("C0") : "—") Overdue</MudChip>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/invoices">
-                        View Invoices
-                    </MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-
         <!-- Payments -->
         <MudItem xs="12" sm="6" md="4" lg="3">
             <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
@@ -112,6 +93,44 @@
                 <MudCardActions>
                     <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/payroll">
                         View Payroll
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Banking -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Banking</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Bank accounts, transactions, reconciliation
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/banking">
+                        View Banking
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- General Ledger -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">General Ledger</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Chart of accounts, journal entries, trial balance
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/finance/gl">
+                        View GL
                     </MudButton>
                 </MudCardActions>
             </MudCard>

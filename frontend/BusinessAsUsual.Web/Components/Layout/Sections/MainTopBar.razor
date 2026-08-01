@@ -10,13 +10,11 @@
             <MudText Typo="Typo.h6">Business As Usual</MudText>
         </div>
 
-        <MudSpacer />
-
         <div class="module-nav">
             <MudNavLink Href="/dashboard"
                         Match="NavLinkMatch.All"
                         Class="topnav-link">
-                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-1" />
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" />
                 Dashboard
             </MudNavLink>
             @foreach (var module in Modules)
@@ -24,27 +22,29 @@
                 <MudNavLink Href="@module.Route"
                             Match="NavLinkMatch.Prefix"
                             Class="topnav-link">
-                    <MudIcon Icon="@module.Icon" Class="me-1" />
+                    <MudIcon Icon="@module.Icon" Size="Size.Small" />
                     @module.Name
                 </MudNavLink>
             }
-            <MudMenu Label="More" Dense="true">
-                @foreach (var module in OverflowModules)
-                {
-                    <MudMenuItem Href="@module.Route">
-                        <MudIcon Icon="@module.Icon" Class="me-1" />
-                        @module.Name
-                    </MudMenuItem>
-                }
-            </MudMenu>
+            @foreach (var module in OverflowModules)
+            {
+                <MudNavLink Href="@module.Route"
+                            Match="NavLinkMatch.Prefix"
+                            Class="topnav-link">
+                    <MudIcon Icon="@module.Icon" Size="Size.Small" />
+                    @module.Name
+                </MudNavLink>
+            }
         </div>
+        <div class="module-nav-scrollbar"></div>
 
-        <MudSpacer />
-        <TenantDisplay CurrentTenant="@CurrentTenant" />
-        <UserMenu />
-        <!-- AI Assistant toggle is injected here so it's always available but unobtrusive -->
-        <div class="ai-assistant-host">
-            <AiAssistant CompanyId="@AiTestCompanyId" />
+        <div class="topbar-actions">
+            <TenantDisplay CurrentTenant="@CurrentTenant" />
+            <UserMenu />
+            <!-- AI Assistant toggle is injected here so it's always available but unobtrusive -->
+            <div class="ai-assistant-host">
+                <AiAssistant CompanyId="@AiTestCompanyId" />
+            </div>
         </div>
     </div>
 </MudHidden>

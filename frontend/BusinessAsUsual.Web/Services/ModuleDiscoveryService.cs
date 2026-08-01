@@ -142,7 +142,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Employee Management", 
                         Route = "/hr/employees", 
                         Icon = Icons.Material.Filled.People,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Employees", Route = "/hr/employees", Icon = Icons.Material.Filled.List },
@@ -156,7 +156,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Departments", 
                         Route = "/hr/departments", 
                         Icon = Icons.Material.Filled.Business,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Departments", Route = "/hr/departments", Icon = Icons.Material.Filled.List },
@@ -260,7 +260,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Leads", 
                         Route = "/crm/leads", 
                         Icon = Icons.Material.Filled.PersonSearch,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Leads", Route = "/crm/leads", Icon = Icons.Material.Filled.List },
@@ -274,7 +274,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Opportunities", 
                         Route = "/crm/opportunities", 
                         Icon = Icons.Material.Filled.TrendingUp,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Opportunities", Route = "/crm/opportunities", Icon = Icons.Material.Filled.List },
@@ -289,7 +289,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Customers", 
                         Route = "/crm/customers", 
                         Icon = Icons.Material.Filled.Business,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "All Customers", Route = "/crm/customers", Icon = Icons.Material.Filled.List },
@@ -329,7 +329,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Accounts Receivable",
                         Route = "/finance/receivables",
                         Icon = Icons.Material.Filled.RequestQuote,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "Invoices", Route = "/finance/invoices", Icon = Icons.Material.Filled.ReceiptLong },
@@ -343,7 +343,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Accounts Payable",
                         Route = "/finance/payables",
                         Icon = Icons.Material.Filled.ReceiptLong,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "Bills", Route = "/finance/payables/bills", Icon = Icons.Material.Filled.Description },
@@ -351,18 +351,26 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         }
                     },
 
-                    // Payments Group
+                    // General Ledger Group
                     new()
                     {
-                        Label = "Payments",
-                        Route = "/finance/payments",
-                        Icon = Icons.Material.Filled.Payments,
-                        ExpandedByDefault = true,
+                        Label = "General Ledger",
+                        Route = "/finance/gl",
+                        Icon = Icons.Material.Filled.MenuBook,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
-                            new() { Label = "All Payments", Route = "/finance/payments", Icon = Icons.Material.Filled.List }
+                            new() { Label = "Chart of Accounts", Route = "/finance/gl/chart-of-accounts", Icon = Icons.Material.Filled.AccountTree },
+                            new() { Label = "Journal Entries", Route = "/finance/gl/journal-entries", Icon = Icons.Material.Filled.EditNote },
+                            new() { Label = "Trial Balance", Route = "/finance/gl/trial-balance", Icon = Icons.Material.Filled.Balance }
                         }
                     },
+
+                    // Banking
+                    new() { Label = "Banking", Route = "/finance/banking", Icon = Icons.Material.Filled.AccountBalance },
+
+                    // Payments
+                    new() { Label = "Payments", Route = "/finance/payments", Icon = Icons.Material.Filled.Payments },
 
                     // Payroll Group
                     new()
@@ -370,7 +378,7 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         Label = "Payroll",
                         Route = "/finance/payroll",
                         Icon = Icons.Material.Filled.AccountBalanceWallet,
-                        ExpandedByDefault = true,
+                        ExpandedByDefault = false,
                         Children = new List<NavigationItemDto>
                         {
                             new() { Label = "Pay Runs", Route = "/finance/payroll/pay-runs", Icon = Icons.Material.Filled.PlaylistAddCheck },
@@ -380,6 +388,56 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
 
                     // Reports
                     new() { Label = "Reports", Route = "/finance/reports", Icon = Icons.Material.Filled.Analytics }
+                }
+            },
+            new ModuleDto
+            {
+                ModuleId = "inventory",
+                Key = "inventory",
+                DisplayName = "Inventory",
+                Description = "Product and warehouse inventory management",
+                UiEntryPoint = "/inventory",
+                Icon = Icons.Material.Filled.Inventory2,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Dashboard", Route = "/inventory", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "Products", Route = "/inventory/products", Icon = Icons.Material.Filled.Inventory },
+                    new() { Label = "Warehouses", Route = "/inventory/warehouses", Icon = Icons.Material.Filled.Warehouse },
+
+                    // Stock Management Group
+                    new()
+                    {
+                        Label = "Stock Management",
+                        Route = "/inventory/stock",
+                        Icon = Icons.Material.Filled.Inventory2,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Stock Items", Route = "/inventory/stock/items", Icon = Icons.Material.Filled.ListAlt },
+                            new() { Label = "Adjustments", Route = "/inventory/stock/adjustments", Icon = Icons.Material.Filled.Edit },
+                            new() { Label = "Transfers", Route = "/inventory/stock/transfers", Icon = Icons.Material.Filled.SwapHoriz },
+                            new() { Label = "Cycle Counts", Route = "/inventory/stock/cycle-counts", Icon = Icons.Material.Filled.FactCheck }
+                        }
+                    },
+
+                    new() { Label = "Purchase Orders", Route = "/inventory/purchase-orders", Icon = Icons.Material.Filled.ShoppingCart },
+                    new() { Label = "Suppliers", Route = "/inventory/suppliers", Icon = Icons.Material.Filled.LocalShipping },
+
+                    // Reports Group
+                    new()
+                    {
+                        Label = "Reports",
+                        Route = "/inventory/reports",
+                        Icon = Icons.Material.Filled.Assessment,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Stock Valuation", Route = "/inventory/reports/valuation", Icon = Icons.Material.Filled.AttachMoney },
+                            new() { Label = "Movement History", Route = "/inventory/reports/movements", Icon = Icons.Material.Filled.History },
+                            new() { Label = "Low Stock Alert", Route = "/inventory/reports/low-stock", Icon = Icons.Material.Filled.Warning }
+                        }
+                    }
                 }
             }
         };

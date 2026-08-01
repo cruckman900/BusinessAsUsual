@@ -122,138 +122,149 @@
 
         <!-- Training Catalog -->
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h6" GutterBottom="true">Training Catalog</MudText>
-            <MudTable Items="@trainingCourses" Hover="true" Dense="true" Striped="true">
-                <ToolBarContent>
-                    <MudSpacer />
-                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                        <MudTooltip Text="Show all courses">
-                            <MudButton Color="@(filterType == null ? Color.Primary : Color.Default)" OnClick="@(() => filterType = null)">All</MudButton>
-                        </MudTooltip>
-                        <MudTooltip Text="Filter required courses">
-                            <MudButton Color="@(filterType == "Required" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Required")">Required</MudButton>
-                        </MudTooltip>
-                        <MudTooltip Text="Filter optional courses">
-                            <MudButton Color="@(filterType == "Optional" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Optional")">Optional</MudButton>
-                        </MudTooltip>
-                        <MudTooltip Text="Filter certification courses">
-                            <MudButton Color="@(filterType == "Certification" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Certification")">Certification</MudButton>
-                        </MudTooltip>
-                    </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Course Name</MudTh>
-                    <MudTh>Category</MudTh>
-                    <MudTh>Type</MudTh>
-                    <MudTh>Duration</MudTh>
-                    <MudTh>Enrolled</MudTh>
-                    <MudTh>Completion Rate</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Course Name">
-                        <div>
-                            <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Provider</MudText>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Category">
-                        <MudBadge Content="@context.Category" Color="@GetCategoryColor(context.Category)" />
-                    </MudTd>
-                    <MudTd DataLabel="Type">
-                        <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(context.Type)">@context.Type</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Duration">@context.Duration</MudTd>
-                    <MudTd DataLabel="Enrolled">@context.Enrolled</MudTd>
-                    <MudTd DataLabel="Completion Rate">
-                        <div class="d-flex align-center gap-2">
-                            <MudProgressLinear Color="Color.Success" Value="@context.CompletionRate" Size="Size.Small" Style="width: 60px;" />
-                            <MudText Typo="Typo.body2">@context.CompletionRate%</MudText>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View course details">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit course">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                            <MudTooltip Text="View enrollments">
-                                <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" Color="Color.Info" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6">Training Catalog</MudText>
+                <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                    <MudTooltip Text="Show all courses">
+                        <MudButton Color="@(filterType == null ? Color.Primary : Color.Default)" OnClick="@(() => filterType = null)">All</MudButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Filter required courses">
+                        <MudButton Color="@(filterType == "Required" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Required")">Required</MudButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Filter optional courses">
+                        <MudButton Color="@(filterType == "Optional" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Optional")">Optional</MudButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Filter certification courses">
+                        <MudButton Color="@(filterType == "Certification" ? Color.Primary : Color.Default)" OnClick="@(() => filterType = "Certification")">Certification</MudButton>
+                    </MudTooltip>
+                </MudButtonGroup>
+            </div>
+            <CustomDataGrid TItem="TrainingCourse"
+                            Items="@trainingCourses"
+                            Hover="true"
+                            Dense="true"
+                            Striped="true"
+                            ShowToolbar="false"
+                            ShowSearch="false">
+                <ChildContent>
+                    <TemplateColumn Title="Course Name" Sortable="false" Filterable="false" T="TrainingCourse">
+                        <CellTemplate>
+                            <div>
+                                <MudText Typo="Typo.body1"><strong>@context.Item.Name</strong></MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Provider</MudText>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Category" Title="Category" T="TrainingCourse" TProperty="string">
+                        <CellTemplate>
+                            <MudBadge Content="@context.Item.Category" Color="@GetCategoryColor(context.Item.Category)" />
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Type" Title="Type" T="TrainingCourse" TProperty="string">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@GetTypeColor(context.Item.Type)">@context.Item.Type</MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Duration" Title="Duration" T="TrainingCourse" TProperty="string" />
+                    <PropertyColumn Property="x => x.Enrolled" Title="Enrolled" T="TrainingCourse" TProperty="int" />
+                    <PropertyColumn Property="x => x.CompletionRate" Title="Completion Rate" T="TrainingCourse" TProperty="int">
+                        <CellTemplate>
+                            <div class="d-flex align-center gap-2">
+                                <MudProgressLinear Color="Color.Success" Value="@context.Item.CompletionRate" Size="Size.Small" Style="width: 60px;" />
+                                <MudText Typo="Typo.body2">@context.Item.CompletionRate%</MudText>
+                            </div>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="TrainingCourse">
+                        <CellTemplate>
+                            <div style="text-align: right;">
+                                <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                    <MudTooltip Text="View course details">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Edit course">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="View enrollments">
+                                        <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" Color="Color.Info" />
+                                    </MudTooltip>
+                                </MudButtonGroup>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </ChildContent>
+            </CustomDataGrid>
         </MudPaper>
 
         <!-- Employee Development Plans -->
         <MudPaper Elevation="2">
-            <MudTable Items="@developmentPlans" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Individual Development Plans</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString"
-                                  Placeholder="Search employees..."
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Search"
-                                  IconSize="Size.Small"
-                                  Clearable="true"
-                                  Immediate="true"
-                                  Class="mt-0 mb-0" />
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Active Goals</MudTh>
-                    <MudTh>Completed Courses</MudTh>
-                    <MudTh>In Progress</MudTh>
-                    <MudTh>Certifications</MudTh>
-                    <MudTh>Progress</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.EmployeeName</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Active Goals"><strong>@context.ActiveGoals</strong></MudTd>
-                    <MudTd DataLabel="Completed Courses">@context.CompletedCourses</MudTd>
-                    <MudTd DataLabel="In Progress">@context.InProgressCourses</MudTd>
-                    <MudTd DataLabel="Certifications">
-                        @if (context.Certifications > 0)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.Certifications</MudChip>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Progress">
-                        <div class="d-flex align-center gap-2">
-                            <MudProgressCircular Color="@GetProgressColor(context.Progress)" Value="@context.Progress" Size="Size.Small" />
-                            <MudText Typo="Typo.body2">@context.Progress%</MudText>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View development plan">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit development plan">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            <CustomDataGrid TItem="DevelopmentPlan"
+                            Items="@developmentPlans"
+                            Hover="true"
+                            Striped="true"
+                            Dense="false"
+                            FixedHeader="true"
+                            Height="500px"
+                            Title="Individual Development Plans"
+                            SearchPlaceholder="Search employees..."
+                            ShowSearch="true">
+                <ChildContent>
+                    <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="DevelopmentPlan">
+                        <CellTemplate>
+                            <div class="d-flex align-center">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                <strong>@context.Item.EmployeeName</strong>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Department" Title="Department" T="DevelopmentPlan" TProperty="string">
+                        <CellTemplate>
+                            <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.ActiveGoals" Title="Active Goals" T="DevelopmentPlan" TProperty="int">
+                        <CellTemplate>
+                            <strong>@context.Item.ActiveGoals</strong>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.CompletedCourses" Title="Completed Courses" T="DevelopmentPlan" TProperty="int" />
+                    <PropertyColumn Property="x => x.InProgressCourses" Title="In Progress" T="DevelopmentPlan" TProperty="int" />
+                    <PropertyColumn Property="x => x.Certifications" Title="Certifications" T="DevelopmentPlan" TProperty="int">
+                        <CellTemplate>
+                            @if (context.Item.Certifications > 0)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.Item.Certifications</MudChip>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                            }
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Progress" Title="Progress" T="DevelopmentPlan" TProperty="int">
+                        <CellTemplate>
+                            <div class="d-flex align-center gap-2">
+                                <MudProgressCircular Color="@GetProgressColor(context.Item.Progress)" Value="@context.Item.Progress" Size="Size.Small" />
+                                <MudText Typo="Typo.body2">@context.Item.Progress%</MudText>
+                            </div>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="DevelopmentPlan">
+                        <CellTemplate>
+                            <div style="text-align: right;">
+                                <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                    <MudTooltip Text="View development plan">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Edit development plan">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                    </MudTooltip>
+                                </MudButtonGroup>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </ChildContent>
+            </CustomDataGrid>
         </MudPaper>
     }
 </MudContainer>

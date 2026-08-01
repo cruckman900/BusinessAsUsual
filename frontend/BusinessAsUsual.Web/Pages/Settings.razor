@@ -1,0 +1,343 @@
+@page "/settings"
+@using BusinessAsUsual.Web.Services
+@inject AuthenticationService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Settings - Business As Usual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Settings</MudText>
+    </div>
+
+    @if (AuthService.CurrentUser != null)
+    {
+        <MudText Typo="Typo.h4" GutterBottom="true">Application Settings</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+            Configure your application experience
+        </MudText>
+
+        <MudGrid Spacing="3">
+
+            <!-- Display Settings -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.DisplaySettings" Class="me-2" />
+                        Display Settings
+                    </MudText>
+
+                    <MudSwitch @bind-Value="_compactMode" 
+                               Label="Compact Mode" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_showAnimations" 
+                               Label="Enable Animations" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_highContrast" 
+                               Label="High Contrast Mode" 
+                               Color="Color.Primary"
+                               Class="mb-3" />
+
+                    <MudSlider @bind-Value="_fontSize" 
+                               Min="12" 
+                               Max="20" 
+                               Step="1"
+                               Color="Color.Primary"
+                               Class="mb-2">
+                        Font Size: @_fontSize px
+                    </MudSlider>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Dashboard Settings -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="me-2" />
+                        Dashboard Settings
+                    </MudText>
+
+                    <MudSwitch @bind-Value="_showWidgets" 
+                               Label="Show Dashboard Widgets" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_autoRefresh" 
+                               Label="Auto-refresh Data" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudNumericField @bind-Value="_refreshInterval" 
+                                     Label="Refresh Interval (seconds)" 
+                                     Variant="Variant.Outlined"
+                                     Min="30"
+                                     Max="600"
+                                     Disabled="@(!_autoRefresh)"
+                                     Class="mt-2" />
+                </MudPaper>
+            </MudItem>
+
+            <!-- Privacy Settings -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.PrivacyTip" Class="me-2" />
+                        Privacy Settings
+                    </MudText>
+
+                    <MudSwitch @bind-Value="_shareAnalytics" 
+                               Label="Share Anonymous Analytics" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_allowTracking" 
+                               Label="Allow Activity Tracking" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_showOnlineStatus" 
+                               Label="Show Online Status" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+                </MudPaper>
+            </MudItem>
+
+            <!-- Communication Settings -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-2" />
+                        Communication Settings
+                    </MudText>
+
+                    <MudSwitch @bind-Value="_emailDigest" 
+                               Label="Daily Email Digest" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_weeklyReport" 
+                               Label="Weekly Summary Report" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_instantAlerts" 
+                               Label="Instant Alerts for Critical Items" 
+                               Color="Color.Primary"
+                               Class="mb-2" />
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Apps" Class="me-2" />
+                        Integrations
+                    </MudText>
+
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Connect external services and applications
+                    </MudText>
+
+                    <MudStack Spacing="2">
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Color="Color.Info" Class="me-2" />
+                                    <div>
+                                        <MudText Typo="Typo.body2">Microsoft 365</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Not Connected</MudText>
+                                    </div>
+                                </div>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined">Connect</MudButton>
+                            </div>
+                        </MudPaper>
+
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Custom.Brands.Google" Color="Color.Error" Class="me-2" />
+                                    <div>
+                                        <MudText Typo="Typo.body2">Google Workspace</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Not Connected</MudText>
+                                    </div>
+                                </div>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined">Connect</MudButton>
+                            </div>
+                        </MudPaper>
+
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <div class="d-flex align-center justify-space-between">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Success" Class="me-2" />
+                                    <div>
+                                        <MudText Typo="Typo.body2">Calendar Sync</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Success">Connected</MudText>
+                                    </div>
+                                </div>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error">Disconnect</MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Advanced Settings -->
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Engineering" Class="me-2" />
+                        Advanced Settings
+                    </MudText>
+
+                    <MudSwitch @bind-Value="_developerMode" 
+                               Label="Developer Mode" 
+                               Color="Color.Warning"
+                               Class="mb-2" />
+
+                    <MudSwitch @bind-Value="_debugLogging" 
+                               Label="Enable Debug Logging" 
+                               Color="Color.Warning"
+                               Class="mb-2" />
+
+                    <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.body2" Class="mb-2">Data Management</MudText>
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Download"
+                               Size="Size.Small"
+                               Class="me-2 mb-2"
+                               OnClick="ExportData">
+                        Export My Data
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Error" 
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               Size="Size.Small"
+                               Class="mb-2"
+                               OnClick="ClearCache">
+                        Clear Cache
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Save Actions -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.body1">Save your settings changes</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                Last saved: @_lastSaved.ToString("MMM dd, yyyy hh:mm tt")
+                            </MudText>
+                        </div>
+                        <div>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Default" 
+                                       OnClick="ResetToDefaults"
+                                       StartIcon="@Icons.Material.Filled.RestartAlt"
+                                       Class="me-2">
+                                Reset to Defaults
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       OnClick="SaveSettings"
+                                       StartIcon="@Icons.Material.Filled.Save">
+                                Save All Settings
+                            </MudButton>
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Warning">
+            You need to be logged in to view this page.
+            <MudButton Color="Color.Primary" Href="/login" Class="ml-3">Go to Login</MudButton>
+        </MudAlert>
+    }
+</MudContainer>
+
+@code {
+    // Display Settings
+    private bool _compactMode = false;
+    private bool _showAnimations = true;
+    private bool _highContrast = false;
+    private int _fontSize = 14;
+
+    // Dashboard Settings
+    private bool _showWidgets = true;
+    private bool _autoRefresh = true;
+    private int _refreshInterval = 60;
+
+    // Privacy Settings
+    private bool _shareAnalytics = false;
+    private bool _allowTracking = true;
+    private bool _showOnlineStatus = true;
+
+    // Communication Settings
+    private bool _emailDigest = true;
+    private bool _weeklyReport = true;
+    private bool _instantAlerts = true;
+
+    // Advanced Settings
+    private bool _developerMode = false;
+    private bool _debugLogging = false;
+
+    private DateTime _lastSaved = DateTime.Now;
+
+    protected override void OnInitialized()
+    {
+        if (AuthService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    private void SaveSettings()
+    {
+        _lastSaved = DateTime.Now;
+        Snackbar.Add("All settings saved successfully", Severity.Success);
+    }
+
+    private void ResetToDefaults()
+    {
+        _compactMode = false;
+        _showAnimations = true;
+        _highContrast = false;
+        _fontSize = 14;
+        _showWidgets = true;
+        _autoRefresh = true;
+        _refreshInterval = 60;
+        _shareAnalytics = false;
+        _allowTracking = true;
+        _showOnlineStatus = true;
+        _emailDigest = true;
+        _weeklyReport = true;
+        _instantAlerts = true;
+        _developerMode = false;
+        _debugLogging = false;
+
+        Snackbar.Add("Settings reset to defaults", Severity.Info);
+    }
+
+    private void ExportData()
+    {
+        Snackbar.Add("Data export will begin shortly", Severity.Info);
+    }
+
+    private void ClearCache()
+    {
+        Snackbar.Add("Cache cleared successfully", Severity.Success);
+    }
+}

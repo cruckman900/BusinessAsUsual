@@ -1,0 +1,109 @@
+@using System.Net.Http.Json
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudSelect @bind-Value="Transfer.ProductId" Label="Product" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" T="Guid">
+                        @foreach (var product in Products)
+                        {
+                            <MudSelectItem Value="@product.Id">@product.Name (@product.SKU)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect @bind-Value="Transfer.FromWarehouseId" Label="From Warehouse" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" T="Guid">
+                        @foreach (var warehouse in Warehouses)
+                        {
+                            <MudSelectItem Value="@warehouse.Id">@warehouse.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect @bind-Value="Transfer.ToWarehouseId" Label="To Warehouse" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" T="Guid">
+                        @foreach (var warehouse in Warehouses)
+                        {
+                            <MudSelectItem Value="@warehouse.Id">@warehouse.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudNumericField @bind-Value="Transfer.Quantity" Label="Quantity" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Transfer.Notes" Label="Notes / Reason" Lines="3" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!_isValid || _saving)">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Create Transfer
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public List<ProductOption> Products { get; set; } = new();
+    [Parameter] public List<WarehouseOption> Warehouses { get; set; } = new();
+
+    public class TransferModel
+    {
+        public Guid ProductId { get; set; }
+        public Guid FromWarehouseId { get; set; }
+        public Guid ToWarehouseId { get; set; }
+        public int Quantity { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public class ProductOption { public Guid Id { get; set; } public string Name { get; set; } = ""; public string SKU { get; set; } = ""; }
+    public class WarehouseOption { public Guid Id { get; set; } public string Name { get; set; } = ""; }
+
+    private TransferModel Transfer { get; set; } = new();
+    private MudForm _form = null!;
+    private bool _isValid = false;
+    private bool _saving = false;
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (!_isValid) return;
+
+        if (Transfer.FromWarehouseId == Transfer.ToWarehouseId)
+        {
+            Snackbar.Add("Source and destination warehouses must be different", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+            var dto = new { ProductId = Transfer.ProductId, FromWarehouseId = Transfer.FromWarehouseId, ToWarehouseId = Transfer.ToWarehouseId, Quantity = Transfer.Quantity, Notes = Transfer.Notes };
+            var response = await client.PostAsJsonAsync("api/inventory/stock/transfer", dto);
+            response.EnsureSuccessStatusCode();
+            Snackbar.Add("Stock transfer created successfully", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -1,8 +1,12 @@
 @page "/finance/payroll/deductions"
+@using Finance.Application.DTOs
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
 
 <PageTitle>Deductions</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-2 pa-0">
     <div class="mb-3">
         <MudLink Href="/dashboard">Dashboard</MudLink>
         <span class="mx-2">/</span>
@@ -17,13 +21,263 @@
         <div>
             <MudText Typo="Typo.h4" GutterBottom="true">
                 <MudIcon Icon="@Icons.Material.Filled.RemoveCircleOutline" Class="mr-2" />
-                Deductions
+                Payroll Deductions
             </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage taxes, benefits, and withholdings</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                View and manage tax and benefit deduction rates
+            </MudText>
         </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Settings"
+                   Href="/finance/payroll/config">
+            Configure Rates
+        </MudButton>
     </div>
 
-    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Construction">
-        Deductions is coming soon. This submodule is scaffolded and ready for data wiring.
-    </MudAlert>
+    <MudGrid Spacing="3">
+        <!-- Current Rate Configuration -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
+                    Current Deduction Rates
+                </MudText>
+
+                @if (_rates == null)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                }
+                else
+                {
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string">
+                            <div class="d-flex justify-space-between align-center">
+                                <div>
+                                    <MudText Typo="Typo.body1">Tax Withholding</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Federal, state, and local taxes
+                                    </MudText>
+                                </div>
+                                <MudChip T="string" Color="Color.Error" Size="Size.Small">
+                                    @((_rates.TaxRate * 100).ToString("0.0"))%
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                        <MudDivider />
+
+                        <MudListItem T="string">
+                            <div class="d-flex justify-space-between align-center">
+                                <div>
+                                    <MudText Typo="Typo.body1">Other Deductions</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Benefits, retirement, insurance
+                                    </MudText>
+                                </div>
+                                <MudChip T="string" Color="Color.Warning" Size="Size.Small">
+                                    @((_rates.DeductionRate * 100).ToString("0.0"))%
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                    </MudList>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Example Calculation</MudText>
+                    <MudPaper Class="pa-3" Outlined="true">
+                        <MudText Typo="Typo.body2" Class="mb-2">
+                            For <strong>@_exampleHours hours</strong> at <strong>@_rates.DefaultHourlyRate.ToString("C")/hr</strong>:
+                        </MudText>
+                        <MudGrid Spacing="1">
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Gross Pay:</MudText>
+                            </MudItem>
+                            <MudItem xs="6" Class="text-right">
+                                <MudText Typo="Typo.body2">@_exampleGross.ToString("C")</MudText>
+                            </MudItem>
+
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Error">- Taxes:</MudText>
+                            </MudItem>
+                            <MudItem xs="6" Class="text-right">
+                                <MudText Typo="Typo.body2" Color="Color.Error">@_exampleTaxes.ToString("C")</MudText>
+                            </MudItem>
+
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Warning">- Deductions:</MudText>
+                            </MudItem>
+                            <MudItem xs="6" Class="text-right">
+                                <MudText Typo="Typo.body2" Color="Color.Warning">@_exampleDeductions.ToString("C")</MudText>
+                            </MudItem>
+
+                            <MudItem xs="12"><MudDivider /></MudItem>
+
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body1" Style="font-weight: 500">Net Pay:</MudText>
+                            </MudItem>
+                            <MudItem xs="6" Class="text-right">
+                                <MudText Typo="Typo.body1" Color="Color.Success" Style="font-weight: 500">
+                                    @_exampleNet.ToString("C")
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <!-- Deduction Breakdown -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Small" Class="mr-2" />
+                    Deduction Categories
+                </MudText>
+
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Error" Class="mr-3" />
+                            <div>
+                                <MudText Typo="Typo.body1">Federal Income Tax</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Included in tax withholding rate
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+
+                    <MudListItem T="string">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationCity" Color="Color.Error" Class="mr-3" />
+                            <div>
+                                <MudText Typo="Typo.body1">State & Local Tax</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Included in tax withholding rate
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+
+                    <MudListItem T="string">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Warning" Class="mr-3" />
+                            <div>
+                                <MudText Typo="Typo.body1">Health Insurance</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Included in other deductions
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudListItem>
+                    <MudDivider />
+
+                    <MudListItem T="string">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Savings" Color="Color.Warning" Class="mr-3" />
+                            <div>
+                                <MudText Typo="Typo.body1">Retirement Contributions</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    401(k), IRA, etc. - Included in other deductions
+                                </MudText>
+                            </div>
+                        </div>
+                    </MudListItem>
+                </MudList>
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4" Dense="true">
+                    <MudText Typo="Typo.body2">
+                        This page currently uses simplified flat-rate deductions. 
+                        Future enhancements will support individual deduction items, tax brackets, and per-employee benefit elections.
+                    </MudText>
+                </MudAlert>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Recent Pay Runs Impact -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Small" Class="mr-2" />
+                    Deduction Impact Summary
+                </MudText>
+
+                @if (_payRuns == null || !_payRuns.Any())
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        No pay runs available yet. Run payroll to see deduction impact.
+                    </MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th>Pay Run Date</th>
+                                <th style="text-align:right">Employees</th>
+                                <th style="text-align:right">Gross Pay</th>
+                                <th style="text-align:right">Total Taxes</th>
+                                <th style="text-align:right">Total Deductions</th>
+                                <th style="text-align:right">Net Pay</th>
+                                <th style="text-align:right">Take-Home %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var run in _payRuns.Take(5))
+                            {
+                                var takeHomePercent = run.TotalGrossPay > 0 
+                                    ? (run.TotalNetPay / run.TotalGrossPay) * 100 
+                                    : 0;
+
+                                <tr>
+                                    <td>@run.RunDateUtc.ToLocalTime().ToString("g")</td>
+                                    <td style="text-align:right">@run.EmployeeCount</td>
+                                    <td style="text-align:right">@run.TotalGrossPay.ToString("C")</td>
+                                    <td style="text-align:right; color: #ef5350">@run.TotalTaxes.ToString("C")</td>
+                                    <td style="text-align:right; color: #ff9800">@run.TotalDeductions.ToString("C")</td>
+                                    <td style="text-align:right; color: #66bb6a; font-weight: 500">@run.TotalNetPay.ToString("C")</td>
+                                    <td style="text-align:right">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success">
+                                            @takeHomePercent.ToString("0.0")%
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
+
+@code {
+    private PayrollRatesDto? _rates;
+    private List<PayRunDto> _payRuns = new();
+
+    // Example calculation values
+    private const decimal _exampleHours = 40m;
+    private decimal _exampleGross => _rates != null ? _exampleHours * _rates.DefaultHourlyRate : 0;
+    private decimal _exampleTaxes => _rates != null ? Math.Round(_exampleGross * _rates.TaxRate, 2) : 0;
+    private decimal _exampleDeductions => _rates != null ? Math.Round(_exampleGross * _rates.DeductionRate, 2) : 0;
+    private decimal _exampleNet => _exampleGross - _exampleTaxes - _exampleDeductions;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("FinanceApi");
+
+            _rates = await http.GetFromJsonAsync<PayrollRatesDto>("api/finance/payroll/config/rates");
+            _payRuns = await http.GetFromJsonAsync<List<PayRunDto>>("api/finance/payroll/pay-runs") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load deduction data: {ex.Message}", Severity.Error);
+        }
+    }
+}

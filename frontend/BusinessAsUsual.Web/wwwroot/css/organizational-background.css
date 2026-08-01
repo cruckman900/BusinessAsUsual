@@ -397,6 +397,9 @@
     height: auto;
     opacity: 0.7;
     animation: org-fade-in 1s ease-out forwards;
+    /* Add blur effect */
+    filter: blur(3px);
+    -webkit-filter: blur(3px);
 }
 
 @keyframes org-fade-in {

@@ -137,55 +137,64 @@
                 <MudIcon Icon="@Icons.Material.Filled.Approval" Class="mr-2" />
                 Pending Approval Queue
             </MudText>
-            <MudTable Items="@pendingApprovals" Hover="true" Dense="true">
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Type</MudTh>
-                    <MudTh>Dates</MudTh>
-                    <MudTh>Days</MudTh>
-                    <MudTh>Requested</MudTh>
-                    <MudTh>Manager</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.EmployeeName</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Type">
-                        <MudChip T="string" Size="Size.Small" Color="@GetTimeOffTypeColor(context.Type)">@context.Type</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Dates">
-                        @context.StartDate.ToString("MMM dd") - @context.EndDate.ToString("MMM dd")
-                    </MudTd>
-                    <MudTd DataLabel="Days"><strong>@context.Days</strong></MudTd>
-                    <MudTd DataLabel="Requested">@context.RequestedDate.ToString("MMM dd")</MudTd>
-                    <MudTd DataLabel="Manager">@context.Manager</MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="Approve request">
-                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
-                            </MudTooltip>
-                            <MudTooltip Text="Deny request">
-                                <MudIconButton Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Color="Color.Error" />
-                            </MudTooltip>
-                            <MudTooltip Text="View details">
-                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            <CustomDataGrid TItem="PendingApproval"
+                            Items="@pendingApprovals"
+                            Hover="true"
+                            Dense="true"
+                            ShowToolbar="false"
+                            ShowSearch="false">
+                <ChildContent>
+                    <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="PendingApproval">
+                        <CellTemplate>
+                            <div class="d-flex align-center">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                <strong>@context.Item.EmployeeName</strong>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Type" Title="Type" T="PendingApproval" TProperty="string">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@GetTimeOffTypeColor(context.Item.Type)">@context.Item.Type</MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Title="Dates" Sortable="false" Filterable="false" T="PendingApproval">
+                        <CellTemplate>
+                            @context.Item.StartDate.ToString("MMM dd") - @context.Item.EndDate.ToString("MMM dd")
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Days" Title="Days" T="PendingApproval" TProperty="int">
+                        <CellTemplate>
+                            <strong>@context.Item.Days</strong>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.RequestedDate" Title="Requested" Format="MMM dd" T="PendingApproval" TProperty="DateTime" />
+                    <PropertyColumn Property="x => x.Manager" Title="Manager" T="PendingApproval" TProperty="string" />
+                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="PendingApproval">
+                        <CellTemplate>
+                            <div style="text-align: right;">
+                                <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                    <MudTooltip Text="Approve request">
+                                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Success" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Deny request">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Color="Color.Error" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="View details">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                                    </MudTooltip>
+                                </MudButtonGroup>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </ChildContent>
+            </CustomDataGrid>
         </MudPaper>
 
         <!-- PTO Balances Table -->
         <MudPaper Elevation="2">
-            <MudTable Items="@ptoBalances" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">PTO Balances</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all employees">
                             <MudButton Color="@(filterBalance == null ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = null)">All</MudButton>
@@ -200,57 +209,81 @@
                             <MudButton Color="@(filterBalance == "Negative" ? Color.Primary : Color.Default)" OnClick="@(() => filterBalance = "Negative")">Negative</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>PTO Accrued</MudTh>
-                    <MudTh>PTO Used</MudTh>
-                    <MudTh>Balance</MudTh>
-                    <MudTh>Accrual Rate</MudTh>
-                    <MudTh>Rollover</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.EmployeeName</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="PTO Accrued">@context.Accrued days</MudTd>
-                    <MudTd DataLabel="PTO Used">@context.Used days</MudTd>
-                    <MudTd DataLabel="Balance">
-                        <MudChip T="string" Size="Size.Small" Color="@GetBalanceColor(context.Balance)">
-                            <strong>@context.Balance days</strong>
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Accrual Rate">@context.AccrualRate days/mo</MudTd>
-                    <MudTd DataLabel="Rollover">
-                        @if (context.RolloverDays > 0)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.RolloverDays days</MudChip>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View time off history">
-                                <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Adjust balance">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="PtoBalance"
+                                Items="@ptoBalances"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="PtoBalance">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                    <strong>@context.Item.EmployeeName</strong>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Department" Title="Department" T="PtoBalance" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Accrued" Title="PTO Accrued" T="PtoBalance" TProperty="decimal">
+                            <CellTemplate>
+                                @context.Item.Accrued days
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Used" Title="PTO Used" T="PtoBalance" TProperty="decimal">
+                            <CellTemplate>
+                                @context.Item.Used days
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Balance" Title="Balance" T="PtoBalance" TProperty="decimal">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetBalanceColor(context.Item.Balance)">
+                                    <strong>@context.Item.Balance days</strong>
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.AccrualRate" Title="Accrual Rate" T="PtoBalance" TProperty="decimal">
+                            <CellTemplate>
+                                @context.Item.AccrualRate days/mo
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.RolloverDays" Title="Rollover" T="PtoBalance" TProperty="int">
+                            <CellTemplate>
+                                @if (context.Item.RolloverDays > 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">@context.Item.RolloverDays days</MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">—</MudText>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="PtoBalance">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View time off history">
+                                            <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Adjust balance">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

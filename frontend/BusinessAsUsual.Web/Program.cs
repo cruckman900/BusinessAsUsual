@@ -35,7 +35,21 @@ namespace BusinessAsUsual.Web
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorPages();
-            builder.Services.AddServerSideBlazor();
+            builder.Services.AddServerSideBlazor(options =>
+            {
+                options.DetailedErrors = true; // Enable detailed error messages for debugging
+                options.DisconnectedCircuitMaxRetained = 100;
+                options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+                options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
+                options.MaxBufferedUnacknowledgedRenderBatches = 10;
+            })
+            .AddHubOptions(options =>
+            {
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+                options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.MaximumReceiveMessageSize = 128 * 1024; // 128KB
+            });
             builder.Services.AddMudServices();
 
             // Add ApexCharts for CRM reports
@@ -55,6 +69,9 @@ namespace BusinessAsUsual.Web
             // Register Scoped services
             builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
             builder.Services.AddScoped<PageHeaderService>();
+
+            // Register Authentication Service
+            builder.Services.AddScoped<AuthenticationService>();
 
             // DI Registration
             builder.Services.AddScoped<IHRService, HRService>();
@@ -92,6 +109,14 @@ namespace BusinessAsUsual.Web
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 
+            // Register named HttpClient for the Inventory microservice
+            var inventoryServiceUrl = builder.Configuration["InventoryService:Url"] ?? "http://localhost:5142";
+            builder.Services.AddHttpClient("InventoryApi", client =>
+            {
+                client.BaseAddress = new Uri(inventoryServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
             // Register Master Navigation Orchestrator
             builder.Services.AddScoped<ModuleRouteInterceptor>();
 
@@ -100,6 +125,9 @@ namespace BusinessAsUsual.Web
 
             // Register CRM Module services (for embedded CRM.Web components)
             RegisterCRMModuleServices(builder.Services, builder.Configuration);
+
+            // Register CRM Lead Scoring Service
+            builder.Services.AddScoped<CRM.Application.Services.ILeadScoringService, CRM.Application.Services.LeadScoringService>();
 
             // Register Finance Module services (for embedded Finance.Web components)
             RegisterFinanceModuleServices(builder.Services, builder.Configuration);

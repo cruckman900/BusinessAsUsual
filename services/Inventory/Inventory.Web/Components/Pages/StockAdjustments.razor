@@ -1,0 +1,275 @@
+@page "/inventory/stock/adjustments"
+@using System.Net.Http.Json
+@using MudBlazor
+@using Inventory.Web.Components.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Stock Adjustments</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory">Inventory</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/inventory/stock">Stock Management</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Stock Adjustments</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" />
+                Stock Adjustments
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Record inventory count adjustments and corrections
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAdjustmentDialog">
+            New Adjustment
+        </MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else
+    {
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <CustomDataGrid TItem="InventoryTransactionDto"
+                                Items="@FilteredAdjustments"
+                                Loading="@_loading"
+                                SearchPlaceholder="Search by product name or SKU..."
+                                RowsPerPage="25"
+                                Striped="true"
+                                Filterable="true">
+                    <ToolbarContent>
+                        <MudSelect @bind-Value="_warehouseFilter" Label="Warehouse" Variant="Variant.Outlined" Margin="Margin.Dense" T="Guid?" Clearable="true" Style="min-width: 200px;" Class="mr-2">
+                            @foreach (var warehouse in _warehouses)
+                            {
+                                <MudSelectItem Value="@((Guid?)warehouse.Id)">@warehouse.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect @bind-Value="_typeFilter" Label="Adjustment Type" Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Clearable="true" Style="min-width: 200px;">
+                            <MudSelectItem Value="@("increase")">Increase</MudSelectItem>
+                            <MudSelectItem Value="@("decrease")">Decrease</MudSelectItem>
+                        </MudSelect>
+                    </ToolbarContent>
+                    <ChildContent>
+                        <PropertyColumn Property="x => x.TransactionDate" Title="Date" T="InventoryTransactionDto" TProperty="DateTime">
+                            <CellTemplate>
+                                <MudText Typo="Typo.caption">@context.Item.TransactionDate.ToString("MMM dd, yyyy")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.TransactionDate.ToString("hh:mm tt")</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ProductName" Title="Product" T="InventoryTransactionDto" TProperty="string">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2"><strong>@context.Item.ProductName</strong></MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ProductSKU" Title="SKU" T="InventoryTransactionDto" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small">@context.Item.ProductSKU</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.WarehouseName" Title="Warehouse" T="InventoryTransactionDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.Quantity" Title="Quantity Change" T="InventoryTransactionDto" TProperty="int">
+                            <CellTemplate>
+                                @if (context.Item.Quantity > 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success">+@context.Item.Quantity</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error">@context.Item.Quantity</MudChip>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.RunningBalance" Title="Running Balance" T="InventoryTransactionDto" TProperty="int">
+                            <CellTemplate>
+                                <strong>@context.Item.RunningBalance</strong>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.UnitCost" Title="Unit Cost" Format="C2" T="InventoryTransactionDto" TProperty="decimal" />
+                        <PropertyColumn Property="x => x.TotalCost" Title="Total Impact" Format="C2" T="InventoryTransactionDto" TProperty="decimal">
+                            <CellTemplate>
+                                <strong>@context.Item.TotalCost.ToString("C")</strong>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.CreatedBy" Title="Created By" T="InventoryTransactionDto" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Person">@context.Item.CreatedBy</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Notes" Title="Notes" T="InventoryTransactionDto" TProperty="string">
+                            <CellTemplate>
+                                @if (!string.IsNullOrEmpty(context.Item.Notes))
+                                {
+                                    <MudTooltip Text="@context.Item.Notes">
+                                        <MudIcon Icon="@Icons.Material.Filled.Notes" Size="Size.Small" Color="Color.Info" />
+                                    </MudTooltip>
+                                }
+                            </CellTemplate>
+                        </PropertyColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+
+                @if (!FilteredAdjustments.Any())
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4">No stock adjustments found.</MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
+
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+                Adjustment Summary
+            </MudText>
+            <MudGrid>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Adjustments</MudText>
+                    <MudText Typo="Typo.h6">@_adjustments.Count</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Units Added</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Success">@_adjustments.Where(a => a.Quantity > 0).Sum(a => a.Quantity)</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Units Removed</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Error">@_adjustments.Where(a => a.Quantity < 0).Sum(a => Math.Abs(a.Quantity))</MudText>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Net Impact</MudText>
+                    <MudText Typo="Typo.h6">@_adjustments.Sum(a => a.Quantity)</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private List<InventoryTransactionDto> _adjustments = new();
+    private List<WarehouseDto> _warehouses = new();
+    private List<ProductOption> _products = new();
+    private Guid? _warehouseFilter = null;
+    private string? _typeFilter = null;
+    private string? _errorMessage;
+
+    private IEnumerable<InventoryTransactionDto> FilteredAdjustments
+    {
+        get
+        {
+            var items = _adjustments.AsEnumerable();
+
+            if (_warehouseFilter.HasValue)
+            {
+                items = items.Where(a => a.WarehouseId == _warehouseFilter.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_typeFilter))
+            {
+                items = _typeFilter switch
+                {
+                    "increase" => items.Where(a => a.Quantity > 0),
+                    "decrease" => items.Where(a => a.Quantity < 0),
+                    _ => items
+                };
+            }
+
+            return items.OrderByDescending(a => a.TransactionDate);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("InventoryApi");
+            var transactions = await client.GetFromJsonAsync<List<InventoryTransactionDto>>("api/inventory/stock/transactions") ?? new();
+            _adjustments = transactions.Where(t => t.TransactionType == "StockAdjustment").ToList();
+            _warehouses = await client.GetFromJsonAsync<List<WarehouseDto>>("api/inventory/warehouses") ?? new();
+            var products = await client.GetFromJsonAsync<List<ProductDto>>("api/inventory/products") ?? new();
+            _products = products.Select(p => new ProductOption { Id = p.Id, Name = p.Name, SKU = p.SKU }).ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading adjustments: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenAdjustmentDialog()
+    {
+        var warehouseOptions = _warehouses.Select(w => new StockAdjustmentDialog.WarehouseOption { Id = w.Id, Name = w.Name }).ToList();
+        var parameters = new DialogParameters 
+        { 
+            { "Products", _products }, 
+            { "Warehouses", warehouseOptions } 
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<StockAdjustmentDialog>("Create Stock Adjustment", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled) await LoadData();
+    }
+
+    public class InventoryTransactionDto
+    {
+        public Guid Id { get; set; }
+        public Guid ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductSKU { get; set; } = string.Empty;
+        public Guid WarehouseId { get; set; }
+        public string WarehouseName { get; set; } = string.Empty;
+        public string TransactionType { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitCost { get; set; }
+        public decimal TotalCost { get; set; }
+        public int RunningBalance { get; set; }
+        public string? ReferenceNumber { get; set; }
+        public string? Notes { get; set; }
+        public DateTime TransactionDate { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+    }
+
+    public class WarehouseDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class ProductDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty;
+    }
+
+    public class ProductOption
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty;
+    }
+}

@@ -1,5 +1,131 @@
-﻿<MudIconButton Icon="@Icons.Material.Filled.AccountCircle" />
+@using BusinessAsUsual.Web.Services
+@implements IDisposable
+@inject AuthenticationService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<div style="position: relative; display: inline-block;">
+    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" 
+                   Color="Color.Inherit"
+                   Size="Size.Large"
+                   OnClick="@(() => _menuOpen = !_menuOpen)"
+                   Title="User Menu" />
+
+    @if (_menuOpen)
+    {
+        <MudPaper Class="user-menu-dropdown" 
+                  Elevation="8" 
+                  Style="position: absolute; right: 0; top: 48px; min-width: 280px; z-index: 9999;">
+            @if (AuthService?.CurrentUser != null)
+            {
+                <div style="padding: 16px; border-bottom: 1px solid var(--mud-palette-divider);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <MudAvatar Color="Color.Primary" Size="Size.Medium">
+                            @GetInitials()
+                        </MudAvatar>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">@AuthService.CurrentUser.FullName</div>
+                            <div style="font-size: 0.75rem; color: var(--mud-palette-text-secondary);">@AuthService.CurrentUser.Email</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 8px 0;">
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Person" 
+                               Color="Color.Default"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="@(() => { NavigationManager.NavigateTo("/profile"); _menuOpen = false; })">
+                        My Profile
+                    </MudButton>
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Settings"
+                               Color="Color.Default"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="@(() => { NavigationManager.NavigateTo("/profile"); _menuOpen = false; })">
+                        Settings
+                    </MudButton>
+                    <MudDivider Style="margin: 8px 0;" />
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Notifications"
+                               Color="Color.Default"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="@(() => { NavigationManager.NavigateTo("/notifications"); _menuOpen = false; })">
+                        Notifications (3)
+                    </MudButton>
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Help"
+                               Color="Color.Default"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="@(() => { NavigationManager.NavigateTo("/help"); _menuOpen = false; })">
+                        Help & Support
+                    </MudButton>
+                    <MudDivider Style="margin: 8px 0;" />
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Logout"
+                               Color="Color.Error"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="HandleLogout">
+                        Logout
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div style="padding: 8px;">
+                    <MudButton FullWidth="true" 
+                               StartIcon="@Icons.Material.Filled.Login"
+                               Color="Color.Primary"
+                               Style="justify-content: flex-start; padding: 12px 16px;"
+                               OnClick="@(() => { NavigationManager.NavigateTo("/login"); _menuOpen = false; })">
+                        Login
+                    </MudButton>
+                </div>
+            }
+        </MudPaper>
+    }
+</div>
+
+@if (_menuOpen)
+{
+    <div style="position: fixed; inset: 0; z-index: 9998;" @onclick="@(() => _menuOpen = false)"></div>
+}
 
 @code {
     [Parameter] public bool Compact { get; set; }
+    private bool _menuOpen = false;
+
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += OnAuthStateChanged;
+    }
+
+    private void OnAuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= OnAuthStateChanged;
+    }
+
+    private string GetInitials()
+    {
+        if (AuthService?.CurrentUser == null) return "?";
+
+        var parts = AuthService.CurrentUser.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "?";
+        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
+    private void HandleLogout()
+    {
+        _menuOpen = false;
+        AuthService.Logout();
+        Snackbar.Add("You have been logged out successfully", Severity.Info);
+        NavigationManager.NavigateTo("/");
+    }
 }

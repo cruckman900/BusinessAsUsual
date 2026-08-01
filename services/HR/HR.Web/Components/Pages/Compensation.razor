@@ -192,10 +192,9 @@
 
         <!-- Compensation Details Table -->
         <MudPaper Elevation="2">
-            <MudTable Items="@compensationData" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Employee Compensation</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all employees">
                             <MudButton Color="@(filterRange == null ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = null)">All</MudButton>
@@ -210,52 +209,68 @@
                             <MudButton Color="@(filterRange == "Above" ? Color.Primary : Color.Default)" OnClick="@(() => filterRange = "Above")">Above Market</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Position</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Current Salary</MudTh>
-                    <MudTh>Market Rate</MudTh>
-                    <MudTh>Variance</MudTh>
-                    <MudTh>Last Review</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
-                                @context.Initials
-                            </MudAvatar>
-                            <strong>@context.Name</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Position">@context.Position</MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Current Salary">
-                        <strong>$@context.CurrentSalary.ToString("N0")</strong>
-                    </MudTd>
-                    <MudTd DataLabel="Market Rate">$@context.MarketRate.ToString("N0")</MudTd>
-                    <MudTd DataLabel="Variance">
-                        <MudChip T="string" Size="Size.Small" Color="@GetVarianceColor(context.VariancePercent)">
-                            @(context.VariancePercent > 0 ? "+" : "")@context.VariancePercent%
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Last Review">@context.LastReview.ToString("MMM yyyy")</MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View compensation history">
-                                <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="Adjust salary">
-                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="CompensationRecord"
+                                Items="@compensationData"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="CompensationRecord">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                        @context.Item.Initials
+                                    </MudAvatar>
+                                    <strong>@context.Item.Name</strong>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Position" Title="Position" T="CompensationRecord" TProperty="string" />
+                        <PropertyColumn Property="x => x.Department" Title="Department" T="CompensationRecord" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.CurrentSalary" Title="Current Salary" T="CompensationRecord" TProperty="decimal">
+                            <CellTemplate>
+                                <strong>$@context.Item.CurrentSalary.ToString("N0")</strong>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.MarketRate" Title="Market Rate" T="CompensationRecord" TProperty="decimal">
+                            <CellTemplate>
+                                $@context.Item.MarketRate.ToString("N0")
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.VariancePercent" Title="Variance" T="CompensationRecord" TProperty="decimal">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetVarianceColor(context.Item.VariancePercent)">
+                                    @(context.Item.VariancePercent > 0 ? "+" : "")@context.Item.VariancePercent%
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.LastReview" Title="Last Review" Format="MMM yyyy" T="CompensationRecord" TProperty="DateTime" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="CompensationRecord">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View compensation history">
+                                            <MudIconButton Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Adjust salary">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

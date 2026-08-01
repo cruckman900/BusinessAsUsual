@@ -170,54 +170,62 @@
                 <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-2" />
                 Flight Risk Analysis
             </MudText>
-            <MudTable Items="@flightRiskEmployees" Hover="true" Dense="true" Striped="true">
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Tenure</MudTh>
-                    <MudTh>Risk Level</MudTh>
-                    <MudTh>Risk Factors</MudTh>
-                    <MudTh>Last Promotion</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.Name</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Tenure">@context.Tenure</MudTd>
-                    <MudTd DataLabel="Risk Level">
-                        <MudChip T="string" Size="Size.Small" Color="@GetRiskColor(context.RiskLevel)">@context.RiskLevel</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Risk Factors">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.RiskFactors</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Last Promotion">@context.LastPromotion</MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="Schedule stay interview">
-                                <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="View retention plan">
-                                <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+            <CustomDataGrid TItem="FlightRiskEmployee"
+                            Items="@flightRiskEmployees"
+                            Hover="true"
+                            Dense="true"
+                            Striped="true"
+                            ShowToolbar="false"
+                            ShowSearch="false">
+                <ChildContent>
+                    <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="FlightRiskEmployee">
+                        <CellTemplate>
+                            <div class="d-flex align-center">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                <strong>@context.Item.Name</strong>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Department" Title="Department" T="FlightRiskEmployee" TProperty="string">
+                        <CellTemplate>
+                            <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Tenure" Title="Tenure" T="FlightRiskEmployee" TProperty="string" />
+                    <PropertyColumn Property="x => x.RiskLevel" Title="Risk Level" T="FlightRiskEmployee" TProperty="string">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@GetRiskColor(context.Item.RiskLevel)">@context.Item.RiskLevel</MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.RiskFactors" Title="Risk Factors" T="FlightRiskEmployee" TProperty="string">
+                        <CellTemplate>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.RiskFactors</MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.LastPromotion" Title="Last Promotion" T="FlightRiskEmployee" TProperty="string" />
+                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="FlightRiskEmployee">
+                        <CellTemplate>
+                            <div style="text-align: right;">
+                                <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                    <MudTooltip Text="Schedule stay interview">
+                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Color="Color.Primary" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="View retention plan">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Description" Size="Size.Small" Color="Color.Secondary" />
+                                    </MudTooltip>
+                                </MudButtonGroup>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </ChildContent>
+            </CustomDataGrid>
         </MudPaper>
 
         <!-- Recent Departures -->
         <MudPaper Elevation="2">
-            <MudTable Items="@recentDepartures" Hover="true" Striped="true" Dense="false" FixedHeader="true" Height="500px">
-                <ToolBarContent>
+            <div class="pa-4">
+                <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Recent Departures</MudText>
-                    <MudSpacer />
                     <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
                         <MudTooltip Text="Show all departures">
                             <MudButton Color="@(filterDepartureType == null ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = null)">All</MudButton>
@@ -232,48 +240,60 @@
                             <MudButton Color="@(filterDepartureType == "Regrettable" ? Color.Primary : Color.Default)" OnClick="@(() => filterDepartureType = "Regrettable")">Regrettable</MudButton>
                         </MudTooltip>
                     </MudButtonGroup>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Employee</MudTh>
-                    <MudTh>Position</MudTh>
-                    <MudTh>Department</MudTh>
-                    <MudTh>Tenure</MudTh>
-                    <MudTh>Departure Type</MudTh>
-                    <MudTh>Exit Date</MudTh>
-                    <MudTh>Reason</MudTh>
-                    <MudTh Style="text-align: right;">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Employee">
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Default" Size="Size.Small" Class="mr-2">@context.Initials</MudAvatar>
-                            <strong>@context.Name</strong>
-                        </div>
-                    </MudTd>
-                    <MudTd DataLabel="Position">@context.Position</MudTd>
-                    <MudTd DataLabel="Department">
-                        <MudBadge Content="@context.Department" Color="Color.Secondary" />
-                    </MudTd>
-                    <MudTd DataLabel="Tenure">@context.Tenure</MudTd>
-                    <MudTd DataLabel="Departure Type">
-                        <MudChip T="string" Size="Size.Small" Color="@GetDepartureTypeColor(context.DepartureType)">@context.DepartureType</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Exit Date">@context.ExitDate.ToString("MMM dd, yyyy")</MudTd>
-                    <MudTd DataLabel="Reason">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Reason</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Actions" Style="text-align: right;">
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudTooltip Text="View exit interview">
-                                <MudIconButton Icon="@Icons.Material.Filled.Article" Size="Size.Small" Color="Color.Primary" />
-                            </MudTooltip>
-                            <MudTooltip Text="View employee file">
-                                <MudIconButton Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Secondary" />
-                            </MudTooltip>
-                        </MudButtonGroup>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
+                </div>
+                <CustomDataGrid TItem="Departure"
+                                Items="@recentDepartures"
+                                Hover="true"
+                                Striped="true"
+                                Dense="false"
+                                FixedHeader="true"
+                                Height="500px"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Employee" Sortable="false" Filterable="false" T="Departure">
+                            <CellTemplate>
+                                <div class="d-flex align-center">
+                                    <MudAvatar Color="Color.Default" Size="Size.Small" Class="mr-2">@context.Item.Initials</MudAvatar>
+                                    <strong>@context.Item.Name</strong>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Position" Title="Position" T="Departure" TProperty="string" />
+                        <PropertyColumn Property="x => x.Department" Title="Department" T="Departure" TProperty="string">
+                            <CellTemplate>
+                                <MudBadge Content="@context.Item.Department" Color="Color.Secondary" />
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Tenure" Title="Tenure" T="Departure" TProperty="string" />
+                        <PropertyColumn Property="x => x.DepartureType" Title="Departure Type" T="Departure" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetDepartureTypeColor(context.Item.DepartureType)">@context.Item.DepartureType</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ExitDate" Title="Exit Date" Format="MMM dd, yyyy" T="Departure" TProperty="DateTime" />
+                        <PropertyColumn Property="x => x.Reason" Title="Reason" T="Departure" TProperty="string">
+                            <CellTemplate>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Reason</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="Departure">
+                            <CellTemplate>
+                                <div style="text-align: right;">
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+                                        <MudTooltip Text="View exit interview">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Article" Size="Size.Small" Color="Color.Primary" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="View employee file">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Color="Color.Secondary" />
+                                        </MudTooltip>
+                                    </MudButtonGroup>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            </div>
         </MudPaper>
     }
 </MudContainer>

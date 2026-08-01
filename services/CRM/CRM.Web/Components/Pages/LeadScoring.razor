@@ -1,0 +1,299 @@
+@page "/crm/lead-scoring"
+@using CRM.Application.DTOs
+@using CRM.Application.Services
+@using CRM.Web.Components.Shared
+@inject ILeadScoringService LeadScoringService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Lead Scoring - CRM</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Lead Scoring</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                Lead Scoring
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Prioritize leads based on engagement and fit</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Settings"
+                   OnClick="@(() => _configDialogVisible = true)">
+            Scoring Config
+        </MudButton>
+    </div>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+        <!-- Hot Leads Tab -->
+        <MudTabPanel Text="Hot Leads" Icon="@Icons.Material.Filled.Whatshot" BadgeData="_hotLeads.Count" BadgeColor="Color.Error">
+            @if (_loadingHot)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else if (_hotLeads.Any())
+            {
+                <CustomDataGrid TItem="LeadDto"
+                                Items="@_hotLeads"
+                                Hover="true"
+                                Dense="true"
+                                Striped="true"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <TemplateColumn Title="Name" Sortable="false" Filterable="false" T="LeadDto">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Style="font-weight: bold">@context.Item.FullName</MudText>
+                                <MudText Typo="Typo.caption">@context.Item.JobTitle</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Company" Title="Company" T="LeadDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.Email" Title="Email" T="LeadDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.Status" Title="Status" T="LeadDto" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Item.Status</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.EstimatedValue" Title="Estimated Value" Format="C0" T="LeadDto" TProperty="decimal?" />
+                        <PropertyColumn Property="x => x.Source" Title="Source" T="LeadDto" TProperty="string" />
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="LeadDto">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               Href="@($"/crm/leads/{context.Item.Id}")" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </ChildContent>
+                </CustomDataGrid>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">No hot leads at this time.</MudAlert>
+            }
+        </MudTabPanel>
+
+        <!-- All Scores Tab -->
+        <MudTabPanel Text="All Lead Scores" Icon="@Icons.Material.Filled.List">
+            @if (_loadingScores)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else if (_allScores.Any())
+            {
+                <CustomDataGrid TItem="LeadScoreDto"
+                                Items="@_allScores"
+                                Hover="true"
+                                Dense="true"
+                                Striped="true"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <PropertyColumn Property="x => x.LeadId" Title="Lead ID" T="LeadScoreDto" TProperty="string" />
+                        <PropertyColumn Property="x => x.TotalScore" Title="Score" T="LeadScoreDto" TProperty="int">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Medium" Style="@GetScoreChipStyle(context.Item.TotalScore)">
+                                    @context.Item.TotalScore pts
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ScoreLevel" Title="Level" T="LeadScoreDto" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small" Color="@GetLevelColor(context.Item.ScoreLevel)">
+                                    @context.Item.ScoreLevel
+                                </MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Top Reasons" Sortable="false" Filterable="false" T="LeadScoreDto">
+                            <CellTemplate>
+                                <MudText Typo="Typo.caption">
+                                    @string.Join(", ", context.Item.ScoringReasons.Take(2))
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.LastCalculated" Title="Calculated" Format="MMM dd, HH:mm" T="LeadScoreDto" TProperty="DateTime" />
+                    </ChildContent>
+                </CustomDataGrid>
+            }
+        </MudTabPanel>
+
+        <!-- Scoring Rules Tab -->
+        <MudTabPanel Text="Scoring Rules" Icon="@Icons.Material.Filled.Rule">
+            @if (_config != null)
+            {
+                <MudPaper Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6" Class="mb-2">Thresholds</MudText>
+                    <MudGrid>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.body2">Hot Lead Threshold:</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Error">@_config.HotThreshold+ points</MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.body2">Warm Lead Threshold:</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Warning">@_config.WarmThreshold+ points</MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.body2">Score Decay:</MudText>
+                            <MudText Typo="Typo.h6">@_config.DecayPercentPerMonth% per month after @_config.ScoreDecayDays days</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <MudText Typo="Typo.h6" Class="mb-2">Active Scoring Rules</MudText>
+                <CustomDataGrid TItem="ScoringRule"
+                                Items="@_config.Rules.Where(r => r.IsActive)"
+                                Hover="true"
+                                Dense="true"
+                                Striped="true"
+                                ShowToolbar="false"
+                                ShowSearch="false">
+                    <ChildContent>
+                        <PropertyColumn Property="x => x.RuleName" Title="Rule Name" T="ScoringRule" TProperty="string" />
+                        <PropertyColumn Property="x => x.Category" Title="Category" T="ScoringRule" TProperty="string">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small">@context.Item.Category</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Points" Title="Points" T="ScoringRule" TProperty="int">
+                            <CellTemplate>
+                                <MudText Color="Color.Success">+@context.Item.Points</MudText>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Description" Title="Description" T="ScoringRule" TProperty="string" />
+                    </ChildContent>
+                </CustomDataGrid>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+<!-- Config Dialog -->
+<MudDialog @bind-Visible="_configDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true }">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mb-4">Scoring Configuration</MudText>
+        @if (_config != null)
+        {
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudNumericField @bind-Value="_config.HotThreshold" Label="Hot Lead Threshold" Min="1" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudNumericField @bind-Value="_config.WarmThreshold" Label="Warm Lead Threshold" Min="1" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudNumericField @bind-Value="_config.ScoreDecayDays" Label="Score Decay Starts After (Days)" Min="1" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudNumericField @bind-Value="_config.DecayPercentPerMonth" Label="Decay Percent Per Month" Min="1" Max="100" Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _configDialogVisible = false)">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveConfigAsync">Save Config</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool _loadingHot = true;
+    private bool _loadingScores = true;
+    private List<LeadDto> _hotLeads = new();
+    private List<LeadScoreDto> _allScores = new();
+    private LeadScoringConfigDto? _config;
+    private bool _configDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadHotLeadsAsync(), LoadAllScoresAsync(), LoadConfigAsync());
+    }
+
+    private async Task LoadHotLeadsAsync()
+    {
+        _loadingHot = true;
+        try
+        {
+            var result = await LeadScoringService.GetHotLeadsAsync();
+            _hotLeads = result?.ToList() ?? new List<LeadDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load hot leads: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingHot = false;
+        }
+    }
+
+    private async Task LoadAllScoresAsync()
+    {
+        _loadingScores = true;
+        try
+        {
+            var result = await LeadScoringService.CalculateAllLeadScoresAsync();
+            _allScores = result?.ToList() ?? new List<LeadScoreDto>();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load lead scores: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loadingScores = false;
+        }
+    }
+
+    private async Task LoadConfigAsync()
+    {
+        try
+        {
+            _config = await LeadScoringService.GetScoringConfigAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load config: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task SaveConfigAsync()
+    {
+        try
+        {
+            await LeadScoringService.UpdateScoringConfigAsync(_config);
+            Snackbar.Add("Configuration saved", Severity.Success);
+            _configDialogVisible = false;
+            await LoadAllScoresAsync(); // Recalculate with new config
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to save config: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private static Color GetLevelColor(string level) => level switch
+    {
+        "Hot" => Color.Error,
+        "Warm" => Color.Warning,
+        "Cold" => Color.Info,
+        _ => Color.Default
+    };
+
+    private static string GetScoreChipStyle(int score)
+    {
+        if (score >= 70)
+            return "background-color: #f44336; color: white;"; // Red
+        if (score >= 40)
+            return "background-color: #ff9800; color: white;"; // Orange
+        return "background-color: #2196f3; color: white;"; // Blue
+    }
+}
