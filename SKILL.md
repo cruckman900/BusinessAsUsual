@@ -2156,7 +2156,71 @@ docker stop {modulename}-api {modulename}-web
 docker rm {modulename}-api {modulename}-web
 ```
 
-#### 11.4 Update CI/CD Pipeline
+#### 11.4 Add Module to docker-compose.heavy.yml
+After creating the Dockerfiles, add your module services to the orchestration file `docker-compose.heavy.yml`:
+
+```yaml
+  {modulename}-api:
+    build:
+      context: .
+      dockerfile: services/{ModuleName}/{ModuleName}.API/Dockerfile
+    image: bau/{modulename}-api:latest
+    container_name: bau-{modulename}-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "50XX:80"  # Choose an available port number
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Module Registry URL for service discovery
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  {modulename}-web:
+    build:
+      context: .
+      dockerfile: services/{ModuleName}/{ModuleName}.Web/Dockerfile
+    image: bau/{modulename}-web:latest
+    container_name: bau-{modulename}-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "50YY:80"  # Choose an available port number
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Module Web calls Module API over the internal compose network
+      - {ModuleName}Api__Url=http://{modulename}-api:80
+    depends_on:
+      - {modulename}-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+```
+
+**Port Assignments (update header comment too):**
+- CRM: 5004 (API), 5005 (Web)
+- HR: 5041 (API), 5002 (Web)
+- Finance: 5006 (API), 5009 (Web)
+- Inventory: 5010 (API), 5011 (Web)
+- **Your module:** Choose the next available port numbers
+
+**Important:**
+- Add your module to the header comment section listing all services
+- Ensure port numbers don't conflict with existing services
+- Memory limits: 512M for API, 384M for Web (typical for module services)
+- Use the internal Docker network name for inter-service communication
+
+#### 11.5 Update CI/CD Pipeline
 If you have a CI/CD pipeline (GitHub Actions, Azure DevOps, etc.), add build steps for the new module's Docker images.
 
 **Important Notes:**

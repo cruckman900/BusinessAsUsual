@@ -6,6 +6,10 @@
 #   - CRM.Web   (host 5005 -> container 80)
 #   - HR.API    (host 5041 -> container 80)
 #   - HR.Web    (host 5002 -> container 80)
+#   - Finance.API   (host 5006 -> container 80)
+#   - Finance.Web   (host 5009 -> container 80)
+#   - Inventory.API (host 5010 -> container 80)
+#   - Inventory.Web (host 5011 -> container 80)
 #
 # NOTE ON SIZING: The user referenced a "T3 Mini". AWS has no t3.mini size; the
 # closest 2 GB option is t3.small. If you truly want the smallest/cheapest, use
@@ -153,6 +157,52 @@ services:
       - FinanceApi__Url=http://finance-api:80
     depends_on:
       - finance-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  inventory-api:
+    build:
+      context: .
+      dockerfile: services/Inventory/Inventory.API/Dockerfile
+    image: bau/inventory-api:latest
+    container_name: bau-inventory-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5010:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Inventory.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  inventory-web:
+    build:
+      context: .
+      dockerfile: services/Inventory/Inventory.Web/Dockerfile
+    image: bau/inventory-web:latest
+    container_name: bau-inventory-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5011:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Inventory.Web calls Inventory.API over the internal compose network
+      - InventoryApi__Url=http://inventory-api:80
+    depends_on:
+      - inventory-api
     deploy:
       resources:
         limits:
