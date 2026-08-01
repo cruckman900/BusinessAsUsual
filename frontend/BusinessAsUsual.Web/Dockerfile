@@ -22,6 +22,11 @@ COPY services/CRM/CRM.Web/CRM.Web.csproj services/CRM/CRM.Web/
 COPY services/Finance/Finance.Domain/Finance.Domain.csproj services/Finance/Finance.Domain/
 COPY services/Finance/Finance.Application/Finance.Application.csproj services/Finance/Finance.Application/
 COPY services/Finance/Finance.Web/Finance.Web.csproj services/Finance/Finance.Web/
+# Inventory service projects referenced by the web shell
+COPY services/Inventory/Inventory.Domain/Inventory.Domain.csproj services/Inventory/Inventory.Domain/
+COPY services/Inventory/Inventory.Application/Inventory.Application.csproj services/Inventory/Inventory.Application/
+COPY services/Inventory/Inventory.Infrastructure/Inventory.Infrastructure.csproj services/Inventory/Inventory.Infrastructure/
+COPY services/Inventory/Inventory.Web/Inventory.Web.csproj services/Inventory/Inventory.Web/
 # Shared core (event bus, integration events)
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
@@ -46,6 +51,11 @@ COPY services/CRM/CRM.Web services/CRM/CRM.Web
 COPY services/Finance/Finance.Domain services/Finance/Finance.Domain
 COPY services/Finance/Finance.Application services/Finance/Finance.Application
 COPY services/Finance/Finance.Web services/Finance/Finance.Web
+# Inventory service source
+COPY services/Inventory/Inventory.Domain services/Inventory/Inventory.Domain
+COPY services/Inventory/Inventory.Application services/Inventory/Inventory.Application
+COPY services/Inventory/Inventory.Infrastructure services/Inventory/Inventory.Infrastructure
+COPY services/Inventory/Inventory.Web services/Inventory/Inventory.Web
 # Shared core source
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
