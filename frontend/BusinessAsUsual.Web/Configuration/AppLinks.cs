@@ -24,8 +24,20 @@ public static class AppLinks
 
     /// <summary>App display metadata shared by the download pages.</summary>
     public const string AppName = "Business As Usual";
+
+    /// <summary>
+    /// Gets the current version of the application.
+    /// </summary>
     public const string AppVersion = "1.0.0";
+
+    /// <summary>
+    /// Gets the minimum Android OS version required.
+    /// </summary>
     public const string AndroidMinOs = "Android 8.0+";
+
+    /// <summary>
+    /// Gets the minimum iOS version required.
+    /// </summary>
     public const string IosMinOs = "iOS 15.0+";
 
     /// <summary>Whether an install URL is configured for the given platform.</summary>

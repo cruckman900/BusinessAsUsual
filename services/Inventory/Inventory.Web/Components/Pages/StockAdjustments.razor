@@ -231,7 +231,7 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
         var dialog = await DialogService.ShowAsync<StockAdjustmentDialog>("Create Stock Adjustment", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled) await LoadData();
+        if (result != null && !result.Canceled) await LoadData();
     }
 
     public class InventoryTransactionDto

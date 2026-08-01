@@ -248,22 +248,25 @@
         _ => status
     };
 
-    private async Task OpenCreateDialog()
+    private Task OpenCreateDialog()
     {
         Snackbar.Add("Purchase order creation dialog coming soon!", Severity.Info);
         // TODO: Implement full PO creation dialog
+        return Task.CompletedTask;
     }
 
-    private async Task ViewOrder(PurchaseOrderDto order)
+    private Task ViewOrder(PurchaseOrderDto order)
     {
         // TODO: Open order detail dialog or navigate to detail page
         Snackbar.Add($"Viewing PO {order.OrderNumber}", Severity.Info);
+        return Task.CompletedTask;
     }
 
-    private async Task OpenReceiveDialog(PurchaseOrderDto order)
+    private Task OpenReceiveDialog(PurchaseOrderDto order)
     {
         // TODO: Open receive dialog
         Snackbar.Add($"Receive dialog for PO {order.OrderNumber} coming soon!", Severity.Info);
+        return Task.CompletedTask;
     }
 
     private async Task UpdateStatus(Guid orderId, string newStatus)
@@ -294,7 +297,7 @@
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Purchase Order", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             try
             {

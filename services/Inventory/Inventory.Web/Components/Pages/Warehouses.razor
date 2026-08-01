@@ -83,12 +83,12 @@
                                                Size="Size.Small"
                                                Color="Color.Primary"
                                                OnClick="@(() => OpenEditDialog(context.Item))"
-                                               Title="Edit" />
+                                               title="Edit" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Size="Size.Small"
                                                Color="Color.Error"
                                                OnClick="@(() => DeleteWarehouse(context.Item))"
-                                               Title="Delete" />
+                                               title="Delete" />
                             </CellTemplate>
                         </TemplateColumn>
                     </ChildContent>
@@ -156,7 +156,7 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         var dialog = await DialogService.ShowAsync<WarehouseForm>("Create Warehouse", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled) await LoadWarehouses();
+        if (result != null && !result.Canceled) await LoadWarehouses();
     }
 
     private async Task OpenEditDialog(WarehouseDto warehouse)
@@ -166,7 +166,7 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         var dialog = await DialogService.ShowAsync<WarehouseForm>("Edit Warehouse", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled) await LoadWarehouses();
+        if (result != null && !result.Canceled) await LoadWarehouses();
     }
 
     private async Task DeleteWarehouse(WarehouseDto warehouse)
@@ -175,7 +175,7 @@
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Warehouse", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             try
             {

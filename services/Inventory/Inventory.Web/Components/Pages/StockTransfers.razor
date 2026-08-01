@@ -232,7 +232,7 @@
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         var dialog = await DialogService.ShowAsync<StockTransferDialog>("Create Stock Transfer", parameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled) await LoadData();
+        if (result != null && !result.Canceled) await LoadData();
     }
 
     public class InventoryTransactionDto

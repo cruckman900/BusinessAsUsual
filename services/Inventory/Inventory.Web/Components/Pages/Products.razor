@@ -136,12 +136,12 @@
                                                Size="Size.Small"
                                                Color="Color.Primary"
                                                OnClick="@(() => OpenEditDialog(context.Item))"
-                                               Title="Edit" />
+                                               title="Edit" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Size="Size.Small"
                                                Color="Color.Error"
                                                OnClick="@(() => DeleteProduct(context.Item))"
-                                               Title="Delete" />
+                                               title="Delete" />
                             </CellTemplate>
                         </TemplateColumn>
                     </ChildContent>
@@ -263,7 +263,7 @@
         var dialog = await DialogService.ShowAsync<ProductForm>("Create Product", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             await LoadProducts();
         }
@@ -305,7 +305,7 @@
         var dialog = await DialogService.ShowAsync<ProductForm>("Edit Product", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             await LoadProducts();
         }
@@ -324,7 +324,7 @@
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Product", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             try
             {
