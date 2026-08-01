@@ -2024,6 +2024,429 @@ dotnet ef migrations add InitialCreate --startup-project ../{ModuleName}.API
 
 ---
 
+### Phase 11: Docker Deployment Configuration
+
+After creating and testing your module locally, add Docker support for containerized deployment.
+
+#### 11.1 Create Dockerfile for API
+Create `services/{ModuleName}/{ModuleName}.API/Dockerfile`:
+
+```dockerfile
+# ============================
+# BUILD STAGE
+# ============================
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy csproj files (respecting the {ModuleName} dependency graph) for a cached restore
+COPY services/{ModuleName}/{ModuleName}.API/{ModuleName}.API.csproj services/{ModuleName}/{ModuleName}.API/
+COPY services/{ModuleName}/{ModuleName}.Application/{ModuleName}.Application.csproj services/{ModuleName}/{ModuleName}.Application/
+COPY services/{ModuleName}/{ModuleName}.Contracts/{ModuleName}.Contracts.csproj services/{ModuleName}/{ModuleName}.Contracts/
+COPY services/{ModuleName}/{ModuleName}.Domain/{ModuleName}.Domain.csproj services/{ModuleName}/{ModuleName}.Domain/
+COPY services/{ModuleName}/{ModuleName}.Infrastructure/{ModuleName}.Infrastructure.csproj services/{ModuleName}/{ModuleName}.Infrastructure/
+
+# Restore
+# Retry the isolated restore to survive transient NuGet connectivity on small
+# EC2 instances (a flaky network otherwise fails restore with exit code 82).
+RUN for i in 1 2 3; do \
+	  dotnet restore services/{ModuleName}/{ModuleName}.API/{ModuleName}.API.csproj && break; \
+	  if [ "$i" = "3" ]; then echo "restore failed after 3 attempts"; exit 1; fi; \
+	  echo "restore attempt $i failed; retrying in 10s..."; sleep 10; \
+	done
+
+# Copy source
+COPY services/{ModuleName}/{ModuleName}.API services/{ModuleName}/{ModuleName}.API
+COPY services/{ModuleName}/{ModuleName}.Application services/{ModuleName}/{ModuleName}.Application
+COPY services/{ModuleName}/{ModuleName}.Contracts services/{ModuleName}/{ModuleName}.Contracts
+COPY services/{ModuleName}/{ModuleName}.Domain services/{ModuleName}/{ModuleName}.Domain
+COPY services/{ModuleName}/{ModuleName}.Infrastructure services/{ModuleName}/{ModuleName}.Infrastructure
+
+# Publish
+RUN dotnet publish services/{ModuleName}/{ModuleName}.API/{ModuleName}.API.csproj -c Release -o /app/publish
+
+# ============================
+# RUNTIME STAGE
+# ============================
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+
+# curl is used by the container HEALTHCHECK below
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+	&& rm -rf /var/lib/apt/lists/*
+
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+	CMD curl -fsS http://localhost:80/health || exit 1
+
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "{ModuleName}.API.dll"]
+```
+
+**Key Features:**
+- **Multi-stage build** - Smaller final image (SDK vs Runtime)
+- **Retry logic** - Handles transient NuGet failures
+- **Health check** - Monitors container health
+- **Dependency order** - Copies projects in dependency graph order for efficient layer caching
+
+#### 11.2 Create Dockerfile for Web
+Create `services/{ModuleName}/{ModuleName}.Web/Dockerfile`:
+
+```dockerfile
+# ============================
+# BUILD STAGE
+# ============================
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy csproj files (respecting the {ModuleName} dependency graph) for a cached restore
+COPY services/{ModuleName}/{ModuleName}.Web/{ModuleName}.Web.csproj services/{ModuleName}/{ModuleName}.Web/
+COPY services/{ModuleName}/{ModuleName}.Application/{ModuleName}.Application.csproj services/{ModuleName}/{ModuleName}.Application/
+COPY services/{ModuleName}/{ModuleName}.Domain/{ModuleName}.Domain.csproj services/{ModuleName}/{ModuleName}.Domain/
+COPY services/{ModuleName}/{ModuleName}.Infrastructure/{ModuleName}.Infrastructure.csproj services/{ModuleName}/{ModuleName}.Infrastructure/
+
+# Restore
+RUN dotnet restore services/{ModuleName}/{ModuleName}.Web/{ModuleName}.Web.csproj
+
+# Copy source
+COPY services/{ModuleName}/{ModuleName}.Web services/{ModuleName}/{ModuleName}.Web
+COPY services/{ModuleName}/{ModuleName}.Application services/{ModuleName}/{ModuleName}.Application
+COPY services/{ModuleName}/{ModuleName}.Domain services/{ModuleName}/{ModuleName}.Domain
+COPY services/{ModuleName}/{ModuleName}.Infrastructure services/{ModuleName}/{ModuleName}.Infrastructure
+
+# Publish
+RUN dotnet publish services/{ModuleName}/{ModuleName}.Web/{ModuleName}.Web.csproj -c Release -o /app/publish
+
+# ============================
+# RUNTIME STAGE
+# ============================
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
+
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "{ModuleName}.Web.dll"]
+```
+
+#### 11.3 Test Docker Build Locally
+Before pushing, test the Docker builds locally:
+
+```bash
+# Build API image
+docker build -f services/{ModuleName}/{ModuleName}.API/Dockerfile -t {modulename}-api:latest .
+
+# Build Web image
+docker build -f services/{ModuleName}/{ModuleName}.Web/Dockerfile -t {modulename}-web:latest .
+
+# Run API container
+docker run -d -p 5007:80 --name {modulename}-api {modulename}-api:latest
+
+# Run Web container
+docker run -d -p 5008:80 --name {modulename}-web {modulename}-web:latest
+
+# Test the containers
+curl http://localhost:5007/health
+curl http://localhost:5008
+
+# Clean up
+docker stop {modulename}-api {modulename}-web
+docker rm {modulename}-api {modulename}-web
+```
+
+#### 11.4 Update CI/CD Pipeline
+If you have a CI/CD pipeline (GitHub Actions, Azure DevOps, etc.), add build steps for the new module's Docker images.
+
+**Important Notes:**
+- Dockerfiles must be run from the **solution root directory** (not from the module folder) because they reference relative paths
+- The COPY commands expect the full relative path from the solution root
+- Don't add Dockerfiles until the module is fully integrated and tested in the main shell
+
+---
+
+## Code Quality Standards
+
+### Documentation Requirements
+
+**CRITICAL:** All public properties, methods, and classes MUST have XML documentation comments.
+
+#### ✅ Good Examples:
+
+```csharp
+/// <summary>
+/// Represents a product in the inventory system.
+/// </summary>
+public class Product
+{
+	/// <summary>
+	/// Gets or sets the unique identifier for the product.
+	/// </summary>
+	public Guid Id { get; set; }
+
+	/// <summary>
+	/// Gets or sets the product name.
+	/// </summary>
+	public string Name { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Gets or sets the current stock quantity.
+	/// </summary>
+	public int QuantityOnHand { get; set; }
+}
+
+/// <summary>
+/// Service for managing product inventory operations.
+/// </summary>
+public class ProductService : IProductService
+{
+	/// <summary>
+	/// Retrieves all products from the inventory.
+	/// </summary>
+	/// <returns>A collection of all products.</returns>
+	public async Task<IEnumerable<ProductDto>> GetAllAsync()
+	{
+		// Implementation
+	}
+
+	/// <summary>
+	/// Creates a new product in the inventory.
+	/// </summary>
+	/// <param name="request">The product creation request containing product details.</param>
+	/// <returns>The newly created product.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
+	public async Task<ProductDto> CreateAsync(CreateProductRequest request)
+	{
+		// Implementation
+	}
+}
+```
+
+#### ❌ Bad Examples (Missing Documentation):
+
+```csharp
+// BAD - No documentation
+public class Product
+{
+	public Guid Id { get; set; }
+	public string Name { get; set; }
+}
+
+// BAD - No documentation on public methods
+public class ProductService
+{
+	public async Task<IEnumerable<ProductDto>> GetAllAsync()
+	{
+		// ...
+	}
+}
+```
+
+#### Enable Documentation Warnings
+
+Add to your `.csproj` files to enforce documentation:
+
+```xml
+<PropertyGroup>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<NoWarn>$(NoWarn);1591</NoWarn> <!-- Remove this to enforce doc comments -->
+</PropertyGroup>
+```
+
+To enforce documentation and fail builds on missing comments, remove the `NoWarn` suppression.
+
+---
+
+## Lessons Learned: Deployment Troubleshooting
+
+This section captures common issues encountered during deployment and their solutions.
+
+### MudBlazor Attribute Casing Issues
+
+**Problem:** Build warnings like `MUD0002: Illegal Attribute 'Title' on 'MudIconButton' using pattern 'LowerCase'`
+
+**Cause:** MudBlazor analyzer enforces lowercase attribute names for standard HTML attributes.
+
+**Solution:**
+- Change `Title="..."` to `title="..."` on `MudIconButton`
+- Change `PanelClass="..."` to `Class="..."` on `MudTabs`
+- Change `Dense="true"` - Remove this attribute entirely from `MudTimePicker` (not supported)
+
+**Example Fixes:**
+```razor
+<!-- BEFORE (Warning) -->
+<MudIconButton Icon="@Icons.Material.Filled.Edit" Title="Edit" />
+<MudTabs PanelClass="pa-4">...</MudTabs>
+
+<!-- AFTER (Fixed) -->
+<MudIconButton Icon="@Icons.Material.Filled.Edit" title="Edit" />
+<MudTabs Class="pa-4">...</MudTabs>
+```
+
+### Missing Component References
+
+**Problem:** Warning `RZ10012: Found markup element with unexpected name 'CustomDataGrid'. If this is intended to be a component, add a @using directive for its namespace.`
+
+**Cause:** Razor compiler can't find the component because the namespace isn't imported.
+
+**Solution:** Add `@using {ModuleName}.Web.Components.Shared` at the top of the .razor file.
+
+```razor
+@page "/hr/benefits"
+@using HR.Web.Components.Shared  <!-- Add this line -->
+@rendermode InteractiveServer
+
+<!-- Now CustomDataGrid can be used -->
+<CustomDataGrid TItem="BenefitDto" Items="@_benefits">
+	...
+</CustomDataGrid>
+```
+
+**Alternative:** Add to `_Imports.razor` to apply to all pages:
+```razor
+@using {ModuleName}.Web.Components.Shared
+```
+
+### Null Reference Warnings in Production Builds
+
+**Problem:** Warning `CS8604: Possible null reference argument for parameter` in Release builds but not Debug.
+
+**Cause:** Nullable reference types enabled, and the compiler detects potential null values being passed to non-nullable parameters.
+
+**Solution:** Add null checks before using nullable variables:
+
+```csharp
+// BEFORE (Warning)
+await Service.UpdateAsync(_config);
+
+// AFTER (Fixed)
+if (_config != null)
+{
+	await Service.UpdateAsync(_config);
+}
+```
+
+**Best Practice:** Always check nullable variables before use, or use null-coalescing operators:
+```csharp
+var name = customer?.Name ?? "Unknown";
+```
+
+### Async Method Without Await
+
+**Problem:** Warning `CS1998: This async method lacks 'await' operators and will run synchronously.`
+
+**Cause:** Method is marked `async` but doesn't contain any `await` calls.
+
+**Solution:** Either add async operations or use `Task.FromResult` for synchronous methods that need to return `Task<T>`:
+
+```csharp
+// BEFORE (Warning)
+private async Task<IEnumerable<EmployeeDto>> SearchEmployeesAsync(string searchText)
+{
+	return _employees.Where(e => e.Name.Contains(searchText));
+}
+
+// AFTER (Fixed Option 1 - Use Task.FromResult)
+private Task<IEnumerable<EmployeeDto>> SearchEmployeesAsync(string searchText)
+{
+	return Task.FromResult(_employees.Where(e => e.Name.Contains(searchText)));
+}
+
+// AFTER (Fixed Option 2 - Remove async if not needed)
+private IEnumerable<EmployeeDto> SearchEmployees(string searchText)
+{
+	return _employees.Where(e => e.Name.Contains(searchText));
+}
+```
+
+### Module Reference in Docker Build Context
+
+**Problem:** Error `CS0246: The type or namespace name 'Inventory' could not be found` during Docker build.
+
+**Cause:** Module project isn't included in the Docker build context or hasn't been pushed to the repository yet.
+
+**Solution (Temporary):** Comment out the module reference in `App.razor` and `.csproj` until the module is deployed:
+
+```razor
+<!-- App.razor -->
+@code {
+	private readonly Assembly[] _additionalAssemblies = new[]
+	{
+		typeof(HR.Web.Components.App).Assembly,
+		typeof(CRM.Web.Components.App).Assembly,
+		typeof(Finance.Web.Components.App).Assembly
+		// typeof(Inventory.Web.Components.App).Assembly  // TODO: Re-enable when deployed
+	};
+}
+```
+
+```xml
+<!-- BusinessAsUsual.Web.csproj -->
+<ItemGroup>
+	<ProjectReference Include="..\..\services\HR\HR.Web\HR.Web.csproj" />
+	<ProjectReference Include="..\..\services\CRM\CRM.Web\CRM.Web.csproj" />
+	<ProjectReference Include="..\..\services\Finance\Finance.Web\Finance.Web.csproj" />
+	<!-- <ProjectReference Include="..\..\services\Inventory\Inventory.Web\Inventory.Web.csproj" /> -->
+</ItemGroup>
+```
+
+**Permanent Solution:** Create Dockerfiles for the new module (see Phase 11) and include them in your deployment pipeline.
+
+### Generic Type Inference in MudBlazor Components
+
+**Problem:** Error `RZ10001: The type of component 'MudChip' cannot be inferred based on the values provided.`
+
+**Cause:** Some MudBlazor components require explicit type parameter `T`.
+
+**Solution:** Add `T="string"` (or appropriate type) to the component:
+
+```razor
+<!-- BEFORE (Error) -->
+<MudChip Size="Size.Small" Color="Color.Primary">New</MudChip>
+
+<!-- AFTER (Fixed) -->
+<MudChip T="string" Size="Size.Small" Color="Color.Primary">New</MudChip>
+```
+
+### Build vs. Runtime Environment Differences
+
+**Problem:** Code builds fine locally but fails in Docker/CI pipeline.
+
+**Common Causes:**
+1. **Case-sensitive file paths** - Linux containers are case-sensitive, Windows is not
+2. **Missing files** - .gitignore might exclude necessary files
+3. **Environment-specific configuration** - Missing environment variables or connection strings
+4. **Package restore issues** - Network timeouts in CI environment
+
+**Solutions:**
+1. Always use correct casing in file references: `"MyFile.cs"` not `"myfile.cs"`
+2. Check `.gitignore` and `.dockerignore` for excluded files
+3. Use `appsettings.Production.json` for deployment-specific settings
+4. Add retry logic to Docker restores (see Phase 11.1 Dockerfile example)
+
+### Testing Checklist Before Deployment
+
+Before pushing changes that will trigger a deployment pipeline:
+
+- [ ] All projects build successfully in **Release** configuration
+- [ ] No compiler warnings (treat warnings as errors in production)
+- [ ] All unit tests pass
+- [ ] Manual testing completed in integrated mode (via shell)
+- [ ] All public members have XML doc comments
+- [ ] No `TODO` or `HACK` comments in committed code
+- [ ] appsettings.Production.json configured (if needed)
+- [ ] Dockerfiles created and tested locally (Phase 11)
+- [ ] Module properly registered in shell references
+
+**Build Release Mode Locally:**
+```bash
+dotnet build -c Release
+dotnet test -c Release
+```
+
+---
+
 ## Next Steps After Creation
 
 1. Add authentication & authorization
