@@ -2509,6 +2509,100 @@ dotnet build -c Release
 dotnet test -c Release
 ```
 
+### AWS Deployment: Disk Space Management
+
+**Problem:** Docker build fails with `No space left on device` error during NuGet restore or file operations.
+
+**Cause:** The default 8GB EBS volume is too small for building multiple .NET 9 microservices simultaneously. Each module's Docker build can consume 1-2GB during the build process (NuGet packages, intermediate layers, build cache).
+
+**Example Error:**
+```
+error : No space left on device : '/root/.nuget/packages/...'
+System.IO.IOException: No space left on device
+```
+
+**Immediate Cleanup (Temporary Fix):**
+```sh
+# Connect to your EC2 instance
+# Check current disk usage
+df -h /
+
+# Stop all containers
+sudo docker compose -f docker-compose.heavy.yml down
+
+# Remove all unused Docker artifacts
+sudo docker system prune -af --volumes
+
+# Check space freed
+df -h /
+```
+
+This typically frees 2-4GB but is only a temporary solution.
+
+**Permanent Solution - Resize EBS Volume:**
+
+You MUST resize the EBS volume to at least 20-30GB for sustainable operation with 4+ modules.
+
+**Step 1: Resize in AWS Console**
+1. Navigate to **EC2 Console** → **Volumes**
+2. Select the volume attached to your heavy instance (currently 8 GiB)
+3. **Actions** → **Modify Volume**
+4. Change **Size** from `8` to `30` (30 GB recommended)
+5. Click **Modify** → **Yes** to confirm
+6. Wait 2-5 minutes for state to change to "optimizing"
+
+**Step 2: Extend the Filesystem (on the EC2 instance)**
+
+After AWS shows the volume as modified, SSH to your instance and run:
+
+```sh
+# Extend the partition to use new space
+sudo growpart /dev/nvme0n1 1
+
+# For XFS filesystem (Amazon Linux 2023 default)
+sudo xfs_growfs /
+
+# For ext4 filesystem (older AMIs)
+sudo resize2fs /dev/nvme0n1p1
+
+# Verify the new size is available
+df -h /
+```
+
+You should now see ~30GB total instead of 8GB.
+
+**Step 3: Rebuild Docker Containers**
+
+```sh
+# Navigate to repo (adjust path if different)
+cd /home/ec2-user/BusinessAsUsual
+
+# Pull latest code
+git pull
+
+# Rebuild and start all services
+sudo docker compose -f docker-compose.heavy.yml up -d --build
+```
+
+**Why 30GB?**
+- **8GB**: Too small - fills up during multi-service builds ❌
+- **20GB**: Minimum for 4 modules, tight headroom ⚠️
+- **30GB**: Recommended - room for logs, cache, future modules ✅
+- **Cost**: ~$3/month for 30GB gp3 volume (minimal increase from 8GB)
+
+**Important Notes:**
+- Docker builds all services in parallel by default, consuming disk space simultaneously
+- NuGet package cache (`/root/.nuget/packages/`) can grow to several GB
+- Docker layer cache improves rebuild speed but consumes disk space
+- Regular `docker system prune -af` cleanup is still recommended monthly
+
+**User Account Context:**
+- You may SSH as `ssm-user` (AWS Systems Manager) or `ec2-user`
+- Repository is typically located at `/home/ec2-user/BusinessAsUsual`
+- Docker commands require `sudo` privileges
+- To switch users: `sudo su - ec2-user`
+- To run commands as another user: Use full paths with sudo (e.g., `sudo docker compose -f /home/ec2-user/BusinessAsUsual/docker-compose.heavy.yml up -d`)
+
 ---
 
 ## Next Steps After Creation
