@@ -2220,6 +2220,45 @@ After creating the Dockerfiles, add your module services to the orchestration fi
 - Memory limits: 512M for API, 384M for Web (typical for module services)
 - Use the internal Docker network name for inter-service communication
 
+**Critical Configuration Alignment:**
+The environment variable name in docker-compose MUST match the configuration key in your Web project's Program.cs:
+
+```yaml
+# docker-compose.heavy.yml
+environment:
+  - {ModuleName}Api__Url=http://{modulename}-api:80
+  # Note: Double underscore (__) in environment variable = colon (:) in .NET configuration
+```
+
+```csharp
+// {ModuleName}.Web/Program.cs
+var apiUrl = builder.Configuration["{ModuleName}Api:Url"] ?? "http://localhost:50XX";
+builder.Services.AddHttpClient("{ModuleName}Api", client =>
+{
+    client.BaseAddress = new Uri(apiUrl);
+});
+```
+
+**Common Mistake:**
+```csharp
+// ❌ WRONG - Key mismatch
+var apiUrl = builder.Configuration["{ModuleName}Service:Url"] ?? "http://localhost:50XX";
+// Docker sets "{ModuleName}Api__Url" but code reads "{ModuleName}Service:Url"
+// Result: Cannot assign requested address (localhost:50XX) error in Docker
+```
+
+```csharp
+// ✅ CORRECT - Keys match
+var apiUrl = builder.Configuration["{ModuleName}Api:Url"] ?? "http://localhost:50XX";
+// Docker sets "{ModuleName}Api__Url" which maps to "{ModuleName}Api:Url" in config
+// Result: Web successfully calls http://{modulename}-api:80 over Docker network
+```
+
+**Pattern Examples:**
+- Finance: `FinanceApi:Url` ← `FinanceApi__Url`
+- CRM: `CrmApi:Url` ← `CrmApi__Url`
+- Inventory: `InventoryApi:Url` ← `InventoryApi__Url`
+
 #### 11.5 Update CI/CD Pipeline
 If you have a CI/CD pipeline (GitHub Actions, Azure DevOps, etc.), add build steps for the new module's Docker images.
 
