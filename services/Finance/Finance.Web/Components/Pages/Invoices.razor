@@ -61,7 +61,7 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Primary"
                                            Href="@($"/finance/invoices/edit/{context.Item.Id}")"
-                                           Title="Edit" />
+                                           title="Edit" />
                             @if (context.Item.Status == "Draft")
                             {
                                 <MudButton Color="Color.Info" OnClick="@(() => SendAsync(context.Item.Id))">Send</MudButton>

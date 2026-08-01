@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Shared\" />
     <Folder Include="Modules\Accounting\Components\" />
     <Folder Include="Modules\Accounting\Pages\" />
     <Folder Include="Modules\Inventory\Components\" />
@@ -60,12 +59,7 @@
        drop the duplicate content that originates from the referenced web projects. -->
   <Target Name="RemoveDuplicateReferencedWebContent" AfterTargets="ComputeFilesToPublish">
     <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Finance.Web/')) )
-                   And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))
-                         Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Finance.Web/')) )&#xD;&#xA;                   And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))&#xD;&#xA;                         Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
     </ItemGroup>
   </Target>
 

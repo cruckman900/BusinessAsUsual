@@ -121,12 +121,12 @@
                             </PropertyColumn>
                             <TemplateColumn Title="Actions" Sortable="false" Filterable="false" T="BankTransactionDto">
                                 <CellTemplate>
-                                    @if (!context.Item.IsReconciled)
+                                     @if (!context.Item.IsReconciled)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
                                                        Color="Color.Success"
                                                        Size="Size.Small"
-                                                       Title="Reconcile"
+                                                       title="Reconcile"
                                                        OnClick="@(() => ReconcileTransaction(context.Item.Id))" />
                                     }
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"

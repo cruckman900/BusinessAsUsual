@@ -1,0 +1,98 @@
+@using static BusinessAsUsual.Web.Pages.Notifications
+
+<MudCard Elevation="1" Class="mb-3">
+    <MudCardContent>
+        <div class="d-flex justify-space-between align-center mb-2">
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@GetIcon()" Color="@GetColor()" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle1" Style="@(Notification.IsRead ? "" : "font-weight: bold;")">
+                    @Notification.Title
+                </MudText>
+                @if (Notification.Priority == NotificationPriority.High)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined">Important</MudChip>
+                }
+                @if (!Notification.IsRead)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">New</MudChip>
+                }
+            </div>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                @GetTimeAgo(Notification.Timestamp)
+            </MudText>
+        </div>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+            @Notification.Message
+        </MudText>
+        <div class="d-flex justify-end gap-2">
+            @if (!Notification.IsRead)
+            {
+                <MudButton Size="Size.Small" 
+                          Variant="Variant.Text" 
+                          Color="Color.Primary"
+                          OnClick="@(() => OnMarkRead.InvokeAsync(Notification.Id))">
+                    Mark as Read
+                </MudButton>
+            }
+            <MudButton Size="Size.Small" 
+                      Variant="Variant.Text" 
+                      Color="Color.Error"
+                      OnClick="@(() => OnDelete.InvokeAsync(Notification.Id))">
+                Delete
+            </MudButton>
+        </div>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public NotificationItem Notification { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<string> OnMarkRead { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnDelete { get; set; }
+
+    private string GetIcon()
+    {
+        return Notification.Type switch
+        {
+            NotificationType.Invoice => Icons.Material.Filled.Receipt,
+            NotificationType.Payment => Icons.Material.Filled.Payments,
+            NotificationType.HR => Icons.Material.Filled.People,
+            NotificationType.CRM => Icons.Material.Filled.Business,
+            NotificationType.System => Icons.Material.Filled.Settings,
+            _ => Icons.Material.Filled.Notifications
+        };
+    }
+
+    private Color GetColor()
+    {
+        return Notification.Type switch
+        {
+            NotificationType.Invoice => Color.Info,
+            NotificationType.Payment => Color.Success,
+            NotificationType.HR => Color.Warning,
+            NotificationType.CRM => Color.Primary,
+            NotificationType.System => Color.Secondary,
+            _ => Color.Default
+        };
+    }
+
+    private string GetTimeAgo(DateTime timestamp)
+    {
+        var timeSpan = DateTime.Now - timestamp;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hr ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} days ago";
+
+        return timestamp.ToString("MMM dd, yyyy");
+    }
+}

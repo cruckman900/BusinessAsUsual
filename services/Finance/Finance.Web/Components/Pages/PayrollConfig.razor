@@ -240,18 +240,18 @@
         }
     }
 
-    private async Task<IEnumerable<EmployeeLookupDto>> SearchEmployeesAsync(string searchText, CancellationToken cancellationToken)
+    private Task<IEnumerable<EmployeeLookupDto>> SearchEmployeesAsync(string searchText, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchText))
-            return _allEmployees.Take(10);
+            return Task.FromResult(_allEmployees.Take(10));
 
-        return _allEmployees
+        return Task.FromResult(_allEmployees
             .Where(e => 
                 e.Id.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                 e.FirstName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                 e.LastName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                 e.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-            .Take(10);
+            .Take(10));
     }
 
     private async Task SaveGlobalRatesAsync()

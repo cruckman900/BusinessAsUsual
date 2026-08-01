@@ -103,17 +103,17 @@
                         @if (context.Item.Status == JournalEntryStatus.Draft)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small"
-                                           OnClick="@(() => PostEntry(context.Item.Id))" Title="Post Entry" />
+                                           OnClick="@(() => PostEntry(context.Item.Id))" title="Post Entry" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                           OnClick="@(() => VoidEntry(context.Item.Id))" Title="Delete Draft" />
+                                           OnClick="@(() => VoidEntry(context.Item.Id))" title="Delete Draft" />
                         }
                         else if (context.Item.Status == JournalEntryStatus.Posted)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.Block" Color="Color.Warning" Size="Size.Small"
-                                           OnClick="@(() => VoidEntry(context.Item.Id))" Title="Void Entry" />
+                                           OnClick="@(() => VoidEntry(context.Item.Id))" title="Void Entry" />
                         }
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small"
-                                       OnClick="@(() => ViewEntry(context.Item))" Title="View Details" />
+                                       OnClick="@(() => ViewEntry(context.Item))" title="View Details" />
                     </CellTemplate>
                 </TemplateColumn>
             </ChildContent>

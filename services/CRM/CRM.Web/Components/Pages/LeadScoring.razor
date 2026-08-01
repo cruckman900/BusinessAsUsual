@@ -33,7 +33,7 @@
         </MudButton>
     </div>
 
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="pa-4">
         <!-- Hot Leads Tab -->
         <MudTabPanel Text="Hot Leads" Icon="@Icons.Material.Filled.Whatshot" BadgeData="_hotLeads.Count" BadgeColor="Color.Error">
             @if (_loadingHot)
@@ -269,10 +269,13 @@
     {
         try
         {
-            await LeadScoringService.UpdateScoringConfigAsync(_config);
-            Snackbar.Add("Configuration saved", Severity.Success);
-            _configDialogVisible = false;
-            await LoadAllScoresAsync(); // Recalculate with new config
+            if (_config != null)
+            {
+                await LeadScoringService.UpdateScoringConfigAsync(_config);
+                Snackbar.Add("Configuration saved", Severity.Success);
+                _configDialogVisible = false;
+                await LoadAllScoresAsync(); // Recalculate with new config
+            }
         }
         catch (Exception ex)
         {

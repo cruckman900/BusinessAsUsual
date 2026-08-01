@@ -35,7 +35,7 @@
         </MudButton>
     </div>
 
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="pa-4">
         <!-- Aging Report Tab -->
         <MudTabPanel Text="Aging Report" Icon="@Icons.Material.Filled.Assessment">
             @if (_loadingReport)
@@ -180,12 +180,12 @@
                                                Color="Color.Primary"
                                                Size="Size.Small"
                                                OnClick="@(() => OpenEditActivityDialog(context.Item))"
-                                               Title="Edit Activity" />
+                                               title="Edit Activity" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
                                                Size="Size.Small"
                                                OnClick="@(() => DeleteActivityAsync(context.Item.Id))"
-                                               Title="Delete Activity" />
+                                               title="Delete Activity" />
                             </CellTemplate>
                         </TemplateColumn>
                     </ChildContent>
