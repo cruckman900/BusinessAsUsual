@@ -1,0 +1,37 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    /// <summary>
+    /// The text content to display in the dialog.
+    /// </summary>
+    [Parameter] 
+    public string ContentText { get; set; } = "Are you sure?";
+
+    /// <summary>
+    /// The text to display on the confirm button.
+    /// </summary>
+    [Parameter] 
+    public string ButtonText { get; set; } = "Confirm";
+
+    /// <summary>
+    /// The color of the confirm button.
+    /// </summary>
+    [Parameter] 
+    public Color Color { get; set; } = Color.Primary;
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

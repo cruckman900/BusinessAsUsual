@@ -1,0 +1,430 @@
+@using System.Net.Http.Json
+@using MudBlazor
+@using Sales.Application.DTOs
+@using Sales.Domain.Enums
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                <MudTabPanel Text="Customer Info" Icon="@Icons.Material.Filled.Person">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.CustomerName"
+                                          Label="Customer Name"
+                                          Required="true"
+                                          RequiredError="Customer name is required"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.CustomerId"
+                                          Label="Customer ID"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          HelperText="Link to CRM customer" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.CustomerEmail"
+                                          Label="Email"
+                                          InputType="InputType.Email"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.CustomerPhone"
+                                          Label="Phone"
+                                          InputType="InputType.Telephone"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudDatePicker @bind-Date="_model.ExpiryDate"
+                                           Label="Expiry Date"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           MinDate="DateTime.Today"
+                                           HelperText="When this quote expires" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_model.Notes"
+                                          Label="Customer Notes"
+                                          Lines="3"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_model.Terms"
+                                          Label="Terms & Conditions"
+                                          Lines="3"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          HelperText="Payment terms, delivery conditions, etc." />
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Line Items" Icon="@Icons.Material.Filled.ShoppingCart">
+                    <MudButton StartIcon="@Icons.Material.Filled.Add"
+                               Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Size="Size.Small"
+                               OnClick="AddLineItem"
+                               Class="mb-3">
+                        Add Line Item
+                    </MudButton>
+
+                    @if (_model.LineItems.Any())
+                    {
+                        <MudTable Items="@_model.LineItems" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Product</MudTh>
+                                <MudTh>Description</MudTh>
+                                <MudTh>Qty</MudTh>
+                                <MudTh>Unit Price</MudTh>
+                                <MudTh>Discount %</MudTh>
+                                <MudTh>Tax %</MudTh>
+                                <MudTh>Total</MudTh>
+                                <MudTh></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Product">
+                                    <MudTextField @bind-Value="context.ProductName"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Dense="true" />
+                                </MudTd>
+                                <MudTd DataLabel="Description">
+                                    <MudTextField @bind-Value="context.Description"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Dense="true" />
+                                </MudTd>
+                                <MudTd DataLabel="Qty">
+                                    <MudNumericField @bind-Value="context.Quantity"
+                                                     Min="0.01m"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Dense="true"
+                                                     Style="width: 80px;" />
+                                </MudTd>
+                                <MudTd DataLabel="Price">
+                                    <MudNumericField @bind-Value="context.UnitPrice"
+                                                     Min="0m"
+                                                     Format="C2"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Dense="true"
+                                                     Style="width: 100px;" />
+                                </MudTd>
+                                <MudTd DataLabel="Discount">
+                                    <MudNumericField @bind-Value="context.DiscountPercentage"
+                                                     Min="0m"
+                                                     Max="100m"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Dense="true"
+                                                     Style="width: 70px;" />
+                                </MudTd>
+                                <MudTd DataLabel="Tax">
+                                    <MudNumericField @bind-Value="context.TaxPercentage"
+                                                     Min="0m"
+                                                     Max="100m"
+                                                     Variant="Variant.Outlined"
+                                                     Margin="Margin.Dense"
+                                                     Dense="true"
+                                                     Style="width: 70px;" />
+                                </MudTd>
+                                <MudTd DataLabel="Total">
+                                    @CalculateLineTotal(context).ToString("C")
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => RemoveLineItem(context))" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+
+                        <MudPaper Class="pa-3 mt-3">
+                            <MudGrid>
+                                <MudItem xs="12" Class="d-flex justify-end">
+                                    <div style="min-width: 250px;">
+                                        <div class="d-flex justify-space-between mb-2">
+                                            <MudText Typo="Typo.body2">Subtotal:</MudText>
+                                            <MudText Typo="Typo.body2">@CalculateSubtotal().ToString("C")</MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between mb-2">
+                                            <MudText Typo="Typo.body2">Discount:</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Error">-@CalculateDiscount().ToString("C")</MudText>
+                                        </div>
+                                        <div class="d-flex justify-space-between mb-2">
+                                            <MudText Typo="Typo.body2">Tax:</MudText>
+                                            <MudText Typo="Typo.body2">@CalculateTax().ToString("C")</MudText>
+                                        </div>
+                                        <MudDivider />
+                                        <div class="d-flex justify-space-between mt-2">
+                                            <MudText Typo="Typo.h6">Total:</MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Primary">@CalculateTotal().ToString("C")</MudText>
+                                        </div>
+                                    </div>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">No line items added yet. Click "Add Line Item" to start.</MudAlert>
+                    }
+                </MudTabPanel>
+            </MudTabs>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Submit"
+                   Disabled="@(!_isValid || _saving)">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            @(IsEdit ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    /// <summary>
+    /// The quote being edited, or null for a new quote.
+    /// </summary>
+    [Parameter] 
+    public QuoteDto? Quote { get; set; }
+
+    /// <summary>
+    /// Whether this is an edit operation.
+    /// </summary>
+    [Parameter] 
+    public bool IsEdit { get; set; } = false;
+
+    private MudForm _form = null!;
+    private bool _isValid = false;
+    private bool _saving = false;
+    private QuoteFormModel _model = new();
+
+    protected override void OnInitialized()
+    {
+        if (IsEdit && Quote != null)
+        {
+            _model = new QuoteFormModel
+            {
+                Id = Quote.Id,
+                CustomerId = Quote.CustomerId,
+                CustomerName = Quote.CustomerName,
+                CustomerEmail = Quote.CustomerEmail,
+                CustomerPhone = Quote.CustomerPhone,
+                ExpiryDate = Quote.ExpiryDate,
+                Notes = Quote.Notes,
+                Terms = Quote.Terms,
+                LineItems = Quote.LineItems.Select(li => new QuoteLineItemModel
+                {
+                    ProductId = li.ProductId,
+                    ProductName = li.ProductName,
+                    Description = li.Description,
+                    Quantity = li.Quantity,
+                    UnitPrice = li.UnitPrice,
+                    DiscountPercentage = li.DiscountPercentage,
+                    TaxPercentage = li.TaxPercentage
+                }).ToList()
+            };
+        }
+    }
+
+    private void AddLineItem()
+    {
+        _model.LineItems.Add(new QuoteLineItemModel
+        {
+            Quantity = 1,
+            UnitPrice = 0,
+            DiscountPercentage = 0,
+            TaxPercentage = 0
+        });
+    }
+
+    private void RemoveLineItem(QuoteLineItemModel item)
+    {
+        _model.LineItems.Remove(item);
+    }
+
+    private decimal CalculateLineTotal(QuoteLineItemModel item)
+    {
+        var subtotal = item.Quantity * item.UnitPrice;
+        var discount = subtotal * (item.DiscountPercentage / 100);
+        var taxable = subtotal - discount;
+        var tax = taxable * (item.TaxPercentage / 100);
+        return taxable + tax;
+    }
+
+    private decimal CalculateSubtotal()
+    {
+        return _model.LineItems.Sum(li => li.Quantity * li.UnitPrice);
+    }
+
+    private decimal CalculateDiscount()
+    {
+        return _model.LineItems.Sum(li =>
+        {
+            var subtotal = li.Quantity * li.UnitPrice;
+            return subtotal * (li.DiscountPercentage / 100);
+        });
+    }
+
+    private decimal CalculateTax()
+    {
+        return _model.LineItems.Sum(li =>
+        {
+            var subtotal = li.Quantity * li.UnitPrice;
+            var discount = subtotal * (li.DiscountPercentage / 100);
+            var taxable = subtotal - discount;
+            return taxable * (li.TaxPercentage / 100);
+        });
+    }
+
+    private decimal CalculateTotal()
+    {
+        return _model.LineItems.Sum(li => CalculateLineTotal(li));
+    }
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_isValid) return;
+
+        if (!_model.LineItems.Any())
+        {
+            Snackbar.Add("Please add at least one line item", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("SalesApi");
+
+            if (IsEdit)
+            {
+                var updateDto = new UpdateQuoteDto
+                {
+                    Id = _model.Id,
+                    CustomerId = _model.CustomerId,
+                    CustomerName = _model.CustomerName,
+                    CustomerEmail = _model.CustomerEmail,
+                    CustomerPhone = _model.CustomerPhone,
+                    ExpiryDate = _model.ExpiryDate,
+                    Notes = _model.Notes,
+                    Terms = _model.Terms,
+                    LineItems = _model.LineItems.Select((li, idx) => new CreateQuoteLineItemDto
+                    {
+                        ProductId = li.ProductId,
+                        ProductName = li.ProductName,
+                        Description = li.Description,
+                        Quantity = li.Quantity,
+                        UnitPrice = li.UnitPrice,
+                        DiscountPercentage = li.DiscountPercentage,
+                        TaxPercentage = li.TaxPercentage,
+                        SortOrder = idx
+                    }).ToList()
+                };
+
+                var response = await client.PutAsJsonAsync($"api/sales/quotes/{_model.Id}", updateDto);
+                response.EnsureSuccessStatusCode();
+
+                Snackbar.Add("Quote updated successfully", Severity.Success);
+            }
+            else
+            {
+                var createDto = new CreateQuoteDto
+                {
+                    CustomerId = _model.CustomerId,
+                    CustomerName = _model.CustomerName,
+                    CustomerEmail = _model.CustomerEmail,
+                    CustomerPhone = _model.CustomerPhone,
+                    ExpiryDate = _model.ExpiryDate,
+                    Notes = _model.Notes,
+                    Terms = _model.Terms,
+                    LineItems = _model.LineItems.Select((li, idx) => new CreateQuoteLineItemDto
+                    {
+                        ProductId = li.ProductId,
+                        ProductName = li.ProductName,
+                        Description = li.Description,
+                        Quantity = li.Quantity,
+                        UnitPrice = li.UnitPrice,
+                        DiscountPercentage = li.DiscountPercentage,
+                        TaxPercentage = li.TaxPercentage,
+                        SortOrder = idx
+                    }).ToList()
+                };
+
+                var response = await client.PostAsJsonAsync("api/sales/quotes", createDto);
+                response.EnsureSuccessStatusCode();
+
+                Snackbar.Add("Quote created successfully", Severity.Success);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving quote: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    /// <summary>
+    /// Form model for quote creation and editing.
+    /// </summary>
+    public class QuoteFormModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string? CustomerEmail { get; set; }
+        public string? CustomerPhone { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public string? Notes { get; set; }
+        public string? Terms { get; set; }
+        public List<QuoteLineItemModel> LineItems { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Form model for quote line items.
+    /// </summary>
+    public class QuoteLineItemModel
+    {
+        public string? ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public decimal Quantity { get; set; } = 1;
+        public decimal UnitPrice { get; set; }
+        public decimal DiscountPercentage { get; set; } = 0;
+        public decimal TaxPercentage { get; set; } = 0;
+    }
+}
