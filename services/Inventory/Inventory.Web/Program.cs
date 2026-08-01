@@ -44,7 +44,7 @@ builder.Services.AddScoped<IInventoryTransactionRepository, InventoryTransaction
 builder.Services.AddScoped<ProductService>();
 
 // Named HTTP client for the Inventory API
-var inventoryApiUrl = builder.Configuration["InventoryService:Url"] ?? "http://localhost:5142";
+var inventoryApiUrl = builder.Configuration["InventoryApi:Url"] ?? "http://localhost:5142";
 builder.Services.AddHttpClient("InventoryApi", client =>
 {
     client.BaseAddress = new Uri(inventoryApiUrl);
