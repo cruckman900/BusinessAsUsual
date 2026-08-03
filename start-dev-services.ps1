@@ -2,7 +2,7 @@
 Write-Host "Starting BusinessAsUsual local development services..." -ForegroundColor Cyan
 
 # Kill any existing processes on these ports
-$ports = @(5100, 5142, 5143, 5004, 5041, 5006, 5300)
+$ports = @(5100, 5142, 5143, 5004, 5041, 5007, 5300)
 foreach ($port in $ports) {
 	$process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
 	if ($process) {
@@ -36,7 +36,7 @@ Write-Host "Starting HR.API on port 5041..." -ForegroundColor Green
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'services/HR/HR.API'; dotnet run"
 
 # Start Finance API (if needed)
-Write-Host "Starting Finance.API on port 5006..." -ForegroundColor Green
+Write-Host "Starting Finance.API on port 5007..." -ForegroundColor Green
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'services/Finance/Finance.API'; dotnet run"
 
 # Start AI API (if needed)
