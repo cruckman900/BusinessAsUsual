@@ -10,6 +10,7 @@ COPY services/Inventory/Inventory.Application/Inventory.Application.csproj servi
 COPY services/Inventory/Inventory.Contracts/Inventory.Contracts.csproj services/Inventory/Inventory.Contracts/
 COPY services/Inventory/Inventory.Domain/Inventory.Domain.csproj services/Inventory/Inventory.Domain/
 COPY services/Inventory/Inventory.Infrastructure/Inventory.Infrastructure.csproj services/Inventory/Inventory.Infrastructure/
+COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
 # Retry the isolated restore to survive transient NuGet connectivity on small
@@ -26,6 +27,7 @@ COPY services/Inventory/Inventory.Application services/Inventory/Inventory.Appli
 COPY services/Inventory/Inventory.Contracts services/Inventory/Inventory.Contracts
 COPY services/Inventory/Inventory.Domain services/Inventory/Inventory.Domain
 COPY services/Inventory/Inventory.Infrastructure services/Inventory/Inventory.Infrastructure
+COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
 RUN dotnet publish services/Inventory/Inventory.API/Inventory.API.csproj -c Release -o /app/publish

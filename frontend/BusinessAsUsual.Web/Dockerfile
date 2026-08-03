@@ -27,6 +27,12 @@ COPY services/Inventory/Inventory.Domain/Inventory.Domain.csproj services/Invent
 COPY services/Inventory/Inventory.Application/Inventory.Application.csproj services/Inventory/Inventory.Application/
 COPY services/Inventory/Inventory.Infrastructure/Inventory.Infrastructure.csproj services/Inventory/Inventory.Infrastructure/
 COPY services/Inventory/Inventory.Web/Inventory.Web.csproj services/Inventory/Inventory.Web/
+# Sales service projects referenced by the web shell
+COPY services/Sales/Sales.Domain/Sales.Domain.csproj services/Sales/Sales.Domain/
+COPY services/Sales/Sales.Application/Sales.Application.csproj services/Sales/Sales.Application/
+COPY services/Sales/Sales.Infrastructure/Sales.Infrastructure.csproj services/Sales/Sales.Infrastructure/
+COPY services/Sales/Sales.Contracts/Sales.Contracts.csproj services/Sales/Sales.Contracts/
+COPY services/Sales/Sales.Web/Sales.Web.csproj services/Sales/Sales.Web/
 # Shared core (event bus, integration events)
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
@@ -56,6 +62,12 @@ COPY services/Inventory/Inventory.Domain services/Inventory/Inventory.Domain
 COPY services/Inventory/Inventory.Application services/Inventory/Inventory.Application
 COPY services/Inventory/Inventory.Infrastructure services/Inventory/Inventory.Infrastructure
 COPY services/Inventory/Inventory.Web services/Inventory/Inventory.Web
+# Sales service source
+COPY services/Sales/Sales.Domain services/Sales/Sales.Domain
+COPY services/Sales/Sales.Application services/Sales/Sales.Application
+COPY services/Sales/Sales.Infrastructure services/Sales/Sales.Infrastructure
+COPY services/Sales/Sales.Contracts services/Sales/Sales.Contracts
+COPY services/Sales/Sales.Web services/Sales/Sales.Web
 # Shared core source
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
