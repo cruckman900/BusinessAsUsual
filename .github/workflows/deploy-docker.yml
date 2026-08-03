@@ -72,36 +72,35 @@ jobs:
           ssh ec2-user@${{ secrets.EC2_HOST }} -i ~/.ssh/id_rsa << 'EOF'
             set -e
             cd /home/ec2-user/BusinessAsUsual
-            docker-compose -f docker-compose.prod.yml down --remove-orphans
-            # One-time (idempotent) teardown of the leftover microservices stack
-            # that was previously brought up MANUALLY on MAIN under the same
-            # "businessasusual" project. In the three-instance split those
-            # services (crm-api / hr-api / moduleregistry) belong on HEAVY/LIGHT,
-            # and their old gateway also bound 127.0.0.1:8088 — which would clash
-            # with the new prod gateway. Remove them if present.
-            docker compose \
-              -f docker-compose.microservices.yml \
-              -f docker-compose.microservices.prod.yml \
-              down --remove-orphans || true
-            # Defensive cleanup: the gateway container has been left behind by a
-            # prior stack under the same name, which makes `up` fail with
-            # "container name is already in use". Force-remove the known project
-            # container names so recreation always succeeds (ignore if absent).
+
+            # STEP 1: Defensive cleanup - force-remove known containers FIRST
+            # This handles containers that might have been created with different
+            # compose files or project names and wouldn't be caught by `down`
+            echo "=== Removing existing containers ==="
             docker rm -f \
               businessasusual-gateway-1 \
               businessasusual-backend-1 \
               businessasusual-web-1 \
               businessasusual-admin-1 || true
-            # Reclaim disk BEFORE building: the root volume fills up with dangling
-            # images/layers and stale build cache over time, which surfaces as
-            # `dotnet restore` exit code 82 ("no space left on device"). Prune
-            # everything not tied to a running container.
+
+            # STEP 2: Stop and remove all containers from the prod stack
+            echo "=== Stopping prod compose stack ==="
+            docker compose -f docker-compose.prod.yml down --remove-orphans || true
+
+            # STEP 3: One-time teardown of leftover microservices stack
+            echo "=== Cleaning up legacy microservices stack ==="
+            docker compose \
+              -f docker-compose.microservices.yml \
+              -f docker-compose.microservices.prod.yml \
+              down --remove-orphans || true
+
+            # STEP 4: Reclaim disk space
+            echo "=== Pruning Docker system ==="
             docker system prune -af
             docker builder prune -af
             df -h /
-            # Web shell / admin / backend / gateway only. CRM/HR APIs live on the
-            # HEAVY instance and ModuleRegistry/AI on the LIGHT instance (three-
-            # instance split); this workflow must NOT rebuild those here. The
-            # gateway routes to them cross-instance via the rendered gateway.conf.
-            docker-compose -f docker-compose.prod.yml up -d --build --remove-orphans
+
+            # STEP 5: Build and start the new stack
+            echo "=== Building and starting services ==="
+            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
           EOF
