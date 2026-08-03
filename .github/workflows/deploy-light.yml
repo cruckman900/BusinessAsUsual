@@ -3,8 +3,8 @@ name: Deploy Light Instance (ModuleRegistry + AI)
 # Deploys the lighter microservices (ModuleRegistry.API, AI.Api) to the t3.micro
 # EC2 instance using docker-compose.light.yml.
 #
-# Trigger: manual (workflow_dispatch) plus automatically on pushes to main that
-# touch the light services.
+# Trigger: automatically after CI succeeds on main (if light services changed),
+# plus manual dispatch for emergency deployments.
 #
 # Required repository secrets:
 #   LIGHT_EC2_HOST            public DNS/IP of the light instance
@@ -15,18 +15,42 @@ name: Deploy Light Instance (ModuleRegistry + AI)
 # Optional (fall back to sensible defaults if unset):
 #   AI_PAID_REGION, AI_PAID_MODEL
 on:
+  # Trigger automatically after CI succeeds on main
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  # Allow manual deployment for emergency fixes
   workflow_dispatch:
-  push:
-    branches: ["main"]
-    paths:
-      - "services/ModuleRegistry/**"
-      - "services/AI/**"
-      - "docker-compose.light.yml"
-      - ".github/workflows/deploy-light.yml"
 
 jobs:
+  # Check if light services changed (only for workflow_run trigger)
+  check-changes:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    outputs:
+      should_deploy: ${{ steps.filter.outputs.light }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            light:
+              - 'services/ModuleRegistry/**'
+              - 'services/AI/**'
+              - 'docker-compose.light.yml'
+              - '.github/workflows/deploy-light.yml'
+
   deploy:
     runs-on: ubuntu-latest
+    needs: [check-changes]
+    # Deploy if: (CI succeeded AND light files changed) OR manually triggered
+    if: |
+      (github.event.workflow_run.conclusion == 'success' && needs.check-changes.outputs.should_deploy == 'true') ||
+      github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
