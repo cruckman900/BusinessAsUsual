@@ -433,14 +433,15 @@ body {
     gap: 0.25rem;
     color: var(--mud-palette-appbar-text, #fff);
     opacity: 0.78;
-    padding: 0.35rem 0.6rem;
+    padding: 0.5rem 1rem;
     border-radius: 6px;
     border-bottom: 2px solid transparent;
-    padding-bottom: 3px;
     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     text-decoration: none;
     white-space: nowrap;
     font-size: 0.875rem;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
     .module-nav .mud-nav-link .mud-icon-root {
