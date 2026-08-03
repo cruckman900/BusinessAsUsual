@@ -19,6 +19,8 @@ on:
     paths:
       - "services/CRM/**"
       - "services/HR/**"
+      - "services/Finance/**"
+      - "services/Inventory/**"
       - "docker-compose.heavy.yml"
       - ".github/workflows/deploy-heavy.yml"
 
@@ -75,8 +77,8 @@ jobs:
             docker builder prune -af
             df -h /
             # Build one image at a time to keep peak memory low on the t3.small
-            # (2 GB). Building all four .NET images in parallel exhausts RAM.
-            for svc in crm-api crm-web hr-api hr-web finance-api finance-web; do
+            # (2 GB). Building all .NET images in parallel exhausts RAM.
+            for svc in crm-api crm-web hr-api hr-web finance-api finance-web inventory-api inventory-web; do
               docker compose -f docker-compose.heavy.yml build "$svc"
             done
             docker compose -f docker-compose.heavy.yml up -d
