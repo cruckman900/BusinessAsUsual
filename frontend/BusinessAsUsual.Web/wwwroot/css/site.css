@@ -435,6 +435,7 @@ body {
     opacity: 0.78;
     padding: 0.5rem 1rem;
     margin: 0 !important;
+    margin-inline: 0 !important;
     border-radius: 6px;
     border-bottom: 2px solid transparent;
     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
@@ -449,6 +450,15 @@ body {
 
     .module-nav .mud-nav-link .mud-icon-root {
         font-size: 1.125rem;
+    }
+
+    /* Override MudBlazor's default text spacing - remove margin and width */
+    .module-nav .mud-nav-link .mud-nav-link-text {
+        width: auto !important;
+        margin: 0 !important;
+        margin-left: 0 !important;
+        margin-inline-start: 0 !important;
+        margin-inline-end: 0 !important;
     }
 
     /* Hover */
