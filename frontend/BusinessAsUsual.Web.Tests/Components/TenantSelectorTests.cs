@@ -53,7 +53,7 @@ public class TenantSelectorTests : BunitContext, IAsyncLifetime
 
         // Assert
         var select = cut.FindComponent<MudSelect<string>>();
-        var value = select.GetState(x => x.Value);
+        var value = select.Instance.Value;
         value.Should().Be(currentTenant);
     }
 

@@ -1,12 +1,19 @@
 using BusinessAsUsual.Admin.Controllers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace BusinessAsUsual.Admin.Tests.Controllers;
 
 public class HomeControllerTests
 {
-    private HomeController NewController() => new();
+    private HomeController NewController()
+    {
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var logger = new Mock<ILogger<HomeController>>();
+        return new HomeController(httpClientFactory.Object, logger.Object);
+    }
 
     [Fact]
     public void Index_ReturnsViewResult()
