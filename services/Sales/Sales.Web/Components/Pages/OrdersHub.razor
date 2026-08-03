@@ -1,0 +1,182 @@
+@page "/sales/orders-hub"
+@using MudBlazor
+@inject NavigationManager Navigation
+
+<PageTitle>Orders Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/sales">Sales</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Orders</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Class="mr-2" />
+        Orders Management
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Process, fulfill, and track customer orders
+    </MudText>
+
+    <!-- Main Module Cards Grid -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <!-- All Orders -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">All Orders</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        View and manage all customer orders
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Active</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/sales/orders">
+                        View Orders →
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Create Order -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Create Order</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Create new sales order for customer
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Fulfillment -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Fulfillment</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage order picking, packing, and shipping
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Order Tracking -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Order Tracking</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Track order status and delivery progress
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Returns & Refunds -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AssignmentReturn" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Returns & Refunds</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Process customer returns and refunds
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Backorders -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Backorders</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage items awaiting stock availability
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Actions & Insights -->
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.FlashOn" Class="mr-2" />
+                    Quick Actions
+                </MudText>
+                <MudStack Spacing="2">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Visibility" Href="/sales/orders">
+                        View All Orders
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Add" Disabled="true">
+                        Create New Order (Coming Soon)
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.LocalShipping" Disabled="true">
+                        Process Fulfillment (Coming Soon)
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Insights" Class="mr-2" />
+                    Order Insights
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    View real-time insights on order volume, fulfillment times, backorder status, and customer satisfaction metrics.
+                </MudText>
+                <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
+                    Order tracking and fulfillment features coming soon.
+                </MudAlert>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+
+}

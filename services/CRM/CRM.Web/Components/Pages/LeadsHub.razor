@@ -1,0 +1,177 @@
+@page "/crm/leads-hub"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Lead Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Lead Management</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+                Lead Management
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Capture, qualify, and nurture potential customers through your sales funnel
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/leads"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">All Leads</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        View and manage all leads in your pipeline, with advanced filtering and search
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/leads">
+                        View Leads →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/leads/create"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Add New Lead</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Capture a new lead from marketing campaigns, referrals, or direct outreach
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/leads/create">
+                        Add Lead →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/lead-scoring"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Score" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Lead Scoring</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Prioritize leads based on engagement, demographics, and behavioral signals
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/lead-scoring">
+                        View Scores →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Source" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Lead Sources</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Track which marketing channels and campaigns generate the most leads
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Size="Size.Large" Color="Color.Secondary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Lead Assignment</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Automatically or manually assign leads to sales reps based on rules
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Spa" Size="Size.Large" Color="Color.Tertiary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Lead Nurturing</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Set up automated email sequences and follow-up workflows for cold leads
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Stats & Actions Section -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Common Tasks</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.PersonAdd" Href="/crm/leads/create">
+                            Add New Lead
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.List" Href="/crm/leads">
+                            View All Leads
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Score" Href="/crm/lead-scoring">
+                            Review Lead Scores
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.ImportExport">
+                            Import Leads from CSV
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Lead Insights</MudText>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Hot Leads:</strong> 12 leads with scores above 80
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>New Today:</strong> 5 new leads captured
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Follow-up Required:</strong> 8 leads need contact
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void Navigate(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

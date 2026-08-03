@@ -44,51 +44,54 @@
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/inventory/stock/adjustments"))">
+            <MudCard Elevation="1" Class="pa-4" Style="height: 100%;">
                 <MudCardContent>
                     <div class="d-flex align-center mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
-                        <MudText Typo="Typo.h6">Stock Adjustments</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Color="Color.Default" Class="mr-3" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Stock Adjustments</MudText>
                     </div>
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
                         Record inventory count adjustments, corrections, and manual stock changes with full audit trail
                     </MudText>
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/inventory/stock/adjustments">
-                        View Adjustments →
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text" Class="mb-2">Coming Soon</MudChip>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" Disabled="true">
+                        Coming Soon
                     </MudButton>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/inventory/stock/transfers"))">
+            <MudCard Elevation="1" Class="pa-4" Style="height: 100%;">
                 <MudCardContent>
                     <div class="d-flex align-center mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Large" Color="Color.Info" Class="mr-3" />
-                        <MudText Typo="Typo.h6">Stock Transfers</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" Size="Size.Large" Color="Color.Default" Class="mr-3" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Stock Transfers</MudText>
                     </div>
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
                         Move inventory between warehouses and bin locations with complete transfer history
                     </MudText>
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/inventory/stock/transfers">
-                        View Transfers →
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text" Class="mb-2">Coming Soon</MudChip>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" Disabled="true">
+                        Coming Soon
                     </MudButton>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/inventory/stock/cycle-counts"))">
+            <MudCard Elevation="1" Class="pa-4" Style="height: 100%;">
                 <MudCardContent>
                     <div class="d-flex align-center mb-2">
-                        <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Large" Color="Color.Success" Class="mr-3" />
-                        <MudText Typo="Typo.h6">Cycle Counts</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Large" Color="Color.Default" Class="mr-3" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Cycle Counts</MudText>
                     </div>
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
                         Schedule and perform regular inventory counts to ensure stock accuracy
                     </MudText>
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/inventory/stock/cycle-counts">
-                        View Cycle Counts →
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text" Class="mb-2">Coming Soon</MudChip>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" Disabled="true">
+                        Coming Soon
                     </MudButton>
                 </MudCardContent>
             </MudCard>

@@ -54,7 +54,8 @@ public class ModuleRegistrationService : IModuleRegistrationService
                     Children = new List<RegisterModuleRequest.NavigationItemDto>
                     {
                         new() { Label = "Invoices", Route = "/finance/invoices", Icon = Icons.Receipt },
-                        new() { Label = "Collections", Route = "/finance/receivables/collections", Icon = Icons.Assessment }
+                        new() { Label = "Collections", Route = "/finance/receivables/collections", Icon = Icons.Assessment },
+                        new() { Label = "Aging Report", Route = "/finance/receivables/aging", Icon = Icons.Assessment, Disabled = true }
                     }
                 },
                 new() 
@@ -65,7 +66,8 @@ public class ModuleRegistrationService : IModuleRegistrationService
                     Children = new List<RegisterModuleRequest.NavigationItemDto>
                     {
                         new() { Label = "Bills", Route = "/finance/payables/bills", Icon = Icons.Receipt },
-                        new() { Label = "Vendor Payments", Route = "/finance/payables/vendor-payments", Icon = Icons.Payments }
+                        new() { Label = "Vendor Payments", Route = "/finance/payables/vendor-payments", Icon = Icons.Payments },
+                        new() { Label = "Vendor Management", Route = "/finance/payables/vendors", Icon = Icons.Assessment, Disabled = true }
                     }
                 },
                 new() 
@@ -80,7 +82,7 @@ public class ModuleRegistrationService : IModuleRegistrationService
                         new() { Label = "Trial Balance", Route = "/finance/gl/trial-balance", Icon = Icons.Balance }
                     }
                 },
-                new() { Label = "Banking", Route = "/finance/banking", Icon = Icons.AccountBalance },
+                new() { Label = "Banking", Route = "/finance/banking", Icon = Icons.AccountBalance, Disabled = true },
                 new() { Label = "Payments", Route = "/finance/payments", Icon = Icons.Payments },
                 new() 
                 { 
@@ -90,10 +92,11 @@ public class ModuleRegistrationService : IModuleRegistrationService
                     Children = new List<RegisterModuleRequest.NavigationItemDto>
                     {
                         new() { Label = "Pay Runs", Route = "/finance/payroll/pay-runs", Icon = Icons.Wallet },
-                        new() { Label = "Deductions", Route = "/finance/payroll/deductions", Icon = Icons.Assessment }
+                        new() { Label = "Deductions", Route = "/finance/payroll/deductions", Icon = Icons.Assessment },
+                        new() { Label = "Tax Forms", Route = "/finance/payroll/tax-forms", Icon = Icons.Receipt, Disabled = true }
                     }
                 },
-                new() { Label = "Reports", Route = "/finance/reports", Icon = Icons.Assessment }
+                new() { Label = "Reports", Route = "/finance/reports", Icon = Icons.Assessment, Disabled = true }
             }
         };
 

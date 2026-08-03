@@ -93,32 +93,40 @@
 
         <!-- Navigation Cards -->
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-card" @onclick="@(() => Navigation.NavigateTo("/sales/quotes"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-card" @onclick="@(() => Navigation.NavigateTo("/sales/quotes-hub"))">
                 <MudCardContent Class="text-center pa-6">
                     <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Size="Size.Large" Color="Color.Info" Class="mb-3" />
                     <MudText Typo="Typo.h6">Quotes</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">Create and manage sales quotes</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/sales/quotes-hub">
+                        Manage Quotes →
+                    </MudButton>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-card" @onclick="@(() => Navigation.NavigateTo("/sales/orders"))">
+            <MudCard Elevation="3" Class="cursor-pointer hover-card" @onclick="@(() => Navigation.NavigateTo("/sales/orders-hub"))">
                 <MudCardContent Class="text-center pa-6">
                     <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
                     <MudText Typo="Typo.h6">Orders</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">Process and fulfill customer orders</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/sales/orders-hub">
+                        Manage Orders →
+                    </MudButton>
                 </MudCardContent>
             </MudCard>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-card" Disabled="true">
+            <MudCard Elevation="3" Class="cursor-pointer hover-card" @onclick="@(() => Navigation.NavigateTo("/sales/reports-hub"))">
                 <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Default" Class="mb-3" />
-                    <MudText Typo="Typo.h6" Color="Color.Secondary">Reports</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                    <MudText Typo="Typo.h6">Reports</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">View sales analytics and reports</MudText>
-                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Class="mt-2">Coming Soon</MudChip>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/sales/reports-hub">
+                        View Reports →
+                    </MudButton>
                 </MudCardContent>
             </MudCard>
         </MudItem>

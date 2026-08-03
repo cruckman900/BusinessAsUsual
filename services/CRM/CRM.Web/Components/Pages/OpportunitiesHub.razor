@@ -1,0 +1,177 @@
+@page "/crm/opportunities-hub"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Opportunity Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/crm">CRM</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Opportunity Management</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Handshake" Class="mr-2" />
+                Opportunity Management
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Track qualified sales opportunities and manage deals through your sales pipeline
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/opportunities"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">All Opportunities</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        View and manage all sales opportunities with detailed tracking and analytics
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/opportunities">
+                        View Opportunities →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/opportunities/create"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.AddCircle" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Create Opportunity</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Add a new sales opportunity from a qualified lead or customer request
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/opportunities/create">
+                        Create Opportunity →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/crm/pipeline"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.ViewKanban" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Pipeline Board</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Visual Kanban board to drag and drop opportunities through sales stages
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/crm/pipeline">
+                        Open Pipeline →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Opportunity Stages</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Configure and manage sales pipeline stages, probabilities, and transitions
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Size="Size.Large" Color="Color.Error" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Win/Loss Analysis</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Analyze closed deals to understand win rates, loss reasons, and trends
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Large" Color="Color.Tertiary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Sales Forecasting</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Predict future revenue based on pipeline stages, probabilities, and close dates
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Stats & Actions Section -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Common Tasks</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.AddCircle" Href="/crm/opportunities/create">
+                            Create New Opportunity
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.ViewKanban" Href="/crm/pipeline">
+                            Open Pipeline Board
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.List" Href="/crm/opportunities">
+                            View All Opportunities
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.BarChart" Href="/crm/reports">
+                            View Sales Reports
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Pipeline Insights</MudText>
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Closing Soon:</strong> 3 opportunities in final stage
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>This Quarter:</strong> $450K projected revenue
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Attention Needed:</strong> 5 stalled deals
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void Navigate(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

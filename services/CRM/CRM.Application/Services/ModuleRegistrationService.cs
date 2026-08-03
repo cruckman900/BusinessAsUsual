@@ -46,9 +46,40 @@ public class ModuleRegistrationService : IModuleRegistrationService
             NavigationItems = new List<RegisterModuleRequest.NavigationItemDto>
             {
                 new() { Label = "Dashboard", Route = "/crm", Icon = Icons.Dashboard },
-                new() { Label = "Leads", Route = "/crm/leads", Icon = Icons.PersonSearch },
-                new() { Label = "Opportunities", Route = "/crm/opportunities", Icon = Icons.TrendingUp },
-                new() { Label = "Customers", Route = "/crm/customers", Icon = Icons.Business }
+                new() 
+                {
+                    Label = "Leads",
+                    Route = "/crm/leads-hub",
+                    Icon = Icons.PersonSearch,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "All Leads", Route = "/crm/leads", Icon = Icons.Dashboard },
+                        new() { Label = "Add Lead", Route = "/crm/leads/create", Icon = Icons.Dashboard },
+                        new() { Label = "Lead Scoring", Route = "/crm/lead-scoring", Icon = Icons.Dashboard },
+                        new() { Label = "Lead Sources", Route = "/crm/lead-sources", Icon = Icons.Dashboard, Disabled = true },
+                        new() { Label = "Lead Assignment", Route = "/crm/lead-assignment", Icon = Icons.Dashboard, Disabled = true },
+                        new() { Label = "Lead Nurturing", Route = "/crm/lead-nurturing", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                },
+                new()
+                {
+                    Label = "Opportunities",
+                    Route = "/crm/opportunities-hub",
+                    Icon = Icons.TrendingUp,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "All Opportunities", Route = "/crm/opportunities", Icon = Icons.Dashboard },
+                        new() { Label = "Create Opportunity", Route = "/crm/opportunities/create", Icon = Icons.Dashboard },
+                        new() { Label = "Pipeline Board", Route = "/crm/pipeline", Icon = Icons.Dashboard },
+                        new() { Label = "Opportunity Stages", Route = "/crm/opportunity-stages", Icon = Icons.Dashboard, Disabled = true },
+                        new() { Label = "Win/Loss Analysis", Route = "/crm/win-loss-analysis", Icon = Icons.Dashboard, Disabled = true },
+                        new() { Label = "Sales Forecasting", Route = "/crm/sales-forecasting", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                },
+                new() { Label = "Customers", Route = "/crm/customers", Icon = Icons.Business },
+                new() { Label = "Activities", Route = "/crm/activities", Icon = Icons.Dashboard },
+                new() { Label = "Email Templates", Route = "/crm/email-templates", Icon = Icons.Dashboard },
+                new() { Label = "Reports", Route = "/crm/reports", Icon = Icons.Dashboard }
             }
         };
 

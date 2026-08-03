@@ -1,0 +1,175 @@
+@page "/hr/recruiting-hub"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Recruiting</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Recruiting</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+                Recruiting
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage job postings, candidates, applications, and interview scheduling
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/applicants"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Applicants</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        View and manage job applicants, track applications, and review resumes
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/applicants">
+                        View Applicants →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/interviews"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Interviews</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Schedule, conduct, and track candidate interviews and feedback
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/interviews">
+                        View Interviews →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Job Postings</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Create and manage job postings, requisitions, and open positions
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Candidate Pipeline</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Track candidates through screening, interviews, and offer stages
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Mail" Size="Size.Large" Color="Color.Secondary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Offer Letters</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Generate and send offer letters to successful candidates
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" Color="Color.Tertiary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Recruiting Metrics</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Track time-to-hire, source effectiveness, and recruiting KPIs
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Stats & Actions Section -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Common Tasks</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.PersonAdd" Href="/hr/applicants">
+                            View All Applicants
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Work">
+                            Post New Job Opening
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.CalendarToday">
+                            Schedule Interview
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Mail">
+                            Send Offer Letter
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Recruiting Insights</MudText>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Active Applications:</strong> 23 candidates in pipeline
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>This Week:</strong> 5 interviews scheduled
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Open Positions:</strong> 8 roles to be filled
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void Navigate(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

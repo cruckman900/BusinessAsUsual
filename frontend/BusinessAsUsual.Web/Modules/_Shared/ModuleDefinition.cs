@@ -65,6 +65,11 @@
         /// Gets or sets whether this navigation group should be expanded by default.
         /// </summary>
         public bool ExpandedByDefault { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether this navigation item should be disabled (e.g., for stubs/coming soon features).
+        /// </summary>
+        public bool Disabled { get; set; } = false;
     }
 
 }

@@ -37,13 +37,13 @@
                         <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
                         <MudText Typo="Typo.h6" GutterBottom="true">Leads</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                            Capture and qualify potential customers from various sources
+                            Capture and qualify potential customers, manage lead scoring and nurturing
                         </MudText>
                         <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">@_totalLeads Active</MudChip>
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/leads">
-                            View Leads
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/leads-hub">
+                            Manage Leads →
                         </MudButton>
                     </MudCardActions>
                 </MudCard>
@@ -53,35 +53,16 @@
             <MudItem xs="12" sm="6" md="4" lg="3">
                 <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
                     <MudCardContent Class="text-center pa-6 flex-grow-1">
-                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                        <MudIcon Icon="@Icons.Material.Filled.Handshake" Size="Size.Large" Color="Color.Success" Class="mb-4" />
                         <MudText Typo="Typo.h6" GutterBottom="true">Opportunities</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                            Track sales pipeline and manage deals through close
+                            Track qualified deals through your sales pipeline and forecast revenue
                         </MudText>
                         <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">@_activeOpportunities Active</MudChip>
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/opportunities">
-                            View Pipeline
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-
-            <!-- Pipeline (Kanban) -->
-            <MudItem xs="12" sm="6" md="4" lg="3">
-                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
-                    <MudCardContent Class="text-center pa-6 flex-grow-1">
-                        <MudIcon Icon="@Icons.Material.Filled.ViewKanban" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
-                        <MudText Typo="Typo.h6" GutterBottom="true">Sales Pipeline</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                            Visual drag-and-drop board to move deals through each stage
-                        </MudText>
-                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/pipeline">
-                            Open Board
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/opportunities-hub">
+                            Manage Opportunities →
                         </MudButton>
                     </MudCardActions>
                 </MudCard>
@@ -139,25 +120,6 @@
                     <MudCardActions>
                         <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/email-templates">
                             Manage Templates
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-
-            <!-- Lead Scoring -->
-            <MudItem xs="12" sm="6" md="4" lg="3">
-                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
-                    <MudCardContent Class="text-center pa-6 flex-grow-1">
-                        <MudIcon Icon="@Icons.Material.Filled.Score" Size="Size.Large" Color="Color.Error" Class="mb-4" />
-                        <MudText Typo="Typo.h6" GutterBottom="true">Lead Scoring</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
-                            Prioritize leads based on engagement, fit, and value signals
-                        </MudText>
-                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Text">✓ Live</MudChip>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/crm/lead-scoring">
-                            View Scores
                         </MudButton>
                     </MudCardActions>
                 </MudCard>

@@ -1,0 +1,191 @@
+@page "/hr/time"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Time & Attendance</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Time & Attendance</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                Time & Attendance
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Track employee time, manage schedules, and handle time-off requests
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/timesheets"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Timesheets</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        View and manage employee timesheets, track hours worked, and approve time entries
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/timesheets">
+                        View Timesheets →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/timesheets/create"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.AddCircle" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Submit Timesheet</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Create a new timesheet entry for recording hours worked and project time
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/timesheets/create">
+                        Submit Time →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/time-off"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.BeachAccess" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Time Off Requests</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Manage vacation, sick leave, and other time-off requests with approval workflow
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/time-off">
+                        View Requests →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Work Schedules</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Plan and manage employee schedules, shifts, and resource allocation
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Size="Size.Large" Color="Color.Tertiary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Attendance Tracking</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Monitor employee attendance, track punctuality, and identify attendance patterns
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/approvals"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Approvals</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Review and approve pending timesheets from team members
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/approvals">
+                        View Approvals →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.WorkHistory" Size="Size.Large" Color="Color.Secondary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Overtime Management</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Track and approve overtime hours, manage overtime policies and compensation
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Actions Section -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Common Tasks</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.AddCircle" Href="/hr/timesheets/create">
+                            Submit Timesheet Entry
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.AccessTime" Href="/hr/timesheets">
+                            Review All Timesheets
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.BeachAccess" Href="/hr/time-off">
+                            Manage Time-Off Requests
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Assessment" Href="/hr/reports">
+                            View Time Reports
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Pending Approvals</MudText>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        You have <strong>0</strong> pending timesheet approvals
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        You have <strong>0</strong> pending time-off requests
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void Navigate(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

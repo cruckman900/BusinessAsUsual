@@ -24,12 +24,14 @@
                         <!-- Navigation Group with Children -->
                         <MudNavGroup Title="@navItem.Label" 
                                      Icon="@navItem.Icon"
-                                     Expanded="@navItem.ExpandedByDefault">
+                                     Expanded="@navItem.ExpandedByDefault"
+                                     Disabled="@navItem.Disabled">
                             @foreach (var child in navItem.Children)
                             {
                                 var isActive = _activeRoute == child.Route;
                                 <MudNavLink @onclick="@(() => NavigateInIframe(child.Route))" 
                                             Icon="@child.Icon"
+                                            Disabled="@child.Disabled"
                                             Class="sidebar-nav-item"
                                             Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
                                     @child.Label
@@ -43,6 +45,7 @@
                         var isActive = _activeRoute == navItem.Route;
                         <MudNavLink @onclick="@(() => NavigateInIframe(navItem.Route))" 
                                     Icon="@navItem.Icon"
+                                    Disabled="@navItem.Disabled"
                                     Class="sidebar-nav-item"
                                     Style="@(isActive ? "background-color: var(--mud-palette-action-default-hover); color: var(--mud-palette-primary); font-weight: 500;" : "")">
                             @navItem.Label

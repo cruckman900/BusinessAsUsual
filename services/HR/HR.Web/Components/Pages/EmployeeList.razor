@@ -150,7 +150,11 @@
     {
         try
         {
-            await LoadEmployees();
+            employees = await EmployeeService.GetAllEmployeesAsync();
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("console.error", $"Failed to load employees: {ex.Message}");
         }
         finally
         {
@@ -158,47 +162,45 @@
         }
     }
 
-    private async Task LoadEmployees()
-    {
-        employees = await EmployeeService.GetAllEmployeesAsync();
-    }
-
-    private string GetInitials(string firstName, string lastName)
-    {
-        var first = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString().ToUpper() : "";
-        var last = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString().ToUpper() : "";
-        return first + last;
-    }
-
-    // Quick filter for the search box
-    private Func<EmployeeDto, bool> QuickFilter => employee =>
+    private Func<EmployeeDto, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
 
-        if (employee == null)
-            return false;
+        if (x.FirstName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
 
-        // Search across multiple fields
-        var searchableText = $"{employee.FirstName} {employee.LastName} {employee.Email} {employee.Department} {employee.Status}";
-        return searchableText.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        if (x.LastName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        if (x.Department?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
     };
 
-    private void NavigateToDetail(string id)
+    private string GetInitials(string? firstName, string? lastName)
     {
-        Navigation.NavigateTo($"/hr/employees/{id}");
-    }
-
-    private void NavigateToEdit(string id)
-    {
-        Navigation.NavigateTo($"/hr/employees/{id}/edit");
+        var first = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString().ToUpper() : "";
+        var last = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString().ToUpper() : "";
+        return $"{first}{last}";
     }
 
     private void NavigateToCreate()
     {
         Navigation.NavigateTo("/hr/employees/create");
     }
+
+    private void NavigateToDetail(string id)
+    {
+        Navigation.NavigateTo($"/hr/employees/details/{id}");
+    }
+
+    private void NavigateToEdit(string id)
+    {
+        Navigation.NavigateTo($"/hr/employees/edit/{id}");
+    }
 }
-
-
-

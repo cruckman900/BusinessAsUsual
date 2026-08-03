@@ -1,0 +1,175 @@
+@page "/hr/hr-admin-hub"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>HR Administration</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/hr">HR</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">HR Administration</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+                HR Administration
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage onboarding, benefits administration, policies, and HR workflows
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/onboarding"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Onboarding</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Manage new hire workflows, orientation schedules, and welcome tasks
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/onboarding">
+                        View Onboarding →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="cursor: pointer; height: 100%;" @onclick="@(() => Navigate("/hr/benefits"))">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Size="Size.Large" Color="Color.Success" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Benefits Administration</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Manage health insurance, retirement plans, and employee benefit programs
+                    </MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/hr/benefits">
+                        View Benefits →
+                    </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Policy" Size="Size.Large" Color="Color.Info" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Policies & Procedures</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Maintain company policies, employee handbooks, and procedural documentation
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Warning" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Document Management</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Store and manage employee documents, contracts, and HR forms
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Gavel" Size="Size.Large" Color="Color.Error" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Compliance</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Track labor law compliance, mandatory training, and regulatory requirements
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.ContactSupport" Size="Size.Large" Color="Color.Secondary" Class="mr-3" />
+                        <MudText Typo="Typo.h6">Employee Relations</MudText>
+                    </div>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Manage grievances, disciplinary actions, and employee conflict resolution
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Stats & Actions Section -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Common Tasks</MudText>
+                    <MudList T="string" Dense="true">
+                        <MudListItem Icon="@Icons.Material.Filled.PersonAdd" Href="/hr/onboarding">
+                            View Onboarding Tasks
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.CardGiftcard" Href="/hr/benefits">
+                            Manage Benefits
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Policy">
+                            Update Policies
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Description">
+                            Upload Employee Document
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">HR Administration Insights</MudText>
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>New Hires:</strong> 3 employees in onboarding
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Benefits:</strong> 142 employees enrolled
+                    </MudAlert>
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="my-2">
+                        <strong>Compliance:</strong> 2 training sessions due
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private void Navigate(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+}

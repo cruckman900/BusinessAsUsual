@@ -29,6 +29,7 @@ public class RegisterModuleRequest
         public string Route { get; set; } = string.Empty;
         public string? Icon { get; set; }
         public bool ExpandedByDefault { get; set; } = false;
+        public bool Disabled { get; set; } = false;
         public List<NavigationItemDto>? Children { get; set; }
     }
 }

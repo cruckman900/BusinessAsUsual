@@ -48,8 +48,66 @@ public class ModuleRegistrationService : IModuleRegistrationService
                 new() { Label = "Dashboard", Route = "/hr", Icon = Icons.Dashboard },
                 new() { Label = "Employees", Route = "/hr/employees", Icon = Icons.People },
                 new() { Label = "Departments", Route = "/hr/departments", Icon = Icons.Business },
-                new() { Label = "Onboarding", Route = "/hr/onboarding", Icon = Icons.PersonAdd },
-                new() { Label = "Benefits", Route = "/hr/benefits", Icon = Icons.CardGiftcard }
+                new() 
+                {
+                    Label = "Recruiting",
+                    Route = "/hr/recruiting-hub",
+                    Icon = Icons.PersonAdd,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "Applicants", Route = "/hr/applicants", Icon = Icons.PersonAdd },
+                        new() { Label = "Interviews", Route = "/hr/interviews", Icon = Icons.Dashboard },
+                        new() { Label = "Job Postings", Route = "/hr/job-postings", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                },
+                new()
+                {
+                    Label = "Performance",
+                    Route = "/hr/performance-hub",
+                    Icon = Icons.Dashboard,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "Reviews", Route = "/hr/reviews", Icon = Icons.Dashboard },
+                        new() { Label = "Goals", Route = "/hr/goals", Icon = Icons.Dashboard },
+                        new() { Label = "360° Feedback", Route = "/hr/feedback", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                },
+                new()
+                {
+                    Label = "Training",
+                    Route = "/hr/training-hub",
+                    Icon = Icons.Dashboard,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "Courses", Route = "/hr/courses", Icon = Icons.Dashboard },
+                        new() { Label = "Certifications", Route = "/hr/certifications", Icon = Icons.Dashboard },
+                        new() { Label = "Learning Paths", Route = "/hr/learning-paths", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                },
+                new()
+                {
+                    Label = "Time & Attendance",
+                    Route = "/hr/time",
+                    Icon = Icons.Dashboard,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "Timesheets", Route = "/hr/timesheets", Icon = Icons.Dashboard },
+                        new() { Label = "Time Off", Route = "/hr/time-off", Icon = Icons.Dashboard },
+                        new() { Label = "Approvals", Route = "/hr/approvals", Icon = Icons.Dashboard }
+                    }
+                },
+                new()
+                {
+                    Label = "HR Administration",
+                    Route = "/hr/hr-admin-hub",
+                    Icon = Icons.CardGiftcard,
+                    Children = new List<RegisterModuleRequest.NavigationItemDto>
+                    {
+                        new() { Label = "Onboarding", Route = "/hr/onboarding", Icon = Icons.PersonAdd },
+                        new() { Label = "Benefits", Route = "/hr/benefits", Icon = Icons.CardGiftcard },
+                        new() { Label = "Policies", Route = "/hr/policies", Icon = Icons.Dashboard, Disabled = true }
+                    }
+                }
             }
         };
 

@@ -56,9 +56,9 @@ public class ModuleRegistrationService : IModuleRegistrationService
                     Children = new List<RegisterModuleRequest.NavigationItemDto>
                     {
                         new() { Label = "Stock Items", Route = "/inventory/stock/items", Icon = "list_alt" },
-                        new() { Label = "Adjustments", Route = "/inventory/stock/adjustments", Icon = "edit" },
-                        new() { Label = "Transfers", Route = "/inventory/stock/transfers", Icon = "swap_horiz" },
-                        new() { Label = "Cycle Counts", Route = "/inventory/stock/cycle-counts", Icon = "fact_check" }
+                        new() { Label = "Adjustments", Route = "/inventory/stock/adjustments", Icon = "edit", Disabled = true },
+                        new() { Label = "Transfers", Route = "/inventory/stock/transfers", Icon = "swap_horiz", Disabled = true },
+                        new() { Label = "Cycle Counts", Route = "/inventory/stock/cycle-counts", Icon = "fact_check", Disabled = true }
                     }
                 },
                 new() { Label = "Purchase Orders", Route = "/inventory/purchase-orders", Icon = "shopping_cart" },
@@ -70,9 +70,9 @@ public class ModuleRegistrationService : IModuleRegistrationService
                     Icon = "assessment",
                     Children = new List<RegisterModuleRequest.NavigationItemDto>
                     {
-                        new() { Label = "Stock Valuation", Route = "/inventory/reports/valuation", Icon = "attach_money" },
-                        new() { Label = "Movement History", Route = "/inventory/reports/movements", Icon = "history" },
-                        new() { Label = "Low Stock Alert", Route = "/inventory/reports/low-stock", Icon = "warning" }
+                        new() { Label = "Stock Valuation", Route = "/inventory/reports/valuation", Icon = "attach_money", Disabled = true },
+                        new() { Label = "Movement History", Route = "/inventory/reports/movements", Icon = "history", Disabled = true },
+                        new() { Label = "Low Stock Alert", Route = "/inventory/reports/low-stock", Icon = "warning", Disabled = true }
                     }
                 }
             }
