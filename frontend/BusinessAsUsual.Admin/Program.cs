@@ -53,6 +53,18 @@ namespace BusinessAsUsual.Admin
                 builder.Services.AddRazorPages();
                 builder.Services.AddSignalR();
 
+                // Add session and authentication
+                builder.Services.AddDistributedMemoryCache();
+                builder.Services.AddSession(options =>
+                {
+                    options.IdleTimeout = TimeSpan.FromHours(8);
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.Name = ".BusinessAsUsual.Admin.Session";
+                });
+
+                builder.Services.AddHttpContextAccessor();
+
                 builder.Logging.ClearProviders();
                 builder.Logging.AddConsole();
                 builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -101,6 +113,16 @@ namespace BusinessAsUsual.Admin
                     );
                 });
 
+                // HttpClient for Admin user management API
+                builder.Services.AddHttpClient("AdminApi", client =>
+                {
+                    client.BaseAddress = new Uri(
+                        builder.Configuration["ApiBaseUrl"]
+                        ?? "https://localhost:5001" // fallback for dev
+                    );
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                });
+
                 var app = builder.Build();
 
                 if (app.Environment.IsProduction())
@@ -118,6 +140,7 @@ namespace BusinessAsUsual.Admin
                 app.UseStaticFiles();
                 app.UseHttpsRedirection();
                 app.UseRouting();
+                app.UseSession(); // Add session middleware
                 app.UseAuthorization();
                 app.UseDeveloperExceptionPage();
                 app.UseCorrelationId();

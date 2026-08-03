@@ -1,0 +1,439 @@
+@{
+    ViewData["Title"] = "Module Usage";
+}
+
+<link rel="stylesheet" href="~/css/module-usage.css" asp-append-version="true" />
+
+<!-- Header -->
+<div class="mb-4">
+    <div class="row align-items-center g-3">
+        <div class="col-md-8">
+            <h2 class="mb-1">Module Usage & Cost Analysis</h2>
+            <p class="text-muted mb-0">Track module usage and AWS cost estimates by company</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button class="btn btn-outline-secondary" id="exportBtn">
+                <i class="fas fa-download me-2"></i> Export Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Company Picker -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end g-3">
+            <div class="col-md-6">
+                <label for="companyPicker" class="form-label fw-bold">
+                    <i class="fas fa-building me-2"></i> Select Company
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" 
+                           class="form-control" 
+                           id="companyPicker" 
+                           placeholder="Search for a company..."
+                           autocomplete="off">
+                </div>
+                <div id="companyDropdown" class="company-dropdown" style="display: none;">
+                    <!-- Companies will load here -->
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Billing Period</label>
+                <input type="text" class="form-control" id="billingPeriod" value="January 2026" readonly>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" id="loadUsageBtn" disabled>
+                    <i class="fas fa-sync-alt me-2"></i> Load Usage
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div id="loadingState" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted">Loading module usage data...</p>
+</div>
+
+<!-- No Data State -->
+<div id="noDataState" class="text-center py-5">
+    <i class="fas fa-chart-pie text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+    <h4 class="mt-3 text-muted">No Company Selected</h4>
+    <p class="text-muted">Select a company above to view their module usage and cost breakdown</p>
+</div>
+
+<!-- Usage Dashboard (Hidden initially) -->
+<div id="usageDashboard" style="display: none;">
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card">
+                <div class="summary-icon bg-primary">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value" id="totalCost">$0.00</div>
+                    <div class="summary-label">Total Cost</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card">
+                <div class="summary-icon bg-success">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value" id="totalHours">0h</div>
+                    <div class="summary-label">Total Usage</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card">
+                <div class="summary-icon bg-info">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value" id="moduleCount">0</div>
+                    <div class="summary-label">Active Modules</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card">
+                <div class="summary-icon bg-warning">
+                    <i class="fas fa-gauge-high"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value" id="avgCostPerHour">$0.00</div>
+                    <div class="summary-label">Avg Cost/Hour</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Cost Distribution</h5>
+                </div>
+                <div class="chart-body">
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Usage by Module</h5>
+                </div>
+                <div class="chart-body">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Details -->
+    <div class="mb-4">
+        <h4 class="mb-3">
+            <i class="fas fa-layer-group me-2"></i> Module & Submodule Breakdown
+        </h4>
+        <div id="moduleBreakdown">
+            <!-- Module cards will be rendered here -->
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+@section Scripts {
+    <script>
+        let companies = [];
+        let selectedCompanyId = null;
+        let costChart, usageChart;
+
+        // Load companies list
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/admin/companies/list');
+                companies = await response.json();
+            } catch (error) {
+                console.error('Failed to load companies:', error);
+            }
+        }
+
+        // Company picker functionality
+        const companyPicker = document.getElementById('companyPicker');
+        const companyDropdown = document.getElementById('companyDropdown');
+        const loadUsageBtn = document.getElementById('loadUsageBtn');
+
+        companyPicker.addEventListener('focus', function() {
+            renderCompanyDropdown('');
+            companyDropdown.style.display = 'block';
+        });
+
+        companyPicker.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            renderCompanyDropdown(query);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!companyPicker.contains(e.target) && !companyDropdown.contains(e.target)) {
+                companyDropdown.style.display = 'none';
+            }
+        });
+
+        function renderCompanyDropdown(query) {
+            const filtered = companies.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                c.status.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                companyDropdown.innerHTML = '<div class="company-dropdown-item disabled">No companies found</div>';
+                return;
+            }
+
+            companyDropdown.innerHTML = filtered.map(company => `
+                <div class="company-dropdown-item" data-id="${company.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${company.name}</strong>
+                            <small class="text-muted ms-2">#${company.id}</small>
+                        </div>
+                        <span class="badge bg-${company.status === 'Active' ? 'success' : 'warning'}">${company.status}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            companyDropdown.querySelectorAll('.company-dropdown-item:not(.disabled)').forEach(item => {
+                item.addEventListener('click', function() {
+                    const companyId = parseInt(this.dataset.id);
+                    const company = companies.find(c => c.id === companyId);
+                    if (company) {
+                        selectedCompanyId = companyId;
+                        companyPicker.value = company.name;
+                        companyDropdown.style.display = 'none';
+                        loadUsageBtn.disabled = false;
+                    }
+                });
+            });
+        }
+
+        // Load usage data
+        loadUsageBtn.addEventListener('click', async function() {
+            if (!selectedCompanyId) return;
+
+            // Show loading state
+            document.getElementById('noDataState').style.display = 'none';
+            document.getElementById('usageDashboard').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/admin/company/${selectedCompanyId}/module-usage`);
+                const data = await response.json();
+
+                // Update summary cards
+                document.getElementById('totalCost').textContent = `$${data.totalCost.toFixed(2)}`;
+                document.getElementById('totalHours').textContent = `${(data.totalUsageMinutes / 60).toFixed(1)}h`;
+                document.getElementById('moduleCount').textContent = data.modules.length;
+
+                const avgCost = data.totalCost / (data.totalUsageMinutes / 60);
+                document.getElementById('avgCostPerHour').textContent = `$${avgCost.toFixed(2)}`;
+
+                document.getElementById('billingPeriod').value = data.billingPeriod;
+
+                // Render charts
+                renderCharts(data);
+
+                // Render module breakdown
+                renderModuleBreakdown(data.modules);
+
+                // Show dashboard
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('usageDashboard').style.display = 'block';
+
+            } catch (error) {
+                console.error('Failed to load module usage:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('noDataState').style.display = 'block';
+            }
+        });
+
+        // Render charts
+        function renderCharts(data) {
+            const chartTheme = {
+                textColor: getComputedStyle(document.body).getPropertyValue('--content-text') || '#e0e0e0',
+                gridColor: 'rgba(255, 255, 255, 0.1)'
+            };
+
+            // Cost Distribution (Pie Chart)
+            if (costChart) costChart.destroy();
+            const costCtx = document.getElementById('costChart').getContext('2d');
+            costChart = new Chart(costCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.modules.map(m => m.name),
+                    datasets: [{
+                        data: data.modules.map(m => m.cost),
+                        backgroundColor: data.modules.map(m => m.color),
+                        borderWidth: 2,
+                        borderColor: '#1a1f3a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { 
+                                color: chartTheme.textColor,
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Usage by Module (Bar Chart)
+            if (usageChart) usageChart.destroy();
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            usageChart = new Chart(usageCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.modules.map(m => m.name),
+                    datasets: [{
+                        label: 'Usage (hours)',
+                        data: data.modules.map(m => m.usageMinutes / 60),
+                        backgroundColor: data.modules.map(m => m.color + '99'),
+                        borderColor: data.modules.map(m => m.color),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Usage: ${context.parsed.y.toFixed(1)} hours`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { 
+                                color: chartTheme.textColor,
+                                callback: function(value) {
+                                    return value + 'h';
+                                }
+                            },
+                            grid: { color: chartTheme.gridColor }
+                        },
+                        x: {
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render module breakdown
+        function renderModuleBreakdown(modules) {
+            const container = document.getElementById('moduleBreakdown');
+            container.innerHTML = modules.map(module => `
+                <div class="module-usage-card mb-3">
+                    <div class="module-header" style="border-left-color: ${module.color}">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="module-icon" style="background-color: ${module.color}20; color: ${module.color}">
+                                <i class="fas ${module.icon}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">${module.name}</h5>
+                                <div class="module-meta">
+                                    <span class="me-3">
+                                        <i class="fas fa-clock me-1"></i>
+                                        ${(module.usageMinutes / 60).toFixed(1)} hours
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        $${module.cost.toFixed(2)}
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-tag me-1"></i>
+                                        $${module.costPerHour.toFixed(2)}/hour
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submodules-container">
+                        ${module.submodules.map(sub => `
+                            <div class="submodule-item">
+                                <div class="submodule-name">
+                                    <i class="fas fa-angle-right me-2"></i>
+                                    ${sub.name}
+                                </div>
+                                <div class="submodule-stats">
+                                    <span class="stat">
+                                        <i class="fas fa-clock me-1"></i>
+                                        ${(sub.usageMinutes / 60).toFixed(1)}h
+                                    </span>
+                                    <span class="stat">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        $${sub.cost.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Export functionality
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (!selectedCompanyId) {
+                alert('Please select a company first');
+                return;
+            }
+            alert('Export feature coming soon!');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanies();
+        });
+    </script>
+}

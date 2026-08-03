@@ -31,11 +31,11 @@
         "icon": "fas fa-object-group"
       },
       {
-        "id": "menu-audit-log",
-        "label": "Audit Log",
-        "route": "/admin/company/audit",
-        "description": "Track contributor actions",
-        "icon": "fas fa-history"
+        "id": "menu-module-usage",
+        "label": "Module Usage",
+        "route": "/admin/company/module-usage",
+        "description": "View module usage and cost analysis by company",
+        "icon": "fas fa-chart-pie"
       }
     ]
   },

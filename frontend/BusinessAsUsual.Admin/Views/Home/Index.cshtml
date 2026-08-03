@@ -1,101 +1,371 @@
-﻿@{
-    Layout = "_LandingLayout";
-    ViewData["Title"] = "Welcome";
+@{
+    Layout = "_SplashLayout";
+    ViewData["Title"] = "Admin Portal";
+    var isAuthenticated = ViewBag.IsAuthenticated ?? false;
+    var username = ViewBag.Username as string;
 }
 
-<div class="row mb-4">
-    <div class="col-md-7">
-        <div class="mb-3">
-            <div class="landing-logo text-uppercase text-primary">
-                <i class="fas fa-wave-square me-2"></i> Business As Usual
-            </div>
-            <p class="landing-tagline mt-2">
+<!-- Hero Section -->
+<div class="hero-section mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-wave-square me-3"></i>Business As Usual
+            </h1>
+            <p class="lead mb-4">
                 Your operations console for companies, users, audits, and system health.
             </p>
+            @if (isAuthenticated)
+            {
+                <div class="mb-3">
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-check-circle me-2"></i>Logged in as @username
+                    </span>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/admin/monitoring" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Enter Console
+                    </a>
+                    <form method="post" action="/auth/logout" class="d-inline">
+                        <button type="submit" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-wrap gap-3">
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Admin Portal
+                    </button>
+                    <a href="/admin/monitoring" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-heartbeat me-2"></i>View System Health
+                    </a>
+                </div>
+            }
         </div>
-        <div class="landing-cta d-flex flex-wrap gap-2">
-            <a href="/admin/monitoring" class="btn btn-primary btn-lg">
-                <i class="fas fa-tachometer-alt me-2"></i> Enter Admin Console
-            </a>
-            <a href="/admin/monitoring" class="btn btn-outline-light btn-lg">
-                <i class="fas fa-heartbeat me-2"></i> View System Health
-            </a>
-        </div>
-    </div>
-    <div class="col-md-5 d-flex align-items-center justify-content-md-end mt-4 mt-md-0">
-        <div class="text-md-end">
-            <span class="badge bg-success mb-2">
-                <i class="fas fa-circle me-1"></i> Live Environment Ready
-            </span>
-            <p class="mb-1">Monitor infrastructure, audit changes, and keep operations… business as usual.</p>
-            <p class="mb-0 text-muted" style="font-size: 0.85rem;">
-                Designed for operators, contributors, and curious architects.
-            </p>
+        <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="insight-badge">
+                <i class="fas fa-circle-check text-success me-2"></i>
+                <span class="badge bg-success mb-2">Live Environment Ready</span>
+                <p class="mb-2 mt-3">Monitor infrastructure, audit changes, and keep operations… business as usual.</p>
+                <p class="text-muted mb-0">
+                    <small>Designed for operators, contributors, and curious architects.</small>
+                </p>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3">
+<!-- Insights Cards (load dynamically) -->
+<div class="row g-4 mb-5" id="insightsCards">
     <div class="col-md-3">
-        <div class="feature-card">
-            <div class="d-flex align-items-center mb-2">
-                <i class="feature-icon fas fa-heartbeat me-2"></i>
-                <span class="feature-title">Health & Diagnostics</span>
+        <div class="insight-card">
+            <div class="insight-icon">
+                <i class="fas fa-building"></i>
             </div>
-            <p class="feature-desc">
-                Live CPU, memory, disk, and uptime stats for your BAU environment.
-            </p>
-            <a href="/admin/metrics" class="stretched-link text-decoration-none text-info">
-                Open Dashboard <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="insight-content">
+                <div class="insight-value" id="totalCompanies">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </div>
+                <div class="insight-label">Total Companies</div>
+                <div class="insight-sublabel" id="activeCompanies">-- active</div>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="feature-card">
-            <div class="d-flex align-items-center mb-2">
-                <i class="feature-icon fas fa-building me-2"></i>
-                <span class="feature-title">Company Management</span>
+        <div class="insight-card">
+            <div class="insight-icon">
+                <i class="fas fa-users"></i>
             </div>
-            <p class="feature-desc">
-                Provision, merge, and audit companies with a clear operational trail.
-            </p>
-            <a href="/admin/company/provision" class="stretched-link text-decoration-none text-info">
-                Manage Companies <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="insight-content">
+                <div class="insight-value" id="totalAdmins">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </div>
+                <div class="insight-label">Admin Users</div>
+                <div class="insight-sublabel">Active accounts</div>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="feature-card">
-            <div class="d-flex align-items-center mb-2">
-                <i class="feature-icon fas fa-users me-2"></i>
-                <span class="feature-title">User Management</span>
+        <div class="insight-card">
+            <div class="insight-icon">
+                <i class="fas fa-heartbeat"></i>
             </div>
-            <p class="feature-desc">
-                Add users, assign roles, and keep access aligned with reality.
-            </p>
-            <a href="/admin/user/manage" class="stretched-link text-decoration-none text-info">
-                Manage Users <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="insight-content">
+                <div class="insight-value" id="systemStatus">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </div>
+                <div class="insight-label">System Status</div>
+                <div class="insight-sublabel" id="uptime">-- uptime</div>
+            </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="feature-card">
-            <div class="d-flex align-items-center mb-2">
-                <i class="feature-icon fas fa-scroll me-2"></i>
-                <span class="feature-title">Logs & Metrics</span>
+        <div class="insight-card">
+            <div class="insight-icon">
+                <i class="fas fa-chart-line"></i>
             </div>
-            <p class="feature-desc">
-                Surface Serilog, CloudWatch, and system events in one place.
-            </p>
-            <a href="/admin/logs" class="stretched-link text-decoration-none text-info">
-                View Logs <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="insight-content">
+                <div class="insight-value">
+                    <span class="badge bg-info">Live</span>
+                </div>
+                <div class="insight-label">Environment</div>
+                <div class="insight-sublabel">Production Ready</div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="action-card" data-requires-auth="true" data-href="/admin/company/provision">
+            <div class="action-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <h5 class="action-title">Provision Company</h5>
+            <p class="action-description">
+                Create a new company record with module configuration and billing setup.
+            </p>
+            <div class="action-footer">
+                <span class="action-link">Get Started <i class="fas fa-arrow-right ms-2"></i></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="action-card" data-requires-auth="true" data-href="/admin/user/add">
+            <div class="action-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h5 class="action-title">Add Admin User</h5>
+            <p class="action-description">
+                Create a new user account and assign roles for company management.
+            </p>
+            <div class="action-footer">
+                <span class="action-link">Create User <i class="fas fa-arrow-right ms-2"></i></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="action-card" data-href="/admin/monitoring">
+            <div class="action-icon">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h5 class="action-title">View Health Dashboard</h5>
+            <p class="action-description">
+                Monitor system performance, CPU, memory, and infrastructure health.
+            </p>
+            <div class="action-footer">
+                <span class="action-link">Open Dashboard <i class="fas fa-arrow-right ms-2"></i></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Load insights
+        async function loadInsights() {
+            try {
+                const response = await fetch('/api/insights');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+
+                console.log('Insights data:', data); // Debug log
+
+                document.getElementById('totalCompanies').textContent = data.totalCompanies || data.TotalCompanies || '0';
+                document.getElementById('activeCompanies').textContent = `${data.activeCompanies || data.ActiveCompanies || 0} active`;
+                document.getElementById('totalAdmins').textContent = data.totalAdminUsers || data.TotalAdminUsers || '0';
+                document.getElementById('systemStatus').innerHTML = `<span class="badge bg-success">${data.systemStatus || data.SystemStatus || 'Unknown'}</span>`;
+
+                const uptimeHours = data.uptimeHours || data.UptimeHours || 0;
+                const days = Math.floor(uptimeHours / 24);
+                document.getElementById('uptime').textContent = days > 0 ? `${days} days` : `${uptimeHours} hours`;
+            } catch (error) {
+                console.error('Failed to load insights:', error);
+                document.getElementById('totalCompanies').textContent = '--';
+                document.getElementById('totalAdmins').textContent = '--';
+                document.getElementById('systemStatus').innerHTML = '<span class="badge bg-secondary">Unknown</span>';
+                document.getElementById('uptime').textContent = '--';
+            }
+        }
+
+        // Handle action card clicks
+        document.querySelectorAll('.action-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const requiresAuth = this.dataset.requiresAuth === 'true';
+                const isAuthenticated = @(isAuthenticated ? "true" : "false");
+                const href = this.dataset.href;
+
+                if (requiresAuth && !isAuthenticated) {
+                    // Show login modal
+                    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                    loginModal.show();
+                } else {
+                    window.location.href = href;
+                }
+            });
+        });
+
+        // Load insights on page load
+        loadInsights();
+    </script>
+}
 
 <style>
+    /* Theme-aware styling */
+    .hero-section {
+        padding: 3rem 0;
+    }
+
+    .hero-section h1 {
+        color: var(--content-text);
+    }
+
+    .hero-section .lead {
+        color: var(--content-text);
+        opacity: 0.9;
+    }
+
+    .insight-badge {
+        padding: 2rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        color: var(--content-text);
+    }
+
+    .insight-badge p {
+        color: var(--content-text);
+        margin-bottom: 0.5rem;
+    }
+
     .text-muted {
-        color: #9ca3af !important;
+        color: var(--content-text) !important;
+        opacity: 0.7;
+    }
+
+    /* Insight Cards */
+    .insight-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .insight-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .insight-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .insight-content {
+        flex: 1;
+    }
+
+    .insight-value {
+        font-size: 1.75rem;
+        font-weight: bold;
+        color: var(--content-text);
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--content-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-sublabel {
+        font-size: 0.75rem;
+        color: var(--content-text);
+        opacity: 0.7;
+    }
+
+    /* Action Cards */
+    .action-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 2rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary);
+    }
+
+    .action-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .action-title {
+        color: var(--content-text);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .action-description {
+        color: var(--content-text);
+        opacity: 0.85;
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+
+    .action-footer {
+        margin-top: auto;
+    }
+
+    .action-link {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .action-card:hover .action-link {
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-section {
+            padding: 2rem 0;
+        }
+
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .insight-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .insight-icon {
+            margin: 0 auto;
+        }
     }
 </style>

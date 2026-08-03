@@ -1,4 +1,5 @@
-﻿using BusinessAsUsual.Admin.Dtos;
+﻿using BusinessAsUsual.Admin.Attributes;
+using BusinessAsUsual.Admin.Dtos;
 using BusinessAsUsual.Admin.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
     /// assess the operational status of various system components. Endpoints are designed to facilitate AJAX calls and
     /// API polling for up-to-date health information.</remarks>
     [Area("Admin")]
+    [AdminAuth]
     public class MonitoringController : Controller
     {
         private readonly IMonitoringService _monitoring;

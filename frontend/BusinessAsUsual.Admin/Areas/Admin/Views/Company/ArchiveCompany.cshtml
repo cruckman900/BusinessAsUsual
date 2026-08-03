@@ -1,5 +1,72 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model string
 @{
+    ViewData["Title"] = "Archive Company";
 }
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Archive Company
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Warning:</strong> Archiving a company will prevent all users from accessing this tenant.
+                        The company data will be preserved and can be restored later.
+                    </div>
+
+                    <p class="mb-4">
+                        Are you sure you want to archive this company?
+                    </p>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-area="Admin" 
+                           asp-controller="Company" 
+                           asp-action="ViewCompanies" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+
+                        <form asp-area="Admin" 
+                              asp-controller="Company" 
+                              asp-action="ArchiveCompany" 
+                              asp-route-id="@Model" 
+                              method="post" 
+                              class="d-inline">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-archive me-2"></i>Archive Company
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <p class="text-muted small">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    <strong>Tip:</strong> You can restore archived companies from the Company list by changing the status filter to "Archived" and clicking the restore button.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-color: var(--border);
+    }
+
+    .card-body {
+        background-color: var(--card-bg);
+        color: var(--content-text);
+    }
+
+    .text-muted {
+        color: var(--content-text) !important;
+        opacity: 0.7;
+    }
+</style>

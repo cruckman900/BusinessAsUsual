@@ -1,0 +1,170 @@
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">
+                    <i class="fas fa-sign-in-alt me-2"></i>Admin Login
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small><strong>Test Credentials:</strong> username: <code>admin</code>, password: <code>password</code></small>
+                    </div>
+
+                    <div id="loginError" class="alert alert-danger d-none" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="loginErrorMessage"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold">Username</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="username" 
+                               name="username" 
+                               placeholder="Enter username" 
+                               required 
+                               autocomplete="username" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-bold">Password</label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Enter password" 
+                               required 
+                               autocomplete="current-password" />
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="loginButton">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            <span id="loginButtonText">Login</span>
+                            <span id="loginSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Theme-aware modal styling */
+    .modal-content {
+        background-color: var(--card-bg, #fff);
+        border-color: var(--border, #dee2e6);
+        color: var(--content-text, #212529);
+    }
+
+    .modal-header {
+        border-bottom-color: var(--border, #dee2e6);
+        background-color: var(--card-bg, #fff);
+        color: var(--content-text, #212529);
+    }
+
+    .modal-body {
+        background-color: var(--card-bg, #fff);
+        color: var(--content-text, #212529);
+    }
+
+    .modal-title {
+        color: var(--content-text, #212529);
+    }
+
+    .form-label {
+        color: var(--content-text, #212529);
+    }
+
+    .form-control {
+        background-color: var(--card-bg, #fff);
+        border-color: var(--border, #ced4da);
+        color: var(--content-text, #212529);
+    }
+
+    .form-control:focus {
+        background-color: var(--card-bg, #fff);
+        border-color: var(--primary, #0d6efd);
+        color: var(--content-text, #212529);
+    }
+
+    .btn-close {
+        filter: var(--bs-btn-close-filter, invert(1));
+    }
+
+    body.theme-light .btn-close {
+        filter: invert(0);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const loginButtonText = document.getElementById('loginButtonText');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const loginError = document.getElementById('loginError');
+        const loginErrorMessage = document.getElementById('loginErrorMessage');
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Show loading state
+            loginButton.disabled = true;
+            loginButtonText.textContent = 'Logging in...';
+            loginSpinner.classList.remove('d-none');
+            loginError.classList.add('d-none');
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Reload page to refresh auth state
+                    window.location.reload();
+                } else {
+                    // Show error
+                    loginErrorMessage.textContent = result.error || 'Login failed. Please try again.';
+                    loginError.classList.remove('d-none');
+
+                    // Reset button
+                    loginButton.disabled = false;
+                    loginButtonText.textContent = 'Login';
+                    loginSpinner.classList.add('d-none');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                loginErrorMessage.textContent = 'An error occurred. Please try again.';
+                loginError.classList.remove('d-none');
+
+                // Reset button
+                loginButton.disabled = false;
+                loginButtonText.textContent = 'Login';
+                loginSpinner.classList.add('d-none');
+            }
+        });
+
+        // Check if we should auto-show the modal (e.g., from a redirect)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('showLogin') === 'true') {
+            loginModal.show();
+        }
+    });
+</script>

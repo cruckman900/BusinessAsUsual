@@ -1,23 +1,449 @@
 ﻿@{
-    ViewData["Title"] = "System Metrics";
+    ViewData["Title"] = "System Health";
 }
 
-<link rel="stylesheet" href="~/css/admin-metrics.css" />
+<link rel="stylesheet" href="~/css/admin-metrics.css" asp-append-version="true" />
 
-<h2>Metrics</h2>
-
-<div class="metrics-grid">
-    <div class="row g-3">
-        <partial name="_CpuCard" />
-        <partial name="_MemoryCard" />
-        <partial name="_DiskCard" />
+<!-- Header -->
+<div class="mb-4">
+    <div class="row align-items-center g-3">
+        <div class="col-md-8">
+            <h2 class="mb-1">System Health Dashboard</h2>
+            <p class="text-muted mb-0">Real-time monitoring of modules and infrastructure</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <span class="badge bg-success fs-6 text-nowrap">
+                <i class="fas fa-circle-check me-1"></i> All Systems Operational
+            </span>
+        </div>
     </div>
+</div>
 
-    <div class="row g-3 mt-2">
-        <partial name="_NetworkCard" />
-        <partial name="_UptimeCard" />
+<!-- System Overview Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="health-card">
+            <div class="health-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="health-content">
+                <div class="health-value" id="totalRequests">--</div>
+                <div class="health-label">Total Requests</div>
+                <div class="health-trend text-success">
+                    <i class="fas fa-arrow-up"></i> 12% from yesterday
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="health-card">
+            <div class="health-icon">
+                <i class="fas fa-gauge-high"></i>
+            </div>
+            <div class="health-content">
+                <div class="health-value" id="avgResponseTime">--</div>
+                <div class="health-label">Avg Response Time</div>
+                <div class="health-trend text-success">
+                    <i class="fas fa-arrow-down"></i> 8% faster
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="health-card">
+            <div class="health-icon">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <div class="health-content">
+                <div class="health-value" id="errorRate">--</div>
+                <div class="health-label">Error Rate</div>
+                <div class="health-trend text-success">
+                    <i class="fas fa-arrow-down"></i> Within SLA
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="health-card">
+            <div class="health-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <div class="health-content">
+                <div class="health-value" id="systemUptime">--</div>
+                <div class="health-label">System Uptime</div>
+                <div class="health-trend text-success">
+                    <i class="fas fa-circle-check"></i> Excellent
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="mb-0">CPU & Memory Usage</h5>
+                <span class="badge bg-info">Live</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="resourceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="mb-0">Network Traffic</h5>
+                <span class="badge bg-info">Live</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="networkChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Module Health Grid -->
+<div class="module-health-section mb-4">
+    <h4 class="mb-3">
+        <i class="fas fa-cubes me-2"></i> Module Health Status
+    </h4>
+    <div class="row g-3" id="moduleHealthGrid">
+        <!-- Modules will be loaded dynamically -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading module health data...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Module Performance Chart -->
+<div class="row g-3">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="mb-0">Module Response Times</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshModules">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="chart-body">
+                <canvas id="moduleResponseChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="~/js/admin-metrics.js"></script>
+
+@section Scripts {
+    <script>
+        let resourceChart, networkChart, moduleResponseChart;
+        let resourceData = {
+            labels: [],
+            cpu: [],
+            memory: []
+        };
+        let networkData = {
+            labels: [],
+            inbound: [],
+            outbound: []
+        };
+
+        // Load module health
+        async function loadModuleHealth() {
+            try {
+                const response = await fetch('/api/admin/module-health');
+                const data = await response.json();
+
+                // Update system overview
+                document.getElementById('totalRequests').textContent = data.systemMetrics.totalRequests.toLocaleString();
+                document.getElementById('avgResponseTime').textContent = data.systemMetrics.avgResponseTime + 'ms';
+                document.getElementById('errorRate').textContent = data.systemMetrics.errorRate + '%';
+                document.getElementById('systemUptime').textContent = data.systemMetrics.uptime + '%';
+
+                // Render module cards
+                const grid = document.getElementById('moduleHealthGrid');
+                grid.innerHTML = data.modules.map(module => `
+                    <div class="col-lg-4 col-md-6">
+                        <div class="module-card ${module.status.toLowerCase()}">
+                            <div class="module-header">
+                                <div>
+                                    <h5 class="mb-0">${module.name}</h5>
+                                    <span class="badge bg-${module.status === 'Healthy' ? 'success' : 'warning'}">${module.status}</span>
+                                </div>
+                                <div class="module-icon">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                            </div>
+                            <div class="module-metrics">
+                                <div class="metric">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <span class="metric-label">Uptime:</span>
+                                    <span class="metric-value">${module.uptime}%</span>
+                                </div>
+                                <div class="metric">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    <span class="metric-label">Requests:</span>
+                                    <span class="metric-value">${module.requests.toLocaleString()}</span>
+                                </div>
+                                <div class="metric">
+                                    <i class="fas fa-gauge me-2"></i>
+                                    <span class="metric-label">Avg Response:</span>
+                                    <span class="metric-value">${module.avgResponse}ms</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Update module response chart
+                updateModuleResponseChart(data.modules);
+
+            } catch (error) {
+                console.error('Failed to load module health:', error);
+                document.getElementById('moduleHealthGrid').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load module health data. Please try again.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Update system metrics in real-time
+        async function updateSystemMetrics() {
+            try {
+                const response = await fetch('/api/admin/system-metrics');
+                const data = await response.json();
+
+                const now = new Date().toLocaleTimeString();
+
+                // Update resource chart
+                resourceData.labels.push(now);
+                resourceData.cpu.push(data.cpu.usage);
+                resourceData.memory.push(data.memory.percentage);
+
+                if (resourceData.labels.length > 20) {
+                    resourceData.labels.shift();
+                    resourceData.cpu.shift();
+                    resourceData.memory.shift();
+                }
+
+                if (resourceChart) {
+                    resourceChart.data.labels = resourceData.labels;
+                    resourceChart.data.datasets[0].data = resourceData.cpu;
+                    resourceChart.data.datasets[1].data = resourceData.memory;
+                    resourceChart.update('none');
+                }
+
+                // Update network chart
+                networkData.labels.push(now);
+                networkData.inbound.push(data.network.inbound);
+                networkData.outbound.push(data.network.outbound);
+
+                if (networkData.labels.length > 20) {
+                    networkData.labels.shift();
+                    networkData.inbound.shift();
+                    networkData.outbound.shift();
+                }
+
+                if (networkChart) {
+                    networkChart.data.labels = networkData.labels;
+                    networkChart.data.datasets[0].data = networkData.inbound;
+                    networkChart.data.datasets[1].data = networkData.outbound;
+                    networkChart.update('none');
+                }
+
+            } catch (error) {
+                console.error('Failed to update system metrics:', error);
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            const chartTheme = {
+                textColor: getComputedStyle(document.body).getPropertyValue('--content-text') || '#e0e0e0',
+                gridColor: 'rgba(255, 255, 255, 0.1)'
+            };
+
+            // Resource Chart (CPU & Memory)
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            resourceChart = new Chart(resourceCtx, {
+                type: 'line',
+                data: {
+                    labels: resourceData.labels,
+                    datasets: [{
+                        label: 'CPU %',
+                        data: resourceData.cpu,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#3b82f6',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Memory %',
+                        data: resourceData.memory,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#8b5cf6',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: chartTheme.textColor }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        },
+                        x: {
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        }
+                    }
+                }
+            });
+
+            // Network Chart
+            const networkCtx = document.getElementById('networkChart').getContext('2d');
+            networkChart = new Chart(networkCtx, {
+                type: 'line',
+                data: {
+                    labels: networkData.labels,
+                    datasets: [{
+                        label: 'Inbound (MB/s)',
+                        data: networkData.inbound,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#10b981',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Outbound (MB/s)',
+                        data: networkData.outbound,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#f59e0b',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: chartTheme.textColor }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        },
+                        x: {
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update module response chart
+        function updateModuleResponseChart(modules) {
+            const chartTheme = {
+                textColor: getComputedStyle(document.body).getPropertyValue('--content-text') || '#e0e0e0',
+                gridColor: 'rgba(255, 255, 255, 0.1)'
+            };
+
+            if (moduleResponseChart) {
+                moduleResponseChart.destroy();
+            }
+
+            const ctx = document.getElementById('moduleResponseChart').getContext('2d');
+            moduleResponseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: modules.map(m => m.name),
+                    datasets: [{
+                        label: 'Avg Response Time (ms)',
+                        data: modules.map(m => m.avgResponse),
+                        backgroundColor: modules.map(m => 
+                            m.status === 'Healthy' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(245, 158, 11, 0.6)'
+                        ),
+                        borderColor: modules.map(m => 
+                            m.status === 'Healthy' ? '#10b981' : '#f59e0b'
+                        ),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: chartTheme.textColor }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        },
+                        x: {
+                            ticks: { color: chartTheme.textColor },
+                            grid: { color: chartTheme.gridColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async function() {
+            initCharts();
+            loadModuleHealth();
+
+            // Fetch initial data to populate charts
+            await updateSystemMetrics();
+
+            // Update metrics every 3 seconds
+            setInterval(updateSystemMetrics, 3000);
+
+            // Refresh module health every 30 seconds
+            setInterval(loadModuleHealth, 30000);
+
+            // Manual refresh button
+            document.getElementById('refreshModules').addEventListener('click', loadModuleHealth);
+        });
+    </script>
+}

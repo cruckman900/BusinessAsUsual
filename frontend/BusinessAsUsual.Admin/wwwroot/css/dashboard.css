@@ -46,7 +46,7 @@
     flex-wrap: wrap;
 }
 
-.badge {
+.badge-grid .badge {
     background: #f0f0f0;
     padding: 1rem;
     border-radius: 8px;
@@ -54,7 +54,7 @@
     width: 120px;
 }
 
-.badge i {
+.badge-grid .badge i {
     font-size: 1.5rem;
     color: #007bff;
 }

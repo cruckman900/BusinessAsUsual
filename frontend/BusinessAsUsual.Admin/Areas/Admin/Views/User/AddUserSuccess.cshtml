@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "User Created Successfully";
+    var userName = ViewBag.UserName as string;
+    var userEmail = ViewBag.UserEmail as string;
+    var userId = ViewBag.UserId as string;
+    var mockMode = ViewBag.MockMode as bool? ?? false;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <!-- Success Header -->
+        <div class="text-center mb-4">
+            <div class="mb-3">
+                <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+            </div>
+            <h2 class="text-success mb-2">User Created Successfully!</h2>
+            <p class="text-muted">The admin user has been created and is ready to access the portal.</p>
+        </div>
+
+        <!-- User Details Card -->
+        <div class="card shadow-sm mb-4 gradient-card">
+            <div class="card-header text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>User Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Username:</label>
+                        <div class="fw-bold">@userName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Email:</label>
+                        <div class="fw-bold">@userEmail</div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(userId))
+                {
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="text-muted small">User ID:</label>
+                            <div class="fw-bold font-monospace">@userId</div>
+                        </div>
+                    </div>
+                }
+
+                @if (mockMode)
+                {
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Development Mode:</strong> This user was created in mock mode. The API is currently unavailable, so the user data was not persisted to the database.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Next Steps Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">The user can now log in to the admin portal with their credentials.</li>
+                    <li class="mb-2">You can manage this user's roles and permissions from the <strong>Manage Users</strong> page.</li>
+                    <li class="mb-2">An audit log entry has been created for this action.</li>
+                    @if (!mockMode)
+                    {
+                        <li>Consider sending a welcome email with login instructions to <strong>@userEmail</strong>.</li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Smart Commit Display -->
+        @if (ViewBag.CommitTag != null)
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Smart Commit:</strong> @ViewBag.CommitTag
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 justify-content-center mb-5">
+            <a asp-area="Admin" asp-controller="User" asp-action="AddUser" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Add Another User
+            </a>
+            <a asp-area="Admin" asp-controller="User" asp-action="ManageUsers" class="btn btn-outline-primary">
+                <i class="fas fa-users-cog me-2"></i>Manage Users
+            </a>
+            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i>Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.875rem;
+    }
+</style>

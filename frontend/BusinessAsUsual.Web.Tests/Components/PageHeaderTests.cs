@@ -7,7 +7,7 @@ using Xunit;
 
 namespace BusinessAsUsual.Web.Tests.Components;
 
-public class PageHeaderTests : Bunit.TestContext, IAsyncLifetime
+public class PageHeaderTests : BunitContext, IAsyncLifetime
 {
     public PageHeaderTests()
     {
@@ -17,7 +17,7 @@ public class PageHeaderTests : Bunit.TestContext, IAsyncLifetime
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await Services.DisposeAsync();
         Dispose();

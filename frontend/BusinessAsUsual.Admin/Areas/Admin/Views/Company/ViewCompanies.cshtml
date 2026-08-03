@@ -1,33 +1,238 @@
-﻿@{
+﻿@model BusinessAsUsual.Admin.Areas.Admin.Models.ViewCompaniesViewModel
+@{
     ViewData["Title"] = "View Companies";
-    Layout = "_Layout";
 }
 
+<h2>Manage Companies</h2>
+
+<!-- FILTERS & SEARCH -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Company" asp-action="ViewCompanies" method="get" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label fw-bold">Search</label>
+                <input type="text" name="searchQuery" class="form-control" placeholder="Search by company name, email, or ID..." value="@Model.SearchQuery" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Status</label>
+                <select name="statusFilter" class="form-select">
+                    <option value="All" selected="@(Model.StatusFilter == "All")">All</option>
+                    <option value="Active" selected="@(Model.StatusFilter == "Active")">Active</option>
+                    <option value="Archived" selected="@(Model.StatusFilter == "Archived")">Archived</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Billing Plan</label>
+                <select name="billingPlanFilter" class="form-select">
+                    <option value="All" selected="@(string.IsNullOrEmpty(Model.BillingPlanFilter) || Model.BillingPlanFilter == "All")">All</option>
+                    <option value="Free" selected="@(Model.BillingPlanFilter == "Free")">Free</option>
+                    <option value="Professional" selected="@(Model.BillingPlanFilter == "Professional")">Professional</option>
+                    <option value="Enterprise" selected="@(Model.BillingPlanFilter == "Enterprise")">Enterprise</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- RESULTS SUMMARY -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <span class="results-summary">
+            Showing @Model.Companies.Count of @Model.TotalCompanies companies
+            @if (!string.IsNullOrEmpty(Model.SearchQuery) || Model.StatusFilter != "Active" || !string.IsNullOrEmpty(Model.BillingPlanFilter))
+            {
+                <span>(filtered)</span>
+            }
+        </span>
+    </div>
+    <div>
+        <a asp-area="Admin" asp-controller="Company" asp-action="ProvisionCompany" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i>Provision New Company
+        </a>
+    </div>
+</div>
+
+<!-- COMPANY DATA GRID -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        @if (Model.Companies.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover" id="companies-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Admin Email</th>
+                            <th>Billing Plan</th>
+                            <th>Users</th>
+                            <th>Modules</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var company in Model.Companies)
+                        {
+                            <tr data-company-id="@company.CompanyId">
+                                <td>
+                                    <strong>@company.Name</strong>
+                                </td>
+                                <td>@company.AdminEmail</td>
+                                <td>
+                                    @if (company.BillingPlan == "Enterprise")
+                                    {
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-crown me-1"></i>Enterprise
+                                        </span>
+                                    }
+                                    else if (company.BillingPlan == "Professional")
+                                    {
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-briefcase me-1"></i>Professional
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-hand-holding-usd me-1"></i>Free
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (company.UserCount.HasValue)
+                                    {
+                                        <span>@company.UserCount users</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (company.ModuleList.Any())
+                                    {
+                                        @foreach (var module in company.ModuleList.Take(2))
+                                        {
+                                            <span class="badge bg-success me-1">@module</span>
+                                        }
+                                        @if (company.ModuleList.Count > 2)
+                                        {
+                                            <span class="badge bg-secondary">+@(company.ModuleList.Count - 2) more</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">None</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (company.IsArchived)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-archive me-1"></i>Archived
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Active
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@company.CreatedAtDisplay</small>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="@Url.Action("AuditLog", new { id = company.CompanyId })" class="btn btn-outline-info" title="Audit Log">
+                                            <i class="fas fa-history"></i>
+                                        </a>
+                                        <a href="@Url.Action("EditCompany", new { id = company.CompanyId })" class="btn btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (!company.IsArchived)
+                                        {
+                                            <a href="@Url.Action("ArchiveCompanyConfirmation", new { id = company.CompanyId })" class="btn btn-outline-warning" title="Archive">
+                                                <i class="fas fa-archive"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-outline-success" onclick="restoreCompany('@company.CompanyId')" title="Restore">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No companies found matching your filters. Try adjusting your search criteria or <a asp-area="Admin" asp-controller="Company" asp-action="ProvisionCompany">provision a new company</a>.
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    /* Theme-aware table text using CSS variables */
+    #companies-table tbody td {
+        color: var(--content-text) !important;
+    }
+
+    #companies-table tbody td strong {
+        color: var(--content-text) !important;
+        font-weight: 600;
+    }
+
+    #companies-table tbody td small {
+        color: var(--content-text) !important;
+        opacity: 0.7;
+    }
+
+    #companies-table thead.table-light {
+        background-color: var(--card-bg) !important;
+        color: var(--card-text) !important;
+        border-color: var(--border) !important;
+    }
+
+    #companies-table thead.table-light th {
+        color: var(--card-text) !important;
+        border-color: var(--border) !important;
+    }
+
+    #companies-table tbody tr:hover {
+        background-color: var(--card-bg) !important;
+        transition: background-color 0.2s ease;
+    }
+
+    .results-summary {
+        color: var(--content-text);
+        opacity: 0.8;
+    }
+</style>
+
 <script>
-    globalThis.renderCompanyActions = function(row) {
-      const id = row.Id || row.id || row.companyId; // fallback logic
-
-      return `
-        <a href="/admin/company/details?id=${id}" class="btn btn-sm btn-info">View</a>
-        <a href="/admin/company/edit?id=${id}" class="btn btn-sm btn-warning">Edit</a>
-        <button onclick="archiveCompany(${id})" class="btn btn-sm btn-danger">Archive</button>
-      `;
-    };
-
-    function archiveCompany(id) {
-      if (confirm("Archive this company?")) {
-        console.log(`[SmartCommit] Archive requested for Company ID: ${id}`);
-        // TODO: API call or form post
-      }
+    function restoreCompany(companyId) {
+        if (confirm('Restore this company from the archive?')) {
+            console.log(`[SmartCommit] Restore requested for Company ID: ${companyId}`);
+            // TODO: Implement restore functionality
+            alert('Restore functionality will be implemented when the API is available.');
+        }
     }
 </script>
-
-<section class="grid-section">
-    <h2>Companies</h2>
-
-    @await Component.InvokeAsync("LegacyDataGrid", new {
-        model = Model,
-        gridId = "companies-grid",
-        rowActions = "renderCompanyActions"
-        })
-</section>

@@ -1,0 +1,361 @@
+@model BusinessAsUsual.Admin.Areas.Admin.Models.AddUserViewModel
+@{
+    ViewData["Title"] = "Add Admin User";
+}
+
+<h2>Add Admin User</h2>
+
+<div>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- PROGRESS INDICATOR -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="wizard-step" data-step="1">
+                            <div class="wizard-step-circle active">1</div>
+                            <div class="wizard-step-label">Basic Info</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="2">
+                            <div class="wizard-step-circle">2</div>
+                            <div class="wizard-step-label">Role Assignment</div>
+                        </div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step" data-step="3">
+                            <div class="wizard-step-circle">3</div>
+                            <div class="wizard-step-label">Review & Confirm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-area="Admin" asp-controller="User" asp-action="AddUser" method="post" id="addUserForm">
+
+                <!-- STEP 1: BASIC INFORMATION -->
+                <div class="wizard-panel" data-step="1">
+                    <div class="card shadow-sm mb-4 gradient-card">
+                        <div class="card-header text-white">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Step 1: Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="UserName" class="form-label fw-bold">Username <span class="text-danger">*</span></label>
+                                    <input asp-for="UserName" class="form-control" placeholder="e.g., john.doe" />
+                                    <span asp-validation-for="UserName" class="text-danger"></span>
+                                    <small class="form-text text-muted">Alphanumeric, underscores, hyphens, and periods allowed.</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Email" class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="user@example.com" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="FirstName" class="form-label fw-bold">First Name</label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="John" />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="LastName" class="form-label fw-bold">Last Name</label>
+                                    <input asp-for="LastName" class="form-control" placeholder="Doe" />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Password" class="form-label fw-bold">Password <span class="text-danger">*</span></label>
+                                    <input asp-for="Password" type="password" class="form-control" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <small class="form-text text-muted">Minimum 8 characters.</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="Notes" class="form-label fw-bold">Notes (Optional)</label>
+                                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes about this user..."></textarea>
+                                    <span asp-validation-for="Notes" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">
+                                    User is Active (can log in immediately)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: ROLE ASSIGNMENT -->
+                <div class="wizard-panel" data-step="2" style="display: none;">
+                    <div class="card shadow-sm mb-4 gradient-card">
+                        <div class="card-header text-white">
+                            <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i>Step 2: Role Assignment</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Select one or more roles to assign to this admin user. Roles determine what actions they can perform in the admin portal.</p>
+
+                            @if (Model.AvailableRoles != null && Model.AvailableRoles.Any())
+                            {
+                                <div class="row">
+                                    @for (int i = 0; i < Model.AvailableRoles.Count; i++)
+                                    {
+                                        var role = Model.AvailableRoles[i];
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card role-card">
+                                                <div class="card-body">
+                                                    <div class="form-check">
+                                                        <input type="checkbox"
+                                                               name="SelectedRoles"
+                                                               value="@role.RoleId"
+                                                               id="role-@role.RoleId"
+                                                               class="form-check-input role-checkbox"
+                                                               @(role.IsSelected ? "checked" : "") />
+                                                        <label class="form-check-label fw-bold" for="role-@role.RoleId">
+                                                            @role.RoleName
+                                                        </label>
+                                                    </div>
+                                                    <p class="text-muted small mb-0 mt-2">@role.Description</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>No roles available at this time. You can assign roles later.
+                                </div>
+                            }
+
+                            <div class="alert alert-warning mt-3" id="noRolesWarning" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Warning:</strong> No roles selected. The user will have limited access to the admin portal.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: REVIEW & CONFIRM -->
+                <div class="wizard-panel" data-step="3" style="display: none;">
+                    <div class="card shadow-sm mb-4 gradient-card">
+                        <div class="card-header text-white">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Step 3: Review & Confirm</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Please review the information below before creating the user:</h6>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Username:</label>
+                                        <div class="fw-bold" id="review-username">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Email:</label>
+                                        <div class="fw-bold" id="review-email">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="review-item">
+                                        <label class="text-muted small">First Name:</label>
+                                        <div class="fw-bold" id="review-firstname">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Last Name:</label>
+                                        <div class="fw-bold" id="review-lastname">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Account Status:</label>
+                                        <div class="fw-bold" id="review-status">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Assigned Roles:</label>
+                                        <div class="fw-bold" id="review-roles">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3" id="review-notes-section">
+                                <div class="col-md-12">
+                                    <div class="review-item">
+                                        <label class="text-muted small">Notes:</label>
+                                        <div class="fw-bold" id="review-notes">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Once created, the user will be able to log in to the admin portal with the provided credentials.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VALIDATION SUMMARY -->
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <!-- NAVIGATION BUTTONS -->
+                <div class="d-flex justify-content-between mb-4">
+                    <button type="button" class="btn btn-secondary" id="btnPrevious" style="display: none;">
+                        <i class="fas fa-arrow-left me-2"></i>Previous
+                    </button>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-primary" id="btnNext">
+                            Next<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-success" id="btnSubmit" style="display: none;">
+                            <i class="fas fa-user-plus me-2"></i>Create Admin User
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Wizard Progress Indicator */
+    .wizard-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .wizard-step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .wizard-step-circle.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .wizard-step-circle.completed {
+        background-color: #198754;
+        color: white;
+    }
+
+    .wizard-step-label {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .wizard-step.active .wizard-step-label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    .wizard-step-line {
+        flex-grow: 1;
+        height: 2px;
+        background-color: #e9ecef;
+        margin: 0 1rem;
+        align-self: center;
+        margin-bottom: 28px;
+    }
+
+    /* Role Card Styling */
+    .role-card {
+        border: 2px solid #e9ecef;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .role-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .role-card .form-check-input:checked ~ .form-check-label {
+        color: #0d6efd;
+    }
+
+    /* Checkbox Spacing Fix */
+    .form-check-input {
+        margin-right: 8px;
+    }
+
+    .role-card .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .form-check.mb-3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Review Item Styling */
+    .review-item {
+        padding: 12px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .review-item label {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .review-item .fw-bold {
+        color: #212529; /* Dark text for better readability */
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/admin-user.js"></script>
+}

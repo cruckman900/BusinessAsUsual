@@ -7,7 +7,7 @@ using Xunit;
 
 namespace BusinessAsUsual.Web.Tests.Components;
 
-public class TenantSelectorTests : Bunit.TestContext, IAsyncLifetime
+public class TenantSelectorTests : BunitContext, IAsyncLifetime
 {
     public TenantSelectorTests()
     {
@@ -17,7 +17,7 @@ public class TenantSelectorTests : Bunit.TestContext, IAsyncLifetime
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await Services.DisposeAsync();
         Dispose();
@@ -53,7 +53,8 @@ public class TenantSelectorTests : Bunit.TestContext, IAsyncLifetime
 
         // Assert
         var select = cut.FindComponent<MudSelect<string>>();
-        select.Instance.Value.Should().Be(currentTenant);
+        var value = select.GetState(x => x.Value);
+        value.Should().Be(currentTenant);
     }
 
     [Fact]

@@ -1,5 +1,209 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model BusinessAsUsual.Admin.Areas.Admin.Models.EditCompanyViewModel
 @{
+    ViewData["Title"] = "Edit Company";
 }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Edit Company</h2>
+    <a asp-area="Admin" asp-controller="Company" asp-action="ViewCompanies" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Companies
+    </a>
+</div>
+
+<!-- Company Info Summary Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Company ID:</strong> <code>@Model.CompanyId</code></p>
+                @if (Model.CreatedAt.HasValue)
+                {
+                    <p class="mb-0"><strong>Created:</strong> @Model.CreatedAt.Value.ToString("MMMM dd, yyyy")</p>
+                }
+            </div>
+            <div class="col-md-6 text-end">
+                @if (Model.IsArchived)
+                {
+                    <span class="badge bg-secondary fs-6">
+                        <i class="fas fa-archive me-1"></i>Archived
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-check-circle me-1"></i>Active
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Form -->
+<form asp-area="Admin" asp-controller="Company" asp-action="EditCompany" method="post">
+    <input type="hidden" asp-for="CompanyId" />
+    <input type="hidden" asp-for="CreatedAt" />
+    <input type="hidden" asp-for="LastModifiedAt" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <!-- Basic Information -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Basic Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="Name" class="form-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Enter company name" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AdminEmail" class="form-label fw-bold"></label>
+                    <input asp-for="AdminEmail" class="form-control" type="email" placeholder="admin@company.com" />
+                    <span asp-validation-for="AdminEmail" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="BillingPlan" class="form-label fw-bold"></label>
+                    <select asp-for="BillingPlan" class="form-select">
+                        <option value="Free">Free</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Enterprise">Enterprise</option>
+                    </select>
+                    <span asp-validation-for="BillingPlan" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Status</label>
+                    <div class="form-check form-switch mt-2">
+                        <input asp-for="IsArchived" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsArchived" class="form-check-label">
+                            Archive this company
+                        </label>
+                    </div>
+                    <small class="text-muted">Archived companies cannot be accessed by users.</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Notes" class="form-label fw-bold"></label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Add any additional notes or comments about this company..."></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Selection -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Enabled Modules</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.GroupedModules.Any())
+            {
+                @foreach (var group in Model.GroupedModules)
+                {
+                    <div class="module-group mb-4">
+                        <h6 class="text-uppercase fw-bold mb-3">@group.GroupName</h6>
+                        <div class="row">
+                            @foreach (var module in group.Modules)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="module-card p-3 border rounded">
+                                        <div class="form-check">
+                                            <input type="checkbox"
+                                                   class="form-check-input"
+                                                   name="SelectedModules"
+                                                   value="@module.Key"
+                                                   id="module-@module.Key"
+                                                   checked="@Model.SelectedModules.Contains(module.Key)" />
+                                            <label class="form-check-label" for="module-@module.Key">
+                                                <strong>@module.Name</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">No modules available.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between mb-5">
+        <a asp-area="Admin" asp-controller="Company" asp-action="ViewCompanies" class="btn btn-secondary">
+            <i class="fas fa-times me-2"></i>Cancel
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save me-2"></i>Save Changes
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
+<style>
+    /* Theme-aware styling */
+    .module-card {
+        background-color: var(--card-bg);
+        border-color: var(--border) !important;
+        transition: all 0.2s ease;
+    }
+
+    .module-card:hover {
+        border-color: var(--primary) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .module-card .form-check-input {
+        margin-right: 0.5rem;
+    }
+
+    .module-card .form-check {
+        display: flex;
+        align-items-center;
+        gap: 0.5rem;
+        padding-left: 0;
+    }
+
+    .module-card label {
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    .module-group h6 {
+        color: var(--content-text);
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .card-header {
+        border-bottom: 1px solid var(--border);
+    }
+
+    code {
+        color: var(--content-text);
+        background-color: var(--card-bg);
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+    }
+
+    .form-check-input[type="checkbox"] {
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+    }
+</style>
