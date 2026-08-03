@@ -1,0 +1,269 @@
+@using System.Net.Http.Json
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+
+<MudStack Spacing="2">
+    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">
+        <MudButton OnClick="@(() => SetSearchMode(CustomerSearchMode.Individual))"
+                   Variant="@(_searchMode == CustomerSearchMode.Individual ? Variant.Filled : Variant.Outlined)"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Person">
+            Individual
+        </MudButton>
+        <MudButton OnClick="@(() => SetSearchMode(CustomerSearchMode.Company))"
+                   Variant="@(_searchMode == CustomerSearchMode.Company ? Variant.Filled : Variant.Outlined)"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Business">
+            Company
+        </MudButton>
+        <MudButton OnClick="@(() => SetSearchMode(CustomerSearchMode.All))"
+                   Variant="@(_searchMode == CustomerSearchMode.All ? Variant.Filled : Variant.Outlined)"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Search">
+            All
+        </MudButton>
+    </MudButtonGroup>
+
+    <MudAutocomplete T="CustomerDto"
+                     Value="@SelectedCustomer"
+                     ValueChanged="@(async (CustomerDto c) => await OnCustomerSelected(c))"
+                     SearchFunc="SearchCustomers"
+                     ToStringFunc="@GetCustomerDisplayText"
+                     Label="@GetSearchLabel()"
+                     Variant="@Variant"
+                     Margin="@Margin"
+                     Dense="@Dense"
+                     Required="@Required"
+                     RequiredError="@RequiredError"
+                     Disabled="@Disabled"
+                     ResetValueOnEmptyText="false"
+                     CoerceText="false"
+                     CoerceValue="false"
+                     AdornmentIcon="@Icons.Material.Filled.Search"
+                     AdornmentColor="Color.Primary"
+                     Clearable="true"
+                     DebounceInterval="300"
+                     MinCharacters="0"
+                     MaxItems="20"
+                     ShowProgressIndicator="true">
+        <ItemTemplate Context="customer">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width: 100%;">
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body2"><b>@GetCustomerDisplayText(customer)</b></MudText>
+                    @if (!string.IsNullOrWhiteSpace(customer.Email))
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@customer.Email</MudText>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(customer.CompanyName) && _searchMode != CustomerSearchMode.Company)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Info">@customer.CompanyName</MudText>
+                    }
+                </MudStack>
+                @if (!string.IsNullOrWhiteSpace(customer.Phone))
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Info">@customer.Phone</MudText>
+                }
+            </MudStack>
+        </ItemTemplate>
+        <NoItemsTemplate>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                @if (_customersLoaded && _allCustomers.Any())
+                {
+                    <text>Type to search @GetSearchModeText()...</text>
+                }
+                else if (!_customersLoaded)
+                {
+                    <text>Loading customers...</text>
+            }
+            else
+            {
+                <text>No customers available</text>
+            }
+        </MudText>
+    </NoItemsTemplate>
+</MudAutocomplete>
+</MudStack>
+
+@code {
+    [Parameter] public CustomerDto? SelectedCustomer { get; set; }
+    [Parameter] public EventCallback<CustomerDto?> SelectedCustomerChanged { get; set; }
+    [Parameter] public string Label { get; set; } = "Select Customer";
+    [Parameter] public Variant Variant { get; set; } = Variant.Outlined;
+    [Parameter] public Margin Margin { get; set; } = Margin.Dense;
+    [Parameter] public bool Dense { get; set; } = true;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public string RequiredError { get; set; } = "Customer is required";
+    [Parameter] public bool Disabled { get; set; } = false;
+
+    private List<CustomerDto> _allCustomers = new();
+    private bool _customersLoaded = false;
+    private CustomerSearchMode _searchMode = CustomerSearchMode.All;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomersAsync();
+    }
+
+    private void SetSearchMode(CustomerSearchMode mode)
+    {
+        _searchMode = mode;
+    }
+
+    private string GetSearchLabel()
+    {
+        return _searchMode switch
+        {
+            CustomerSearchMode.Individual => "Select Individual Customer",
+            CustomerSearchMode.Company => "Select Company",
+            CustomerSearchMode.All => "Select Customer or Company",
+            _ => "Select Customer"
+        };
+    }
+
+    private string GetSearchModeText()
+    {
+        return _searchMode switch
+        {
+            CustomerSearchMode.Individual => "individuals",
+            CustomerSearchMode.Company => "companies",
+            CustomerSearchMode.All => "customers",
+            _ => "customers"
+        };
+    }
+
+    private string GetCustomerDisplayText(CustomerDto? customer)
+    {
+        if (customer == null) return string.Empty;
+
+        return _searchMode switch
+        {
+            CustomerSearchMode.Company when !string.IsNullOrWhiteSpace(customer.CompanyName) => customer.CompanyName,
+            CustomerSearchMode.Individual => customer.Name,
+            _ => !string.IsNullOrWhiteSpace(customer.CompanyName) ? $"{customer.Name} ({customer.CompanyName})" : customer.Name
+        };
+    }
+
+    private async Task OnCustomerSelected(CustomerDto? customer)
+    {
+        SelectedCustomer = customer;
+        await SelectedCustomerChanged.InvokeAsync(customer);
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        if (_customersLoaded) return;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("CrmApi");
+            var response = await client.GetFromJsonAsync<List<CustomerDto>>("api/customers");
+            _allCustomers = response ?? new List<CustomerDto>();
+            _customersLoaded = true;
+        }
+        catch (Exception)
+        {
+            _allCustomers = new List<CustomerDto>();
+        }
+    }
+
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchText, CancellationToken cancellationToken)
+    {
+        await LoadCustomersAsync();
+
+        // In Company mode, prioritize customers with CompanyName
+        // In Individual mode, show all customers (they can be individuals from companies too)
+        // In All mode, show everything
+        var filteredCustomers = _searchMode switch
+        {
+            CustomerSearchMode.Company => _allCustomers.Where(c => !string.IsNullOrWhiteSpace(c.CompanyName)).ToList(),
+            _ => _allCustomers // Individual and All modes show all customers
+        };
+
+        // Show top 20 if no search text or just clicked
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return filteredCustomers
+                .OrderBy(c => _searchMode == CustomerSearchMode.Company && !string.IsNullOrWhiteSpace(c.CompanyName) 
+                    ? c.CompanyName 
+                    : c.Name)
+                .Take(20);
+        }
+
+        // Case-insensitive LIKE search based on mode
+        var search = searchText.Trim();
+
+        IEnumerable<CustomerDto> searchResults = _searchMode switch
+        {
+            CustomerSearchMode.Individual => filteredCustomers.Where(c => 
+                c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                c.Email.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (c.Phone?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.PrimaryContactName?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)),
+
+            CustomerSearchMode.Company => filteredCustomers.Where(c => 
+                (c.CompanyName?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.Industry?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                c.Email.Contains(search, StringComparison.OrdinalIgnoreCase)),
+
+            _ => filteredCustomers.Where(c => 
+                c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                c.Email.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (c.Phone?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.CompanyName?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.Industry?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+        };
+
+        return searchResults
+            .OrderBy(c => c.Name.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(c => c.Name)
+            .Take(20)
+            .ToList();
+    }
+
+    public enum CustomerSearchMode
+    {
+        Individual,
+        Company,
+        All
+    }
+
+    public class CustomerDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? CompanyName { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public string? Website { get; set; }
+        public string? Industry { get; set; }
+        public int? EmployeeCount { get; set; }
+        public decimal? AnnualRevenue { get; set; }
+        public string? Description { get; set; }
+        public string? PrimaryContactName { get; set; }
+        public string? PrimaryContactEmail { get; set; }
+        public string? PrimaryContactPhone { get; set; }
+        public string? PrimaryContactTitle { get; set; }
+        public string? BillingAddressLine1 { get; set; }
+        public string? BillingAddressLine2 { get; set; }
+        public string? BillingCity { get; set; }
+        public string? BillingState { get; set; }
+        public string? BillingPostalCode { get; set; }
+        public string? BillingCountry { get; set; }
+        public string? ShippingAddressLine1 { get; set; }
+        public string? ShippingAddressLine2 { get; set; }
+        public string? ShippingCity { get; set; }
+        public string? ShippingState { get; set; }
+        public string? ShippingPostalCode { get; set; }
+        public string? ShippingCountry { get; set; }
+        public string? LinkedInProfile { get; set; }
+        public string? TwitterHandle { get; set; }
+        public string? AccountManagerEmployeeId { get; set; }
+        public string? AccountManagerName { get; set; }
+        public string? CustomerSegment { get; set; }
+        public string? CustomerStatus { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastContactDate { get; set; }
+        public decimal LifetimeValue { get; set; }
+    }
+}

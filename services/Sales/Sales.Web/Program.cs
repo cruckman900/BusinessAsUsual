@@ -4,8 +4,8 @@ using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container - using Blazor Server to match shell
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -15,6 +15,20 @@ var salesApiUrl = builder.Configuration["SalesApi:Url"] ?? "http://localhost:514
 builder.Services.AddHttpClient("SalesApi", client =>
 {
     client.BaseAddress = new Uri(salesApiUrl);
+});
+
+// Named HTTP client for Inventory API (for product picker)
+var inventoryApiUrl = builder.Configuration["InventoryApi:Url"] ?? "http://localhost:5142";
+builder.Services.AddHttpClient("InventoryApi", client =>
+{
+    client.BaseAddress = new Uri(inventoryApiUrl);
+});
+
+// Named HTTP client for CRM API (for customer picker)
+var crmApiUrl = builder.Configuration["CrmApi:Url"] ?? "http://localhost:5004";
+builder.Services.AddHttpClient("CrmApi", client =>
+{
+    client.BaseAddress = new Uri(crmApiUrl);
 });
 
 // CORS configuration for iframe embedding
@@ -52,6 +66,5 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-app.MapBlazorHub();
 
 app.Run();

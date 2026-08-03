@@ -1,6 +1,8 @@
 @page "/sales"
+@using System.Net.Http.Json
 @using MudBlazor
 @inject NavigationManager Navigation
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Sales Dashboard</PageTitle>
 
@@ -19,6 +21,18 @@
         Manage quotes, orders, and customer transactions
     </MudText>
 
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+        <MudText Class="mt-2">Loading dashboard...</MudText>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">
+            @_errorMessage
+        </MudAlert>
+    }
+
     <MudGrid>
         <!-- Quick Stats -->
         <MudItem xs="12" sm="6" md="3">
@@ -27,7 +41,7 @@
                     <div class="d-flex justify-space-between">
                         <div>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Active Quotes</MudText>
-                            <MudText Typo="Typo.h5">0</MudText>
+                            <MudText Typo="Typo.h5">@(_stats?.ActiveQuotes ?? 0)</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Size="Size.Large" Color="Color.Info" />
                     </div>
@@ -41,7 +55,7 @@
                     <div class="d-flex justify-space-between">
                         <div>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Open Orders</MudText>
-                            <MudText Typo="Typo.h5">0</MudText>
+                            <MudText Typo="Typo.h5">@(_stats?.OpenOrders ?? 0)</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" />
                     </div>
@@ -55,7 +69,7 @@
                     <div class="d-flex justify-space-between">
                         <div>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Monthly Revenue</MudText>
-                            <MudText Typo="Typo.h5">$0.00</MudText>
+                            <MudText Typo="Typo.h5">@(_stats?.MonthlyRevenue.ToString("C") ?? "$0.00")</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Color="Color.Success" />
                     </div>
@@ -69,7 +83,7 @@
                     <div class="d-flex justify-space-between">
                         <div>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Pending Shipments</MudText>
-                            <MudText Typo="Typo.h5">0</MudText>
+                            <MudText Typo="Typo.h5">@(_stats?.PendingShipments ?? 0)</MudText>
                         </div>
                         <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Large" Color="Color.Warning" />
                     </div>
@@ -99,15 +113,95 @@
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard Elevation="3" Class="cursor-pointer hover-card">
+            <MudCard Elevation="3" Class="cursor-pointer hover-card" Disabled="true">
                 <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Success" Class="mb-3" />
-                    <MudText Typo="Typo.h6">Reports</MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Large" Color="Color.Default" Class="mb-3" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">Reports</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">View sales analytics and reports</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Class="mt-2">Coming Soon</MudChip>
                 </MudCardContent>
             </MudCard>
         </MudItem>
     </MudGrid>
+
+    <!-- About & Module Info Grid -->
+    <MudGrid Class="mt-6">
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                    About Sales Module
+                </MudText>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    The Sales module provides comprehensive quote-to-cash capabilities including:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Quote Management</strong> - Create, track, and convert sales quotes to orders
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Order Processing</strong> - Manage customer orders from creation to fulfillment
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Customer Management</strong> - Maintain customer records and transaction history
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Product Catalog</strong> - Browse and sell products with real-time pricing
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Payment Tracking</strong> - Record and monitor customer payments
+                    </MudListItem>
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                        <strong>Shipping Integration</strong> - Track shipments and delivery status
+                    </MudListItem>
+                </MudList>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-auto pt-4">
+                    This module is dynamically loaded via the Module Registry Service and provides both web UI and mobile API contracts.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column" Elevation="1" Style="height: 100%;">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                    Module Info
+                </MudText>
+                <MudStack Spacing="2" Class="flex-grow-1">
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Module ID</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled">sales</MudChip>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                        <MudText Typo="Typo.body2">1.0.0</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">API Port</MudText>
+                        <MudText Typo="Typo.body2">5143 (HTTP) / 7143 (HTTPS)</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Web UI Port</MudText>
+                        <MudText Typo="Typo.body2">5229</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Created</MudText>
+                        <MudText Typo="Typo.body2">January 2025</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Module Info Footer -->
+    <MudDivider Class="my-6" />
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+        Sales Module • Created January 2025 • Version 1.0
+    </MudText>
 </MudContainer>
 
 <style>
@@ -121,5 +215,44 @@
 </style>
 
 @code {
+    private DashboardStats? _stats;
+    private bool _loading = true;
+    private string? _errorMessage;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStats();
+    }
+
+    private async Task LoadStats()
+    {
+        try
+        {
+            _loading = true;
+            _errorMessage = null;
+            var client = HttpClientFactory.CreateClient("SalesApi");
+            _stats = await client.GetFromJsonAsync<DashboardStats>("api/sales/dashboard/stats");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading dashboard: {ex.Message}";
+            Console.WriteLine($"Dashboard error: {ex}");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    public class DashboardStats
+    {
+        public int ActiveQuotes { get; set; }
+        public int OpenOrders { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+        public int PendingShipments { get; set; }
+        public int TotalQuotes { get; set; }
+        public int TotalOrders { get; set; }
+        public decimal AverageOrderValue { get; set; }
+        public decimal ConversionRate { get; set; }
+    }
 }

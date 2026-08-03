@@ -18,7 +18,7 @@ namespace BusinessAsUsual.Web
     /// Created: 2025-10-05  
     /// Tags: #startup #blazor #mudblazor #server #entrypoint  
     /// </remarks>
-    public static class Program
+    public static partial class Program
     {
         /// <summary>
         /// Configures and starts the BusinessAsUsual.Web application.
@@ -114,6 +114,22 @@ namespace BusinessAsUsual.Web
             builder.Services.AddHttpClient("InventoryApi", client =>
             {
                 client.BaseAddress = new Uri(inventoryServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // Register named HttpClient for the Sales microservice
+            var salesServiceUrl = builder.Configuration["SalesApi:Url"] ?? "http://localhost:5143";
+            builder.Services.AddHttpClient("SalesApi", client =>
+            {
+                client.BaseAddress = new Uri(salesServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // Register named HttpClient for the CRM microservice
+            var crmServiceUrl = builder.Configuration["CrmApi:Url"] ?? "http://localhost:5004";
+            builder.Services.AddHttpClient("CrmApi", client =>
+            {
+                client.BaseAddress = new Uri(crmServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 

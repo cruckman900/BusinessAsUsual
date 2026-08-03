@@ -27,6 +27,7 @@
 **Integration Points:**
 - ✅ HR Timesheets → Finance Payroll (via event bus)
 - ✅ CRM OpportunityWon → Finance Invoice Creation (via event bus)
+- ✅ **Sales OrderConfirmed → Finance Invoice Creation** (via event bus) ⭐ NEW
 
 #### CRM Module (67% Complete) ⭐ UPDATED
 **Fully Functional:**
@@ -49,6 +50,7 @@
 
 **Integration Points:**
 - ✅ CRM OpportunityWon → Finance Invoice Creation (via event bus)
+- ✅ **CRM consumes Sales OrderCreated events** (logs customer activity) ⭐ NEW
 
 #### HR Module (82% Complete) 🏆 MOST COMPLETE
 **Comprehensive Coverage:**
@@ -69,12 +71,73 @@
 - ✅ HR Timesheets → Finance Payroll (via event bus)
 - ✅ Employee data available to CRM and Finance
 
+#### Sales Module (75% Complete) ⭐ UPDATED
+**Fully Functional:**
+- ✅ Quotes Management - Full CRUD, status tracking (Draft/Sent/Accepted/Rejected/Converted)
+- ✅ Orders Management - Full CRUD, order lifecycle (Pending/Confirmed/Processing/Shipped/Delivered/Cancelled)
+- ✅ Order Line Items - Products, quantities, pricing, discounts, taxes
+- ✅ Payment Tracking - Multiple payment methods, partial payments
+- ✅ Dashboard - Live stats (total sales, pending orders, recent activity)
+- ✅ Reports - Sales analytics placeholder
+- ✅ **Cross-Module Data** - Real products from Inventory, real customers from CRM ⭐ NEW
+- ✅ **Event Publishing** - OrderCreated, OrderConfirmed, OrderShipped, QuoteConverted ⭐ NEW
+- ✅ **UI Pickers** - ProductPicker and CustomerPicker components fully integrated into forms ⭐ NEW
+- ✅ **Auto-fill UX** - Customer and product data auto-populated from CRM/Inventory ⭐ NEW
+
+**Stub/Incomplete:**
+- Reports & Analytics - Detailed sales reports, forecasting
+
+**Missing Core Features:**
+- Shipping Integration - Real-time carrier rates, label printing
+- Tax Calculation - Automated tax lookup (Avalara, TaxJar)
+- Discount Rules - Volume discounts, promotional codes
+- Recurring Orders - Subscription management
+
+**Integration Points:**
+- ✅ **Sales OrderShipped → Inventory Stock Decrement** (via event bus) ⭐ NEW
+- ✅ **Sales OrderConfirmed → Finance Invoice** (via event bus) ⭐ NEW
+- ✅ **Sales OrderCreated → CRM Activity** (via event bus) ⭐ NEW
+- ✅ Sales pulls products from Inventory API
+- ✅ Sales pulls customers from CRM API
+
+#### Inventory Module (40% Complete) ⭐ NEW
+**Fully Functional:**
+- ✅ Products - Full CRUD, SKU tracking, categories
+- ✅ Warehouses - Multiple warehouse support
+- ✅ Stock Items - Product quantities by warehouse
+- ✅ Suppliers - Supplier management
+- ✅ Purchase Orders - PO creation and tracking
+- ✅ **Event Handling** - Decrements stock when Sales ships orders ⭐ NEW
+- ✅ **Inventory Transactions** - Audit trail for stock movements ⭐ NEW
+
+**Missing Core Features:**
+- Stock Reservations - Reserve stock for confirmed orders
+- Stock Transfers - Move inventory between warehouses
+- Cycle Counting - Periodic stock audits
+- Reorder Point Alerts - Low stock notifications
+- Lot/Serial Number Tracking - Batch and serial number management
+- Bin Locations - Warehouse location management
+- Barcode/RFID - Scanning and tracking
+
+**Integration Points:**
+- ✅ **Inventory consumes Sales OrderShipped events** (decrements stock) ⭐ NEW
+- ✅ Inventory provides product data to Sales API
+- 🔄 Inventory StockLow → Procurement alerts (planned)
+
 ### 🏗️ Platform Infrastructure
 **Event Bus:**
 - ✅ In-process mode for monolith
 - ✅ Broker mode (RabbitMQ) for distributed deployment
 - ✅ Cross-module event handling
 - ✅ Automatic failover and retry logic
+- ✅ **Sales → Inventory integration** (OrderShipped decrements stock) ⭐ NEW
+
+**Active Integration Events:**
+- ✅ HR Timesheets → Finance Payroll (`TimesheetSubmittedIntegrationEvent`)
+- ✅ CRM OpportunityWon → Finance Invoice (`OpportunityWonIntegrationEvent`)
+- ✅ **Sales OrderShipped → Inventory Stock Decrement** (`OrderShippedIntegrationEvent`) ⭐ NEW
+- ✅ **Sales OrderConfirmed → Finance Invoice** (`OrderConfirmedIntegrationEvent`) ⭐ NEW
+- ✅ **Sales OrderCreated → CRM Activity** (`OrderCreatedIntegrationEvent`) ⭐ NEW
 
 **Module Registry:**
 - ✅ Dynamic module discovery

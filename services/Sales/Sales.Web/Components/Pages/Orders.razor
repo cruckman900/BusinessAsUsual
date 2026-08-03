@@ -82,7 +82,9 @@
                         </PropertyColumn>
                         <PropertyColumn Property="x => x.CustomerName" Title="Customer" T="OrderDto" TProperty="string">
                             <CellTemplate>
-                                <MudText Typo="Typo.body2">@context.Item.CustomerName</MudText>
+                                <MudText Typo="Typo.body2">
+                                    @(string.IsNullOrWhiteSpace(context.Item.CustomerName) ? "(No customer name)" : context.Item.CustomerName)
+                                </MudText>
                                 @if (!string.IsNullOrEmpty(context.Item.CustomerEmail))
                                 {
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.CustomerEmail</MudText>

@@ -845,6 +845,48 @@ public class MobileUISpecification
 }
 ```
 
+#### 7.3 Update Dashboard Icon Mapping
+
+**CRITICAL:** After creating mobile contracts, update the dashboard to recognize your module's icon.
+
+**Problem:** The web dashboard's module cards may show a generic icon instead of your module's custom icon.
+
+**Solution:** Add your module's icon mapping to `frontend/BusinessAsUsual.Web/Pages/Dashboard.razor` in the `ConvertIconToMudBlazor()` method:
+
+```csharp
+string ConvertIconToMudBlazor(string? icon)
+{
+	if (string.IsNullOrEmpty(icon))
+		return Icons.Material.Filled.Apps;
+
+	return icon switch
+	{
+		"mdi-account-group" => Icons.Material.Filled.People,
+		"mdi-currency-usd" => Icons.Material.Filled.AttachMoney,
+		"mdi-account-multiple" => Icons.Material.Filled.Contacts,
+		"mdi-domain" => Icons.Material.Filled.Business,
+		"account_balance" => Icons.Material.Filled.AccountBalance,      // Finance
+		"inventory_2" => Icons.Material.Filled.Inventory2,               // Inventory
+		"point_of_sale" => Icons.Material.Filled.PointOfSale,            // Sales
+		"your_icon_name" => Icons.Material.Filled.YourIcon,              // ← ADD YOUR MODULE HERE
+		_ => Icons.Material.Filled.Apps
+	};
+}
+```
+
+**Common Module Icons:**
+- **HR:** `mdi-account-group` → `Icons.Material.Filled.People`
+- **Finance:** `account_balance` → `Icons.Material.Filled.AccountBalance`
+- **CRM:** `mdi-account-multiple` → `Icons.Material.Filled.Contacts`
+- **Inventory:** `inventory_2` → `Icons.Material.Filled.Inventory2`
+- **Sales:** `point_of_sale` → `Icons.Material.Filled.PointOfSale`
+- **Projects:** `assignment` → `Icons.Material.Filled.Assignment`
+- **Support:** `support_agent` → `Icons.Material.Filled.SupportAgent`
+
+**Note:** The icon name must match what you set in your `ModuleNavigationMap.cs` (step 7.1).
+
+**Validation:** After this change, your module card on the dashboard (`/dashboard`) should display the correct icon.
+
 ---
 
 ### Phase 8: Web UI (Blazor)
@@ -1685,6 +1727,47 @@ Also add to the publish exclusion filter in the same file:
 
 This prevents duplicate wwwroot/appsettings files during publish.
 
+**ALSO ADD** to the static web assets build filter (to prevent asset conflicts during build):
+
+```xml
+<!-- Also remove duplicate static web assets during build -->
+<Target Name="RemoveDuplicateStaticWebAssets" BeforeTargets="GenerateStaticWebAssetsManifest">
+  <ItemGroup>
+    <StaticWebAsset Remove="@(StaticWebAsset)" 
+      Condition="( $([System.String]::Copy('%(SourceId)').Equals('HR.Web'))
+                   Or $([System.String]::Copy('%(SourceId)').Equals('CRM.Web'))
+                   Or $([System.String]::Copy('%(SourceId)').Equals('Finance.Web'))
+                   Or $([System.String]::Copy('%(SourceId)').Equals('{ModuleName}.Web')) )
+                 And ( $([System.String]::Copy('%(RelativePath)').StartsWith('lib/'))
+                       Or $([System.String]::Copy('%(OriginalItemSpec)').Contains('appsettings')) )" />
+  </ItemGroup>
+</Target>
+```
+
+#### 9.1.1 🔥 CRITICAL: Add Module Assembly to App.razor
+
+**Problem:** Even with the project reference, Blazor won't discover your module's Razor components.
+
+**Why:** Blazor's Router needs to know which assemblies to scan for `@page` components.
+
+**Solution:** Add your module assembly to `frontend/BusinessAsUsual.Web/App.razor`:
+
+```csharp
+@code {
+    private readonly Assembly[] _additionalAssemblies = new[]
+    {
+        typeof(HR.Web.Components.App).Assembly,
+        typeof(CRM.Web.Components.App).Assembly,
+        typeof(Finance.Web.Components.App).Assembly,
+        typeof({ModuleName}.Web.Components.App).Assembly  // ← ADD THIS LINE
+    };
+}
+```
+
+**Validation:** After this change, navigating to `/{modulename}/*` routes should load your module's Razor pages.
+
+**Note:** The `App` class must exist in your module's `Components` folder. If you created it in a different location, adjust the namespace accordingly.
+
 #### 9.2 Update ModuleDiscoveryService Fallback
 Add your module to `frontend/BusinessAsUsual.Web/Services/ModuleDiscoveryService.cs` in the `GetFallbackModules()` method:
 
@@ -1746,6 +1829,50 @@ else if (path.StartsWith("/timekeeping"))
 **Validation:** After this change, navigating to `/{modulename}` should show the sidebar with your module's navigation.
 
 **Note:** The `_currentModule` string must match your module's `DisplayName` from `ModuleDiscoveryService.cs`.
+
+#### 9.2.2 🔥 CRITICAL: Register Module HttpClient in Shell (if module calls its API)
+
+**Problem:** Module pages call the API via HttpClient, but when running inside the shell you get "An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set."
+
+**Why:** The module's `Program.cs` registers a named HttpClient (e.g., "SalesApi") for standalone operation, but when the module runs embedded in the shell, it uses the **shell's DI container**, which doesn't have that registration.
+
+**Solution:** Register the module's named HttpClient in the shell's `frontend/BusinessAsUsual.Web/Program.cs`:
+
+Find the HttpClient registration section (around line 105-118) and add your module's client:
+
+```csharp
+// Register named HttpClient for the Inventory microservice
+var inventoryServiceUrl = builder.Configuration["InventoryService:Url"] ?? "http://localhost:5142";
+builder.Services.AddHttpClient("InventoryApi", client =>
+{
+    client.BaseAddress = new Uri(inventoryServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// Register named HttpClient for the {ModuleName} microservice
+var {modulename}ServiceUrl = builder.Configuration["{ModuleName}Api:Url"] ?? "http://localhost:50XX";
+builder.Services.AddHttpClient("{ModuleName}Api", client =>
+{
+    client.BaseAddress = new Uri({modulename}ServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+```
+
+**Important:** The named client string (e.g., "SalesApi") must **exactly match** what your module pages use in `HttpClientFactory.CreateClient("SalesApi")`.
+
+**Configuration:** Add the API URL to `frontend/BusinessAsUsual.Web/appsettings.json`:
+
+```json
+{
+  "SalesApi": {
+    "Url": "http://localhost:5143"
+  }
+}
+```
+
+**Validation:** After this change, module pages should successfully call their API when running through the shell.
+
+**Note:** This is only required for modules that use HttpClient to call their API. Modules that inject Application services directly (like HR) don't need this step.
 
 #### 9.3 Add to Visual Studio Solution (if not done in Step 2.2)
 If you haven't already added projects to the solution:
@@ -1950,6 +2077,20 @@ dotnet add package Microsoft.AspNetCore.OpenApi --version 9.0.0
 
 **Best Practice:** When developing module features, always access them through the shell sidebar navigation, not by typing the module's standalone URL directly.
 
+#### Issue: "An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set"
+**Symptom:** Module pages load but data loading fails with HttpClient errors  
+**Cause:** Module uses a named HttpClient to call its API, but the shell doesn't have that HttpClient registered in its DI container  
+**Fix:** Register the module's named HttpClient in the shell's `Program.cs` (see Phase 9.2.2):
+```csharp
+var salesServiceUrl = builder.Configuration["SalesApi:Url"] ?? "http://localhost:5143";
+builder.Services.AddHttpClient("SalesApi", client =>
+{
+    client.BaseAddress = new Uri(salesServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+```
+**Important:** The client name must match what the module pages use in `HttpClientFactory.CreateClient("SalesApi")`
+
 ### Visual Studio Issues
 
 #### Issue: Module not appearing in startup project list
@@ -1980,6 +2121,26 @@ dotnet ef migrations add InitialCreate --startup-project ../{ModuleName}.API
 **Cause:** DbContext not registered in DI  
 **Fix:** Verify `builder.Services.AddDbContext<{ModuleName}DbContext>()` exists in both API and Web `Program.cs`
 
+#### Issue: "Unable to determine the relationship represented by navigation 'Order.CustomFields' of type 'Dictionary<string, string>'"
+**Cause:** EF Core cannot automatically map dictionary properties as relationships  
+**Fix:** Configure the dictionary to be stored as JSON in the database using value conversion:
+```csharp
+// In OnModelCreating method of DbContext
+modelBuilder.Entity<Order>(entity =>
+{
+    // ... other configurations ...
+
+    // Configure CustomFields as JSON column
+    entity.Property(e => e.CustomFields)
+        .HasColumnType("nvarchar(max)")
+        .HasConversion(
+            v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+            v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+        );
+});
+```
+**Alternative:** If the dictionary isn't needed for queries, mark it `[NotMapped]` or use `Ignore()` in fluent configuration.
+
 ### MudBlazor/Blazor Issues
 
 #### Issue: "Generic type 'MudList<T>' requires 1 type argument"
@@ -1993,6 +2154,23 @@ dotnet ef migrations add InitialCreate --startup-project ../{ModuleName}.API
 #### Issue: Icons.Material.Filled not recognized
 **Cause:** Missing MudBlazor using  
 **Fix:** Add `@using MudBlazor` at top of .razor file
+
+#### Issue: "The following routes are ambiguous: 'counter' in 'Inventory.Web.Components.Pages.Counter' 'counter' in 'Sales.Web.Components.Pages.Counter'"
+**Cause:** Multiple module web projects have demo/template pages (Counter, Weather, Home) with conflicting routes when loaded into the shell's router via `AdditionalAssemblies`  
+**Fix:** Remove all template demo pages from module web projects:
+```bash
+# Remove from each module: HR, Sales, Inventory, etc.
+rm services/{ModuleName}/{ModuleName}.Web/Components/Pages/Counter.razor
+rm services/{ModuleName}/{ModuleName}.Web/Components/Pages/Weather.razor
+```
+
+#### Issue: "The following routes are ambiguous: '' in 'BusinessAsUsual.Web.Pages.Home' '' in 'Sales.Web.Components.Pages.Home'"
+**Cause:** Module web project has a template Home.razor page with `@page "/"` that conflicts with the shell's root Home page  
+**Fix:** Remove the module's Home.razor if it's just a template demo, or change its route to be module-specific (e.g., `@page "/sales/home"`)
+```bash
+rm services/{ModuleName}/{ModuleName}.Web/Components/Pages/Home.razor
+```
+**Root Cause:** When creating new Blazor projects with templates, the template includes demo pages (Home, Counter, Weather). These must be removed from module projects before integrating into the shell to prevent route conflicts.
 
 ### Module Registration Issues
 
@@ -2511,6 +2689,115 @@ private IEnumerable<EmployeeDto> SearchEmployees(string searchText)
 <!-- AFTER (Fixed) -->
 <MudChip T="string" Size="Size.Small" Color="Color.Primary">New</MudChip>
 ```
+
+### MudBlazor TemplateColumn Type Inference Failure
+
+**Problem:** Error `CS0411: The type arguments for method 'TemplateColumn<T>' cannot be inferred from the usage.`
+
+**Cause:** When using `TemplateColumn` inside `MudDataGrid` or `CustomDataGrid`, Razor's type inference can fail even when the parent grid has `TItem` specified. This commonly occurs with explicit `<TemplateColumn>` markup inside grids.
+
+**Solution:** Add explicit type parameter `T="YourDto"` to the `TemplateColumn`:
+
+```razor
+<!-- BEFORE (Compilation Error CS0411) -->
+<CustomDataGrid TItem="OrderDto" Items="@_orders">
+    <Columns>
+        <PropertyColumn Property="x => x.OrderNumber" Title="Order #" />
+        <TemplateColumn Title="Customer">  <!-- ERROR HERE -->
+            <CellTemplate>
+                @context.CustomerName
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</CustomDataGrid>
+
+<!-- AFTER (Fixed) -->
+<CustomDataGrid TItem="OrderDto" Items="@_orders">
+    <Columns>
+        <PropertyColumn Property="x => x.OrderNumber" Title="Order #" />
+        <TemplateColumn T="OrderDto" Title="Customer">  <!-- Added T="OrderDto" -->
+            <CellTemplate>
+                @context.CustomerName
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</CustomDataGrid>
+```
+
+**Real-World Examples:**
+
+From Sales.Web Orders page:
+```razor
+<TemplateColumn T="OrderDto" Title="Status">
+    <CellTemplate>
+        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">
+            @context.Item.Status
+        </MudChip>
+    </CellTemplate>
+</TemplateColumn>
+```
+
+From Sales.Web Quotes page:
+```razor
+<TemplateColumn T="QuoteDto" Title="Actions">
+    <CellTemplate>
+        <MudIconButton Icon="@Icons.Material.Filled.Send" title="Send" Size="Size.Small" />
+        <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" title="Accept" Size="Size.Small" />
+    </CellTemplate>
+</TemplateColumn>
+```
+
+**Best Practice:** Always specify the type parameter on `TemplateColumn` when using it inside data grids to avoid inference ambiguity.
+
+### Missing Interactive Server Components Registration
+
+**Problem:** Runtime error `System.InvalidOperationException: Unable to find a provider for the render mode: Microsoft.AspNetCore.Components.Server.InternalServerRenderMode. This generally means that a call to 'AddInteractiveWebAssemblyComponents' or 'AddInteractiveServerComponents' is missing.`
+
+**Cause:** Module's `Program.cs` is using the old Blazor Server registration pattern (`.AddServerSideBlazor()`) instead of the new .NET 8/9 Razor Components pattern.
+
+**Solution:** Update your module's `Program.cs` to use the new registration pattern:
+
+```csharp
+// ❌ OLD PATTERN (Blazor Server - will cause runtime error)
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+// ...
+app.MapBlazorHub();
+
+// ✅ NEW PATTERN (.NET 8/9 Razor Components - correct)
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+// ...
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+```
+
+**Complete Working Example:**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Blazor services - NEW .NET 8/9 pattern
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+builder.Services.AddMudServices();
+
+// ... other service registrations ...
+
+var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapStaticAssets();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+app.Run();
+```
+
+**Note:** Do NOT mix old (`AddServerSideBlazor()`) and new (`.AddInteractiveServerComponents()`) patterns in the same project.
 
 ### Build vs. Runtime Environment Differences
 

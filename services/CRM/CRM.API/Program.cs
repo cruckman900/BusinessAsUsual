@@ -1,5 +1,7 @@
 using CRM.Application.Services;
 using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
+using CRM.Application.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
@@ -22,16 +24,21 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<ILeadService, MockLeadService>();
 builder.Services.AddScoped<IOpportunityService, MockOpportunityService>();
 builder.Services.AddScoped<ICustomerService, MockCustomerService>();
+builder.Services.AddScoped<CRM.Application.Interfaces.IActivityService, MockActivityService>();
 builder.Services.AddScoped<CRM.Application.Interfaces.IEmailTemplateService, MockEmailTemplateService>();
 builder.Services.AddScoped<ILeadScoringService, LeadScoringService>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
 
-// In-process event bus so CRM can publish integration events (e.g. OpportunityWon).
-// NOTE: this is in-process only; cross-service delivery to Finance requires a
-// real broker (see docs/FINANCE_MODULE_GUIDE.md).
-builder.Services.AddInProcessEventBus();
+// In-process event bus so CRM can publish integration events (e.g. OpportunityWon)
+// and consume Sales events (e.g. OrderCreated) to track customer activity.
+// NOTE: this is in-process only; cross-service delivery requires a real broker
+// (see docs/FINANCE_MODULE_GUIDE.md).
+builder.Services.AddEventBus(builder.Configuration, bus =>
+{
+    bus.AddHandler<OrderCreatedIntegrationEvent, OrderCreatedEventHandler>();
+});
 
 // Keep the module registered (retry on startup + heartbeat to survive registry restarts)
 builder.Services.AddHostedService<CRM.API.Services.ModuleRegistrationHostedService>();

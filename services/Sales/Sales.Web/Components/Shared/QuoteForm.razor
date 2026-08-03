@@ -11,21 +11,40 @@
             <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
                 <MudTabPanel Text="Customer Info" Icon="@Icons.Material.Filled.Person">
                     <MudGrid>
+                        <MudItem xs="12">
+                            <CustomerPicker SelectedCustomer="_selectedCustomer"
+                                          SelectedCustomerChanged="OnCustomerSelectedAsync"
+                                          Label="Select Customer from CRM"
+                                          Required="true"
+                                          RequiredError="Customer is required" />
+                        </MudItem>
+
+                        @if (_selectedCustomer != null)
+                        {
+                            <MudItem xs="12">
+                                <MudAlert Severity="Severity.Info" Dense="true">
+                                    Selected: <strong>@_selectedCustomer.Name</strong>
+                                    @if (!string.IsNullOrWhiteSpace(_selectedCustomer.Email))
+                                    {
+                                        <text> • @_selectedCustomer.Email</text>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(_selectedCustomer.Phone))
+                                    {
+                                        <text> • @_selectedCustomer.Phone</text>
+                                    }
+                                </MudAlert>
+                            </MudItem>
+                        }
+
                         <MudItem xs="12" md="6">
                             <MudTextField @bind-Value="_model.CustomerName"
                                           Label="Customer Name"
                                           Required="true"
                                           RequiredError="Customer name is required"
                                           Variant="Variant.Outlined"
-                                          Margin="Margin.Dense" />
-                        </MudItem>
-
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="_model.CustomerId"
-                                          Label="Customer ID"
-                                          Variant="Variant.Outlined"
                                           Margin="Margin.Dense"
-                                          HelperText="Link to CRM customer" />
+                                          Disabled="@(_selectedCustomer != null)"
+                                          HelperText="Auto-filled from CRM or enter manually" />
                         </MudItem>
 
                         <MudItem xs="12" md="6">
@@ -33,7 +52,8 @@
                                           Label="Email"
                                           InputType="InputType.Email"
                                           Variant="Variant.Outlined"
-                                          Margin="Margin.Dense" />
+                                          Margin="Margin.Dense"
+                                          Disabled="@(_selectedCustomer != null)" />
                         </MudItem>
 
                         <MudItem xs="12" md="6">
@@ -41,7 +61,17 @@
                                           Label="Phone"
                                           InputType="InputType.Telephone"
                                           Variant="Variant.Outlined"
-                                          Margin="Margin.Dense" />
+                                          Margin="Margin.Dense"
+                                          Disabled="@(_selectedCustomer != null)" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_model.CustomerId"
+                                          Label="Customer ID"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Disabled="true"
+                                          HelperText="Auto-filled from CRM" />
                         </MudItem>
 
                         <MudItem xs="12" md="6">
@@ -73,13 +103,74 @@
                 </MudTabPanel>
 
                 <MudTabPanel Text="Line Items" Icon="@Icons.Material.Filled.ShoppingCart">
-                    <MudButton StartIcon="@Icons.Material.Filled.Add"
-                               Color="Color.Primary"
-                               Variant="Variant.Filled"
+                    @* Product Selection Panel - Inline *@
+                    <MudExpansionPanels @bind-Expanded="_showProductPanel" Class="mb-3">
+                        <MudExpansionPanel Text="Add Product from Inventory" 
+                                          Icon="@Icons.Material.Filled.Inventory"
+                                          MaxHeight="400">
+                            <MudStack Spacing="3" Class="pa-4">
+                                <ProductPicker @bind-SelectedProduct="_selectedProduct"
+                                             Label="Search Products (type name, SKU, or description)"
+                                             Variant="Variant.Outlined" />
+
+                                @if (_selectedProduct != null)
+                                {
+                                    <MudPaper Class="pa-3" Outlined="true" Elevation="0">
+                                        <MudStack Spacing="2">
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.subtitle1"><strong>@_selectedProduct.Name</strong></MudText>
+                                                <MudText Typo="Typo.h6" Color="Color.Primary">@_selectedProduct.Price.ToString("C")</MudText>
+                                            </MudStack>
+                                            @if (!string.IsNullOrWhiteSpace(_selectedProduct.SKU))
+                                            {
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">SKU: @_selectedProduct.SKU</MudText>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(_selectedProduct.Description))
+                                            {
+                                                <MudText Typo="Typo.body2">@_selectedProduct.Description</MudText>
+                                            }
+                                        </MudStack>
+                                    </MudPaper>
+
+                                    <MudNumericField @bind-Value="_productQuantity"
+                                                   Label="Quantity"
+                                                   Min="0.01m"
+                                                   Variant="Variant.Outlined"
+                                                   HelperText="How many units?" />
+
+                                    <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true">
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText><strong>Line Total:</strong></MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Primary">@((_productQuantity * _selectedProduct.Price).ToString("C"))</MudText>
+                                        </MudStack>
+                                    </MudAlert>
+
+                                    <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd">
+                                        <MudButton Color="Color.Default"
+                                                 Variant="Variant.Text"
+                                                 OnClick="CancelAddProduct">
+                                            Cancel
+                                        </MudButton>
+                                        <MudButton Color="Color.Primary"
+                                                 Variant="Variant.Filled"
+                                                 StartIcon="@Icons.Material.Filled.Add"
+                                                 OnClick="AddProductToQuote">
+                                            Add to Quote
+                                        </MudButton>
+                                    </MudStack>
+                                }
+                            </MudStack>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+
+                    @* Quick Add Custom Item Button *@
+                    <MudButton StartIcon="@Icons.Material.Filled.Edit"
+                               Color="Color.Secondary"
+                               Variant="Variant.Outlined"
                                Size="Size.Small"
                                OnClick="AddLineItem"
                                Class="mb-3">
-                        Add Line Item
+                        Add Custom Item
                     </MudButton>
 
                     @if (_model.LineItems.Any())
@@ -224,6 +315,10 @@
     private bool _isValid = false;
     private bool _saving = false;
     private QuoteFormModel _model = new();
+    private CustomerPicker.CustomerDto? _selectedCustomer;
+    private ProductPicker.ProductDto? _selectedProduct;
+    private bool _showProductPanel = false;
+    private decimal _productQuantity = 1;
 
     protected override void OnInitialized()
     {
@@ -251,6 +346,94 @@
                 }).ToList()
             };
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _form != null)
+        {
+            // Initial validation
+            await _form.ValidateAsync();
+        }
+    }
+
+    private async Task OnCustomerSelectedAsync(CustomerPicker.CustomerDto? customer)
+    {
+        _selectedCustomer = customer;
+
+        // Auto-fill customer fields when customer is selected
+        if (customer != null)
+        {
+            _model.CustomerId = customer.Id;
+            // Always use the customer's Name property (works for both individuals and companies)
+            _model.CustomerName = !string.IsNullOrWhiteSpace(customer.Name) 
+                ? customer.Name 
+                : customer.CompanyName ?? "Unknown Customer";
+            _model.CustomerEmail = customer.Email;
+            _model.CustomerPhone = customer.Phone;
+
+            // Revalidate the form after customer fields are populated
+            if (_form != null)
+            {
+                await _form.ValidateAsync();
+            }
+        }
+        else
+        {
+            // Customer was cleared
+            _model.CustomerId = string.Empty;
+            _model.CustomerName = string.Empty;
+            _model.CustomerEmail = string.Empty;
+            _model.CustomerPhone = string.Empty;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Keep this for initialization when editing an existing quote
+        if (_selectedCustomer != null)
+        {
+            _model.CustomerId = _selectedCustomer.Id;
+            _model.CustomerName = !string.IsNullOrWhiteSpace(_selectedCustomer.Name) 
+                ? _selectedCustomer.Name 
+                : _selectedCustomer.CompanyName ?? "Unknown Customer";
+            _model.CustomerEmail = _selectedCustomer.Email;
+            _model.CustomerPhone = _selectedCustomer.Phone;
+
+            if (_form != null)
+            {
+                await _form.ValidateAsync();
+            }
+        }
+    }
+
+    private void AddProductToQuote()
+    {
+        if (_selectedProduct != null)
+        {
+            _model.LineItems.Add(new QuoteLineItemModel
+            {
+                ProductId = _selectedProduct.Id,
+                ProductName = _selectedProduct.Name,
+                Description = _selectedProduct.Description,
+                Quantity = _productQuantity,
+                UnitPrice = _selectedProduct.Price,
+                DiscountPercentage = 0,
+                TaxPercentage = 0
+            });
+
+            // Reset the panel
+            _showProductPanel = false;
+            _selectedProduct = null;
+            _productQuantity = 1;
+        }
+    }
+
+    private void CancelAddProduct()
+    {
+        _showProductPanel = false;
+        _selectedProduct = null;
+        _productQuantity = 1;
     }
 
     private void AddLineItem()

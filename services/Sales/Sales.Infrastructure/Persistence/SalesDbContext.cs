@@ -33,6 +33,14 @@ public class SalesDbContext : DbContext
             entity.Property(e => e.AssignedToEmployeeId).HasMaxLength(50);
             entity.Property(e => e.ConvertedToOrderId).HasMaxLength(50);
 
+            // Configure CustomFields as JSON column
+            entity.Property(e => e.CustomFields)
+                .HasColumnType("nvarchar(max)")
+                .HasConversion(
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                );
+
             entity.HasIndex(e => e.QuoteNumber).IsUnique();
             entity.HasIndex(e => e.CustomerId);
             entity.HasIndex(e => e.Status);
@@ -70,6 +78,14 @@ public class SalesDbContext : DbContext
             entity.Property(e => e.AssignedToEmployeeId).HasMaxLength(50);
             entity.Property(e => e.TrackingNumber).HasMaxLength(100);
             entity.Property(e => e.ShippingCost).HasColumnType("decimal(18,2)");
+
+            // Configure CustomFields as JSON column
+            entity.Property(e => e.CustomFields)
+                .HasColumnType("nvarchar(max)")
+                .HasConversion(
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                );
 
             entity.HasIndex(e => e.OrderNumber).IsUnique();
             entity.HasIndex(e => e.CustomerId);

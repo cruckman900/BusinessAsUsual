@@ -28,14 +28,16 @@ builder.Services.AddSingleton<PayrollDataStore>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
 
 // Register Finance services (using mock implementations for now)
-builder.Services.AddScoped<IInvoiceService, MockInvoiceService>();
-builder.Services.AddScoped<IPaymentService, MockPaymentService>();
-builder.Services.AddScoped<IBillService, MockBillService>();
-builder.Services.AddScoped<IVendorPaymentService, MockVendorPaymentService>();
-builder.Services.AddScoped<ICollectionService, MockCollectionService>();
-builder.Services.AddScoped<IBankingService, MockBankingService>();
-builder.Services.AddScoped<IGeneralLedgerService, MockGeneralLedgerService>();
-builder.Services.AddScoped<IFinanceReportService, MockFinanceReportService>();
+// Changed to Singleton for integration tests - mock services use in-memory lists
+// that need to persist across HTTP requests in the same test
+builder.Services.AddSingleton<IInvoiceService, MockInvoiceService>();
+builder.Services.AddSingleton<IPaymentService, MockPaymentService>();
+builder.Services.AddSingleton<IBillService, MockBillService>();
+builder.Services.AddSingleton<IVendorPaymentService, MockVendorPaymentService>();
+builder.Services.AddSingleton<ICollectionService, MockCollectionService>();
+builder.Services.AddSingleton<IBankingService, MockBankingService>();
+builder.Services.AddSingleton<IGeneralLedgerService, MockGeneralLedgerService>();
+builder.Services.AddSingleton<IFinanceReportService, MockFinanceReportService>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
@@ -43,11 +45,13 @@ builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationSer
 // Event bus (in-process by default, or a real broker when EventBus:Provider=Broker)
 // + Finance consumers. When CRM publishes OpportunityWon, Finance creates a draft
 // invoice; when HR publishes TimesheetSubmitted, Finance holds it as pending payroll.
+// When Sales publishes OrderConfirmed, Finance creates an invoice for the order.
 // In broker mode these arrive cross-process over RabbitMQ. See the WIP doc for details.
 builder.Services.AddEventBus(builder.Configuration, bus =>
 {
     bus.AddHandler<OpportunityWonIntegrationEvent, OpportunityWonHandler>();
     bus.AddHandler<TimesheetSubmittedIntegrationEvent, TimesheetSubmittedHandler>();
+    bus.AddHandler<OrderConfirmedIntegrationEvent, OrderConfirmedEventHandler>();
 });
 
 // Keep the module registered (retry on startup + heartbeat to survive registry restarts)

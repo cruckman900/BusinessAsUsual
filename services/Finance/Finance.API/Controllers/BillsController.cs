@@ -56,4 +56,44 @@ public class BillsController : ControllerBase
         await _billService.DeleteBillAsync(id);
         return NoContent();
     }
+
+    [HttpPost("{id}/approve")]
+    public async Task<ActionResult<BillDto>> Approve(string id)
+    {
+        try
+        {
+            var bill = await _billService.GetBillByIdAsync(id);
+            if (bill is null)
+                return NotFound();
+
+            // Approve by changing status from Draft to Received
+            var updateRequest = new UpdateBillRequest
+            {
+                VendorId = bill.VendorId,
+                VendorName = bill.VendorName,
+                VendorEmail = bill.VendorEmail,
+                Status = Finance.Domain.Enums.BillStatus.Received,
+                Currency = Enum.Parse<Finance.Domain.Enums.Currency>(bill.Currency),
+                DueDate = bill.DueDate,
+                Notes = bill.Notes,
+                Terms = bill.Terms,
+                AssignedToEmployeeId = bill.AssignedToEmployeeId,
+                LineItems = bill.LineItems.Select(li => new CreateBillLineItemRequest
+                {
+                    Description = li.Description,
+                    Quantity = li.Quantity,
+                    UnitPrice = li.UnitPrice,
+                    TaxPercent = li.TaxPercent,
+                    ExpenseCategory = li.ExpenseCategory
+                }).ToList(),
+                Tags = bill.Tags
+            };
+
+            return Ok(await _billService.UpdateBillAsync(id, updateRequest));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 }

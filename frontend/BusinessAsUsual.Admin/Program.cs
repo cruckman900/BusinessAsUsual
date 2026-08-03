@@ -21,7 +21,7 @@ namespace BusinessAsUsual.Admin
     /// environment variables, setting up dependency injection, and initializing Serilog for structured logging. The
     /// class follows the standard ASP.NET Core application startup pattern.</remarks>
 #pragma warning disable S1118 // Utility classes should not have public constructors
-    public class Program
+    public partial class Program
 #pragma warning restore S1118 // Utility classes should not have public constructors
     {
 

@@ -439,6 +439,39 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                         }
                     }
                 }
+            },
+            new ModuleDto
+            {
+                ModuleId = "sales",
+                Key = "sales",
+                DisplayName = "Sales",
+                Description = "Sales orders, quotes, and customer management",
+                UiEntryPoint = "/sales",
+                Icon = Icons.Material.Filled.PointOfSale,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Dashboard", Route = "/sales", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "Orders", Route = "/sales/orders", Icon = Icons.Material.Filled.ReceiptLong },
+                    new() { Label = "Quotes", Route = "/sales/quotes", Icon = Icons.Material.Filled.Description },
+                    new() { Label = "Customers", Route = "/sales/customers", Icon = Icons.Material.Filled.People },
+                    new() { Label = "Products", Route = "/sales/products", Icon = Icons.Material.Filled.Inventory },
+
+                    // Reports Group
+                    new()
+                    {
+                        Label = "Reports",
+                        Route = "/sales/reports",
+                        Icon = Icons.Material.Filled.Assessment,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Sales Summary", Route = "/sales/reports/summary", Icon = Icons.Material.Filled.TrendingUp },
+                            new() { Label = "Revenue", Route = "/sales/reports/revenue", Icon = Icons.Material.Filled.AttachMoney },
+                            new() { Label = "Performance", Route = "/sales/reports/performance", Icon = Icons.Material.Filled.Speed }
+                        }
+                    }
+                }
             }
         };
     }

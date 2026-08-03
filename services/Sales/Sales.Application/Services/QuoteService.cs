@@ -1,33 +1,43 @@
 using Sales.Application.DTOs;
 using Sales.Domain.Entities;
 using Sales.Domain.Enums;
+using Sales.Domain.Repositories;
+using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
 
 namespace Sales.Application.Services;
 
 public class QuoteService : IQuoteService
 {
-    private readonly List<Quote> _quotes = new(); // TODO: Replace with repository
+    private readonly IQuoteRepository _quoteRepository;
+    private readonly IOrderRepository _orderRepository;
+    private readonly IEventBus _eventBus;
+
+    public QuoteService(IQuoteRepository quoteRepository, IOrderRepository orderRepository, IEventBus eventBus)
+    {
+        _quoteRepository = quoteRepository;
+        _orderRepository = orderRepository;
+        _eventBus = eventBus;
+    }
 
     public async Task<IEnumerable<QuoteDto>> GetAllQuotesAsync()
     {
-        await Task.CompletedTask;
-        return _quotes.Select(MapToDto);
+        var quotes = await _quoteRepository.GetAllAsync();
+        return quotes.Select(MapToDto);
     }
 
     public async Task<QuoteDto?> GetQuoteByIdAsync(string id)
     {
-        await Task.CompletedTask;
-        var quote = _quotes.FirstOrDefault(q => q.Id == id);
+        var quote = await _quoteRepository.GetByIdAsync(id);
         return quote == null ? null : MapToDto(quote);
     }
 
     public async Task<QuoteDto> CreateQuoteAsync(CreateQuoteDto dto)
     {
-        await Task.CompletedTask;
-
+        var allQuotes = await _quoteRepository.GetAllAsync();
         var quote = new Quote
         {
-            QuoteNumber = $"Q-{DateTime.UtcNow:yyyyMMdd}-{_quotes.Count + 1:D4}",
+            QuoteNumber = $"Q-{DateTime.UtcNow:yyyyMMdd}-{allQuotes.Count() + 1:D4}",
             CustomerId = dto.CustomerId,
             CustomerName = dto.CustomerName,
             CustomerEmail = dto.CustomerEmail,
@@ -57,15 +67,14 @@ public class QuoteService : IQuoteService
             item.QuoteId = quote.Id;
         }
 
-        _quotes.Add(quote);
-        return MapToDto(quote);
+        var created = await _quoteRepository.AddAsync(quote);
+        return MapToDto(created);
     }
 
     public async Task<QuoteDto> UpdateQuoteAsync(UpdateQuoteDto dto)
     {
-        await Task.CompletedTask;
+        var quote = await _quoteRepository.GetByIdAsync(dto.Id);
 
-        var quote = _quotes.FirstOrDefault(q => q.Id == dto.Id);
         if (quote == null)
             throw new KeyNotFoundException($"Quote with ID {dto.Id} not found");
 
@@ -95,24 +104,19 @@ public class QuoteService : IQuoteService
             SortOrder = index
         }).ToList();
 
-        return MapToDto(quote);
+        var updated = await _quoteRepository.UpdateAsync(quote);
+        return MapToDto(updated);
     }
 
     public async Task<bool> DeleteQuoteAsync(string id)
     {
-        await Task.CompletedTask;
-        var quote = _quotes.FirstOrDefault(q => q.Id == id);
-        if (quote == null) return false;
-
-        _quotes.Remove(quote);
-        return true;
+        return await _quoteRepository.DeleteAsync(id);
     }
 
     public async Task<QuoteDto> SendQuoteAsync(string id)
     {
-        await Task.CompletedTask;
+        var quote = await _quoteRepository.GetByIdAsync(id);
 
-        var quote = _quotes.FirstOrDefault(q => q.Id == id);
         if (quote == null)
             throw new KeyNotFoundException($"Quote with ID {id} not found");
 
@@ -120,14 +124,14 @@ public class QuoteService : IQuoteService
         quote.SentDate = DateTime.UtcNow;
         quote.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(quote);
+        var updated = await _quoteRepository.UpdateAsync(quote);
+        return MapToDto(updated);
     }
 
     public async Task<QuoteDto> AcceptQuoteAsync(string id)
     {
-        await Task.CompletedTask;
+        var quote = await _quoteRepository.GetByIdAsync(id);
 
-        var quote = _quotes.FirstOrDefault(q => q.Id == id);
         if (quote == null)
             throw new KeyNotFoundException($"Quote with ID {id} not found");
 
@@ -135,37 +139,38 @@ public class QuoteService : IQuoteService
         quote.AcceptedDate = DateTime.UtcNow;
         quote.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(quote);
+        var updated = await _quoteRepository.UpdateAsync(quote);
+        return MapToDto(updated);
     }
 
     public async Task<QuoteDto> RejectQuoteAsync(string id)
     {
-        await Task.CompletedTask;
+        var quote = await _quoteRepository.GetByIdAsync(id);
 
-        var quote = _quotes.FirstOrDefault(q => q.Id == id);
         if (quote == null)
             throw new KeyNotFoundException($"Quote with ID {id} not found");
 
         quote.Status = QuoteStatus.Rejected;
         quote.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(quote);
+        var updated = await _quoteRepository.UpdateAsync(quote);
+        return MapToDto(updated);
     }
 
     public async Task<OrderDto> ConvertQuoteToOrderAsync(string quoteId)
     {
-        await Task.CompletedTask;
+        var quote = await _quoteRepository.GetByIdAsync(quoteId);
 
-        var quote = _quotes.FirstOrDefault(q => q.Id == quoteId);
         if (quote == null)
             throw new KeyNotFoundException($"Quote with ID {quoteId} not found");
 
         if (quote.Status != QuoteStatus.Accepted)
             throw new InvalidOperationException("Only accepted quotes can be converted to orders");
 
+        var orderCount = await _orderRepository.CountAsync();
         var order = new Order
         {
-            OrderNumber = $"O-{DateTime.UtcNow:yyyyMMdd}-{1:D4}", // TODO: Proper numbering
+            OrderNumber = $"O-{DateTime.UtcNow:yyyyMMdd}-{orderCount + 1:D4}",
             CustomerId = quote.CustomerId,
             CustomerName = quote.CustomerName,
             CustomerEmail = quote.CustomerEmail,
@@ -198,7 +203,23 @@ public class QuoteService : IQuoteService
         quote.ConvertedToOrderId = order.Id;
         quote.LastModifiedDate = DateTime.UtcNow;
 
-        // TODO: Add order to order service/repository
+        await _orderRepository.AddAsync(order);
+        await _quoteRepository.UpdateAsync(quote);
+
+        // Publish QuoteConverted event
+        await _eventBus.PublishAsync(new QuoteConvertedIntegrationEvent
+        {
+            QuoteId = quote.Id,
+            QuoteNumber = quote.QuoteNumber,
+            OrderId = order.Id,
+            OrderNumber = order.OrderNumber,
+            CustomerId = quote.CustomerId,
+            CustomerName = quote.CustomerName,
+            TotalAmount = order.Total,
+            Currency = order.Currency.ToString(),
+            ConvertedDate = quote.ConvertedDate ?? DateTime.UtcNow
+        });
+
         return MapOrderToDto(order);
     }
 
@@ -282,7 +303,7 @@ public class QuoteService : IQuoteService
             Notes = order.Notes,
             InternalNotes = order.InternalNotes,
             AssignedToEmployeeId = order.AssignedToEmployeeId,
-            LineItems = order.LineItems.Select(li => new OrderLineItemDto
+            LineItems = order.LineItems.Select(li => new Sales.Application.DTOs.OrderLineItemDto
             {
                 Id = li.Id,
                 OrderId = li.OrderId,

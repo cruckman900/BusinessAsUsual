@@ -3,6 +3,8 @@ using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Inventory.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,12 @@ builder.Services.AddScoped<WarehouseService>();
 builder.Services.AddScoped<StockService>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<SupplierService>();
+
+// Register event bus for cross-module integration events
+builder.Services.AddInProcessEventBus();
+
+// Register event handlers
+builder.Services.AddScoped<IIntegrationEventHandler<OrderShippedIntegrationEvent>, Inventory.API.EventHandlers.OrderShippedEventHandler>();
 
 // Register HTTP client for module registration
 builder.Services.AddHttpClient<IModuleRegistrationService, ModuleRegistrationService>();
@@ -169,17 +177,24 @@ static void SeedData(InventoryDbContext context)
     var product2Id = Guid.NewGuid();
     var product3Id = Guid.NewGuid();
     var product4Id = Guid.NewGuid();
+    var product5Id = Guid.NewGuid();
+    var product6Id = Guid.NewGuid();
+    var product7Id = Guid.NewGuid();
+    var product8Id = Guid.NewGuid();
 
+    // Enterprise Software & Hardware
     var product1 = new Inventory.Domain.Entities.Product
     {
         Id = product1Id,
-        Name = "Widget A",
-        SKU = "WDG-A-001",
-        Description = "High-quality widget",
-        Cost = 19.99m,
-        Price = 29.99m,
-        ReorderPoint = 50,
-        ReorderQuantity = 100,
+        Name = "Enterprise CRM Platform - Annual License",
+        SKU = "SW-CRM-001",
+        Description = "Full-featured customer relationship management platform with unlimited users",
+        Category = "Software",
+        Cost = 15000m,
+        Price = 25000m,
+        ReorderPoint = 0,
+        ReorderQuantity = 0,
+        IsTrackedInventory = false,
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
@@ -187,55 +202,127 @@ static void SeedData(InventoryDbContext context)
     var product2 = new Inventory.Domain.Entities.Product
     {
         Id = product2Id,
-        Name = "Widget B",
-        SKU = "WDG-B-002",
-        Description = "Premium widget",
-        Cost = 29.99m,
-        Price = 49.99m,
-        ReorderPoint = 30,
-        ReorderQuantity = 75,
+        Name = "Professional Services - Implementation",
+        SKU = "SVC-IMP-001",
+        Description = "40 hours of professional implementation and training services",
+        Category = "Services",
+        UnitOfMeasure = "HR",
+        Cost = 8000m,
+        Price = 15000m,
+        ReorderPoint = 0,
+        ReorderQuantity = 0,
+        IsTrackedInventory = false,
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
 
+    // Medical Equipment
     var product3 = new Inventory.Domain.Entities.Product
     {
         Id = product3Id,
-        Name = "Gadget X",
-        SKU = "GDG-X-003",
-        Description = "Essential gadget",
-        Cost = 9.99m,
-        Price = 19.99m,
-        ReorderPoint = 100,
-        ReorderQuantity = 200,
+        Name = "Digital X-Ray Machine - Portable",
+        SKU = "MED-XR-500",
+        Description = "Portable digital X-ray imaging system with wireless connectivity",
+        Category = "Medical Equipment",
+        Cost = 45000m,
+        Price = 75000m,
+        ReorderPoint = 2,
+        ReorderQuantity = 5,
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
 
+    // Construction Materials
     var product4 = new Inventory.Domain.Entities.Product
     {
         Id = product4Id,
-        Name = "Tool Z",
-        SKU = "TL-Z-004",
-        Description = "Professional tool",
-        Cost = 49.99m,
-        Price = 79.99m,
-        ReorderPoint = 20,
-        ReorderQuantity = 50,
+        Name = "Steel I-Beam - 20ft",
+        SKU = "CONST-IB-20",
+        Description = "Structural steel I-beam, 20 foot length, grade A36",
+        Category = "Construction Materials",
+        UnitOfMeasure = "EA",
+        Cost = 450m,
+        Price = 850m,
+        ReorderPoint = 50,
+        ReorderQuantity = 100,
         IsActive = true,
         CreatedAt = DateTime.UtcNow
     };
 
-    context.Products.AddRange(product1, product2, product3, product4);
+    var product5 = new Inventory.Domain.Entities.Product
+    {
+        Id = product5Id,
+        Name = "Concrete - Ready Mix (per cubic yard)",
+        SKU = "CONST-CM-001",
+        Description = "Standard 3000 PSI ready-mix concrete",
+        Category = "Construction Materials",
+        UnitOfMeasure = "YD",
+        Cost = 85m,
+        Price = 145m,
+        ReorderPoint = 0,
+        ReorderQuantity = 0,
+        IsTrackedInventory = false,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    // Office & School Supplies
+    var product6 = new Inventory.Domain.Entities.Product
+    {
+        Id = product6Id,
+        Name = "Interactive Smartboard - 75 inch",
+        SKU = "EDU-SB-75",
+        Description = "Interactive touchscreen display for classroom or conference room",
+        Category = "Education Technology",
+        Cost = 2500m,
+        Price = 4500m,
+        ReorderPoint = 10,
+        ReorderQuantity = 25,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    var product7 = new Inventory.Domain.Entities.Product
+    {
+        Id = product7Id,
+        Name = "Student Desk & Chair Set",
+        SKU = "EDU-DSK-001",
+        Description = "Adjustable student desk with ergonomic chair",
+        Category = "Education Furniture",
+        Cost = 120m,
+        Price = 250m,
+        ReorderPoint = 50,
+        ReorderQuantity = 100,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    // Retail Tech
+    var product8 = new Inventory.Domain.Entities.Product
+    {
+        Id = product8Id,
+        Name = "Point of Sale Terminal",
+        SKU = "RET-POS-001",
+        Description = "All-in-one touchscreen POS terminal with receipt printer and card reader",
+        Category = "Retail Hardware",
+        Cost = 650m,
+        Price = 1200m,
+        ReorderPoint = 20,
+        ReorderQuantity = 40,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    context.Products.AddRange(product1, product2, product3, product4, product5, product6, product7, product8);
 
     var stockItem1 = new Inventory.Domain.Entities.StockItem
     {
         Id = Guid.NewGuid(),
-        ProductId = product1Id,
+        ProductId = product3Id, // X-Ray Machine
         WarehouseId = warehouse1Id,
-        QuantityOnHand = 150,
-        QuantityAllocated = 0,
-        AverageCost = 19.99m,
+        QuantityOnHand = 5,
+        QuantityAllocated = 1,
+        AverageCost = 45000m,
         LastStockDate = DateTime.UtcNow.AddDays(-5),
         CreatedAt = DateTime.UtcNow
     };
@@ -243,11 +330,11 @@ static void SeedData(InventoryDbContext context)
     var stockItem2 = new Inventory.Domain.Entities.StockItem
     {
         Id = Guid.NewGuid(),
-        ProductId = product2Id,
+        ProductId = product4Id, // I-Beams
         WarehouseId = warehouse1Id,
-        QuantityOnHand = 75,
-        QuantityAllocated = 0,
-        AverageCost = 29.99m,
+        QuantityOnHand = 150,
+        QuantityAllocated = 50,
+        AverageCost = 450m,
         LastStockDate = DateTime.UtcNow.AddDays(-3),
         CreatedAt = DateTime.UtcNow
     };
@@ -255,28 +342,40 @@ static void SeedData(InventoryDbContext context)
     var stockItem3 = new Inventory.Domain.Entities.StockItem
     {
         Id = Guid.NewGuid(),
-        ProductId = product3Id,
-        WarehouseId = warehouse2Id,
-        QuantityOnHand = 25, // Low stock!
-        QuantityAllocated = 0,
-        AverageCost = 9.99m,
-        LastStockDate = DateTime.UtcNow.AddDays(-10),
+        ProductId = product6Id, // Smartboards
+        WarehouseId = warehouse1Id,
+        QuantityOnHand = 25,
+        QuantityAllocated = 5,
+        AverageCost = 2500m,
+        LastStockDate = DateTime.UtcNow.AddDays(-2),
         CreatedAt = DateTime.UtcNow
     };
 
     var stockItem4 = new Inventory.Domain.Entities.StockItem
     {
         Id = Guid.NewGuid(),
-        ProductId = product4Id,
+        ProductId = product7Id, // Desk sets
         WarehouseId = warehouse1Id,
-        QuantityOnHand = 60,
-        QuantityAllocated = 0,
-        AverageCost = 49.99m,
-        LastStockDate = DateTime.UtcNow.AddDays(-7),
+        QuantityOnHand = 200,
+        QuantityAllocated = 50,
+        AverageCost = 120m,
+        LastStockDate = DateTime.UtcNow.AddDays(-1),
         CreatedAt = DateTime.UtcNow
     };
 
-    context.StockItems.AddRange(stockItem1, stockItem2, stockItem3, stockItem4);
+    var stockItem5 = new Inventory.Domain.Entities.StockItem
+    {
+        Id = Guid.NewGuid(),
+        ProductId = product8Id, // POS terminals
+        WarehouseId = warehouse2Id,
+        QuantityOnHand = 45,
+        QuantityAllocated = 10,
+        AverageCost = 650m,
+        LastStockDate = DateTime.UtcNow.AddDays(-1),
+        CreatedAt = DateTime.UtcNow
+    };
+
+    context.StockItems.AddRange(stockItem1, stockItem2, stockItem3, stockItem4, stockItem5);
 
     var po1 = new Inventory.Domain.Entities.PurchaseOrder
     {
@@ -317,3 +416,6 @@ static void SeedData(InventoryDbContext context)
     context.SaveChanges();
     Console.WriteLine("✅ Inventory database seeded with test data");
 }
+
+// Make Program accessible for integration tests
+public partial class Program { }

@@ -1,33 +1,41 @@
 using Sales.Application.DTOs;
 using Sales.Domain.Entities;
 using Sales.Domain.Enums;
+using Sales.Domain.Repositories;
+using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Core.Events.Integration;
 
 namespace Sales.Application.Services;
 
 public class OrderService : IOrderService
 {
-    private readonly List<Order> _orders = new(); // TODO: Replace with repository
+    private readonly IOrderRepository _orderRepository;
+    private readonly IEventBus _eventBus;
+
+    public OrderService(IOrderRepository orderRepository, IEventBus eventBus)
+    {
+        _orderRepository = orderRepository;
+        _eventBus = eventBus;
+    }
 
     public async Task<IEnumerable<OrderDto>> GetAllOrdersAsync()
     {
-        await Task.CompletedTask;
-        return _orders.Select(MapToDto);
+        var orders = await _orderRepository.GetAllAsync();
+        return orders.Select(MapToDto);
     }
 
     public async Task<OrderDto?> GetOrderByIdAsync(string id)
     {
-        await Task.CompletedTask;
-        var order = _orders.FirstOrDefault(o => o.Id == id);
+        var order = await _orderRepository.GetByIdAsync(id);
         return order == null ? null : MapToDto(order);
     }
 
     public async Task<OrderDto> CreateOrderAsync(CreateOrderDto dto)
     {
-        await Task.CompletedTask;
-
+        var orderCount = await _orderRepository.CountAsync();
         var order = new Order
         {
-            OrderNumber = $"O-{DateTime.UtcNow:yyyyMMdd}-{_orders.Count + 1:D4}",
+            OrderNumber = $"O-{DateTime.UtcNow:yyyyMMdd}-{orderCount + 1:D4}",
             CustomerId = dto.CustomerId,
             CustomerName = dto.CustomerName,
             CustomerEmail = dto.CustomerEmail,
@@ -71,15 +79,35 @@ public class OrderService : IOrderService
             item.OrderId = order.Id;
         }
 
-        _orders.Add(order);
-        return MapToDto(order);
+        var created = await _orderRepository.AddAsync(order);
+
+        // Publish OrderCreated event
+        await _eventBus.PublishAsync(new OrderCreatedIntegrationEvent
+        {
+            OrderId = created.Id,
+            OrderNumber = created.OrderNumber,
+            CustomerId = created.CustomerId,
+            CustomerName = created.CustomerName,
+            TotalAmount = created.Total,
+            Currency = created.Currency.ToString(),
+            OrderDate = created.OrderDate,
+            LineItems = created.LineItems.Select(li => new BusinessAsUsual.Core.Events.Integration.OrderLineItemDto
+            {
+                ProductId = li.ProductId,
+                ProductName = li.ProductName,
+                SKU = li.SKU,
+                Quantity = li.Quantity,
+                UnitPrice = li.UnitPrice
+            }).ToList()
+        });
+
+        return MapToDto(created);
     }
 
     public async Task<OrderDto> UpdateOrderAsync(UpdateOrderDto dto)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(dto.Id);
 
-        var order = _orders.FirstOrDefault(o => o.Id == dto.Id);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {dto.Id} not found");
 
@@ -123,24 +151,19 @@ public class OrderService : IOrderService
             SortOrder = index
         }).ToList();
 
-        return MapToDto(order);
+        var updated = await _orderRepository.UpdateAsync(order);
+        return MapToDto(updated);
     }
 
     public async Task<bool> DeleteOrderAsync(string id)
     {
-        await Task.CompletedTask;
-        var order = _orders.FirstOrDefault(o => o.Id == id);
-        if (order == null) return false;
-
-        _orders.Remove(order);
-        return true;
+        return await _orderRepository.DeleteAsync(id);
     }
 
     public async Task<OrderDto> ConfirmOrderAsync(string id)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(id);
 
-        var order = _orders.FirstOrDefault(o => o.Id == id);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {id} not found");
 
@@ -148,14 +171,32 @@ public class OrderService : IOrderService
         order.ConfirmedDate = DateTime.UtcNow;
         order.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(order);
+        var updated = await _orderRepository.UpdateAsync(order);
+
+        // Publish OrderConfirmed event
+        await _eventBus.PublishAsync(new OrderConfirmedIntegrationEvent
+        {
+            OrderId = updated.Id,
+            OrderNumber = updated.OrderNumber,
+            CustomerId = updated.CustomerId,
+            CustomerName = updated.CustomerName,
+            ConfirmedDate = updated.ConfirmedDate ?? DateTime.UtcNow,
+            LineItems = updated.LineItems.Select(li => new BusinessAsUsual.Core.Events.Integration.OrderLineItemDto
+            {
+                ProductId = li.ProductId,
+                ProductName = li.ProductName,
+                SKU = li.SKU,
+                Quantity = li.Quantity
+            }).ToList()
+        });
+
+        return MapToDto(updated);
     }
 
     public async Task<OrderDto> ShipOrderAsync(string id, string trackingNumber, DateTime? shippedDate = null)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(id);
 
-        var order = _orders.FirstOrDefault(o => o.Id == id);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {id} not found");
 
@@ -164,14 +205,33 @@ public class OrderService : IOrderService
         order.TrackingNumber = trackingNumber;
         order.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(order);
+        var updated = await _orderRepository.UpdateAsync(order);
+
+        // Publish OrderShipped event
+        await _eventBus.PublishAsync(new OrderShippedIntegrationEvent
+        {
+            OrderId = updated.Id,
+            OrderNumber = updated.OrderNumber,
+            CustomerId = updated.CustomerId,
+            ShippedDate = updated.ShippedDate ?? DateTime.UtcNow,
+            TrackingNumber = updated.TrackingNumber,
+            ShippingMethod = updated.ShippingMethod.ToString(),
+            LineItems = updated.LineItems.Select(li => new BusinessAsUsual.Core.Events.Integration.OrderLineItemDto
+            {
+                ProductId = li.ProductId,
+                ProductName = li.ProductName,
+                SKU = li.SKU,
+                Quantity = li.Quantity
+            }).ToList()
+        });
+
+        return MapToDto(updated);
     }
 
     public async Task<OrderDto> DeliverOrderAsync(string id, DateTime? deliveredDate = null)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(id);
 
-        var order = _orders.FirstOrDefault(o => o.Id == id);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {id} not found");
 
@@ -179,14 +239,14 @@ public class OrderService : IOrderService
         order.DeliveredDate = deliveredDate ?? DateTime.UtcNow;
         order.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(order);
+        var updated = await _orderRepository.UpdateAsync(order);
+        return MapToDto(updated);
     }
 
     public async Task<OrderDto> CancelOrderAsync(string id)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(id);
 
-        var order = _orders.FirstOrDefault(o => o.Id == id);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {id} not found");
 
@@ -194,14 +254,14 @@ public class OrderService : IOrderService
         order.CancelledDate = DateTime.UtcNow;
         order.LastModifiedDate = DateTime.UtcNow;
 
-        return MapToDto(order);
+        var updated = await _orderRepository.UpdateAsync(order);
+        return MapToDto(updated);
     }
 
     public async Task<OrderPaymentDto> AddPaymentAsync(AddOrderPaymentDto dto)
     {
-        await Task.CompletedTask;
+        var order = await _orderRepository.GetByIdAsync(dto.OrderId);
 
-        var order = _orders.FirstOrDefault(o => o.Id == dto.OrderId);
         if (order == null)
             throw new KeyNotFoundException($"Order with ID {dto.OrderId} not found");
 
@@ -219,6 +279,8 @@ public class OrderService : IOrderService
 
         order.Payments.Add(payment);
         order.LastModifiedDate = DateTime.UtcNow;
+
+        await _orderRepository.UpdateAsync(order);
 
         return new OrderPaymentDto
         {
@@ -268,7 +330,7 @@ public class OrderService : IOrderService
             Notes = order.Notes,
             InternalNotes = order.InternalNotes,
             AssignedToEmployeeId = order.AssignedToEmployeeId,
-            LineItems = order.LineItems.Select(li => new OrderLineItemDto
+            LineItems = order.LineItems.Select(li => new Sales.Application.DTOs.OrderLineItemDto
             {
                 Id = li.Id,
                 OrderId = li.OrderId,

@@ -188,6 +188,8 @@ namespace BusinessAsUsual.Web.Components.Layout
                 _currentModule = "CRM";
             else if (path.StartsWith("/inventory"))
                 _currentModule = "Inventory";
+            else if (path.StartsWith("/sales"))
+                _currentModule = "Sales";
             else if (path.StartsWith("/timekeeping"))
                 _currentModule = "Timekeeping";
             else if (path.StartsWith("/contractaudit"))

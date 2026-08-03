@@ -1,0 +1,300 @@
+@page "/sales/reports"
+@using System.Net.Http.Json
+@using MudBlazor
+@using Sales.Domain.Enums
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Sales Reports</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/sales">Sales</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Reports</MudText>
+    </div>
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-2" />
+        Sales Analytics & Reports
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        View sales performance metrics and trends
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+        <MudText Class="mt-2">Loading reports...</MudText>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">
+            @_errorMessage
+        </MudAlert>
+    }
+    else if (_stats != null)
+    {
+        <!-- Key Metrics -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Revenue (MTD)</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Success">@_stats.MonthlyRevenue.ToString("C")</MudText>
+                    <MudText Typo="Typo.caption">@_completedOrders orders completed</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Average Order Value</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary">@_stats.AverageOrderValue.ToString("C")</MudText>
+                    <MudText Typo="Typo.caption">Across @_stats.TotalOrders orders</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Quote Conversion Rate</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Info">@_stats.ConversionRate.ToString("F1")%</MudText>
+                    <MudText Typo="Typo.caption">@_convertedQuotes of @_stats.TotalQuotes quotes</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Pipeline Value</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Warning">@_pipelineValue.ToString("C")</MudText>
+                    <MudText Typo="Typo.caption">@_stats.ActiveQuotes active quotes</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Sales by Status -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Class="mr-2" />
+                                Quotes by Status
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTable T="StatusCount" Items="@_quotesByStatus" Hover="true" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Status</MudTh>
+                                <MudTh Style="text-align: right">Count</MudTh>
+                                <MudTh Style="text-align: right">Percentage</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Count" Style="text-align: right">@context.Count</MudTd>
+                                <MudTd DataLabel="Percentage" Style="text-align: right">@context.Percentage.ToString("F1")%</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Class="mr-2" />
+                                Orders by Status
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudTable T="StatusCount" Items="@_ordersByStatus" Hover="true" Dense="true">
+                            <HeaderContent>
+                                <MudTh>Status</MudTh>
+                                <MudTh Style="text-align: right">Count</MudTh>
+                                <MudTh Style="text-align: right">Percentage</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">@context.Status</MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Count" Style="text-align: right">@context.Count</MudTd>
+                                <MudTd DataLabel="Percentage" Style="text-align: right">@context.Percentage.ToString("F1")%</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Top Customers -->
+        <MudCard Elevation="2" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                        Top Customers by Revenue
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable T="CustomerRevenue" Items="@_topCustomers" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Customer</MudTh>
+                        <MudTh Style="text-align: right">Orders</MudTh>
+                        <MudTh Style="text-align: right">Total Revenue</MudTh>
+                        <MudTh Style="text-align: right">Avg Order Value</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Customer">@context.CustomerName</MudTd>
+                        <MudTd DataLabel="Orders" Style="text-align: right">@context.OrderCount</MudTd>
+                        <MudTd DataLabel="Revenue" Style="text-align: right">@context.TotalRevenue.ToString("C")</MudTd>
+                        <MudTd DataLabel="Avg" Style="text-align: right">@context.AverageOrderValue.ToString("C")</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private DashboardStats? _stats;
+    private bool _loading = true;
+    private string? _errorMessage;
+    private List<StatusCount> _quotesByStatus = new();
+    private List<StatusCount> _ordersByStatus = new();
+    private List<CustomerRevenue> _topCustomers = new();
+    private int _completedOrders = 0;
+    private int _convertedQuotes = 0;
+    private decimal _pipelineValue = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReports();
+    }
+
+    private async Task LoadReports()
+    {
+        try
+        {
+            _loading = true;
+            _errorMessage = null;
+            var client = HttpClientFactory.CreateClient("SalesApi");
+
+            // Load dashboard stats
+            _stats = await client.GetFromJsonAsync<DashboardStats>("api/sales/dashboard/stats");
+
+            // Load quotes and orders for detailed breakdowns
+            var quotes = await client.GetFromJsonAsync<List<QuoteDto>>("api/sales/quotes") ?? new();
+            var orders = await client.GetFromJsonAsync<List<OrderDto>>("api/sales/orders") ?? new();
+
+            // Calculate quotes by status
+            var quoteGroups = quotes.GroupBy(q => q.Status.ToString()).ToList();
+            _quotesByStatus = quoteGroups.Select(g => new StatusCount
+            {
+                Status = g.Key,
+                Count = g.Count(),
+                Percentage = (decimal)g.Count() / quotes.Count * 100
+            }).OrderByDescending(s => s.Count).ToList();
+
+            // Calculate orders by status
+            var orderGroups = orders.GroupBy(o => o.Status.ToString()).ToList();
+            _ordersByStatus = orderGroups.Select(g => new StatusCount
+            {
+                Status = g.Key,
+                Count = g.Count(),
+                Percentage = (decimal)g.Count() / orders.Count * 100
+            }).OrderByDescending(s => s.Count).ToList();
+
+            // Calculate top customers
+            _topCustomers = orders.GroupBy(o => new { o.CustomerId, o.CustomerName })
+                .Select(g => new CustomerRevenue
+                {
+                    CustomerName = g.Key.CustomerName,
+                    OrderCount = g.Count(),
+                    TotalRevenue = g.Sum(o => o.TotalAmount),
+                    AverageOrderValue = g.Average(o => o.TotalAmount)
+                })
+                .OrderByDescending(c => c.TotalRevenue)
+                .Take(10)
+                .ToList();
+
+            _completedOrders = orders.Count(o => o.Status == OrderStatus.Delivered);
+            _convertedQuotes = quotes.Count(q => q.Status == QuoteStatus.Accepted || q.Status == QuoteStatus.Converted);
+            _pipelineValue = quotes.Where(q => q.Status == QuoteStatus.Sent || q.Status == QuoteStatus.Viewed)
+                .Sum(q => q.TotalAmount);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading reports: {ex.Message}";
+            Console.WriteLine($"Reports error: {ex}");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status.ToLower() switch
+        {
+            "draft" => Color.Default,
+            "sent" or "pending" or "confirmed" or "processing" => Color.Info,
+            "accepted" or "shipped" or "delivered" => Color.Success,
+            "rejected" or "cancelled" or "refunded" => Color.Error,
+            "expired" or "onhold" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    public class DashboardStats
+    {
+        public int ActiveQuotes { get; set; }
+        public int OpenOrders { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+        public int PendingShipments { get; set; }
+        public int TotalQuotes { get; set; }
+        public int TotalOrders { get; set; }
+        public decimal AverageOrderValue { get; set; }
+        public decimal ConversionRate { get; set; }
+    }
+
+    public class StatusCount
+    {
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
+    }
+
+    public class CustomerRevenue
+    {
+        public string CustomerName { get; set; } = string.Empty;
+        public int OrderCount { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public decimal AverageOrderValue { get; set; }
+    }
+
+    // Simplified DTOs for report calculations
+    public class QuoteDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public QuoteStatus Status { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
+
+    public class OrderDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public OrderStatus Status { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
+}

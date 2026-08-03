@@ -88,12 +88,40 @@ public class BankingController : ControllerBase
     }
 
     // Reconciliation
-    [HttpPost("reconcile")]
-    public async Task<ActionResult<BankTransactionDto>> ReconcileTransaction(ReconcileTransactionRequest request)
+    [HttpPost("accounts/{accountId}/reconcile")]
+    public async Task<ActionResult> ReconcileAccount(string accountId)
     {
         try
         {
-            return Ok(await _bankingService.ReconcileTransactionAsync(request));
+            // Get all unreconciled transactions for this account
+            var transactions = await _bankingService.GetUnreconciledTransactionsAsync(accountId);
+
+            // Reconcile each transaction
+            foreach (var transaction in transactions)
+            {
+                await _bankingService.ReconcileTransactionAsync(new ReconcileTransactionRequest
+                {
+                    TransactionId = transaction.Id
+                });
+            }
+
+            return Ok();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPost("transactions/{transactionId}/reconcile")]
+    public async Task<ActionResult<BankTransactionDto>> ReconcileTransaction(string transactionId)
+    {
+        try
+        {
+            return Ok(await _bankingService.ReconcileTransactionAsync(new ReconcileTransactionRequest
+            {
+                TransactionId = transactionId
+            }));
         }
         catch (KeyNotFoundException)
         {
