@@ -10,6 +10,8 @@
 #   - Finance.Web   (host 5009 -> container 80)
 #   - Inventory.API (host 5010 -> container 80)
 #   - Inventory.Web (host 5011 -> container 80)
+#   - Sales.API (host 5012 -> container 80)
+#   - Sales.Web (host 5013 -> container 80)
 #
 # NOTE ON SIZING: The user referenced a "T3 Mini". AWS has no t3.mini size; the
 # closest 2 GB option is t3.small. If you truly want the smallest/cheapest, use
@@ -203,6 +205,57 @@ services:
       - InventoryApi__Url=http://inventory-api:80
     depends_on:
       - inventory-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  sales-api:
+    build:
+      context: .
+      dockerfile: services/Sales/Sales.API/Dockerfile
+    image: bau/sales-api:latest
+    container_name: bau-sales-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5012:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Sales.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  sales-web:
+    build:
+      context: .
+      dockerfile: services/Sales/Sales.Web/Dockerfile
+    image: bau/sales-web:latest
+    container_name: bau-sales-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5013:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Sales.Web calls Sales.API over the internal compose network
+      - SalesApi__Url=http://sales-api:80
+      # Sales also needs access to Inventory and CRM APIs
+      - InventoryApi__Url=http://inventory-api:80
+      - CrmApi__Url=http://crm-api:80
+    depends_on:
+      - sales-api
+      - inventory-api
+      - crm-api
     deploy:
       resources:
         limits:

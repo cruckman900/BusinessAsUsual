@@ -1,7 +1,8 @@
-name: Deploy Heavy Instance (CRM + HR + Finance)
+name: Deploy Heavy Instance (CRM + HR + Finance + Inventory + Sales)
 
 # Deploys the "heavy lifter" microservices (CRM.API/Web, HR.API/Web,
-# Finance.API/Web) to the t3.small EC2 instance using docker-compose.heavy.yml.
+# Finance.API/Web, Inventory.API/Web, Sales.API/Web) to the t3.small EC2
+# instance using docker-compose.heavy.yml.
 #
 # Trigger: manual (workflow_dispatch) so you control when the new instances get
 # updated, plus automatically on pushes to main that touch the heavy services.
@@ -21,6 +22,7 @@ on:
       - "services/HR/**"
       - "services/Finance/**"
       - "services/Inventory/**"
+      - "services/Sales/**"
       - "docker-compose.heavy.yml"
       - ".github/workflows/deploy-heavy.yml"
 

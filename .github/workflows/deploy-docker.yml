@@ -75,6 +75,8 @@ jobs:
             -e "s|\${HR_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5041|g" \
             -e "s|\${CRM_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5004|g" \
             -e "s|\${FINANCE_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5006|g" \
+            -e "s|\${INVENTORY_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5010|g" \
+            -e "s|\${SALES_UPSTREAM}|${{ secrets.HEAVY_EC2_PRIVATE_IP }}:5012|g" \
             -e "s|\${REGISTRY_UPSTREAM}|${{ secrets.LIGHT_EC2_PRIVATE_IP }}:5100|g" \
             deploy/nginx/gateway.conf.template > deploy/nginx/gateway.conf
           echo "--- rendered gateway.conf upstreams ---"
