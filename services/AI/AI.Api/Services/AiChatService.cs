@@ -59,8 +59,14 @@ public sealed class AiChatService : IAiChatService
 
         if (client is null)
         {
+            var configMessage = tier == AiTier.Demo
+                ? "The demo tier (GitHub Models) is not configured. Please set the 'Ai:Demo:ApiKey' via user secrets or environment variable 'Ai__Demo__ApiKey'."
+                : "The paid tier is not configured.";
+
+            _logger.LogWarning("AI client unavailable for tier {Tier}. Configuration needed.", tier);
+
             return new AiChatResult(
-                "The AI service is not configured yet. Please set up a provider and try again.",
+                configMessage,
                 tier.ToString(),
                 null);
         }
@@ -108,9 +114,14 @@ public sealed class AiChatService : IAiChatService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "AI provider call failed for tier {Tier}.", tier);
+            _logger.LogError(ex, "AI provider call failed for tier {Tier}. Exception type: {ExceptionType}, Message: {Message}", 
+                tier, ex.GetType().Name, ex.Message);
+
+            // Return a user-friendly message but include exception type in dev environments for easier troubleshooting
+            var userMessage = "Something went wrong while contacting the AI provider. Please try again later.";
+
             return new AiChatResult(
-                "Something went wrong while contacting the AI provider. Please try again later.",
+                userMessage,
                 tier.ToString(),
                 null);
         }

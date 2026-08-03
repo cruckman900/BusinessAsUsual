@@ -53,7 +53,14 @@ public sealed class DevTierOptions
     public string[] TestCompanyIds { get; set; } = Array.Empty<string>();
 }
 
-/// <summary>Configuration for the free/demo tier (GitHub Models, OpenAI-compatible endpoint).</summary>
+/// <summary>
+/// Configuration for the free/demo tier.
+/// TODO: GitHub Models is being retired (returns 410 Gone). Migrate to:
+/// - OpenAI directly (requires paid API key)
+/// - Azure OpenAI (requires Azure subscription)
+/// - Groq (free tier available)
+/// - Ollama (local, free)
+/// </summary>
 public sealed class DemoTierOptions
 {
     public string Provider { get; set; } = "GitHubModels";
@@ -63,6 +70,7 @@ public sealed class DemoTierOptions
     /// <summary>
     /// GitHub token. Supplied via user-secrets ("Ai:Demo:ApiKey") in dev or the
     /// "Ai__Demo__ApiKey" environment variable in deploy. Never committed to source.
+    /// NOTE: GitHub Models is being shut down, so this key will stop working soon.
     /// </summary>
     public string ApiKey { get; set; } = string.Empty;
 }
