@@ -32,6 +32,7 @@ services/{ModuleName}/
 - **Inventory Management** - Track products, stock levels, warehouses, purchase orders
 - **Project Management** - Projects, tasks, milestones, time tracking, budgets
 - **Sales** - Quotes, orders, order fulfillment, shipping, sales analytics
+ - **Services** - Manage sellable services, pricing, appointments, service providers, and service orders
 - **Marketing** - Campaigns, leads sources, email marketing, analytics
 - **Support/Helpdesk** - Tickets, knowledge base, SLA tracking, customer support
 - **Asset Management** - Company assets, maintenance schedules, depreciation

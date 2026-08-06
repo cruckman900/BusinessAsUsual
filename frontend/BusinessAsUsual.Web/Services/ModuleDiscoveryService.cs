@@ -104,6 +104,24 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                     _logger.LogInformation("Using fallback module list");
                 }
             }
+            ,
+            new ModuleDto
+            {
+                ModuleId = "services",
+                Key = "services",
+                DisplayName = "Services",
+                Description = "Manage sellable services, appointments, and providers",
+                UiEntryPoint = "/services",
+                Icon = Icons.Material.Filled.Construction,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Dashboard", Route = "/services", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "All Services", Route = "/services/list", Icon = Icons.Material.Filled.List },
+                    new() { Label = "Providers", Route = "/services/providers", Icon = Icons.Material.Filled.Person },
+                    new() { Label = "Appointments", Route = "/services/appointments", Icon = Icons.Material.Filled.Event }
+                }
+            }
         }
         catch (Exception ex)
         {

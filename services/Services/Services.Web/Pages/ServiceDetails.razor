@@ -1,0 +1,27 @@
+@page "/services/details/{Id:guid}"
+@using global::Services.Application.DTOs
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private ServiceDto? service;
+
+    protected override async Task OnInitializedAsync()
+    {
+        service = await Http.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+    }
+}
+
+@if (service == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3>@service.Name</h3>
+    <p>@service.Description</p>
+    <p><strong>Price:</strong> @service.BasePrice.ToString("C")</p>
+    <p><strong>Active:</strong> @(service.IsActive ? "Yes" : "No")</p>
+    <button class="btn btn-secondary" @onclick="() => Navigation.NavigateTo('/services')">Back</button>
+}

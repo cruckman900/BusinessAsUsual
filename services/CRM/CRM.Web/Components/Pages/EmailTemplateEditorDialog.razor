@@ -1,6 +1,8 @@
 @using CRM.Application.DTOs
 @using CRM.Application.Interfaces
+@using MudBlazor
 @inject IEmailTemplateService EmailTemplateService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
@@ -103,6 +105,7 @@
             });
         }
 
+        Snackbar.Add("Template saved", Severity.Success);
         MudDialog.Close(DialogResult.Ok(true));
     }
 

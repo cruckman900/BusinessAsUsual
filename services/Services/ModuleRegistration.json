@@ -1,0 +1,12 @@
+{
+  "name": "Services",
+  "module": "Services",
+  "description": "Manage sellable services, pricing, appointments, and service orders",
+  "ui": {
+    "web": "services/Services/Services.Web",
+    "adminArea": "Services"
+  },
+  "api": {
+    "url": "http://localhost:5200/api/services"
+  }
+}
