@@ -1,5 +1,196 @@
-﻿<h3>NotFound</h3>
+﻿@page "/404"
+@using MudBlazor
+
+<PageTitle>404 - Page Not Found</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column align-center justify-center" Style="min-height: 70vh; text-align: center;">
+
+    <!-- Animated 404 Icon -->
+    <div class="not-found-icon-container mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.SearchOff" 
+                 Color="Color.Primary" 
+                 Style="font-size: 10rem; opacity: 0.3;" 
+                 Class="not-found-icon" />
+        <MudText Typo="Typo.h1" 
+                 Class="not-found-number" 
+                 Style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; font-size: 8rem; background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            404
+        </MudText>
+    </div>
+
+    <!-- Error Message -->
+    <MudText Typo="Typo.h3" GutterBottom="true" Class="mb-2" Style="font-weight: 600;">
+        Oops! Page Not Found
+    </MudText>
+
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6" Style="max-width: 500px;">
+        The page you're looking for seems to have wandered off into the digital void. 
+        Don't worry though, we'll help you get back on track!
+    </MudText>
+
+    <!-- Quick Actions -->
+    <MudPaper Elevation="0" Class="pa-4 mb-6" Style="background: transparent; border: 1px dashed var(--mud-palette-divider); border-radius: 8px; max-width: 600px; width: 100%;">
+        <MudText Typo="Typo.subtitle2" Class="mb-3" Color="Color.Secondary">
+            <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Size="Size.Small" Class="mr-2" />
+            Here are some helpful suggestions:
+        </MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Home"
+                           Href="/dashboard"
+                           Size="Size.Large">
+                    Go to Dashboard
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Primary" 
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="GoBack"
+                           Size="Size.Large">
+                    Go Back
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Popular Modules -->
+    <MudText Typo="Typo.subtitle2" Class="mb-3" Color="Color.Secondary">
+        Or explore our popular modules:
+    </MudText>
+
+    <MudGrid Spacing="2" Style="max-width: 800px;">
+        <MudItem xs="6" sm="3">
+            <MudButton Variant="Variant.Text" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.AdminPanelSettings"
+                       Href="/platform"
+                       Class="module-quick-link">
+                Platform
+            </MudButton>
+        </MudItem>
+        <MudItem xs="6" sm="3">
+            <MudButton Variant="Variant.Text" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.People"
+                       Href="/hr"
+                       Class="module-quick-link">
+                HR
+            </MudButton>
+        </MudItem>
+        <MudItem xs="6" sm="3">
+            <MudButton Variant="Variant.Text" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.AttachMoney"
+                       Href="/finance"
+                       Class="module-quick-link">
+                Finance
+            </MudButton>
+        </MudItem>
+        <MudItem xs="6" sm="3">
+            <MudButton Variant="Variant.Text" 
+                       Color="Color.Primary" 
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Inventory"
+                       Href="/inventory"
+                       Class="module-quick-link">
+                Inventory
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Decorative Elements -->
+    <div class="not-found-decoration">
+        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Style="font-size: 2rem; opacity: 0.1; position: absolute; top: 10%; left: 10%;" />
+        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 2.5rem; opacity: 0.1; position: absolute; bottom: 15%; right: 15%;" />
+        <MudIcon Icon="@Icons.Material.Filled.Help" Color="Color.Info" Style="font-size: 1.8rem; opacity: 0.1; position: absolute; top: 20%; right: 20%;" />
+    </div>
+
+</MudContainer>
+
+<style>
+    .not-found-icon-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .not-found-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .not-found-number {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .module-quick-link {
+        transition: transform 0.2s ease;
+    }
+
+    .module-quick-link:hover {
+        transform: translateY(-2px);
+    }
+
+    .not-found-decoration {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 600px) {
+        .not-found-icon-container {
+            width: 140px;
+            height: 140px;
+        }
+
+        .not-found-icon {
+            font-size: 7rem !important;
+        }
+
+        .not-found-number {
+            font-size: 5rem !important;
+        }
+    }
+</style>
 
 @code {
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
 }
