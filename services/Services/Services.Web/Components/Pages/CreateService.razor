@@ -1,0 +1,92 @@
+@page "/services/create"
+@using global::Services.Application.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject MudBlazor.ISnackbar Snackbar
+
+<PageTitle>Create Service</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services">Services</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services/list">Service Catalog</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Create</MudText>
+    </div>
+
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
+            Create New Service
+        </MudText>
+
+        <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <MudGrid Class="mt-4">
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Service Name" @bind-Value="model.Name" For="@(() => model.Name)" Required="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Description" @bind-Value="model.Description" For="@(() => model.Description)" Lines="4" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField T="decimal" Label="Base Price" @bind-Value="model.BasePrice" For="@(() => model.BasePrice)" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="$" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch T="bool" Label="Active" @bind-Value="model.IsActive" Color="Color.Primary" />
+                </MudItem>
+            </MudGrid>
+
+            <div class="d-flex justify-end mt-4">
+                <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@Cancel" Class="mr-2">
+                    Cancel
+                </MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="isSaving">
+                    @(isSaving ? "Creating..." : "Create Service")
+                </MudButton>
+            </div>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private ServiceDto model = new ServiceDto();
+    private bool isSaving;
+
+    private async Task HandleValidSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ServicesApi");
+            var res = await client.PostAsJsonAsync("api/services", model);
+            if (res.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Service created successfully", Severity.Success);
+                Navigation.NavigateTo("/services/list");
+            }
+            else
+            {
+                var msg = $"Create failed: {res.StatusCode}";
+                Snackbar.Add(msg, Severity.Error);
+                Console.WriteLine(msg);
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/services/list");
+    }
+}

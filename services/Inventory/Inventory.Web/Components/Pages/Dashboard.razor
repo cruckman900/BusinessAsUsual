@@ -127,105 +127,105 @@
                 <MudText Typo="Typo.h5" Class="mb-4">Inventory Management</MudText>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/products"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Products</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Products</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             Manage product catalog, SKUs, pricing, and categories
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/products">
-                            View Products
-                        </MudButton>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/products">
+                            View Products →
+                        </MudButton>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/warehouses"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Warehouse" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Warehouses</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Warehouse" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Warehouses</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             Manage warehouse locations, capacity, and bin locations
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/warehouses">
-                            View Warehouses
-                        </MudButton>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/warehouses">
+                            View Warehouses →
+                        </MudButton>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/stock"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Stock Management</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Stock Management</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             View stock levels, adjustments, and transfers
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/stock">
-                            Manage Stock
-                        </MudButton>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/stock">
+                            Manage Stock →
+                        </MudButton>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/purchase-orders"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Purchase Orders</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Purchase Orders</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             Create and track purchase orders to suppliers
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/purchase-orders">
-                            View Orders
-                        </MudButton>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/purchase-orders">
+                            View Orders →
+                        </MudButton>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/suppliers"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Suppliers</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Suppliers</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             Manage supplier information and vendor relationships
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/suppliers">
-                            View Suppliers
-                        </MudButton>
                     </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/suppliers">
+                            View Suppliers →
+                        </MudButton>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2" Class="pa-4 mud-card-hover" Style="cursor: pointer;" onclick="@(() => NavigateTo("/inventory/reports"))">
-                    <MudCardContent>
-                        <div class="d-flex align-center mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Primary" Class="mr-3" />
-                            <MudText Typo="Typo.h6">Reports</MudText>
-                        </div>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                    <MudCardContent Class="text-center pa-6 flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                        <MudText Typo="Typo.h6" GutterBottom="true">Reports</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                             Generate inventory reports and analytics
                         </MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Class="mt-2" Href="/inventory/reports">
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/inventory/reports">
                             View Reports →
                         </MudButton>
-                    </MudCardContent>
+                    </MudCardActions>
                 </MudCard>
             </MudItem>
         </MudGrid>

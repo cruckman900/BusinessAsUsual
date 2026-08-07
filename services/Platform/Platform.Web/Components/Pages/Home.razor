@@ -1,0 +1,346 @@
+@page "/platform"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Platform - BusinessAsUsual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Platform</MudText>
+    </div>
+
+    <!-- Page Title -->
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+        Platform
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Core system functionality and administration
+    </MudText>
+
+    <!-- Insight Cards (Optional) -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Users</MudText>
+                            <MudText Typo="Typo.h4">@TotalUsers</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Users</MudText>
+                            <MudText Typo="Typo.h4">@ActiveUsers</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Roles</MudText>
+                            <MudText Typo="Typo.h4">@TotalRoles</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Info" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Permissions</MudText>
+                            <MudText Typo="Typo.h4">@TotalPermissions</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Platform Modules Section -->
+    <MudText Typo="Typo.h5" Class="mb-4">Platform Modules</MudText>
+
+    <!-- Main Module Cards Grid -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <!-- User Management -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">User Management</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Manage users, roles, and permissions
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">@TotalUsers Users</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/platform/users">
+                        Manage Users →
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Roles & Permissions -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="mud-card-hover d-flex flex-column" Style="height: 100%;">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Large" Color="Color.Info" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Roles & Permissions</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Configure access control and permissions
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@TotalRoles Roles</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" Href="/platform/roles">
+                        Manage Roles →
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Audit Logs -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Audit Logs</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Track system activities and changes
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Notifications -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Notifications</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        System alerts and user notifications
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Settings -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Settings</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        System configuration and preferences
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Reporting -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Reporting</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        System reports and analytics
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Integrations -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Extension" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Integrations</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Third-party integrations and APIs
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        <!-- Localization -->
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudCard Class="d-flex flex-column" Style="height: 100%;" Elevation="1">
+                <MudCardContent Class="text-center pa-6 flex-grow-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Language" Size="Size.Large" Color="Color.Default" Class="mb-4" />
+                    <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Secondary">Localization</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                        Multi-language and regional settings
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">Coming Soon</MudChip>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Default" FullWidth="true" Disabled="true">
+                        Coming Soon
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Quick Actions Section -->
+    <MudText Typo="Typo.h5" Class="mb-4">Quick Actions</MudText>
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="6" md="3">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" 
+                       StartIcon="@Icons.Material.Filled.PersonAdd" Href="/platform/users/create">
+                Create User
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudButton Variant="Variant.Filled" Color="Color.Info" FullWidth="true" 
+                       StartIcon="@Icons.Material.Filled.Add" Href="/platform/roles/create">
+                Create Role
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" 
+                       StartIcon="@Icons.Material.Filled.People" Href="/platform/users">
+                View All Users
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudButton Variant="Variant.Outlined" Color="Color.Info" FullWidth="true" 
+                       StartIcon="@Icons.Material.Filled.AdminPanelSettings" Href="/platform/roles">
+                Manage Roles
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Notifications and Alerts Section -->
+    <MudAlert Severity="Severity.Success" Class="mb-6" Icon="@Icons.Material.Filled.CheckCircle">
+        Platform services are running normally. All systems operational.
+    </MudAlert>
+
+    <!-- About Platform Module Section -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-2">About Platform Module</MudText>
+                <MudText Typo="Typo.body2">
+                    The Platform module provides core system-level functionality including user management, authentication,
+                    authorization, audit logging, notifications, and system settings. This is the foundation for all other
+                    business modules in the BusinessAsUsual ecosystem.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-2">Module Information</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">
+                        <MudText Typo="Typo.body2"><strong>Version:</strong> 1.0.0</MudText>
+                    </MudListItem>
+                    <MudListItem T="string">
+                        <MudText Typo="Typo.body2"><strong>Status:</strong> Active Development</MudText>
+                    </MudListItem>
+                    <MudListItem T="string">
+                        <MudText Typo="Typo.body2"><strong>API Port:</strong> 7400 (HTTP) / 7401 (HTTPS)</MudText>
+                    </MudListItem>
+                    <MudListItem T="string">
+                        <MudText Typo="Typo.body2"><strong>Database:</strong> BusinessAsUsual_Platform</MudText>
+                    </MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Key Features Section -->
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h6" Class="mb-2">Key Features</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                User account management with role-based access control
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                Fine-grained permission system for granular authorization
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                System audit logging for compliance and security (coming soon)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                Global settings and configuration management (coming soon)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                Real-time notifications and alerts (coming soon)
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private int TotalUsers = 0;
+    private int ActiveUsers = 0;
+    private int TotalRoles = 3;
+    private int TotalPermissions = 8;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Mock data - will be replaced with actual API calls
+        TotalUsers = 0;
+        ActiveUsers = 0;
+        TotalRoles = 3; // System roles seeded
+        TotalPermissions = 8; // System permissions seeded
+        await Task.CompletedTask;
+    }
+}

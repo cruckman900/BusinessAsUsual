@@ -133,6 +133,22 @@ namespace BusinessAsUsual.Web
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 
+            // Register named HttpClient for the Services microservice
+            var servicesServiceUrl = builder.Configuration["ServicesApi:Url"] ?? "http://localhost:7286";
+            builder.Services.AddHttpClient("ServicesApi", client =>
+            {
+                client.BaseAddress = new Uri(servicesServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // Register named HttpClient for the Platform microservice
+            var platformServiceUrl = builder.Configuration["PlatformApi:Url"] ?? "http://localhost:7400";
+            builder.Services.AddHttpClient("PlatformApi", client =>
+            {
+                client.BaseAddress = new Uri(platformServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
             // Register Master Navigation Orchestrator
             builder.Services.AddScoped<ModuleRouteInterceptor>();
 

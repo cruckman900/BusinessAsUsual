@@ -19,7 +19,6 @@ public interface IModuleDiscoveryService
     /// <returns></returns>
     Task<IEnumerable<ModuleDto>> GetActiveModulesAsync();
 }
-
 /// <summary>
 /// Implements the <see cref="IModuleDiscoveryService"/> interface to provide functionality for discovering and retrieving module information. This service fetches module metadata from a configured module registry endpoint, caches the results for a specified duration, and provides methods to retrieve modules with UI entry points and active modules. If the module registry is unavailable, it falls back to a predefined list of hardcoded modules.
 /// </summary>
@@ -104,24 +103,6 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                     _logger.LogInformation("Using fallback module list");
                 }
             }
-            ,
-            new ModuleDto
-            {
-                ModuleId = "services",
-                Key = "services",
-                DisplayName = "Services",
-                Description = "Manage sellable services, appointments, and providers",
-                UiEntryPoint = "/services",
-                Icon = Icons.Material.Filled.Construction,
-                IsActive = true,
-                NavigationItems = new List<NavigationItemDto>
-                {
-                    new() { Label = "Dashboard", Route = "/services", Icon = Icons.Material.Filled.Dashboard },
-                    new() { Label = "All Services", Route = "/services/list", Icon = Icons.Material.Filled.List },
-                    new() { Label = "Providers", Route = "/services/providers", Icon = Icons.Material.Filled.Person },
-                    new() { Label = "Appointments", Route = "/services/appointments", Icon = Icons.Material.Filled.Event }
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -139,8 +120,63 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
 
     private List<ModuleDto> GetFallbackModules()
     {
+        // IMPORTANT: Keep in sync with BusinessAsUsual.Core/Modules/ModuleCatalog.cs
+        // See docs/MODULE_CATALOG_UNIFIED_REFERENCE.md for maintenance protocol
         return new List<ModuleDto>
         {
+            // ============================================================
+            // PLATFORM (System-level modules)
+            // ============================================================
+            new ModuleDto
+            {
+                ModuleId = "platform",
+                Key = "platform",
+                DisplayName = "Platform",
+                Description = "System administration, users, roles, and platform settings",
+                UiEntryPoint = "/platform",
+                Icon = Icons.Material.Filled.AdminPanelSettings,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Home", Route = "/platform", Icon = Icons.Material.Filled.Home },
+
+                    // User Management Group
+                    new()
+                    {
+                        Label = "User Management",
+                        Route = "/platform/users",
+                        Icon = Icons.Material.Filled.ManageAccounts,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Users", Route = "/platform/users", Icon = Icons.Material.Filled.People },
+                            new() { Label = "Roles", Route = "/platform/roles", Icon = Icons.Material.Filled.AdminPanelSettings },
+                            new() { Label = "Permissions", Route = "/platform/permissions", Icon = Icons.Material.Filled.Lock }
+                        }
+                    },
+
+                    // Audit Logs
+                    new()
+                    {
+                        Label = "Audit Logs",
+                        Route = "/platform/audit",
+                        Icon = Icons.Material.Filled.History,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "System Events", Route = "/platform/audit/system", Icon = Icons.Material.Filled.Event },
+                            new() { Label = "Security Events", Route = "/platform/audit/security", Icon = Icons.Material.Filled.Security }
+                        }
+                    },
+
+                    // System Settings
+                    new() { Label = "Settings", Route = "/platform/settings", Icon = Icons.Material.Filled.Settings }
+                }
+            },
+
+            // ============================================================
+            // BUSINESS MODULES
+            // ============================================================
             new ModuleDto
             {
                 ModuleId = "hr",
@@ -489,6 +525,23 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                             new() { Label = "Performance", Route = "/sales/reports/performance", Icon = Icons.Material.Filled.Speed }
                         }
                     }
+                }
+            },
+            new ModuleDto
+            {
+                ModuleId = "services",
+                Key = "services",
+                DisplayName = "Services",
+                Description = "Manage sellable services, providers, and appointments",
+                UiEntryPoint = "/services",
+                Icon = Icons.Material.Filled.Construction,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Dashboard", Route = "/services", Icon = Icons.Material.Filled.Dashboard },
+                    new() { Label = "Service Catalog", Route = "/services/list", Icon = Icons.Material.Filled.MiscellaneousServices },
+                    new() { Label = "Providers", Route = "/services/providers", Icon = Icons.Material.Filled.Person },
+                    new() { Label = "Appointments", Route = "/services/appointments", Icon = Icons.Material.Filled.Event }
                 }
             }
         };

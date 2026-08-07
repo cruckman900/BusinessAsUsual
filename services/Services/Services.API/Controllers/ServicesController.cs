@@ -6,7 +6,7 @@ using Services.Domain.Interfaces;
 namespace Services.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/services")]
 public class ServicesController : ControllerBase
 {
     private readonly IServiceRepository _repo;

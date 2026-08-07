@@ -1,0 +1,76 @@
+@page "/services/details/{Id:guid}"
+@using global::Services.Application.DTOs
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<PageTitle>Service Details</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services">Services</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services/list">Service Catalog</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Details</MudText>
+    </div>
+
+    @if (service == null)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h4">
+                    <MudIcon Icon="@Icons.Material.Filled.RoomService" Class="mr-2" />
+                    @service.Name
+                </MudText>
+                <div>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(() => Navigation.NavigateTo($"/services/edit/{Id}"))">
+                        Edit
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="ml-2" OnClick="GoBack">
+                        Back to List
+                    </MudButton>
+                </div>
+            </div>
+
+            <MudDivider Class="mb-4" />
+
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Description</MudText>
+                    <MudText Typo="Typo.body1" Class="mb-4">@service.Description</MudText>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Base Price</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">@service.BasePrice.ToString("C")</MudText>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Status</MudText>
+                    <MudChip T="string" Color="@(service.IsActive ? Color.Success : Color.Default)" Class="mb-4">
+                        @(service.IsActive ? "Active" : "Inactive")
+                    </MudChip>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private ServiceDto? service;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("ServicesApi");
+        service = await client.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/services/list");
+}

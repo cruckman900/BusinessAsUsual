@@ -1,0 +1,74 @@
+@page "/services/list"
+@using global::Services.Application.DTOs
+@using System.Net.Http.Json
+@using MudBlazor
+@using BusinessAsUsual.Modules.Services.Web.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject Microsoft.AspNetCore.Components.NavigationManager Navigation
+
+<PageTitle>Services - Service Catalog</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services">Services</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Service Catalog</MudText>
+    </div>
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.MiscellaneousServices" Class="mr-2" />
+                Service Catalog
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage your service offerings</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@GoToCreate">
+            Add Service
+        </MudButton>
+    </div>
+
+    @if (services is null)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <CustomDataGrid TItem="ServiceDto" Items="services" RowsPerPage="10" SearchPlaceholder="Search services...">
+            <ChildContent>
+                <PropertyColumn Property="x => x.Name" Title="Name" T="ServiceDto" TProperty="string" />
+                <PropertyColumn Property="x => x.BasePrice" Title="Price" T="ServiceDto" TProperty="decimal">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.BasePrice.ToString("C")</MudText>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn Title="Actions" T="ServiceDto">
+                    <CellTemplate>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => GoToDetails(context.Item.Id))">Details</MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => GoToEdit(context.Item.Id))">Edit</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" OnClick="@(() => GoToDelete(context.Item.Id))">Delete</MudButton>
+                    </CellTemplate>
+                </TemplateColumn>
+            </ChildContent>
+        </CustomDataGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<ServiceDto>? services = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("ServicesApi");
+        services = await client.GetFromJsonAsync<List<ServiceDto>>("api/services");
+    }
+
+    private void GoToDetails(Guid id) => Navigation.NavigateTo($"/services/details/{id}");
+    private void GoToEdit(Guid id) => Navigation.NavigateTo($"/services/edit/{id}");
+    private void GoToDelete(Guid id) => Navigation.NavigateTo($"/services/delete/{id}");
+    private void GoToCreate() => Navigation.NavigateTo("/services/create");
+}

@@ -1,0 +1,105 @@
+@page "/services/edit/{Id:guid}"
+@using global::Services.Application.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using MudBlazor
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject MudBlazor.ISnackbar Snackbar
+
+<PageTitle>Edit Service</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services">Services</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/services/list">Service Catalog</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Edit</MudText>
+    </div>
+
+    @if (model == null)
+    {
+        <div class="d-flex justify-center align-center" style="min-height: 400px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+        </div>
+    }
+    else
+    {
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" />
+                Edit Service
+            </MudText>
+
+            <EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <MudGrid Class="mt-4">
+                    <MudItem xs="12">
+                        <MudTextField T="string" Label="Service Name" @bind-Value="model.Name" For="@(() => model.Name)" Required="true" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField T="string" Label="Description" @bind-Value="model.Description" For="@(() => model.Description)" Lines="4" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudNumericField T="decimal" Label="Base Price" @bind-Value="model.BasePrice" For="@(() => model.BasePrice)" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="$" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudSwitch T="bool" Label="Active" @bind-Value="model.IsActive" Color="Color.Primary" />
+                    </MudItem>
+                </MudGrid>
+
+                <div class="d-flex justify-end mt-4">
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@Cancel" Class="mr-2">
+                        Cancel
+                    </MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@isSaving">
+                        @(isSaving ? "Saving..." : "Save Changes")
+                    </MudButton>
+                </div>
+            </EditForm>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private ServiceDto? model;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("ServicesApi");
+        model = await client.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (model == null || isSaving) return;
+        isSaving = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ServicesApi");
+            var res = await client.PutAsJsonAsync($"api/services/{Id}", model);
+            if (res.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Service updated successfully", Severity.Success);
+                Navigation.NavigateTo("/services/list");
+            }
+            else
+            {
+                var msg = $"Update failed: {res.StatusCode}";
+                Snackbar.Add(msg, Severity.Error);
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel() => Navigation.NavigateTo("/services/list");
+}

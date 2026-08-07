@@ -49,6 +49,8 @@
     <ProjectReference Include="..\..\services\Finance\Finance.Web\Finance.Web.csproj" />
     <ProjectReference Include="..\..\services\Inventory\Inventory.Web\Inventory.Web.csproj" />
     <ProjectReference Include="..\..\services\Sales\Sales.Web\Sales.Web.csproj" />
+    <ProjectReference Include="..\..\services\Services\Services.Web\Services.Web.csproj" />
+    <ProjectReference Include="..\..\services\Platform\Platform.Web\Platform.Web.csproj" />
   </ItemGroup>
 
   <!-- This app references HR.Web and CRM.Web only to load their Razor component
@@ -60,28 +62,14 @@
        drop the duplicate content that originates from the referenced web projects. -->
   <Target Name="RemoveDuplicateReferencedWebContent" AfterTargets="ComputeFilesToPublish">
     <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" 
-        Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Finance.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Inventory.Web/'))
-                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Sales.Web/')) )
-                   And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))
-                         Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/HR.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/CRM.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Finance.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Inventory.Web/'))&#xD;&#xA;                     Or $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/Sales.Web/')) )&#xD;&#xA;                   And ( $([System.String]::Copy('%(FullPath)').Replace('\','/').Contains('/wwwroot/'))&#xD;&#xA;                         Or $([System.String]::Copy('%(Filename)').StartsWith('appsettings')) )" />
     </ItemGroup>
   </Target>
 
   <!-- Also remove duplicate static web assets during build -->
   <Target Name="RemoveDuplicateStaticWebAssets" BeforeTargets="GenerateStaticWebAssetsManifest">
     <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" 
-        Condition="( $([System.String]::Copy('%(SourceId)').Equals('HR.Web'))
-                     Or $([System.String]::Copy('%(SourceId)').Equals('CRM.Web'))
-                     Or $([System.String]::Copy('%(SourceId)').Equals('Finance.Web'))
-                     Or $([System.String]::Copy('%(SourceId)').Equals('Inventory.Web'))
-                     Or $([System.String]::Copy('%(SourceId)').Equals('Sales.Web')) )
-                   And ( $([System.String]::Copy('%(RelativePath)').StartsWith('lib/'))
-                         Or $([System.String]::Copy('%(OriginalItemSpec)').Contains('appsettings')) )" />
+      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="( $([System.String]::Copy('%(SourceId)').Equals('HR.Web'))&#xD;&#xA;                     Or $([System.String]::Copy('%(SourceId)').Equals('CRM.Web'))&#xD;&#xA;                     Or $([System.String]::Copy('%(SourceId)').Equals('Finance.Web'))&#xD;&#xA;                     Or $([System.String]::Copy('%(SourceId)').Equals('Inventory.Web'))&#xD;&#xA;                     Or $([System.String]::Copy('%(SourceId)').Equals('Sales.Web'))&#xD;&#xA;                     Or $([System.String]::Copy('%(SourceId)').Equals('Services.Web')) )&#xD;&#xA;                   And ( $([System.String]::Copy('%(RelativePath)').StartsWith('lib/'))&#xD;&#xA;                         Or $([System.String]::Copy('%(OriginalItemSpec)').Contains('appsettings')) )" />
     </ItemGroup>
   </Target>
 

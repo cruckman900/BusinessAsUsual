@@ -10,6 +10,145 @@ Create a fully functional business module from scratch in the Business As Usual 
 - Module Registry API running on port 5100
 - SQL Server or in-memory database configured
 
+## ⚠️ CRITICAL SETUP CHECKLIST
+
+**Before creating ANY module, complete these steps to avoid common issues:**
+
+### 1. Reserve Port Numbers (MANDATORY)
+- 📖 **Consult:** `docs/PORT_REGISTRY.md` (authoritative port registry)
+- 🔒 **Reserve** API and Web UI ports BEFORE creating launchSettings.json
+- ✅ **Update** PORT_REGISTRY.md with your module's ports immediately
+- ⚠️ **Never reuse** ports from existing modules (causes connection refused errors)
+
+### 2. HttpClient Registration (MANDATORY)
+**Location:** `frontend/BusinessAsUsual.Web/Program.cs`
+
+After creating your module, you MUST:
+```csharp
+// Add THIS to Program.cs (line ~138):
+var yourModuleServiceUrl = builder.Configuration["YourModuleApi:Url"] ?? "http://localhost:YOUR_PORT";
+builder.Services.AddHttpClient("YourModuleApi", client =>
+{
+    client.BaseAddress = new Uri(yourModuleServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+```
+- ✅ Use the **exact port** from your API's launchSettings.json
+- ✅ Name pattern: `"{ModuleName}Api"` (e.g., `"ServicesApi"`, `"InventoryApi"`)
+- ⚠️ **Module pages will fail (404/connection refused) without this registration**
+
+### 3. Shell Integration (MANDATORY)
+**Location:** `frontend/BusinessAsUsual.Web/`
+
+- ✅ **ModuleDiscoveryService.cs** - Add module to fallback list
+- ✅ **App.razor** - Add module Web assembly to AdditionalAssemblies
+- ✅ **MainLayout.razor.cs** - Add module route to `UpdateModuleFromUri` hardcoded routes list (line ~192)
+  ```csharp
+  else if (path.StartsWith("/{modulename}"))
+      _currentModule = "{ModuleName}";
+  ```
+- ⚠️ **Without ModuleDiscoveryService:** Module won't appear in navigation
+- ⚠️ **Without App.razor assembly:** Module pages won't load
+- ⚠️ **Without MainLayout route:** Sidebar will be hidden when navigating to module pages
+
+### 4. Use HR Module as Template (GOLD STANDARD)
+- ✅ **Copy structure from:** `services/HR/`
+- ✅ **Not from:** Inventory, Sales, or older modules (they have known issues)
+- ✅ **HR module is the reference** for:
+  - Project structure
+  - HttpClient usage (via IHttpClientFactory)
+  - Component organization
+  - Layout integration with shell MainLayout
+
+### 5. API Controller Routes (MANDATORY)
+```csharp
+[Route("api/modulename")]  // ⚠️ MUST be lowercase, explicit route
+[ApiController]
+public class YourController : ControllerBase
+{
+    // ...
+}
+```
+- ✅ Use explicit lowercase route
+- ⚠️ **Route mismatches cause 404 errors in production**
+
+### 6. Dual-Catalog Maintenance (CRITICAL)
+**ALWAYS update BOTH catalogs when creating a new module:**
+
+1. ✅ **ModuleCatalog.cs** (`BusinessAsUsual.Core/Modules/ModuleCatalog.cs`)
+   - Conceptual definition: Group, Key, Name, Submodules
+   ```csharp
+   new("GroupName", "modulekey", "Display Name", new []
+   {
+       new SubmoduleDefinition("SubKey", "Sub Display Name"),
+       // ...
+   })
+   ```
+
+2. ✅ **GetFallbackModules()** (`frontend/BusinessAsUsual.Web/Services/ModuleDiscoveryService.cs`)
+   - Runtime navigation: full hierarchy, icons, routes
+   ```csharp
+   new ModuleDto
+   {
+       ModuleId = "modulekey",
+       Key = "modulekey",
+       DisplayName = "Display Name",
+       Description = "Brief description",
+       UiEntryPoint = "/modulekey",
+       Icon = Icons.Material.Filled.IconName,
+       IsActive = true,
+       NavigationItems = new List<NavigationItemDto> { /* ... */ }
+   }
+   ```
+
+3. ✅ **Reference**: See `docs/MODULE_CATALOG_UNIFIED_REFERENCE.md` for complete protocol
+
+**Why both?**
+- ModuleCatalog.cs = Design-time reference, cross-module discovery
+- GetFallbackModules() = Runtime shell navigation (what users see in sidebar)
+
+### 7. Common Mistakes to Avoid
+- ❌ **DON'T** inject bare `HttpClient` in Blazor components (causes runtime errors)
+- ✅ **DO** use `IHttpClientFactory.CreateClient("YourModuleApi")`
+- ❌ **DON'T** hardcode URLs in components
+- ✅ **DO** use named HttpClient from shell registration
+- ❌ **DON'T** skip updating PORT_REGISTRY.md
+- ✅ **DO** update it BEFORE creating launchSettings
+
+### 8. Remove Conflicting Default Template Pages (CRITICAL)
+**When creating a module Web project from `dotnet new blazor`, the template includes default pages that conflict with the shell. You MUST remove these immediately after project creation.**
+
+**⚠️ Symptom:** `The following routes are ambiguous: 'Error' in 'YourModule.Web.Components.Pages.Error' 'Error' in 'OtherModule.Web.Components.Pages.Error'`
+
+**📂 Files to DELETE from `services/{ModuleName}/{ModuleName}.Web/Components/`:**
+```bash
+cd "services/{ModuleName}/{ModuleName}.Web/Components"
+Remove-Item -Force Routes.razor
+cd Pages
+Remove-Item -Force Error.razor
+Remove-Item -Force Weather.razor
+```
+
+**Why?**
+- The shell (`frontend/BusinessAsUsual.Web`) already provides these pages
+- Module assemblies are loaded via `AdditionalAssemblies` in `App.razor`
+- Multiple modules with the same routes cause Blazor routing conflicts
+- Only module-specific pages (like `Home.razor`, `Dashboard.razor`, feature pages) should remain
+
+**✅ Keep ONLY:**
+- Module-specific pages (e.g., `/Components/Pages/Home.razor` for your module dashboard)
+- Module-specific components
+- `_Imports.razor` (but verify it doesn't conflict)
+- `App.razor` marker file (may be needed for assembly detection)
+
+**❌ Always DELETE:**
+- `Routes.razor` (shell provides routing)
+- `Error.razor` (shell provides error boundary)
+- `Weather.razor` (template demo page)
+- Any other template demo pages
+
+---
+
 ## Module Architecture Overview
 Each module follows a clean architecture pattern:
 ```
@@ -93,7 +232,20 @@ dotnet new classlib -n {ModuleName}.Domain
 dotnet new classlib -n {ModuleName}.Infrastructure
 dotnet new classlib -n {ModuleName}.Contracts
 dotnet new xunit -n {ModuleName}.Tests
+
+# ⚠️ CRITICAL: Immediately remove conflicting template files from Web project
+cd {ModuleName}.Web/Components
+Remove-Item -Force Routes.razor
+cd Pages
+Remove-Item -Force Error.razor
+Remove-Item -Force Weather.razor
+cd ../../../
 ```
+
+**Why remove these files?**
+- Prevents "ambiguous routes" errors when multiple modules are loaded in the shell
+- Shell provides `Routes.razor`, `Error.razor` via `AdditionalAssemblies`
+- See section 8 above for full explanation
 
 #### 2.2 Add Projects to Solution
 **CRITICAL:** Add all projects to the solution immediately after creating them:
@@ -1089,6 +1241,9 @@ Create in `{ModuleName}.Web/Components/Pages/Dashboard.razor`:
 				</MudCard>
 			</MudItem>
 			<!-- Add 5-7 more navigation cards for other major features -->
+			<!-- NOTE: Use varied icon colors for visual differentiation - see Icon Color Guidelines in ModifyModule skill -->
+			<!-- Example colors: Color.Primary (blue), Color.Success (green), Color.Info (cyan), -->
+			<!-- Color.Warning (amber), Color.Tertiary (purple), Color.Secondary (dark gray) -->
 		</MudGrid>
 
 		<!-- 3. QUICK ACTIONS & ALERTS -->
@@ -1952,15 +2107,33 @@ public class ProductServiceTests
 ---
 
 ## Port Numbers Reference
-Assign unique ports to avoid conflicts:
 
-| Module | API Port | Web Port |
-|--------|----------|----------|
-| ModuleRegistry | 5100 | - |
-| Finance | 5007 | 5008 |
-| CRM | 5004 | 5003 |
-| HR | 5041 | 5042 |
-| **{New Module}** | **50XX** | **50XX** |
+⚠️ **ALWAYS consult the authoritative port registry FIRST:**
+
+📖 **See:** `docs/PORT_REGISTRY.md` - Complete list of all assigned ports
+
+**Quick Reference (verify against PORT_REGISTRY.md):**
+
+| Module | API Port (HTTP) | API Port (HTTPS) | Web UI Port | HttpClient Name |
+|--------|-----------------|------------------|-------------|-----------------|
+| ModuleRegistry | 5100 | 7100 | — | — |
+| HR | 5041 | 7171 | 5002 | `HrApi` |
+| Finance | 5007 | — | 5008 | `FinanceApi` |
+| Inventory | 5142 | 7079 | 5009 | `InventoryApi` |
+| Sales | 5143 | 7143 | 5293 | `SalesApi` |
+| CRM | 5004 | — | 5005 | `CrmApi` |
+| Services | 7286 | 7285 | 61172 | `ServicesApi` |
+| AI | 5300 | — | — | `AiApi` |
+| **{New Module}** | **5XXX** | **7XXX** | **5XXX** | **`{ModuleName}Api`** |
+
+### Port Assignment Rules:
+1. **Reserve port in PORT_REGISTRY.md BEFORE creating launchSettings.json**
+2. **Update PORT_REGISTRY.md immediately after assignment**
+3. **Register named HttpClient in shell's Program.cs** (see CRITICAL SETUP CHECKLIST)
+4. **Use the exact same port** in:
+   - API's `launchSettings.json`
+   - Shell's `Program.cs` HttpClient registration
+   - `PORT_REGISTRY.md` documentation
 
 ---
 
