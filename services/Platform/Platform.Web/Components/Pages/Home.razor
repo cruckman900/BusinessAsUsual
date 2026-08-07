@@ -272,60 +272,76 @@
         Platform services are running normally. All systems operational.
     </MudAlert>
 
-    <!-- About Platform Module Section -->
+    <!-- Recent Activity & Info Grid -->
     <MudGrid Spacing="3" Class="mb-6">
+        <!-- Recent Activity Widget -->
         <MudItem xs="12" md="6">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudText Typo="Typo.h6" Class="mb-2">About Platform Module</MudText>
-                <MudText Typo="Typo.body2">
-                    The Platform module provides core system-level functionality including user management, authentication,
-                    authorization, audit logging, notifications, and system settings. This is the foundation for all other
-                    business modules in the BusinessAsUsual ecosystem.
-                </MudText>
-            </MudPaper>
+            <RecentActivityWidget Activities="_recentActivities" MaxItems="8" ShowViewAll="true" OnViewAll="NavigateToAuditLog" />
         </MudItem>
+
+        <!-- Module Information -->
         <MudItem xs="12" md="6">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudText Typo="Typo.h6" Class="mb-2">Module Information</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem T="string">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                    Module Information
+                </MudText>
+                <div class="pa-0">
+                    <div class="px-0 mb-2">
                         <MudText Typo="Typo.body2"><strong>Version:</strong> 1.0.0</MudText>
-                    </MudListItem>
-                    <MudListItem T="string">
+                    </div>
+                    <div class="px-0 mb-2">
                         <MudText Typo="Typo.body2"><strong>Status:</strong> Active Development</MudText>
-                    </MudListItem>
-                    <MudListItem T="string">
+                    </div>
+                    <div class="px-0 mb-2">
                         <MudText Typo="Typo.body2"><strong>API Port:</strong> 7400 (HTTP) / 7401 (HTTPS)</MudText>
-                    </MudListItem>
-                    <MudListItem T="string">
+                    </div>
+                    <div class="px-0">
                         <MudText Typo="Typo.body2"><strong>Database:</strong> BusinessAsUsual_Platform</MudText>
-                    </MudListItem>
-                </MudList>
+                    </div>
+                </div>
+
+                <MudDivider Class="my-3" />
+
+                <MudText Typo="Typo.subtitle2" Class="mb-2">About Platform Module</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    The Platform module provides core system-level functionality including user management, authentication,
+                    authorization, audit logging, notifications, and system settings.
+                </MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <!-- Key Features Section -->
-    <MudPaper Elevation="2" Class="pa-4">
-        <MudText Typo="Typo.h6" Class="mb-2">Key Features</MudText>
-        <MudList T="string" Dense="true">
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                User account management with role-based access control
-            </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                Fine-grained permission system for granular authorization
-            </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                System audit logging for compliance and security (coming soon)
-            </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                Global settings and configuration management (coming soon)
-            </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
-                Real-time notifications and alerts (coming soon)
-            </MudListItem>
-        </MudList>
-    </MudPaper>
+    <!-- About Platform Module Section -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-2">Key Features</MudText>
+                <div class="pa-0">
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2">User account management with role-based access control</MudText>
+                    </div>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2">Fine-grained permission system for granular authorization</MudText>
+                    </div>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2">System audit logging for compliance and security</MudText>
+                    </div>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2">Global settings and configuration management</MudText>
+                    </div>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Class="mr-2" Color="Color.Success" />
+                        <MudText Typo="Typo.body2">Real-time notifications and alerts</MudText>
+                    </div>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
 @code {
@@ -334,6 +350,8 @@
     private int TotalRoles = 3;
     private int TotalPermissions = 8;
 
+    private List<RecentActivityWidget.ActivityItem> _recentActivities = new();
+
     protected override async Task OnInitializedAsync()
     {
         // Mock data - will be replaced with actual API calls
@@ -341,6 +359,27 @@
         ActiveUsers = 0;
         TotalRoles = 3; // System roles seeded
         TotalPermissions = 8; // System permissions seeded
+
+        // Seed recent activity
+        _recentActivities = new List<RecentActivityWidget.ActivityItem>
+        {
+            new() { Type = RecentActivityWidget.ActivityType.Created, User = "John Doe", Action = "created user", Target = "Jane Smith", Timestamp = DateTime.Now.AddMinutes(-5) },
+            new() { Type = RecentActivityWidget.ActivityType.Updated, User = "Admin", Action = "updated role", Target = "Manager", Timestamp = DateTime.Now.AddMinutes(-12), Metadata = "High" },
+            new() { Type = RecentActivityWidget.ActivityType.Login, User = "Alice Williams", Action = "logged in", Timestamp = DateTime.Now.AddMinutes(-25) },
+            new() { Type = RecentActivityWidget.ActivityType.Deleted, User = "Bob Johnson", Action = "deleted user", Target = "Old Account", Timestamp = DateTime.Now.AddHours(-1) },
+            new() { Type = RecentActivityWidget.ActivityType.Created, User = "System", Action = "created role", Target = "Auditor", Timestamp = DateTime.Now.AddHours(-2), Metadata = "Medium" },
+            new() { Type = RecentActivityWidget.ActivityType.Export, User = "Charlie Brown", Action = "exported", Target = "User List", Timestamp = DateTime.Now.AddHours(-3) },
+            new() { Type = RecentActivityWidget.ActivityType.Updated, User = "Admin", Action = "updated settings", Target = "Email Configuration", Timestamp = DateTime.Now.AddHours(-5) },
+            new() { Type = RecentActivityWidget.ActivityType.Login, User = "Jane Smith", Action = "logged in", Timestamp = DateTime.Now.AddHours(-6) },
+            new() { Type = RecentActivityWidget.ActivityType.Approved, User = "Manager", Action = "approved", Target = "Access Request", Timestamp = DateTime.Now.AddHours(-8), Metadata = "Approved" },
+            new() { Type = RecentActivityWidget.ActivityType.Comment, User = "Developer", Action = "commented on", Target = "Feature Request #123", Timestamp = DateTime.Now.AddDays(-1) }
+        };
+
         await Task.CompletedTask;
+    }
+
+    private void NavigateToAuditLog()
+    {
+        NavigationManager.NavigateTo("/platform/audit");
     }
 }

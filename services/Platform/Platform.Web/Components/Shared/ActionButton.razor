@@ -1,0 +1,160 @@
+@using MudBlazor
+
+@if (IsLoading)
+{
+    <MudButton Variant="@Variant" 
+               Color="@Color" 
+               Size="@Size" 
+               FullWidth="@FullWidth"
+               StartIcon="@Icons.Material.Filled.Sync"
+               Disabled="true"
+               Class="@($"spin-icon {Class}")">
+        @LoadingText
+    </MudButton>
+}
+else if (ShowSuccess)
+{
+    <MudButton Variant="@Variant" 
+               Color="Color.Success" 
+               Size="@Size" 
+               FullWidth="@FullWidth"
+               StartIcon="@Icons.Material.Filled.CheckCircle"
+               Disabled="true"
+               Class="@($"pulse-success {Class}")">
+        @SuccessText
+    </MudButton>
+}
+else
+{
+    <MudButton Variant="@Variant" 
+               Color="@Color" 
+               Size="@Size" 
+               FullWidth="@FullWidth"
+               StartIcon="@StartIcon"
+               OnClick="HandleClick"
+               Disabled="@Disabled"
+               Href="@Href"
+               Class="@Class">
+        @Text
+    </MudButton>
+}
+
+<style>
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .spin-icon :deep(.mud-button-icon-start) {
+        animation: spin 1s linear infinite;
+    }
+
+    .pulse-success {
+        animation: pulse 0.6s ease-in-out;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string Text { get; set; } = "Submit";
+
+    [Parameter]
+    public string LoadingText { get; set; } = "Processing...";
+
+    [Parameter]
+    public string SuccessText { get; set; } = "Success!";
+
+    [Parameter]
+    public string? StartIcon { get; set; }
+
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Filled;
+
+    [Parameter]
+    public Color Color { get; set; } = Color.Primary;
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string? Href { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public int SuccessDisplayMs { get; set; } = 2000;
+
+    private bool IsLoading { get; set; }
+    private bool ShowSuccess { get; set; }
+
+    private async Task HandleClick(MouseEventArgs args)
+    {
+        if (Disabled || IsLoading || ShowSuccess) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnClick.InvokeAsync(args);
+
+            // Show success state
+            IsLoading = false;
+            ShowSuccess = true;
+            StateHasChanged();
+
+            // Reset after delay
+            await Task.Delay(SuccessDisplayMs);
+            ShowSuccess = false;
+            StateHasChanged();
+        }
+        catch
+        {
+            IsLoading = false;
+            ShowSuccess = false;
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    public async Task ExecuteWithFeedback(Func<Task> action)
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            await action();
+
+            IsLoading = false;
+            ShowSuccess = true;
+            StateHasChanged();
+
+            await Task.Delay(SuccessDisplayMs);
+            ShowSuccess = false;
+            StateHasChanged();
+        }
+        catch
+        {
+            IsLoading = false;
+            ShowSuccess = false;
+            StateHasChanged();
+            throw;
+        }
+    }
+}

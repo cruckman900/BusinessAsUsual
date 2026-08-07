@@ -1,130 +1,234 @@
 @page "/platform/users"
 @using MudBlazor
+@using Microsoft.JSInterop
+@using System.Text
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject SmartDefaultsService Defaults
+@inject IJSRuntime JS
 
 <PageTitle>User Management - Platform</PageTitle>
 
+<!-- Keyboard Shortcuts -->
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
+
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-    <!-- Breadcrumb -->
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudLink Href="/platform">Platform</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">User Management</MudText>
-    </div>
+    <!-- Breadcrumb with Actions -->
+    <PageBreadcrumb Items="_breadcrumbItems">
+        <Actions>
+            <MudMenu Icon="@Icons.Material.Filled.FileDownload" 
+                     Label="Export" 
+                     Variant="Variant.Outlined" 
+                     Color="Color.Default" 
+                     Size="Size.Small"
+                     EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                <MudMenuItem Icon="@Icons.Material.Filled.TableView" OnClick="@(() => ExportToCsv())">
+                    Export to CSV
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.PictureAsPdf" OnClick="@(() => ExportToPdf())">
+                    Export to PDF
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Description" OnClick="@(() => ExportToExcel())">
+                    Export to Excel
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Icon="@Icons.Material.Filled.Print" OnClick="@(() => Print())">
+                    Print
+                </MudMenuItem>
+            </MudMenu>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenCreateDialog">
+                Add User
+            </MudButton>
+        </Actions>
+    </PageBreadcrumb>
 
     <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-4">
-        <div>
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Class="mr-2" />
-                User Management
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                Manage system users, roles, and access permissions
-            </MudText>
-        </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
-            Add User
-        </MudButton>
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            User Management
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Manage system users, roles, and access permissions
+        </MudText>
     </div>
+
+    <!-- Contextual Help -->
+    @if (_users.Count == 0 && !_isLoading)
+    {
+        <ContextualHint Title="Pro Tip" 
+                       Message="Start by creating your first user. Use keyboard shortcuts: N for new user, / for search, ? for all shortcuts."
+                       Dismissible="true" />
+    }
+    else if (_users.Count < 5 && !_isLoading)
+    {
+        <ContextualHint Title="Quick Tip" 
+                       Message="Assign roles carefully - Administrators have full system access, Managers can view reports, and Users have standard access."
+                       Dismissible="true" />
+    }
 
     <!-- Stats Cards -->
     <MudGrid Spacing="3" Class="mb-4">
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Users</MudText>
-                            <MudText Typo="Typo.h5">@_users.Count</MudText>
+        @if (_isLoading)
+        {
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+        }
+        else
+        {
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Users</MudText>
+                                <MudText Typo="Typo.h5">@_users.Count</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Users</MudText>
-                            <MudText Typo="Typo.h5">@_users.Count(u => u.IsActive)</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active Users</MudText>
+                                <MudText Typo="Typo.h5">@_users.Count(u => u.IsActive)</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Administrators</MudText>
-                            <MudText Typo="Typo.h5">@_users.Count(u => u.Role == "Administrator")</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Administrators</MudText>
+                                <MudText Typo="Typo.h5">@_users.Count(u => u.Role == "Administrator")</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Warning" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Warning" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
     </MudGrid>
 
     <!-- Users DataGrid -->
     <MudPaper Elevation="2" Class="pa-4">
-        <MudDataGrid T="UserModel" Items="@_users" Filterable="true" QuickFilter="@_quickFilter" 
-                     Hover="true" ReadOnly="false" EditMode="DataGridEditMode.Form">
-            <ToolBarContent>
-                <MudText Typo="Typo.h6">Users</MudText>
-                <MudSpacer />
-                <MudTextField @bind-Value="_searchString" Placeholder="Search users..." Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Immediate="true"
-                              Class="mt-0" Clearable="true"></MudTextField>
-            </ToolBarContent>
-            <Columns>
-                <PropertyColumn Property="x => x.FullName" Title="Name">
-                    <CellTemplate>
-                        <div class="d-flex align-center">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
-                                @context.Item.FullName[0]
-                            </MudAvatar>
-                            <div>
-                                <MudText Typo="Typo.body2">@context.Item.FullName</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Email</MudText>
+        @if (_isLoading)
+        {
+            <SkeletonLoader Type="SkeletonLoader.SkeletonType.DataGrid" Rows="5" />
+        }
+        else if (!_users.Any())
+        {
+            <!-- Smart Empty State -->
+            <div class="text-center pa-12">
+                <MudIcon Icon="@Icons.Material.Filled.PersonAddAlt1" Size="Size.Large" 
+                         Style="font-size: 96px; opacity: 0.3;" Color="Color.Primary" Class="mb-4" />
+                <MudText Typo="Typo.h4" GutterBottom="true">No users yet</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4" Style="max-width: 500px; margin: 0 auto;">
+                    Get started by adding your first team member. You can assign roles, set permissions, and manage access all in one place.
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                           StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog" Class="mt-2">
+                    Add Your First User
+                </MudButton>
+                <div class="mt-6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        💡 Tip: Start with an administrator account to manage your team
+                    </MudText>
+                </div>
+            </div>
+        }
+        else
+        {
+            <MudDataGrid T="UserModel" Items="@_users" Filterable="true" QuickFilter="@_quickFilter" 
+                         Hover="true" ReadOnly="false" EditMode="DataGridEditMode.Form" MultiSelection="true" @bind-SelectedItems="_selectedUsers">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Users</MudText>
+                    <MudSpacer />
+
+                    @if (_selectedUsers.Any())
+                    {
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mr-2">
+                            @_selectedUsers.Count selected
+                        </MudChip>
+                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small" Class="mr-2">
+                            <MudButton StartIcon="@Icons.Material.Filled.CheckCircle" OnClick="BulkActivate">
+                                Activate
+                            </MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Block" OnClick="BulkDeactivate">
+                                Deactivate
+                            </MudButton>
+                            <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="BulkDelete">
+                                Delete
+                            </MudButton>
+                        </MudButtonGroup>
+                    }
+
+                    <MudTextField @bind-Value="_searchString" Placeholder="Search users..." Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Immediate="true"
+                                  Class="mt-0" Clearable="true"></MudTextField>
+                </ToolBarContent>
+                <Columns>
+                    <SelectColumn T="UserModel" />
+                    <PropertyColumn Property="x => x.FullName" Title="Name">
+                        <CellTemplate>
+                            <div class="d-flex align-center">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                    @context.Item.FullName[0]
+                                </MudAvatar>
+                                <div>
+                                    <MudText Typo="Typo.body2">@context.Item.FullName</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Email</MudText>
+                                </div>
                             </div>
-                        </div>
-                    </CellTemplate>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.Role" Title="Role">
-                    <CellTemplate>
-                        <MudChip T="string" Size="Size.Small" Color="@GetRoleColor(context.Item.Role)">
-                            @context.Item.Role
-                        </MudChip>
-                    </CellTemplate>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.Department" Title="Department" />
-                <PropertyColumn Property="x => x.LastLogin" Title="Last Login" Format="MM/dd/yyyy HH:mm" />
-                <PropertyColumn Property="x => x.IsActive" Title="Status">
-                    <CellTemplate>
-                        <MudChip T="string" Size="Size.Small" Color="@(context.Item.IsActive ? Color.Success : Color.Default)">
-                            @(context.Item.IsActive ? "Active" : "Inactive")
-                        </MudChip>
-                    </CellTemplate>
-                </PropertyColumn>
-                <TemplateColumn CellClass="d-flex justify-end" Sortable="false">
-                    <CellTemplate>
-                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => OpenEditDialog(context.Item))" />
-                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteUser(context.Item))" />
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-            <PagerContent>
-                <MudDataGridPager T="UserModel" />
-            </PagerContent>
-        </MudDataGrid>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Role" Title="Role">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@GetRoleColor(context.Item.Role)">
+                                @context.Item.Role
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Department" Title="Department" />
+                    <PropertyColumn Property="x => x.LastLogin" Title="Last Login" Format="MM/dd/yyyy HH:mm" />
+                    <PropertyColumn Property="x => x.IsActive" Title="Status">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@(context.Item.IsActive ? Color.Success : Color.Default)">
+                                @(context.Item.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn CellClass="d-flex justify-end" Sortable="false">
+                        <CellTemplate>
+                            <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => OpenEditDialog(context.Item))" />
+                            <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteUser(context.Item))" />
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="UserModel" />
+                </PagerContent>
+            </MudDataGrid>
+        }
     </MudPaper>
 </MudContainer>
 
@@ -137,15 +241,29 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="_currentUser.FullName" Label="Full Name" Variant="Variant.Outlined" Required="true" Class="mb-3" />
-        <MudTextField @bind-Value="_currentUser.Email" Label="Email" Variant="Variant.Outlined" Required="true" InputType="InputType.Email" Class="mb-3" />
-        <MudSelect @bind-Value="_currentUser.Role" Label="Role" Variant="Variant.Outlined" Required="true" Class="mb-3">
-            <MudSelectItem Value="@("Administrator")">Administrator</MudSelectItem>
-            <MudSelectItem Value="@("Manager")">Manager</MudSelectItem>
-            <MudSelectItem Value="@("User")">User</MudSelectItem>
-        </MudSelect>
-        <MudTextField @bind-Value="_currentUser.Department" Label="Department" Variant="Variant.Outlined" Class="mb-3" />
-        <MudSwitch @bind-Value="_currentUser.IsActive" Label="Active" Color="Color.Success" />
+        <HelpTooltip HelpText="Enter the user's full legal name as it appears on official documents">
+            <MudTextField @bind-Value="_currentUser.FullName" Label="Full Name" Variant="Variant.Outlined" Required="true" Class="mb-3" />
+        </HelpTooltip>
+
+        <HelpTooltip HelpText="Primary email for system notifications and login">
+            <MudTextField @bind-Value="_currentUser.Email" Label="Email" Variant="Variant.Outlined" Required="true" InputType="InputType.Email" Class="mb-3" />
+        </HelpTooltip>
+
+        <HelpTooltip HelpText="Determines user permissions and access levels">
+            <MudSelect @bind-Value="_currentUser.Role" Label="Role" Variant="Variant.Outlined" Required="true" Class="mb-3">
+                <MudSelectItem Value="@("Administrator")">Administrator</MudSelectItem>
+                <MudSelectItem Value="@("Manager")">Manager</MudSelectItem>
+                <MudSelectItem Value="@("User")">User</MudSelectItem>
+            </MudSelect>
+        </HelpTooltip>
+
+        <HelpTooltip HelpText="Organizational department for reporting and access control">
+            <MudTextField @bind-Value="_currentUser.Department" Label="Department" Variant="Variant.Outlined" Class="mb-3" />
+        </HelpTooltip>
+
+        <HelpTooltip HelpText="Inactive users cannot login but their data is preserved">
+            <MudSwitch @bind-Value="_currentUser.IsActive" Label="Active" Color="Color.Success" />
+        </HelpTooltip>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="CloseDialog">Cancel</MudButton>
@@ -157,10 +275,19 @@
 
 @code {
     private List<UserModel> _users = new();
+    private HashSet<UserModel> _selectedUsers = new();
     private string _searchString = "";
     private bool _dialogVisible = false;
     private bool _isEditing = false;
     private UserModel _currentUser = new();
+    private bool _isLoading = false;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Platform", Href = "/platform" },
+        new() { Text = "User Management", Href = "/platform/users", Icon = Icons.Material.Filled.ManageAccounts }
+    };
 
     private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
 
@@ -182,8 +309,14 @@
         return false;
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
+        StateHasChanged();
+
+        // Simulate API call delay
+        await Task.Delay(800);
+
         // Seed mock data
         _users = new List<UserModel>
         {
@@ -193,12 +326,23 @@
             new UserModel { Id = 4, FullName = "Alice Williams", Email = "alice.williams@businessasusual.com", Role = "Manager", Department = "HR", IsActive = true, LastLogin = DateTime.Now.AddHours(-5) },
             new UserModel { Id = 5, FullName = "Charlie Brown", Email = "charlie.brown@businessasusual.com", Role = "User", Department = "Operations", IsActive = false, LastLogin = DateTime.Now.AddDays(-30) },
         };
+
+        _isLoading = false;
     }
 
     private void OpenCreateDialog()
     {
         _isEditing = false;
-        _currentUser = new UserModel { IsActive = true };
+
+        // Apply smart defaults
+        var defaults = Defaults.GetUserDefaults();
+        _currentUser = new UserModel 
+        { 
+            IsActive = defaults.DefaultActive,
+            Role = defaults.DefaultRole,
+            Department = defaults.DefaultDepartment
+        };
+
         _dialogVisible = true;
     }
 
@@ -236,7 +380,7 @@
                 existing.Role = _currentUser.Role;
                 existing.Department = _currentUser.Department;
                 existing.IsActive = _currentUser.IsActive;
-                Snackbar.Add("User updated successfully", Severity.Success);
+                Toast.Saved(_currentUser.FullName);
             }
         }
         else
@@ -244,7 +388,14 @@
             _currentUser.Id = _users.Max(u => u.Id) + 1;
             _currentUser.LastLogin = DateTime.Now;
             _users.Add(_currentUser);
-            Snackbar.Add("User created successfully", Severity.Success);
+            Toast.Created(_currentUser.FullName);
+
+            // Remember user preferences for smart defaults
+            Defaults.RememberUserFormData(
+                _currentUser.Role, 
+                _currentUser.Department, 
+                _currentUser.IsActive
+            );
         }
 
         CloseDialog();
@@ -252,8 +403,16 @@
 
     private async Task DeleteUser(UserModel user)
     {
+        var deletedUser = user;
         _users.Remove(user);
-        Snackbar.Add($"User {user.FullName} deleted", Severity.Info);
+
+        Toast.Deleted(user.FullName, () =>
+        {
+            // Undo delete
+            _users.Add(deletedUser);
+            StateHasChanged();
+        });
+
         await Task.CompletedTask;
     }
 
@@ -264,6 +423,121 @@
         "User" => Color.Info,
         _ => Color.Default
     };
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "cmd-n":
+                OpenCreateDialog();
+                break;
+            case "cmd-f":
+            case "slash":
+                // Focus search field - will implement with ElementReference later
+                break;
+            case "cmd-e":
+                Snackbar.Add("Export feature coming soon", Severity.Info);
+                break;
+            case "escape":
+                if (_dialogVisible)
+                    CloseDialog();
+                break;
+            case "question":
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+            case "g-d":
+                Navigation.NavigateTo("/dashboard");
+                break;
+            case "g-u":
+                Navigation.NavigateTo("/platform/users");
+                break;
+            case "g-r":
+                Navigation.NavigateTo("/platform/roles");
+                break;
+            case "g-n":
+                Navigation.NavigateTo("/platform/notifications");
+                break;
+            case "g-s":
+                Navigation.NavigateTo("/platform/settings");
+                break;
+        }
+    }
+
+    // Bulk Actions
+    private void BulkActivate()
+    {
+        foreach (var user in _selectedUsers)
+        {
+            user.IsActive = true;
+        }
+        Toast.Success($"Activated {_selectedUsers.Count} user(s)");
+        _selectedUsers.Clear();
+    }
+
+    private void BulkDeactivate()
+    {
+        foreach (var user in _selectedUsers)
+        {
+            user.IsActive = false;
+        }
+        Toast.Success($"Deactivated {_selectedUsers.Count} user(s)");
+        _selectedUsers.Clear();
+    }
+
+    private async Task BulkDelete()
+    {
+        var count = _selectedUsers.Count;
+        var usersToDelete = _selectedUsers.ToList();
+
+        foreach (var user in usersToDelete)
+        {
+            _users.Remove(user);
+        }
+
+        _selectedUsers.Clear();
+        Toast.Deleted($"{count} user(s)", async () =>
+        {
+            // Undo: restore deleted users
+            _users.AddRange(usersToDelete);
+            await Task.CompletedTask;
+        });
+    }
+
+    // Export Functions
+    private async Task ExportToCsv()
+    {
+        var usersToExport = _selectedUsers.Any() ? _selectedUsers.ToList() : _users;
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Full Name,Email,Role,Department,Status,Last Login");
+
+        foreach (var user in usersToExport)
+        {
+            csv.AppendLine($"\"{user.FullName}\",\"{user.Email}\",\"{user.Role}\",\"{user.Department}\",\"{(user.IsActive ? "Active" : "Inactive")}\",\"{user.LastLogin:yyyy-MM-dd HH:mm}\"");
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+        var fileName = $"users-export-{DateTime.Now:yyyy-MM-dd}.csv";
+
+        await JS.InvokeVoidAsync("downloadFile", fileName, base64, "text/csv");
+        Toast.Success($"Exported {usersToExport.Count} user(s) to CSV");
+    }
+
+    private void ExportToPdf()
+    {
+        Toast.Info("PDF export coming soon");
+    }
+
+    private void ExportToExcel()
+    {
+        Toast.Info("Excel export coming soon");
+    }
+
+    private void Print()
+    {
+        Toast.Info("Print view coming soon");
+    }
 
     // Model class
     public class UserModel

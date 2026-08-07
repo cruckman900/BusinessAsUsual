@@ -1,103 +1,180 @@
 @page "/platform/roles"
 @using MudBlazor
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject SmartDefaultsService Defaults
 
 <PageTitle>Roles & Permissions - Platform</PageTitle>
 
+<!-- Keyboard Shortcuts -->
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
+
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-    <!-- Breadcrumb -->
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudLink Href="/platform">Platform</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Roles & Permissions</MudText>
-    </div>
+    <!-- Breadcrumb with Actions -->
+    <PageBreadcrumb Items="_breadcrumbItems">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" 
+                       Color="Color.Default" 
+                       StartIcon="@Icons.Material.Filled.Security"
+                       Size="Size.Small">
+                Audit Log
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenCreateRoleDialog">
+                Add Role
+            </MudButton>
+        </Actions>
+    </PageBreadcrumb>
 
     <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-4">
-        <div>
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
-                Roles & Permissions
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                Configure access control and permission assignments
-            </MudText>
-        </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateRoleDialog">
-            Add Role
-        </MudButton>
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            Roles & Permissions
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Configure access control and permission assignments
+        </MudText>
     </div>
+
+    <!-- Contextual Help -->
+    @if (_roles.Count(r => !r.IsSystemRole) == 0 && !_isLoading)
+    {
+        <ContextualHint Title="Getting Started" 
+                       Message="System roles (Admin, Manager, User) cannot be deleted. Create custom roles for specific team needs."
+                       Dismissible="true" />
+    }
+    else if (!_isLoading)
+    {
+        <ContextualHint Title="Security Tip" 
+                       Message="Grant minimum permissions required for each role. Review permissions regularly and use the Audit Log to track changes."
+                       Dismissible="true" />
+    }
 
     <!-- Stats Cards -->
     <MudGrid Spacing="3" Class="mb-4">
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Roles</MudText>
-                            <MudText Typo="Typo.h5">@_roles.Count</MudText>
+        @if (_isLoading)
+        {
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+            </MudItem>
+        }
+        else
+        {
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Roles</MudText>
+                                <MudText Typo="Typo.h5">@_roles.Count</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Info" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Info" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Permissions</MudText>
-                            <MudText Typo="Typo.h5">@_availablePermissions.Count</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Permissions</MudText>
+                                <MudText Typo="Typo.h5">@_availablePermissions.Count</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Warning" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Warning" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <div class="d-flex align-center justify-space-between">
-                        <div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">Custom Roles</MudText>
-                            <MudText Typo="Typo.h5">@_roles.Count(r => !r.IsSystemRole)</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex align-center justify-space-between">
+                            <div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Custom Roles</MudText>
+                                <MudText Typo="Typo.h5">@_roles.Count(r => !r.IsSystemRole)</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Primary" Size="Size.Large" />
                         </div>
-                        <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Primary" Size="Size.Large" />
-                    </div>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
     </MudGrid>
 
     <!-- Roles Grid -->
     <MudPaper Elevation="2" Class="pa-4">
         <MudText Typo="Typo.h6" Class="mb-4">Roles</MudText>
-        <MudGrid Spacing="3">
-            @foreach (var role in _roles)
-            {
+
+        @if (_isLoading)
+        {
+            <MudGrid Spacing="3">
                 <MudItem xs="12" md="6" lg="4">
-                    <MudCard Elevation="1" Class="d-flex flex-column" Style="height: 100%;">
-                        <MudCardContent Class="flex-grow-1">
-                            <div class="d-flex justify-space-between align-center mb-2">
-                                <MudText Typo="Typo.h6">@role.Name</MudText>
-                                @if (role.IsSystemRole)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">System</MudChip>
-                                }
-                            </div>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
-                                @role.Description
-                            </MudText>
-                            <MudDivider Class="mb-2" />
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                <strong>Permissions:</strong> @role.Permissions.Count
-                            </MudText>
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach (var permission in role.Permissions.Take(4))
+                    <SkeletonLoader Type="SkeletonLoader.SkeletonType.Card" Rows="1" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <SkeletonLoader Type="SkeletonLoader.SkeletonType.Card" Rows="1" />
+                </MudItem>
+                <MudItem xs="12" md="6" lg="4">
+                    <SkeletonLoader Type="SkeletonLoader.SkeletonType.Card" Rows="1" />
+                </MudItem>
+            </MudGrid>
+        }
+        else if (!_roles.Any())
+        {
+            <!-- Smart Empty State -->
+            <div class="text-center pa-12">
+                <MudIcon Icon="@Icons.Material.Filled.Shield" Size="Size.Large" 
+                         Style="font-size: 96px; opacity: 0.3;" Color="Color.Info" Class="mb-4" />
+                <MudText Typo="Typo.h4" GutterBottom="true">No custom roles defined</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4" Style="max-width: 500px; margin: 0 auto;">
+                    Create custom roles to organize permissions and control access across your platform. Perfect for teams with specific responsibilities!
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                           StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateRoleDialog" Class="mt-2">
+                    Create Your First Role
+                </MudButton>
+                <div class="mt-6">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        💡 Tip: System roles (Administrator, Manager, User) are always available
+                    </MudText>
+                </div>
+            </div>
+        }
+        else
+        {
+            <MudGrid Spacing="3">
+                @foreach (var role in _roles)
+                {
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudCard Elevation="1" Class="d-flex flex-column" Style="height: 100%;">
+                            <MudCardContent Class="flex-grow-1">
+                                <div class="d-flex justify-space-between align-center mb-2">
+                                    <MudText Typo="Typo.h6">@role.Name</MudText>
+                                    @if (role.IsSystemRole)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">System</MudChip>
+                                    }
+                                </div>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                    @role.Description
+                                </MudText>
+                                <MudDivider Class="mb-2" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                    <strong>Permissions:</strong> @role.Permissions.Count
+                                </MudText>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var permission in role.Permissions.Take(4))
                                 {
                                     <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@permission</MudChip>
                                 }
@@ -121,7 +198,8 @@
                     </MudCard>
                 </MudItem>
             }
-        </MudGrid>
+            </MudGrid>
+        }
     </MudPaper>
 </MudContainer>
 
@@ -134,11 +212,24 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="_currentRole.Name" Label="Role Name" Variant="Variant.Outlined" Required="true" Class="mb-3" 
-                      Disabled="@_currentRole.IsSystemRole" />
-        <MudTextField @bind-Value="_currentRole.Description" Label="Description" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
+        <HelpTooltip HelpText="Choose a clear, descriptive name for this role (e.g., 'Sales Manager', 'Customer Support')">
+            <MudTextField @bind-Value="_currentRole.Name" Label="Role Name" Variant="Variant.Outlined" Required="true" Class="mb-3" 
+                          Disabled="@_currentRole.IsSystemRole" />
+        </HelpTooltip>
 
-        <MudText Typo="Typo.subtitle2" Class="mb-2">Permissions</MudText>
+        <HelpTooltip HelpText="Describe what this role is for and who should be assigned to it">
+            <MudTextField @bind-Value="_currentRole.Description" Label="Description" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
+        </HelpTooltip>
+
+        <div class="d-flex align-center mb-2" style="gap: 8px;">
+            <MudText Typo="Typo.subtitle2">Permissions</MudText>
+            <MudTooltip Text="Select all permissions this role needs. Follow the principle of least privilege." Placement="Placement.Right" Arrow="true">
+                <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" 
+                               Size="Size.Small" 
+                               Color="Color.Default"
+                               Style="opacity: 0.6; padding: 4px;" />
+            </MudTooltip>
+        </div>
         <MudPaper Elevation="0" Class="pa-3 mb-3" Style="border: 1px solid var(--mud-palette-divider); max-height: 300px; overflow-y: auto;">
             @foreach (var permission in _availablePermissions)
             {
@@ -170,11 +261,25 @@
     private bool _roleDialogVisible = false;
     private bool _isEditingRole = false;
     private RoleModel _currentRole = new();
+    private bool _isLoading = false;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Platform", Href = "/platform" },
+        new() { Text = "Roles & Permissions", Href = "/platform/roles", Icon = Icons.Material.Filled.AdminPanelSettings }
+    };
 
     private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
+        StateHasChanged();
+
+        // Simulate API call delay
+        await Task.Delay(800);
+
         // Seed available permissions
         _availablePermissions = new List<string>
         {
@@ -233,6 +338,8 @@
                 Permissions = new List<string> { "finance.read", "finance.write", "reports.read", "reports.write" }
             }
         };
+
+        _isLoading = false;
     }
 
     private void OpenCreateRoleDialog()
@@ -284,14 +391,14 @@
                 existing.Name = _currentRole.Name;
                 existing.Description = _currentRole.Description;
                 existing.Permissions = new List<string>(_currentRole.Permissions);
-                Snackbar.Add("Role updated successfully", Severity.Success);
+                Toast.Saved(_currentRole.Name);
             }
         }
         else
         {
             _currentRole.Id = _roles.Max(r => r.Id) + 1;
             _roles.Add(_currentRole);
-            Snackbar.Add("Role created successfully", Severity.Success);
+            Toast.Created(_currentRole.Name);
         }
 
         CloseRoleDialog();
@@ -301,13 +408,53 @@
     {
         if (role.IsSystemRole)
         {
-            Snackbar.Add("System roles cannot be deleted", Severity.Warning);
+            Toast.Warning("System roles cannot be deleted");
             return;
         }
 
+        var deletedRole = role;
         _roles.Remove(role);
-        Snackbar.Add($"Role '{role.Name}' deleted", Severity.Info);
+
+        Toast.Deleted($"Role '{role.Name}'", () =>
+        {
+            // Undo delete
+            _roles.Add(deletedRole);
+            StateHasChanged();
+        });
+
         await Task.CompletedTask;
+    }
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "cmd-n":
+                OpenCreateRoleDialog();
+                break;
+            case "escape":
+                if (_roleDialogVisible)
+                    CloseRoleDialog();
+                break;
+            case "question":
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+            case "g-d":
+                Navigation.NavigateTo("/dashboard");
+                break;
+            case "g-u":
+                Navigation.NavigateTo("/platform/users");
+                break;
+            case "g-r":
+                Navigation.NavigateTo("/platform/roles");
+                break;
+            case "g-n":
+                Navigation.NavigateTo("/platform/notifications");
+                break;
+            case "g-s":
+                Navigation.NavigateTo("/platform/settings");
+                break;
+        }
     }
 
     // Model class

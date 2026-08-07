@@ -1,0 +1,29 @@
+@using MudBlazor
+
+@if (IsVisible)
+{
+    <div class="d-inline-flex align-center" style="gap: 8px;">
+        <MudProgressCircular Size="@Size" Indeterminate="true" Color="@Color" />
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            <MudText Typo="Typo.body2" Color="@TextColor">@Text</MudText>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public Size Size { get; set; } = Size.Small;
+
+    [Parameter]
+    public Color Color { get; set; } = Color.Primary;
+
+    [Parameter]
+    public Color TextColor { get; set; } = Color.Secondary;
+}

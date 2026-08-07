@@ -2,6 +2,7 @@ using Platform.Web.Components;
 using MudBlazor.Services;
 using Platform.Application;
 using Platform.Infrastructure;
+using Platform.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ builder.Services.AddRazorComponents()
 
 // Add MudBlazor
 builder.Services.AddMudServices();
+
+// Add Platform services
+builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<SmartDefaultsService>();
 
 // Add Platform layers
 builder.Services.AddApplication();

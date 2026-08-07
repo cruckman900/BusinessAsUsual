@@ -350,6 +350,606 @@ Remove-Item -Force Weather.razor
 
 ---
 
+## UX Enhancement Patterns (MANDATORY)
+
+When modifying or creating module pages, implement these patterns to maintain consistency:
+
+### Smart Empty States
+**Apply to:** All data grids, lists, and collections  
+**Pattern:**
+```razor
+@if (!_items.Any())
+{
+    <div class="text-center pa-12">
+        <MudIcon Icon="@Icons.Material.Filled.{RelevantIcon}" Size="Size.Large" 
+                 Style="font-size: 96px; opacity: 0.3;" Color="Color.Primary" Class="mb-4" />
+        <MudText Typo="Typo.h4" GutterBottom="true">No {items} yet</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4" Style="max-width: 500px; margin: 0 auto;">
+            Get started by {helpful description}. {Why this matters}.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" 
+                   StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+            Add Your First {Item}
+        </MudButton>
+        <div class="mt-6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                💡 Tip: {Next step or helpful hint}
+            </MudText>
+        </div>
+    </div>
+}
+```
+
+**Guidelines:**
+- Use conversational, human language
+- Include a clear call-to-action
+- Provide context (why this feature matters)
+- Add helpful tips or next steps
+
+### Skeleton Loaders
+**Apply to:** All pages with async data loading  
+**Pattern:**
+```razor
+@if (_isLoading)
+{
+    <SkeletonLoader Type="SkeletonLoader.SkeletonType.StatsCard" Rows="1" />
+}
+else
+{
+    <!-- Actual stats card -->
+}
+```
+
+**Implementation:**
+1. Add `_isLoading` field to `@code` block
+2. Switch to `OnInitializedAsync` for data loading
+3. Set `_isLoading = true` before fetch, `false` after
+4. Call `StateHasChanged()` before async operation
+5. Wrap UI in loading branch using `SkeletonLoader`
+
+**Available Types:**
+- `DataGrid` - Table/grid with rows
+- `Card` - Content cards
+- `StatsCard` - Metric cards
+- `List` - Simple lists
+
+**Best Practices:**
+- Match skeleton type to actual layout
+- Use realistic row counts
+- Keep load times brief (< 1s ideal)
+- Show skeleton for initial load only
+
+---
+
+### Breadcrumb Navigation with Actions
+**Apply to:** All module pages  
+**Pattern:**
+```razor
+<PageBreadcrumb Items="_breadcrumbItems">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.FileDownload" Size="Size.Small">
+            Export
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+            Add Item
+        </MudButton>
+    </Actions>
+</PageBreadcrumb>
+```
+
+**Migration Steps:**
+1. **Remove old breadcrumb:**
+   ```razor
+   <!-- DELETE THIS -->
+   <div class="mb-3">
+       <MudLink Href="/dashboard">Dashboard</MudLink>
+       <span class="mx-2">/</span>
+       ...
+   </div>
+   ```
+
+2. **Remove page header action row:**
+   ```razor
+   <!-- DELETE THIS -->
+   <div class="d-flex justify-space-between align-center mb-4">
+       <div>...</div>
+       <MudButton>...</MudButton>
+   </div>
+   ```
+
+3. **Add breadcrumb component:**
+   ```razor
+   <PageBreadcrumb Items="_breadcrumbItems">
+       <Actions>
+           <!-- Move action buttons here -->
+       </Actions>
+   </PageBreadcrumb>
+   ```
+
+4. **Simplify page header:**
+   ```razor
+   <div class="mb-4">
+       <MudText Typo="Typo.h4" GutterBottom="true">Page Title</MudText>
+       <MudText Typo="Typo.body1" Color="Color.Secondary">Description</MudText>
+   </div>
+   ```
+
+5. **Add breadcrumb items in @code:**
+   ```csharp
+   private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+   {
+       new() { Text = "Dashboard", Href = "/dashboard" },
+       new() { Text = "Module", Href = "/module" },
+       new() { Text = "Current Page", Href = "/module/page", Icon = Icons.Material.Filled.Icon }
+   };
+   ```
+
+**Action Button Best Practices:**
+- Primary: `Variant.Filled`, `Color.Primary` (save/create/submit)
+- Secondary: `Variant.Outlined`, `Color.Default` (export/settings)
+- Always: `Size.Small`, `StartIcon` for consistency
+- Limit to 2-3 actions max
+- Order: secondary first, primary last
+
+---
+
+### Keyboard Shortcuts
+**Apply to:** All module pages  
+**Pattern:**
+```razor
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
+```
+
+**Implementation:**
+1. **Add component** at top of page (after `PageTitle`)
+2. **Add injections** in directive section
+3. **Add handler method** in `@code` block:
+
+```csharp
+private async Task HandleKeyboardShortcut(string shortcut)
+{
+    switch (shortcut)
+    {
+        case "cmd-n":
+            OpenCreateDialog(); // Match primary action
+            break;
+        case "cmd-s":
+            await SaveChanges(); // If applicable
+            break;
+        case "cmd-e":
+            await ExportData(); // If export exists
+            break;
+        case "escape":
+            if (_dialogVisible)
+                CloseDialog();
+            break;
+        case "question":
+            await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+            break;
+        case "g-d":
+            Navigation.NavigateTo("/dashboard");
+            break;
+        // Add g-[key] for module-specific navigation
+    }
+}
+```
+
+**Standard Shortcuts to Implement:**
+- `cmd-n` → Match "Create/Add" breadcrumb action
+- `cmd-s` → Match "Save" breadcrumb action (if exists)
+- `cmd-e` → Match "Export" breadcrumb action (if exists)
+- `escape` → Close open dialog
+- `question` → Show help (always)
+- `g-d` → Dashboard (always)
+- `g-[key]` → Module pages (match your module)
+
+**Required:**
+- Always add `question` and `g-d`
+- Always close dialogs on `escape` if any exist
+- Match keyboard shortcuts to visible breadcrumb actions
+
+---
+
+### Toast Notifications with Actions
+**Apply to:** All create/save/delete operations  
+**Migration:**
+```csharp
+@inject ToastService Toast
+
+// ❌ Replace Snackbar.Add calls
+// ✅ Use Toast service instead
+
+// Create
+Toast.Created("User");
+
+// Save
+Toast.Saved("Settings");
+
+// Delete with undo
+var deleted = item;
+_items.Remove(item);
+Toast.Deleted(item.Name, () =>
+{
+    _items.Add(deleted);
+    StateHasChanged();
+});
+```
+
+**Standard Patterns:**
+- `Toast.Created(name)` - Brief success with checkmark
+- `Toast.Saved(name)` - Brief success with checkmark
+- `Toast.Deleted(name, undoAction)` - 5s with Undo button
+- `Toast.Success/Info/Warning/Error(message)` - Standard severities
+
+**Undo Pattern:**
+1. Capture item reference before removal
+2. Perform the delete
+3. Call `Toast.Deleted` with undo lambda
+4. In undo: restore item + `StateHasChanged()`
+
+**Always provide undo for:**
+- Delete operations
+- Archive operations
+- Permanent state changes
+
+---
+
+### Recent Activity Widget
+**Apply to:** Module dashboards/home pages  
+**Pattern:**
+```razor
+<RecentActivityWidget Activities="_recentActivities" MaxItems="8" ShowViewAll="true" OnViewAll="NavigateToDetails" />
+```
+
+**Implementation:**
+```csharp
+private List<RecentActivityWidget.ActivityItem> _recentActivities = new();
+
+// In OnInitializedAsync or after data load
+_recentActivities = new List<RecentActivityWidget.ActivityItem>
+{
+    new() { 
+        Type = RecentActivityWidget.ActivityType.Created, 
+        User = "User Name", 
+        Action = "created item", 
+        Target = "Item Name", 
+        Timestamp = DateTime.Now.AddMinutes(-5) 
+    }
+};
+```
+
+**Activity Types:**
+- `Created`, `Updated`, `Deleted` - CRUD operations
+- `Login`, `Logout` - Auth events
+- `Export`, `Import` - Data operations
+- `Approved`, `Rejected` - Workflow
+- `Comment` - User feedback
+
+**Use metadata badges for priority/status:**
+- `Metadata = "High"` → Red badge
+- `Metadata = "Pending"` → Orange badge
+- `Metadata = "Approved"` → Green badge
+
+---
+
+### Visual Feedback on Actions
+**Apply to:** Form submissions, save operations, data loading  
+**Pattern:**
+```razor
+<!-- Auto-feedback button -->
+<ActionButton Text="Save" LoadingText="Saving..." SuccessText="Saved!" OnClick="SaveChanges" />
+
+<!-- Manual spinner -->
+<LoadingSpinner IsVisible="@_isLoading" Text="Loading data..." />
+```
+
+**ActionButton Usage:**
+- Automatically shows spinner during async operation
+- Displays success checkmark for 2 seconds
+- Prevents double-clicks
+- Use for: save, create, delete, submit actions
+
+**LoadingSpinner Usage:**
+- Manual control via `IsVisible` parameter
+- Use for: data fetching, background processes
+- Optional text message
+
+**Migration:**
+```razor
+<!-- ❌ OLD: Static button -->
+<MudButton OnClick="SaveUser">Save</MudButton>
+
+<!-- ✅ NEW: With feedback -->
+<ActionButton Text="Save User" LoadingText="Saving..." OnClick="SaveUser" />
+```
+
+**Always show feedback for:**
+- Form submissions
+- Save operations
+- Delete operations
+- Data exports
+- Async operations > 200ms
+
+---
+
+### Smart Defaults & Prefill
+**Apply to:** All create/edit forms  
+**Pattern:**
+```razor
+@inject SmartDefaultsService Defaults
+
+// Prefill on create
+var defaults = Defaults.GetUserDefaults();
+_newItem = new ItemModel { Status = defaults.DefaultStatus };
+
+// Remember after save
+Defaults.RememberValue("item.lastStatus", _newItem.Status);
+```
+
+**Migration:**
+```razor
+<!-- ❌ OLD: Empty form -->
+_newUser = new UserModel { IsActive = true };
+
+<!-- ✅ NEW: Smart defaults -->
+var defaults = Defaults.GetUserDefaults();
+_newUser = new UserModel 
+{ 
+    IsActive = defaults.DefaultActive,
+    Role = defaults.DefaultRole,
+    Department = defaults.DefaultDepartment 
+};
+```
+
+**After save, remember selections:**
+```csharp
+Defaults.RememberUserFormData(role, department, isActive);
+```
+
+**Common defaults to apply:**
+- IsActive/Enabled → true
+- Role/Status → last used
+- Department/Category → last used
+- Date → today
+- Currency/Language → user preference
+
+---
+
+### Contextual Help / Tooltips
+**Apply to:** All forms and complex sections  
+**Pattern:**
+```razor
+<!-- Wrap fields with help -->
+<HelpTooltip HelpText="Primary email for system notifications and login">
+    <MudTextField @bind-Value="Email" Label="Email" />
+</HelpTooltip>
+
+<!-- Add page hints -->
+@if (_items.Count < 5)
+{
+    <ContextualHint Title="Quick Tip" Message="..." Dismissible="true" />
+}
+```
+
+**Migration:**
+```razor
+<!-- ❌ OLD: No help -->
+<MudTextField @bind-Value="Role" Label="Role" />
+
+<!-- ✅ NEW: With tooltip -->
+<HelpTooltip HelpText="Determines user permissions and access levels">
+    <MudTextField @bind-Value="Role" Label="Role" />
+</HelpTooltip>
+```
+
+**Add hints for:**
+- Empty states (0 items)
+- Getting started (< 5 items)
+- Warnings (system-wide changes)
+- Security tips (permissions, roles)
+- Keyboard shortcuts
+
+---
+
+### Progressive Disclosure
+**Apply to:** Settings, advanced features, optional fields  
+**Pattern:**
+```razor
+<MudExpansionPanels Class="mt-4" Elevation="0">
+    <MudExpansionPanel Style="border: 1px solid var(--mud-palette-divider);">
+        <TitleContent>
+            <div class="d-flex align-center" style="gap: 8px;">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" />
+                <MudText>Advanced Options</MudText>
+            </div>
+        </TitleContent>
+        <ChildContent>
+            <MudGrid Spacing="3" Class="pa-2">
+                <!-- Advanced fields -->
+            </MudGrid>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+```
+
+**Migration:**
+```razor
+<!-- ❌ OLD: Everything visible -->
+<MudGrid>
+    <MudItem>Basic Field</MudItem>
+    <MudItem>Advanced Field</MudItem>
+    <MudItem>Rarely Used Field</MudItem>
+</MudGrid>
+
+<!-- ✅ NEW: Progressive disclosure -->
+<MudGrid>
+    <MudItem>Basic Field</MudItem>
+</MudGrid>
+<MudExpansionPanels Class="mt-4">
+    <MudExpansionPanel>
+        <TitleContent>Advanced Options</TitleContent>
+        <ChildContent>
+            <MudGrid Class="pa-2">
+                <MudItem>Advanced Field</MudItem>
+                <MudItem>Rarely Used Field</MudItem>
+            </MudGrid>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+```
+
+**Use for:**
+- Settings tabs (basic vs advanced)
+- Optional form sections
+- Power-user features
+- Experimental options
+
+---
+
+### Inline Editing & Bulk Actions
+**Apply to:** Data grids and tables  
+**Pattern:**
+```razor
+<MudDataGrid T="ItemModel" Items="@_items" 
+             EditMode="DataGridEditMode.Cell"
+             MultiSelection="true" 
+             @bind-SelectedItems="_selectedItems">
+    <ToolBarContent>
+        @if (_selectedItems.Any())
+        {
+            <MudChip>@_selectedItems.Count selected</MudChip>
+            <MudButtonGroup Size="Size.Small">
+                <MudButton OnClick="BulkActivate">Activate</MudButton>
+                <MudButton OnClick="BulkDelete" Color="Color.Error">Delete</MudButton>
+            </MudButtonGroup>
+        }
+    </ToolBarContent>
+    <Columns>
+        <SelectColumn T="ItemModel" />
+        <PropertyColumn Property="x => x.Name" Editable="true" />
+    </Columns>
+</MudDataGrid>
+
+@code {
+    private HashSet<ItemModel> _selectedItems = new();
+}
+```
+
+**Inline Editing:**
+- Use `EditMode="DataGridEditMode.Cell"` for quick edits
+- Use `EditMode="DataGridEditMode.Form"` for complex records
+- Mark editable columns with `Editable="true"`
+
+**Bulk Actions:**
+1. Add `MultiSelection="true"` to grid
+2. Add `<SelectColumn />` as first column
+3. Bind `_selectedItems` field
+4. Show bulk buttons when items selected
+5. Clear selection after action
+
+**Common bulk operations:**
+- Activate/Deactivate
+- Delete (with undo via Toast)
+- Assign/Reassign
+- Export selected
+
+---
+
+### Export Functionality
+**Apply to:** Data grids, reports, lists  
+**Pattern:**
+```razor
+@using System.Text
+@inject IJSRuntime JS
+
+<MudMenu Icon="@Icons.Material.Filled.FileDownload" Label="Export" EndIcon="@Icons.Material.Filled.ArrowDropDown">
+    <MudMenuItem OnClick="ExportToCsv">Export to CSV</MudMenuItem>
+    <MudMenuItem OnClick="ExportToPdf">Export to PDF</MudMenuItem>
+</MudMenu>
+
+@code {
+    private async Task ExportToCsv()
+    {
+        var items = _selectedItems.Any() ? _selectedItems : _items;
+        var csv = new StringBuilder();
+        csv.AppendLine("Column1,Column2");
+        foreach (var item in items)
+        {
+            csv.AppendLine($"\"{item.Name}\",\"{item.Status}\"");
+        }
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+        await JS.InvokeVoidAsync("downloadFile", $"export-{DateTime.Now:yyyy-MM-dd}.csv", base64, "text/csv");
+        Toast.Success($"Exported {items.Count} item(s)");
+    }
+}
+```
+
+**JS Helper (in `Platform.Web/wwwroot/js/export.js`):**
+```javascript
+window.downloadFile = function (fileName, base64, type) {
+    const link = document.createElement('a');
+    link.href = `data:${type};base64,${base64}`;
+    link.download = fileName;
+    link.click();
+};
+```
+
+**Key points:**
+- Export selected items if any, else all
+- Escape CSV values with quotes
+- Use descriptive filename with date
+- Show success toast with count
+- Don't export sensitive fields
+
+---
+
+### Accessibility (a11y)
+**Always apply** to every page and component  
+
+**Quick Wins:**
+```razor
+<!-- Icon buttons need labels -->
+<MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="Delete item" />
+
+<!-- Decorative icons hidden from screen readers -->
+<MudIcon Icon="@Icons.Material.Filled.Star" aria-hidden="true" />
+
+<!-- Alerts need role and live region -->
+<div role="alert" aria-live="polite">
+    Success message
+</div>
+```
+
+**Essential Checklist:**
+- ✅ Skip link: `<a href="#main-content">Skip to main content</a>`
+- ✅ ARIA labels on all icon-only buttons
+- ✅ Keyboard navigation works (Tab/Shift+Tab through all interactive elements)
+- ✅ Color contrast ≥ 4.5:1 for text
+- ✅ Form labels visible and associated with inputs
+- ✅ Focus indicators visible (never `outline: none` without replacement)
+- ✅ Semantic HTML (`<nav>`, `<main>`, `<article>`)
+- ✅ Alt text on informational images
+- ✅ Logical heading hierarchy (h1→h2→h3)
+
+**Common ARIA Attributes:**
+- `aria-label` - Icon button names
+- `aria-live="polite"` - Dynamic content (toasts)
+- `aria-hidden="true"` - Decorative icons
+- `aria-expanded` - Collapsible panels
+- `aria-describedby` - Field help text
+
+**Testing:**
+- Tab through page (all interactive elements reachable?)
+- Screen reader test (NVDA/JAWS/VoiceOver)
+- Zoom to 200% (layout still works?)
+- Keyboard only (no mouse)
+
+---
+
 ## Notes
 
 This skill is a living document. As we build out module dashboards, capture additional patterns, components, and solutions here.
@@ -358,3 +958,4 @@ This skill is a living document. As we build out module dashboards, capture addi
 - **Use Insight Cards** when: The module has 2-4 key metrics that users check frequently
 - **Use Quick Stats** when: Visual data representation adds value (trends, comparisons, distributions)
 - **Skip them** when: The module is simple or metrics aren't meaningful at the dashboard level
+

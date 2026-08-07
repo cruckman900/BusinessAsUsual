@@ -1,0 +1,173 @@
+@using MudBlazor
+
+<MudPaper Elevation="2" Class="pa-4">
+    <div class="d-flex justify-space-between align-center mb-3">
+        <div class="d-flex align-center" style="gap: 8px;">
+            <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Recent Activity</MudText>
+        </div>
+        @if (ShowViewAll && OnViewAll.HasDelegate)
+        {
+            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => OnViewAll.InvokeAsync())">
+                View All
+            </MudButton>
+        }
+    </div>
+
+    @if (Activities == null || !Activities.Any())
+    {
+        <div class="text-center py-6">
+            <MudIcon Icon="@Icons.Material.Filled.Inbox" Size="Size.Large" Style="opacity: 0.3;" />
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                No recent activity
+            </MudText>
+        </div>
+    }
+    else
+    {
+        <div class="pa-0">
+            @foreach (var activity in Activities.Take(MaxItems))
+            {
+                <div class="px-0 py-2" style="border-bottom: 1px solid var(--mud-palette-divider);">
+                    <div class="d-flex align-center" style="gap: 12px;">
+                        <MudAvatar Color="@GetActivityColor(activity.Type)" Size="Size.Small">
+                            <MudIcon Icon="@GetActivityIcon(activity.Type)" Size="Size.Small" />
+                        </MudAvatar>
+
+                        <div style="flex: 1;">
+                            <MudText Typo="Typo.body2">
+                                <strong>@activity.User</strong> @activity.Action
+                                @if (!string.IsNullOrEmpty(activity.Target))
+                                {
+                                    <span> <strong>@activity.Target</strong></span>
+                                }
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @GetRelativeTime(activity.Timestamp)
+                            </MudText>
+                        </div>
+
+                        @if (activity.Metadata != null)
+                        {
+                            <span style="font-size: 11px; padding: 4px 8px; border-radius: 12px; background-color: @GetMetadataBackgroundColor(activity.Metadata); color: @GetMetadataTextColor(activity.Metadata);">
+                                @activity.Metadata
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public List<ActivityItem>? Activities { get; set; }
+
+    [Parameter]
+    public int MaxItems { get; set; } = 8;
+
+    [Parameter]
+    public bool ShowViewAll { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnViewAll { get; set; }
+
+    private string GetActivityIcon(ActivityType type) => type switch
+    {
+        ActivityType.Created => Icons.Material.Filled.Add,
+        ActivityType.Updated => Icons.Material.Filled.Edit,
+        ActivityType.Deleted => Icons.Material.Filled.Delete,
+        ActivityType.Login => Icons.Material.Filled.Login,
+        ActivityType.Logout => Icons.Material.Filled.Logout,
+        ActivityType.Export => Icons.Material.Filled.FileDownload,
+        ActivityType.Import => Icons.Material.Filled.FileUpload,
+        ActivityType.Approved => Icons.Material.Filled.CheckCircle,
+        ActivityType.Rejected => Icons.Material.Filled.Cancel,
+        ActivityType.Comment => Icons.Material.Filled.Comment,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private Color GetActivityColor(ActivityType type) => type switch
+    {
+        ActivityType.Created => Color.Success,
+        ActivityType.Updated => Color.Info,
+        ActivityType.Deleted => Color.Error,
+        ActivityType.Login => Color.Primary,
+        ActivityType.Logout => Color.Default,
+        ActivityType.Export => Color.Info,
+        ActivityType.Import => Color.Warning,
+        ActivityType.Approved => Color.Success,
+        ActivityType.Rejected => Color.Error,
+        ActivityType.Comment => Color.Primary,
+        _ => Color.Default
+    };
+
+    private Color GetMetadataColor(string metadata) => metadata?.ToLower() switch
+    {
+        "high" or "critical" or "urgent" => Color.Error,
+        "medium" or "normal" => Color.Warning,
+        "low" => Color.Info,
+        "approved" => Color.Success,
+        "pending" => Color.Warning,
+        "rejected" or "failed" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetMetadataBackgroundColor(string metadata) => metadata?.ToLower() switch
+    {
+        "high" or "critical" or "urgent" => "var(--mud-palette-error)",
+        "medium" or "normal" => "var(--mud-palette-warning)",
+        "low" => "var(--mud-palette-info)",
+        "approved" => "var(--mud-palette-success)",
+        "pending" => "var(--mud-palette-warning)",
+        "rejected" or "failed" => "var(--mud-palette-error)",
+        _ => "var(--mud-palette-surface)"
+    };
+
+    private string GetMetadataTextColor(string metadata) => metadata?.ToLower() switch
+    {
+        "high" or "critical" or "urgent" or "approved" or "rejected" or "failed" => "#fff",
+        _ => "var(--mud-palette-text-primary)"
+    };
+
+    private string GetRelativeTime(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours}h ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays}d ago";
+
+        return dateTime.ToString("MMM dd");
+    }
+
+    public class ActivityItem
+    {
+        public ActivityType Type { get; set; }
+        public string User { get; set; } = "";
+        public string Action { get; set; } = "";
+        public string? Target { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? Metadata { get; set; }
+    }
+
+    public enum ActivityType
+    {
+        Created,
+        Updated,
+        Deleted,
+        Login,
+        Logout,
+        Export,
+        Import,
+        Approved,
+        Rejected,
+        Comment
+    }
+}

@@ -1,0 +1,37 @@
+@using MudBlazor
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnShortcut { get; set; }
+
+    private DotNetObjectReference<KeyboardShortcutHandler>? _objRef;
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Shared/KeyboardShortcutHandler.razor.js");
+            await _module.InvokeVoidAsync("initialize", _objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleShortcut(string shortcut)
+    {
+        await OnShortcut.InvokeAsync(shortcut);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("dispose");
+            await _module.DisposeAsync();
+        }
+        _objRef?.Dispose();
+    }
+}

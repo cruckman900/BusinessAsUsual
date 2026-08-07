@@ -7,6 +7,9 @@
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
+<!-- Accessibility: Skip to main content -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <div class="app-shell">
     <MudLayout>
 
@@ -31,7 +34,7 @@
         }
 
         <MudMainContent>
-            <MudContainer MaxWidth="MaxWidth.False" Class="pa-0" Style="height: 100%; display: flex; flex-direction: column;">
+            <MudContainer MaxWidth="MaxWidth.False" Class="pa-0" Style="height: 100%; display: flex; flex-direction: column;" id="main-content">
 
                 @if (HeaderService.Header != null)
                 {

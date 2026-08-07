@@ -1,38 +1,43 @@
 @page "/platform/notifications"
 @using MudBlazor
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
 
 <PageTitle>Notifications - Platform</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-    <!-- Breadcrumb -->
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudLink Href="/platform">Platform</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Notifications</MudText>
-    </div>
+<!-- Keyboard Shortcuts -->
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
 
-    <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-4">
-        <div>
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
-                Notification Center
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                View and manage system notifications
-            </MudText>
-        </div>
-        <div class="d-flex gap-2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="MarkAllAsRead">
-                Mark All as Read
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <!-- Breadcrumb with Actions -->
+    <PageBreadcrumb Items="_breadcrumbItems">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" 
+                       Color="Color.Default" 
+                       StartIcon="@Icons.Material.Filled.DoneAll"
+                       Size="Size.Small"
+                       OnClick="MarkAllAsRead">
+                Mark All Read
             </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Settings" Href="/platform/settings">
+            <MudButton Variant="Variant.Outlined" 
+                       Color="Color.Default" 
+                       StartIcon="@Icons.Material.Filled.Settings"
+                       Size="Size.Small"
+                       Href="/platform/settings">
                 Settings
             </MudButton>
-        </div>
+        </Actions>
+    </PageBreadcrumb>
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            Notification Center
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            View and manage system notifications
+        </MudText>
     </div>
 
     <!-- Stats Cards -->
@@ -145,6 +150,13 @@
 @code {
     private List<NotificationModel> _notifications = new();
     private int _activeTabIndex = 0;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Platform", Href = "/platform" },
+        new() { Text = "Notifications", Href = "/platform/notifications", Icon = Icons.Material.Filled.Notifications }
+    };
 
     protected override void OnInitialized()
     {
@@ -293,6 +305,31 @@
             return $"{(int)timeSpan.TotalDays}d ago";
 
         return dateTime.ToString("MMM dd, yyyy");
+    }
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "question":
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+            case "g-d":
+                Navigation.NavigateTo("/dashboard");
+                break;
+            case "g-u":
+                Navigation.NavigateTo("/platform/users");
+                break;
+            case "g-r":
+                Navigation.NavigateTo("/platform/roles");
+                break;
+            case "g-n":
+                Navigation.NavigateTo("/platform/notifications");
+                break;
+            case "g-s":
+                Navigation.NavigateTo("/platform/settings");
+                break;
+        }
     }
 
     // Model classes

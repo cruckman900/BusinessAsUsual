@@ -1,0 +1,73 @@
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">⌨️ Keyboard Shortcuts</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Navigation</MudText>
+                <div class="mb-3">
+                    @ShortcutItem("g then d", "Go to Dashboard")
+                    @ShortcutItem("g then u", "Go to Users")
+                    @ShortcutItem("g then r", "Go to Roles")
+                    @ShortcutItem("g then n", "Go to Notifications")
+                    @ShortcutItem("g then s", "Go to Settings")
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Actions</MudText>
+                <div class="mb-3">
+                    @ShortcutItem("Ctrl+K / ⌘K", "Command Palette")
+                    @ShortcutItem("Ctrl+N / ⌘N", "Create New")
+                    @ShortcutItem("Ctrl+S / ⌘S", "Save Changes")
+                    @ShortcutItem("Ctrl+E / ⌘E", "Export Data")
+                    @ShortcutItem("Ctrl+F / ⌘F", "Search/Filter")
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Search</MudText>
+                <div class="mb-3">
+                    @ShortcutItem("/", "Focus Search")
+                    @ShortcutItem("Esc", "Clear Search/Close")
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Help</MudText>
+                <div class="mb-3">
+                    @ShortcutItem("?", "Show this help")
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-center">
+            💡 Tip: Most shortcuts work globally except when typing in input fields
+        </MudText>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private RenderFragment ShortcutItem(string keys, string description) => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "d-flex justify-space-between align-center mb-2");
+
+        builder.OpenComponent<MudText>(2);
+        builder.AddAttribute(3, "Typo", Typo.body2);
+        builder.AddAttribute(4, "ChildContent", (RenderFragment)(tb => tb.AddContent(0, description)));
+        builder.CloseComponent();
+
+        builder.OpenElement(5, "span");
+        builder.AddAttribute(6, "style", "font-family: monospace; font-size: 11px; background-color: var(--mud-palette-surface); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--mud-palette-divider);");
+        builder.AddContent(7, keys);
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
+}

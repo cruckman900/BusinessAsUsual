@@ -1,34 +1,49 @@
 @page "/platform/settings"
 @using MudBlazor
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ToastService Toast
 
 <PageTitle>Settings - Platform</PageTitle>
 
+<!-- Keyboard Shortcuts -->
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
+
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-    <!-- Breadcrumb -->
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudLink Href="/platform">Platform</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Settings</MudText>
-    </div>
+    <!-- Breadcrumb with Actions -->
+    <PageBreadcrumb Items="_breadcrumbItems">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" 
+                       Color="Color.Default" 
+                       StartIcon="@Icons.Material.Filled.RestartAlt"
+                       Size="Size.Small"
+                       OnClick="ResetDefaults">
+                Reset to Defaults
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="SaveAllSettings">
+                Save Changes
+            </MudButton>
+        </Actions>
+    </PageBreadcrumb>
 
     <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-4">
-        <div>
-            <MudText Typo="Typo.h4" GutterBottom="true">
-                <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
-                Platform Settings
-            </MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                Configure global system settings and preferences
-            </MudText>
-        </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveAllSettings">
-            Save Changes
-        </MudButton>
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            Platform Settings
+        </MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary">
+            Configure global system settings and preferences
+        </MudText>
     </div>
+
+    <!-- Contextual Help -->
+    <ContextualHint Title="Important" 
+                   Message="Changes to system settings affect all users. Test critical settings in a staging environment first."
+                   Dismissible="true" />
 
     <!-- Settings Tabs -->
     <MudPaper Elevation="2">
@@ -74,6 +89,7 @@
             <MudTabPanel Text="Security" Icon="@Icons.Material.Filled.Security">
                 <MudText Typo="Typo.h6" Class="mb-4">Security Settings</MudText>
 
+                <!-- Basic Security -->
                 <MudGrid Spacing="3">
                     <MudItem xs="12" md="6">
                         <MudNumericField @bind-Value="_settings.PasswordMinLength" Label="Minimum Password Length" Variant="Variant.Outlined" Min="6" Max="20" />
@@ -87,22 +103,49 @@
                     <MudItem xs="12" md="6">
                         <MudNumericField @bind-Value="_settings.AccountLockoutMinutes" Label="Account Lockout Duration (minutes)" Variant="Variant.Outlined" Min="5" Max="60" />
                     </MudItem>
-                    <MudItem xs="12">
-                        <MudSwitch @bind-Value="_settings.RequireTwoFactorAuth" Label="Require Two-Factor Authentication" Color="Color.Primary" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudSwitch @bind-Value="_settings.AllowPasswordReset" Label="Allow Password Reset via Email" Color="Color.Primary" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudSwitch @bind-Value="_settings.EnableAuditLogging" Label="Enable Audit Logging" Color="Color.Primary" />
-                    </MudItem>
                 </MudGrid>
+
+                <!-- Progressive Disclosure: Advanced Security -->
+                <MudExpansionPanels Class="mt-4" Elevation="0">
+                    <MudExpansionPanel Style="border: 1px solid var(--mud-palette-divider);">
+                        <TitleContent>
+                            <div class="d-flex align-center" style="gap: 8px;">
+                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" />
+                                <MudText>Advanced Security Options</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudGrid Spacing="3" Class="pa-2">
+                                <MudItem xs="12">
+                                    <MudSwitch @bind-Value="_settings.RequireTwoFactorAuth" Label="Require Two-Factor Authentication" Color="Color.Primary" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudSwitch @bind-Value="_settings.AllowPasswordReset" Label="Allow Password Reset via Email" Color="Color.Primary" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudSwitch @bind-Value="_settings.EnableAuditLogging" Label="Enable Audit Logging" Color="Color.Primary" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="Enforce HTTPS for all connections (recommended for production)">
+                                        <MudSwitch @bind-Value="_settings.EnforceHttps" Label="Enforce HTTPS" Color="Color.Primary" />
+                                    </HelpTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="Block requests from known malicious IP addresses">
+                                        <MudSwitch @bind-Value="_settings.EnableIpBlocking" Label="Enable IP Blocking" Color="Color.Primary" />
+                                    </HelpTooltip>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             </MudTabPanel>
 
             <!-- Email Settings -->
             <MudTabPanel Text="Email" Icon="@Icons.Material.Filled.Email">
                 <MudText Typo="Typo.h6" Class="mb-4">Email Configuration</MudText>
 
+                <!-- Basic SMTP -->
                 <MudGrid Spacing="3">
                     <MudItem xs="12" md="6">
                         <MudTextField @bind-Value="_settings.SmtpServer" Label="SMTP Server" Variant="Variant.Outlined" />
@@ -119,13 +162,49 @@
                     <MudItem xs="12">
                         <MudSwitch @bind-Value="_settings.SmtpEnableSsl" Label="Enable SSL/TLS" Color="Color.Primary" />
                     </MudItem>
-                    <MudItem xs="12">
-                        <MudDivider Class="my-2" />
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="SendTestEmail">
-                            Send Test Email
-                        </MudButton>
-                    </MudItem>
                 </MudGrid>
+
+                <!-- Progressive Disclosure: Advanced Email -->
+                <MudExpansionPanels Class="mt-4" Elevation="0">
+                    <MudExpansionPanel Style="border: 1px solid var(--mud-palette-divider);">
+                        <TitleContent>
+                            <div class="d-flex align-center" style="gap: 8px;">
+                                <MudIcon Icon="@Icons.Material.Filled.Settings" />
+                                <MudText>Advanced Email Settings</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudGrid Spacing="3" Class="pa-2">
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="Email address shown in the From field">
+                                        <MudTextField @bind-Value="_settings.FromEmail" Label="From Email" Variant="Variant.Outlined" />
+                                    </HelpTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="Display name shown alongside the from email">
+                                        <MudTextField @bind-Value="_settings.FromName" Label="From Name" Variant="Variant.Outlined" />
+                                    </HelpTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="BCC this address on all outgoing emails (useful for compliance)">
+                                        <MudTextField @bind-Value="_settings.BccEmail" Label="BCC Email (Optional)" Variant="Variant.Outlined" />
+                                    </HelpTooltip>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <HelpTooltip HelpText="Maximum emails sent per hour to prevent spam filters">
+                                        <MudNumericField @bind-Value="_settings.EmailRateLimit" Label="Rate Limit (per hour)" Variant="Variant.Outlined" Min="10" Max="1000" />
+                                    </HelpTooltip>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+
+                <!-- Test Email -->
+                <MudDivider Class="my-4" />
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Send" OnClick="SendTestEmail">
+                    Send Test Email
+                </MudButton>
             </MudTabPanel>
 
             <!-- Notifications Settings -->
@@ -230,6 +309,13 @@
     private int _activeTab = 0;
     private SettingsModel _settings = new();
 
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Platform", Href = "/platform" },
+        new() { Text = "Settings", Href = "/platform/settings", Icon = Icons.Material.Filled.Settings }
+    };
+
     protected override void OnInitialized()
     {
         // Initialize with default/mock settings
@@ -277,32 +363,62 @@
     private void SaveAllSettings()
     {
         // In production, this would save to database/API
-        Snackbar.Add("Settings saved successfully", Severity.Success);
+        Toast.Saved("Platform settings");
     }
 
     private void SendTestEmail()
     {
-        Snackbar.Add($"Test email sent to {_settings.SystemEmail}", Severity.Info);
+        Toast.Info($"Test email sent to {_settings.SystemEmail}");
     }
 
     private void CreateBackup()
     {
-        Snackbar.Add("Backup created successfully", Severity.Success);
+        Toast.Success("Backup created successfully");
     }
 
     private void RestoreBackup()
     {
-        Snackbar.Add("Select a backup to restore", Severity.Info);
+        Toast.Info("Select a backup to restore");
     }
 
     private void ResetToDefaults()
     {
-        Snackbar.Add("Settings reset to defaults", Severity.Warning);
+        Toast.Warning("Settings reset to defaults");
     }
+
+    private void ResetDefaults() => ResetToDefaults();
 
     private void ClearCache()
     {
-        Snackbar.Add("System cache cleared", Severity.Info);
+        Toast.Info("System cache cleared");
+    }
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "cmd-s":
+                SaveAllSettings();
+                break;
+            case "question":
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+            case "g-d":
+                Navigation.NavigateTo("/dashboard");
+                break;
+            case "g-u":
+                Navigation.NavigateTo("/platform/users");
+                break;
+            case "g-r":
+                Navigation.NavigateTo("/platform/roles");
+                break;
+            case "g-n":
+                Navigation.NavigateTo("/platform/notifications");
+                break;
+            case "g-s":
+                Navigation.NavigateTo("/platform/settings");
+                break;
+        }
     }
 
     // Settings Model
@@ -323,6 +439,8 @@
         public bool RequireTwoFactorAuth { get; set; }
         public bool AllowPasswordReset { get; set; }
         public bool EnableAuditLogging { get; set; }
+        public bool EnforceHttps { get; set; } = true;
+        public bool EnableIpBlocking { get; set; }
 
         // Email
         public string SmtpServer { get; set; } = "";
@@ -330,6 +448,10 @@
         public string SmtpUsername { get; set; } = "";
         public string SmtpPassword { get; set; } = "";
         public bool SmtpEnableSsl { get; set; }
+        public string FromEmail { get; set; } = "";
+        public string FromName { get; set; } = "";
+        public string BccEmail { get; set; } = "";
+        public int EmailRateLimit { get; set; } = 100;
 
         // Notifications
         public bool EnableEmailNotifications { get; set; }
