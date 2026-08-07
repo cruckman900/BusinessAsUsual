@@ -8,6 +8,7 @@
 
     private DotNetObjectReference<KeyboardShortcutHandler>? _objRef;
     private IJSObjectReference? _module;
+    private IJSObjectReference? _instance;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -15,7 +16,7 @@
         {
             _objRef = DotNetObjectReference.Create(this);
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Platform.Web/Components/Shared/KeyboardShortcutHandler.razor.js");
-            await _module.InvokeVoidAsync("initialize", _objRef);
+            _instance = await _module.InvokeAsync<IJSObjectReference>("initialize", _objRef);
         }
     }
 
@@ -27,11 +28,17 @@
 
     public async ValueTask DisposeAsync()
     {
+        if (_instance != null)
+        {
+            await _instance.InvokeVoidAsync("dispose");
+            await _instance.DisposeAsync();
+        }
+
         if (_module != null)
         {
-            await _module.InvokeVoidAsync("dispose");
             await _module.DisposeAsync();
         }
+
         _objRef?.Dispose();
     }
 }
