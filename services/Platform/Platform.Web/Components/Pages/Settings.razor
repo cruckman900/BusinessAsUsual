@@ -32,7 +32,9 @@
 
     <!-- Settings Tabs -->
     <MudPaper Elevation="2">
-        <MudTabs Elevation="0" Rounded="false" Color="Color.Primary" @bind-ActivePanelIndex="_activeTab" PanelClass="pa-4">
+        <div style="background-color: var(--mud-palette-surface); border-bottom: 1px solid var(--mud-palette-divider);">
+            <MudTabs Elevation="0" Rounded="false" style="background-color: var(--mud-palette-background);" @bind-ActivePanelIndex="_activeTab" PanelClass="pa-4"
+                     Class="px-3 pt-2">
 
             <!-- General Settings -->
             <MudTabPanel Text="General" Icon="@Icons.Material.Filled.Tune">
@@ -220,6 +222,7 @@
             </MudTabPanel>
 
         </MudTabs>
+        </div>
     </MudPaper>
 </MudContainer>
 
