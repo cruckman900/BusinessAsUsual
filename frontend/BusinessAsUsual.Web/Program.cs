@@ -73,6 +73,10 @@ namespace BusinessAsUsual.Web
             // Register Authentication Service
             builder.Services.AddScoped<AuthenticationService>();
 
+            // Register Platform module services
+            builder.Services.AddScoped<Platform.Web.Services.ToastService>();
+            builder.Services.AddScoped<Platform.Web.Services.SmartDefaultsService>();
+
             // DI Registration
             builder.Services.AddScoped<IHRService, HRService>();
 
