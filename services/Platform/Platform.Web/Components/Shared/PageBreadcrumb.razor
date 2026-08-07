@@ -1,6 +1,6 @@
 @using MudBlazor
 
-<div class="d-flex justify-space-between align-center mb-4">
+<div class="d-flex justify-space-between align-center mb-4" style="padding: 12px; background: var(--mud-palette-background-grey); border-radius: 4px; border: 1px solid var(--mud-palette-divider);">
     <div class="d-flex align-center" style="gap: 8px;">
         @foreach (var item in Items.Select((value, index) => new { value, index }))
         {
