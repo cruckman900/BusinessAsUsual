@@ -14,7 +14,7 @@
         if (firstRender)
         {
             _objRef = DotNetObjectReference.Create(this);
-            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Shared/KeyboardShortcutHandler.razor.js");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Platform.Web/Components/Shared/KeyboardShortcutHandler.razor.js");
             await _module.InvokeVoidAsync("initialize", _objRef);
         }
     }
