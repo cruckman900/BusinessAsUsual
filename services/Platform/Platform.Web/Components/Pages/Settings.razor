@@ -396,9 +396,11 @@
 
     private async Task HandleKeyboardShortcut(string shortcut)
     {
+        Console.WriteLine($"📥 Settings page received shortcut: {shortcut}");
+
         switch (shortcut)
         {
-            case "cmd-s":
+            case "alt-s":
                 SaveAllSettings();
                 break;
             case "question":
@@ -418,6 +420,9 @@
                 break;
             case "g-s":
                 Navigation.NavigateTo("/platform/settings");
+                break;
+            case "g-h":
+                Navigation.NavigateTo("/platform");
                 break;
         }
     }

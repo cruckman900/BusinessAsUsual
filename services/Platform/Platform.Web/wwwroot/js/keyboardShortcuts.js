@@ -5,28 +5,28 @@ export function initialize(dotNetHelper) {
     const handleKeyDown = async (e) => {
         let shortcut = null;
 
-        // Command/Ctrl + Key shortcuts
-        if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
+        // Alt + Key shortcuts (browser won't block these)
+        if (e.altKey && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
             switch (e.key.toLowerCase()) {
                 case 'n':
                     e.preventDefault();
-                    shortcut = 'cmd-n';
+                    shortcut = 'alt-n';
                     break;
                 case 's':
                     e.preventDefault();
-                    shortcut = 'cmd-s';
+                    shortcut = 'alt-s';
                     break;
                 case 'e':
                     e.preventDefault();
-                    shortcut = 'cmd-e';
+                    shortcut = 'alt-e';
                     break;
                 case 'f':
                     e.preventDefault();
-                    shortcut = 'cmd-f';
+                    shortcut = 'alt-f';
                     break;
                 case 'k':
                     e.preventDefault();
-                    shortcut = 'cmd-k';
+                    shortcut = 'alt-k';
                     break;
             }
         }

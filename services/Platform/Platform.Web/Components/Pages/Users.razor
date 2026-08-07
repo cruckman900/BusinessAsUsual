@@ -427,17 +427,25 @@
 
     private async Task HandleKeyboardShortcut(string shortcut)
     {
+        Console.WriteLine($"📥 User page received shortcut: {shortcut}");
+
         switch (shortcut)
         {
-            case "cmd-n":
+            case "alt-n":
                 OpenCreateDialog();
                 break;
-            case "cmd-f":
+            case "alt-f":
             case "slash":
                 // Focus search field - will implement with ElementReference later
                 break;
-            case "cmd-e":
-                Snackbar.Add("Export feature coming soon", Severity.Info);
+            case "alt-e":
+                Snackbar.Add("Opening export menu...", Severity.Info);
+                break;
+            case "alt-s":
+                if (_dialogVisible && _currentUser != null)
+                {
+                    SaveUser();
+                }
                 break;
             case "escape":
                 if (_dialogVisible)
@@ -460,6 +468,9 @@
                 break;
             case "g-s":
                 Navigation.NavigateTo("/platform/settings");
+                break;
+            case "g-h":
+                Navigation.NavigateTo("/platform");
                 break;
         }
     }
