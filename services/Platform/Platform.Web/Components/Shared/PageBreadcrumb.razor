@@ -27,13 +27,16 @@
                 @if (item.value.SubModules != null && item.value.SubModules.Any())
                 {
                     <MudMenu Dense="true" 
+                             ActivationEvent="@MouseEvent.MouseOver"
                              AnchorOrigin="Origin.BottomLeft"
                              TransformOrigin="Origin.TopLeft">
                         <ActivatorContent>
-                            <MudLink Typo="Typo.body2" Style="opacity: 0.7; cursor: pointer;">
-                                @item.value.Text
-                                <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Small" Style="vertical-align: middle;" />
-                            </MudLink>
+                            <div style="display: flex; align-items: center; cursor: pointer;">
+                                <MudText Typo="Typo.body2" Style="opacity: 0.7;">
+                                    @item.value.Text
+                                </MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Small" Style="opacity: 0.7;" />
+                            </div>
                         </ActivatorContent>
                         <ChildContent>
                             @foreach (var subModule in item.value.SubModules)
