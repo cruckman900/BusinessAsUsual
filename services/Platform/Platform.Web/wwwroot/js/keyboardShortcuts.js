@@ -1,5 +1,7 @@
 // Keyboard shortcut handler for Platform module pages
 export function initialize(dotNetHelper) {
+    console.log('🎹 Keyboard shortcuts initialized');
+
     const handleKeyDown = async (e) => {
         let shortcut = null;
 
@@ -60,6 +62,7 @@ export function initialize(dotNetHelper) {
         }
 
         if (shortcut) {
+            console.log('⌨️ Shortcut triggered:', shortcut);
             await dotNetHelper.invokeMethodAsync('HandleShortcut', shortcut);
         }
     };

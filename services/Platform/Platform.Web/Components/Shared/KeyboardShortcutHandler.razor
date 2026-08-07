@@ -14,15 +14,24 @@
     {
         if (firstRender)
         {
-            _objRef = DotNetObjectReference.Create(this);
-            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Platform.Web/js/keyboardShortcuts.js");
-            _instance = await _module.InvokeAsync<IJSObjectReference>("initialize", _objRef);
+            try
+            {
+                _objRef = DotNetObjectReference.Create(this);
+                _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Platform.Web/js/keyboardShortcuts.js");
+                _instance = await _module.InvokeAsync<IJSObjectReference>("initialize", _objRef);
+                Console.WriteLine("✅ KeyboardShortcutHandler initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ KeyboardShortcutHandler initialization failed: {ex.Message}");
+            }
         }
     }
 
     [JSInvokable]
     public async Task HandleShortcut(string shortcut)
     {
+        Console.WriteLine($"🎯 Shortcut received in C#: {shortcut}");
         await OnShortcut.InvokeAsync(shortcut);
     }
 
