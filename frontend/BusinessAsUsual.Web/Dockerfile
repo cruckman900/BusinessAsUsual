@@ -37,11 +37,13 @@ COPY services/Sales/Sales.Web/Sales.Web.csproj services/Sales/Sales.Web/
 COPY services/Services/Services.Domain/Services.Domain.csproj services/Services/Services.Domain/
 COPY services/Services/Services.Application/Services.Application.csproj services/Services/Services.Application/
 COPY services/Services/Services.Infrastructure/Services.Infrastructure.csproj services/Services/Services.Infrastructure/
+COPY services/Services/Services.Contracts/Services.Contracts.csproj services/Services/Services.Contracts/
 COPY services/Services/Services.Web/Services.Web.csproj services/Services/Services.Web/
 # Platform service projects referenced by the web shell
 COPY services/Platform/Platform.Domain/Platform.Domain.csproj services/Platform/Platform.Domain/
 COPY services/Platform/Platform.Application/Platform.Application.csproj services/Platform/Platform.Application/
 COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj services/Platform/Platform.Infrastructure/
+COPY services/Platform/Platform.Contracts/Platform.Contracts.csproj services/Platform/Platform.Contracts/
 COPY services/Platform/Platform.Web/Platform.Web.csproj services/Platform/Platform.Web/
 # Shared core (event bus, integration events)
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
@@ -82,11 +84,13 @@ COPY services/Sales/Sales.Web services/Sales/Sales.Web
 COPY services/Services/Services.Domain services/Services/Services.Domain
 COPY services/Services/Services.Application services/Services/Services.Application
 COPY services/Services/Services.Infrastructure services/Services/Services.Infrastructure
+COPY services/Services/Services.Contracts services/Services/Services.Contracts
 COPY services/Services/Services.Web services/Services/Services.Web
 # Platform service source
 COPY services/Platform/Platform.Domain services/Platform/Platform.Domain
 COPY services/Platform/Platform.Application services/Platform/Platform.Application
 COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infrastructure
+COPY services/Platform/Platform.Contracts services/Platform/Platform.Contracts
 COPY services/Platform/Platform.Web services/Platform/Platform.Web
 # Shared core source
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
