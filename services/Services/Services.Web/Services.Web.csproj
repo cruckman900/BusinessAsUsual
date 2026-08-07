@@ -3,7 +3,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RazorLangVersion>11.0</RazorLangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="9.6.0" />
