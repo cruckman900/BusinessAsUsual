@@ -9,6 +9,10 @@
     <PackageReference Include="MudBlazor" Version="9.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Components\Shared\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
