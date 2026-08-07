@@ -1,0 +1,279 @@
+@page "/platform/users"
+@using MudBlazor
+@inject ISnackbar Snackbar
+
+<PageTitle>User Management - Platform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/platform">Platform</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">User Management</MudText>
+    </div>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Class="mr-2" />
+                User Management
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage system users, roles, and access permissions
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateDialog">
+            Add User
+        </MudButton>
+    </div>
+
+    <!-- Stats Cards -->
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Users</MudText>
+                            <MudText Typo="Typo.h5">@_users.Count</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Users</MudText>
+                            <MudText Typo="Typo.h5">@_users.Count(u => u.IsActive)</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Administrators</MudText>
+                            <MudText Typo="Typo.h5">@_users.Count(u => u.Role == "Administrator")</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Users DataGrid -->
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudDataGrid T="UserModel" Items="@_users" Filterable="true" QuickFilter="@_quickFilter" 
+                     Hover="true" ReadOnly="false" EditMode="DataGridEditMode.Form">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Placeholder="Search users..." Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Immediate="true"
+                              Class="mt-0" Clearable="true"></MudTextField>
+            </ToolBarContent>
+            <Columns>
+                <PropertyColumn Property="x => x.FullName" Title="Name">
+                    <CellTemplate>
+                        <div class="d-flex align-center">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">
+                                @context.Item.FullName[0]
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.body2">@context.Item.FullName</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Item.Email</MudText>
+                            </div>
+                        </div>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Role" Title="Role">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetRoleColor(context.Item.Role)">
+                            @context.Item.Role
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Department" Title="Department" />
+                <PropertyColumn Property="x => x.LastLogin" Title="Last Login" Format="MM/dd/yyyy HH:mm" />
+                <PropertyColumn Property="x => x.IsActive" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.Item.IsActive ? Color.Success : Color.Default)">
+                            @(context.Item.IsActive ? "Active" : "Inactive")
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn CellClass="d-flex justify-end" Sortable="false">
+                    <CellTemplate>
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => OpenEditDialog(context.Item))" />
+                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="@(() => DeleteUser(context.Item))" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="UserModel" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudPaper>
+</MudContainer>
+
+<!-- Create/Edit User Dialog -->
+<MudDialog @bind-Visible="_dialogVisible" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(_isEditing ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" />
+            @(_isEditing ? "Edit User" : "Add New User")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_currentUser.FullName" Label="Full Name" Variant="Variant.Outlined" Required="true" Class="mb-3" />
+        <MudTextField @bind-Value="_currentUser.Email" Label="Email" Variant="Variant.Outlined" Required="true" InputType="InputType.Email" Class="mb-3" />
+        <MudSelect @bind-Value="_currentUser.Role" Label="Role" Variant="Variant.Outlined" Required="true" Class="mb-3">
+            <MudSelectItem Value="@("Administrator")">Administrator</MudSelectItem>
+            <MudSelectItem Value="@("Manager")">Manager</MudSelectItem>
+            <MudSelectItem Value="@("User")">User</MudSelectItem>
+        </MudSelect>
+        <MudTextField @bind-Value="_currentUser.Department" Label="Department" Variant="Variant.Outlined" Class="mb-3" />
+        <MudSwitch @bind-Value="_currentUser.IsActive" Label="Active" Color="Color.Success" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveUser">
+            @(_isEditing ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<UserModel> _users = new();
+    private string _searchString = "";
+    private bool _dialogVisible = false;
+    private bool _isEditing = false;
+    private UserModel _currentUser = new();
+
+    private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    // Quick filter for DataGrid
+    private Func<UserModel, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.FullName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Department?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
+
+    protected override void OnInitialized()
+    {
+        // Seed mock data
+        _users = new List<UserModel>
+        {
+            new UserModel { Id = 1, FullName = "John Doe", Email = "john.doe@businessasusual.com", Role = "Administrator", Department = "IT", IsActive = true, LastLogin = DateTime.Now.AddHours(-2) },
+            new UserModel { Id = 2, FullName = "Jane Smith", Email = "jane.smith@businessasusual.com", Role = "Manager", Department = "Finance", IsActive = true, LastLogin = DateTime.Now.AddDays(-1) },
+            new UserModel { Id = 3, FullName = "Bob Johnson", Email = "bob.johnson@businessasusual.com", Role = "User", Department = "Sales", IsActive = true, LastLogin = DateTime.Now.AddDays(-3) },
+            new UserModel { Id = 4, FullName = "Alice Williams", Email = "alice.williams@businessasusual.com", Role = "Manager", Department = "HR", IsActive = true, LastLogin = DateTime.Now.AddHours(-5) },
+            new UserModel { Id = 5, FullName = "Charlie Brown", Email = "charlie.brown@businessasusual.com", Role = "User", Department = "Operations", IsActive = false, LastLogin = DateTime.Now.AddDays(-30) },
+        };
+    }
+
+    private void OpenCreateDialog()
+    {
+        _isEditing = false;
+        _currentUser = new UserModel { IsActive = true };
+        _dialogVisible = true;
+    }
+
+    private void OpenEditDialog(UserModel user)
+    {
+        _isEditing = true;
+        _currentUser = new UserModel
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Role = user.Role,
+            Department = user.Department,
+            IsActive = user.IsActive,
+            LastLogin = user.LastLogin
+        };
+        _dialogVisible = true;
+    }
+
+    private void CloseDialog()
+    {
+        _dialogVisible = false;
+        _currentUser = new();
+    }
+
+    private void SaveUser()
+    {
+        if (_isEditing)
+        {
+            var existing = _users.FirstOrDefault(u => u.Id == _currentUser.Id);
+            if (existing != null)
+            {
+                existing.FullName = _currentUser.FullName;
+                existing.Email = _currentUser.Email;
+                existing.Role = _currentUser.Role;
+                existing.Department = _currentUser.Department;
+                existing.IsActive = _currentUser.IsActive;
+                Snackbar.Add("User updated successfully", Severity.Success);
+            }
+        }
+        else
+        {
+            _currentUser.Id = _users.Max(u => u.Id) + 1;
+            _currentUser.LastLogin = DateTime.Now;
+            _users.Add(_currentUser);
+            Snackbar.Add("User created successfully", Severity.Success);
+        }
+
+        CloseDialog();
+    }
+
+    private async Task DeleteUser(UserModel user)
+    {
+        _users.Remove(user);
+        Snackbar.Add($"User {user.FullName} deleted", Severity.Info);
+        await Task.CompletedTask;
+    }
+
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Administrator" => Color.Error,
+        "Manager" => Color.Warning,
+        "User" => Color.Info,
+        _ => Color.Default
+    };
+
+    // Model class
+    public class UserModel
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Role { get; set; } = "User";
+        public string? Department { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime LastLogin { get; set; }
+    }
+}

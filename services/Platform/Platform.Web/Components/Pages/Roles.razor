@@ -1,0 +1,322 @@
+@page "/platform/roles"
+@using MudBlazor
+@inject ISnackbar Snackbar
+
+<PageTitle>Roles & Permissions - Platform</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+        <MudLink Href="/dashboard">Dashboard</MudLink>
+        <span class="mx-2">/</span>
+        <MudLink Href="/platform">Platform</MudLink>
+        <span class="mx-2">/</span>
+        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Roles & Permissions</MudText>
+    </div>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+                Roles & Permissions
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Configure access control and permission assignments
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreateRoleDialog">
+            Add Role
+        </MudButton>
+    </div>
+
+    <!-- Stats Cards -->
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Roles</MudText>
+                            <MudText Typo="Typo.h5">@_roles.Count</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Info" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Permissions</MudText>
+                            <MudText Typo="Typo.h5">@_availablePermissions.Count</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Warning" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Custom Roles</MudText>
+                            <MudText Typo="Typo.h5">@_roles.Count(r => !r.IsSystemRole)</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Primary" Size="Size.Large" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Roles Grid -->
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Roles</MudText>
+        <MudGrid Spacing="3">
+            @foreach (var role in _roles)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Elevation="1" Class="d-flex flex-column" Style="height: 100%;">
+                        <MudCardContent Class="flex-grow-1">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.h6">@role.Name</MudText>
+                                @if (role.IsSystemRole)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">System</MudChip>
+                                }
+                            </div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                                @role.Description
+                            </MudText>
+                            <MudDivider Class="mb-2" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                <strong>Permissions:</strong> @role.Permissions.Count
+                            </MudText>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var permission in role.Permissions.Take(4))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">@permission</MudChip>
+                                }
+                                @if (role.Permissions.Count > 4)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">+@(role.Permissions.Count - 4) more</MudChip>
+                                }
+                            </div>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="@(() => OpenEditRoleDialog(role))">
+                                Edit
+                            </MudButton>
+                            @if (!role.IsSystemRole)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="@(() => DeleteRole(role))">
+                                    Delete
+                                </MudButton>
+                            }
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
+</MudContainer>
+
+<!-- Create/Edit Role Dialog -->
+<MudDialog @bind-Visible="_roleDialogVisible" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(_isEditingRole ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" />
+            @(_isEditingRole ? "Edit Role" : "Add New Role")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_currentRole.Name" Label="Role Name" Variant="Variant.Outlined" Required="true" Class="mb-3" 
+                      Disabled="@_currentRole.IsSystemRole" />
+        <MudTextField @bind-Value="_currentRole.Description" Label="Description" Variant="Variant.Outlined" Lines="2" Class="mb-3" />
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">Permissions</MudText>
+        <MudPaper Elevation="0" Class="pa-3 mb-3" Style="border: 1px solid var(--mud-palette-divider); max-height: 300px; overflow-y: auto;">
+            @foreach (var permission in _availablePermissions)
+            {
+                <MudCheckBox T="bool" 
+                             Value="@_currentRole.Permissions.Contains(permission)"
+                             ValueChanged="@((bool isChecked) => TogglePermission(permission, isChecked))"
+                             Label="@permission" 
+                             Color="Color.Primary" 
+                             Dense="true" />
+            }
+        </MudPaper>
+
+        @if (!_currentRole.IsSystemRole)
+        {
+            <MudSwitch @bind-Value="_currentRole.IsSystemRole" Label="System Role (cannot be deleted)" Color="Color.Warning" Disabled="true" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseRoleDialog">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveRole">
+            @(_isEditingRole ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<RoleModel> _roles = new();
+    private List<string> _availablePermissions = new();
+    private bool _roleDialogVisible = false;
+    private bool _isEditingRole = false;
+    private RoleModel _currentRole = new();
+
+    private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override void OnInitialized()
+    {
+        // Seed available permissions
+        _availablePermissions = new List<string>
+        {
+            "users.read",
+            "users.write",
+            "users.delete",
+            "roles.read",
+            "roles.write",
+            "roles.delete",
+            "audit.read",
+            "settings.read",
+            "settings.write",
+            "notifications.read",
+            "notifications.write",
+            "reports.read",
+            "reports.write",
+            "finance.read",
+            "finance.write",
+            "inventory.read",
+            "inventory.write"
+        };
+
+        // Seed mock roles
+        _roles = new List<RoleModel>
+        {
+            new RoleModel 
+            { 
+                Id = 1, 
+                Name = "Administrator", 
+                Description = "Full system access with all permissions", 
+                IsSystemRole = true,
+                Permissions = new List<string>(_availablePermissions)
+            },
+            new RoleModel 
+            { 
+                Id = 2, 
+                Name = "Manager", 
+                Description = "Manage users and view reports", 
+                IsSystemRole = true,
+                Permissions = new List<string> { "users.read", "users.write", "roles.read", "reports.read", "audit.read" }
+            },
+            new RoleModel 
+            { 
+                Id = 3, 
+                Name = "User", 
+                Description = "Basic user access with limited permissions", 
+                IsSystemRole = true,
+                Permissions = new List<string> { "users.read", "notifications.read", "reports.read" }
+            },
+            new RoleModel 
+            { 
+                Id = 4, 
+                Name = "Finance Manager", 
+                Description = "Manage financial operations and reports", 
+                IsSystemRole = false,
+                Permissions = new List<string> { "finance.read", "finance.write", "reports.read", "reports.write" }
+            }
+        };
+    }
+
+    private void OpenCreateRoleDialog()
+    {
+        _isEditingRole = false;
+        _currentRole = new RoleModel();
+        _roleDialogVisible = true;
+    }
+
+    private void OpenEditRoleDialog(RoleModel role)
+    {
+        _isEditingRole = true;
+        _currentRole = new RoleModel
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
+            IsSystemRole = role.IsSystemRole,
+            Permissions = new List<string>(role.Permissions)
+        };
+        _roleDialogVisible = true;
+    }
+
+    private void CloseRoleDialog()
+    {
+        _roleDialogVisible = false;
+        _currentRole = new();
+    }
+
+    private void TogglePermission(string permission, bool isChecked)
+    {
+        if (isChecked && !_currentRole.Permissions.Contains(permission))
+        {
+            _currentRole.Permissions.Add(permission);
+        }
+        else if (!isChecked && _currentRole.Permissions.Contains(permission))
+        {
+            _currentRole.Permissions.Remove(permission);
+        }
+    }
+
+    private void SaveRole()
+    {
+        if (_isEditingRole)
+        {
+            var existing = _roles.FirstOrDefault(r => r.Id == _currentRole.Id);
+            if (existing != null)
+            {
+                existing.Name = _currentRole.Name;
+                existing.Description = _currentRole.Description;
+                existing.Permissions = new List<string>(_currentRole.Permissions);
+                Snackbar.Add("Role updated successfully", Severity.Success);
+            }
+        }
+        else
+        {
+            _currentRole.Id = _roles.Max(r => r.Id) + 1;
+            _roles.Add(_currentRole);
+            Snackbar.Add("Role created successfully", Severity.Success);
+        }
+
+        CloseRoleDialog();
+    }
+
+    private async Task DeleteRole(RoleModel role)
+    {
+        if (role.IsSystemRole)
+        {
+            Snackbar.Add("System roles cannot be deleted", Severity.Warning);
+            return;
+        }
+
+        _roles.Remove(role);
+        Snackbar.Add($"Role '{role.Name}' deleted", Severity.Info);
+        await Task.CompletedTask;
+    }
+
+    // Model class
+    public class RoleModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public bool IsSystemRole { get; set; }
+        public List<string> Permissions { get; set; } = new();
+    }
+}
