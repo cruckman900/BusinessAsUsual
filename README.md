@@ -25,6 +25,18 @@ It powers a suite of business modules—products, services, accounting, inventor
 - **Security:** JWT Auth, HTTPS, CORS, Rate Limiting  
 - **Docs:** Swagger + `/docs` (architecture, onboarding, theming, metadata)
 
+## 📱 Mobile Apps
+
+**Business As Usual** is available as a native mobile app for Android and iOS!
+
+[![Download Android APK](https://img.shields.io/badge/Download-Android_APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://app.appsonair.com/install/XHllBXZJ)
+![iOS](https://img.shields.io/badge/iOS-Coming_Soon-999999?style=for-the-badge&logo=apple&logoColor=white)
+
+- **Android:** v1.1 (Build 2) - Available now via AppsOnAir
+- **iOS:** Coming soon to TestFlight
+- **Features:** Native Jetpack Compose UI, offline-first architecture, clean domain design
+- **Repository:** [BusinessAsUsual-Android](https://github.com/cruckman900/BusinessAsUsual-Android)
+
 ## 🧩 Modular Breakdown
 
 | Module           | Purpose                                      | Status         |

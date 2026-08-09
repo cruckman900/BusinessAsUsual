@@ -17,6 +17,7 @@ This folder is your annotated tour guide through the architecture, branding, and
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Backend & AI microservice architecture.
 - **[SECURITY.md](SECURITY.md)** — Security, RBAC, tenancy & compliance.
 - **[INTEGRATIONS.md](INTEGRATIONS.md)** — Webhooks, connectors & API keys.
+- **[MOBILE_APPS.md](MOBILE_APPS.md)** — 📱 Android & iOS apps, download links & architecture.
 - **[ONBOARDING.md](ONBOARDING.md)** — Contributor setup & AI quickstart.
 - **[archive/](archive/)** — Historical session artifacts (non-authoritative).
 
