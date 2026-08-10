@@ -39,6 +39,7 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 
 // Named HTTP client for the HR API so the Timesheets page can read live
 // punch-based timesheets recorded by the time clock.
