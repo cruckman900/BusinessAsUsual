@@ -247,6 +247,7 @@ namespace BusinessAsUsual.Web
             // Register services
             services.AddScoped<HR.Application.Services.IEmployeeService, HR.Application.Services.EmployeeService>();
             services.AddScoped<HR.Application.Services.IDepartmentService, HR.Application.Services.DepartmentService>();
+            services.AddScoped<HR.Application.Services.IExportService, HR.Application.Services.ExportService>();
         }
 
         /// <summary>
