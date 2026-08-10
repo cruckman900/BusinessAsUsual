@@ -1224,6 +1224,202 @@ csv.AppendLine($"{date:yyyy-MM-dd HH:mm}");
 
 ---
 
+### 10. Module Service Registration in Shell (MANDATORY)
+
+**⚠️ CRITICAL: Every module MUST register its application services in the shell to avoid runtime Blazor injection failures.**
+
+**Problem:** When the shell (`frontend/BusinessAsUsual.Web`) embeds module UI components via `AdditionalAssemblies` in `App.razor`, those components use Blazor property injection (`@inject IYourService YourService`). If the service is only registered in the module's standalone `{ModuleName}.Web/Program.cs`, the shell cannot resolve it and crashes with:
+
+```
+Cannot provide a value for property 'YourService' on type 'YourModule.Web.Components.Pages.SomePage'.
+There is no registered service of type 'YourModule.Application.Services.IYourService'.
+```
+
+**Solution:** Register ALL module application services in the shell's `Program.cs` using a dedicated helper method.
+
+---
+
+#### Pattern: Create a Module Service Registration Helper
+
+**Location:** `frontend/BusinessAsUsual.Web/Program.cs`
+
+**Step 1:** Add the registration call in the main Program.cs startup (around line 160-175):
+
+```csharp
+// Register HR Module services (for embedded HR.Web components)
+RegisterHRModuleServices(builder.Services, builder.Configuration);
+
+// Register CRM Module services (for embedded CRM.Web components)
+RegisterCRMModuleServices(builder.Services, builder.Configuration);
+
+// Register YOUR MODULE services (for embedded YourModule.Web components)
+RegisterYourModuleServices(builder.Services, builder.Configuration);
+```
+
+**Step 2:** Create the helper method at the bottom of Program.cs (after line 200):
+
+```csharp
+/// <summary>
+/// Registers YourModule services and infrastructure for embedded YourModule.Web components.
+/// Configures in-memory database for development and SQL Server for production.
+/// </summary>
+private static void RegisterYourModuleServices(IServiceCollection services, IConfiguration configuration)
+{
+    // Database configuration - use in-memory for development
+    var useInMemory = configuration.GetValue<bool>("UseInMemoryDatabase", true);
+
+    if (useInMemory)
+    {
+        services.AddDbContext<YourModule.Infrastructure.Persistence.YourModuleDbContext>(options =>
+            options.UseInMemoryDatabase("YourModule_Shell"));
+    }
+    else
+    {
+        var connectionString = configuration.GetConnectionString("YourModuleDatabase")
+            ?? "Server=localhost;Database=BusinessAsUsual_YourModule;Trusted_Connection=True;TrustServerCertificate=True;";
+        services.AddDbContext<YourModule.Infrastructure.Persistence.YourModuleDbContext>(options =>
+            options.UseSqlServer(connectionString));
+    }
+
+    // Register repositories
+    services.AddScoped<YourModule.Domain.Repositories.IYourRepository, YourModule.Infrastructure.Repositories.YourRepository>();
+
+    // Register application services
+    services.AddScoped<YourModule.Application.Services.IYourService, YourModule.Application.Services.YourService>();
+
+    // Add any additional services your module components depend on
+}
+```
+
+---
+
+#### When Module API is Unavailable: Mock Service Pattern
+
+**Problem:** If your module pages attempt to call a module API (e.g., `http://localhost:7286`) that is not running in the deployed shell environment, the pages will fail with:
+
+```
+Cannot assign requested address (localhost:7286)
+```
+
+**Solution:** Create a mock/fallback service implementation that returns safe empty data instead of calling the API.
+
+**Step 1:** Create the service interface in your module's Application layer:
+
+**File:** `services/{ModuleName}/{ModuleName}.Application/Services/IYourService.cs`
+```csharp
+using {ModuleName}.Application.DTOs;
+
+namespace {ModuleName}.Application.Services;
+
+public interface IYourService
+{
+    Task<IEnumerable<YourDto>> GetAllAsync();
+    Task<YourDto?> GetByIdAsync(int id);
+    // Add other methods your pages depend on
+}
+```
+
+**Step 2:** Create a mock implementation:
+
+**File:** `services/{ModuleName}/{ModuleName}.Application/Services/MockYourService.cs`
+```csharp
+using {ModuleName}.Application.DTOs;
+
+namespace {ModuleName}.Application.Services;
+
+/// <summary>
+/// Mock implementation of IYourService for shell environments where the module API is unavailable.
+/// Returns empty/null data to prevent hard failures in the UI.
+/// </summary>
+public class MockYourService : IYourService
+{
+    public Task<IEnumerable<YourDto>> GetAllAsync()
+    {
+        // Return empty collection instead of calling unavailable API
+        return Task.FromResult(Enumerable.Empty<YourDto>());
+    }
+
+    public Task<YourDto?> GetByIdAsync(int id)
+    {
+        // Return null instead of calling unavailable API
+        return Task.FromResult<YourDto?>(null);
+    }
+
+    // Implement other methods with safe fallback behavior
+}
+```
+
+**Step 3:** Register the mock service in the shell:
+
+**File:** `frontend/BusinessAsUsual.Web/Program.cs`
+```csharp
+private static void RegisterYourModuleServices(IServiceCollection services, IConfiguration configuration)
+{
+    // Use mock service instead of API-backed service for shell hosting
+    services.AddScoped<YourModule.Application.Services.IYourService, 
+                       YourModule.Application.Services.MockYourService>();
+
+    // If using global:: qualifier to avoid namespace conflicts:
+    services.AddScoped<global::YourModule.Application.Services.IYourService,
+                       global::YourModule.Application.Services.MockYourService>();
+}
+```
+
+**⚠️ Namespace Collision Warning:**  
+If your module name conflicts with existing namespaces in the shell (e.g., `Services.Application` conflicts with `BusinessAsUsual.Web.Services`), use the `global::` qualifier:
+
+```csharp
+services.AddScoped<global::Services.Application.Services.IServiceService,
+                   global::Services.Application.Services.MockServiceService>();
+```
+
+---
+
+#### Checklist: Module Service Registration
+
+For EVERY module you create, complete these steps:
+
+- [ ] ✅ **Create service interface** in `{ModuleName}.Application/Services/I{YourService}.cs`
+- [ ] ✅ **Create mock implementation** in `{ModuleName}.Application/Services/Mock{YourService}.cs`
+- [ ] ✅ **Add `Register{ModuleName}Services()` helper** in `frontend/BusinessAsUsual.Web/Program.cs`
+- [ ] ✅ **Call the helper** in `Program.cs` startup (around line 160-175)
+- [ ] ✅ **Register DbContext** (if module uses database persistence)
+- [ ] ✅ **Register all repositories** your module defines
+- [ ] ✅ **Register all application services** that Blazor components inject
+- [ ] ✅ **Use `global::` qualifier** if namespace conflicts occur
+- [ ] ✅ **Test embedded pages** in shell to verify no DI failures
+
+---
+
+#### Why This Matters
+
+**Without shell registration:**
+- ❌ Module pages crash at runtime with DI errors
+- ❌ Users see white screens or error boundaries
+- ❌ No graceful degradation when APIs are unavailable
+
+**With shell registration + mock services:**
+- ✅ Module pages load successfully in the shell
+- ✅ Empty states render gracefully when APIs are down
+- ✅ Users can still navigate and see UI structure
+- ✅ Development/testing continues without all APIs running
+
+**Golden Rule:** If a Blazor component injects it (`@inject`), the shell must provide it.
+
+---
+
+#### Reference Examples
+
+**Existing module registrations in `frontend/BusinessAsUsual.Web/Program.cs`:**
+- `RegisterHRModuleServices()` - Full DbContext + repositories + services (lines ~228-254)
+- `RegisterCRMModuleServices()` - Full DbContext + repositories + services (lines ~260-274)
+- `RegisterFinanceModuleServices()` - Full DbContext + repositories + services (lines ~275-286)
+- `RegisterServicesModuleServices()` - Mock service pattern (lines ~287-290)
+
+**Pattern to follow:** Copy the HR module registration helper as your starting template. It includes DbContext configuration (in-memory vs. SQL Server), repository registration, and service registration.
+
+---
+
 ## Module Architecture Overview
 Each module follows a clean architecture pattern:
 ```

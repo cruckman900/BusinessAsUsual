@@ -168,6 +168,9 @@ namespace BusinessAsUsual.Web
             // Register Finance Module services (for embedded Finance.Web components)
             RegisterFinanceModuleServices(builder.Services, builder.Configuration);
 
+            // Register Services Module services (for embedded Services.Web components)
+            RegisterServicesModuleServices(builder.Services, builder.Configuration);
+
             if (builder.Environment.IsProduction())
             {
                 builder.Services.AddAWSService<IAmazonCloudWatch>();
@@ -275,6 +278,15 @@ namespace BusinessAsUsual.Web
             services.AddScoped<Finance.Application.Services.IInvoiceService, Finance.Application.Services.MockInvoiceService>();
             services.AddScoped<Finance.Application.Services.IPaymentService, Finance.Application.Services.MockPaymentService>();
             services.AddScoped<Finance.Application.Services.IFinanceReportService, Finance.Application.Services.MockFinanceReportService>();
+        }
+
+        /// <summary>
+        /// Registers Services module services for embedded Services.Web components.
+        /// Uses mock service to prevent errors when API is unavailable.
+        /// </summary>
+        private static void RegisterServicesModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<global::Services.Application.Services.IServiceService, global::Services.Application.Services.MockServiceService>();
         }
 
         /// <summary>
