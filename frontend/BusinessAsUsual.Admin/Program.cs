@@ -38,6 +38,26 @@ namespace BusinessAsUsual.Admin
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0014:Suggest using top level route registrations", Justification = "<Pending>")]
         public static async Task Main(string[] args)
         {
+            var app = CreateHostBuilder(args);
+
+            try
+            {
+                await app.RunAsync();
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
+        }
+
+        /// <summary>
+        /// Creates and configures the web application builder for the Admin application.
+        /// This method is used by WebApplicationFactory for integration testing.
+        /// </summary>
+        /// <param name="args">Command-line arguments.</param>
+        /// <returns>Configured WebApplication instance.</returns>
+        public static WebApplication CreateHostBuilder(string[] args)
+        {
             SerilogBootstrapper.Initialize();
 
             try
@@ -181,15 +201,12 @@ namespace BusinessAsUsual.Admin
                     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
                 });
 
-                await app.RunAsync();
+                return app;
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "BAU Admin terminated unexpectedly");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
+                throw;
             }
         }
     }
