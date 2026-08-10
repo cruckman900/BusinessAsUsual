@@ -10,6 +10,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BusinessAsUsual.Admin
 {
@@ -35,7 +36,8 @@ namespace BusinessAsUsual.Admin
         /// logged as a fatal error. This method is intended to be used as the application's entry point.</remarks>
         /// <param name="args">An array of command-line arguments to configure the web host.</param>
         /// <returns>A task that represents the asynchronous operation of running the web application.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0014:Suggest using top level route registrations", Justification = "<Pending>")]
+        [SuppressMessage("Usage", "ASP0014:Suggest using top level route registrations", Justification = "<Pending>")]
+        [ExcludeFromCodeCoverage]
         public static async Task Main(string[] args)
         {
             var app = CreateHostBuilder(args);
@@ -56,6 +58,7 @@ namespace BusinessAsUsual.Admin
         /// </summary>
         /// <param name="args">Command-line arguments.</param>
         /// <returns>Configured WebApplication instance.</returns>
+        [ExcludeFromCodeCoverage]
         public static WebApplication CreateHostBuilder(string[] args)
         {
             SerilogBootstrapper.Initialize();
