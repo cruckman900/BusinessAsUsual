@@ -1,21 +1,47 @@
 @page "/hr/interviews"
 @rendermode InteractiveServer
+@using System.Text
+@using Platform.Web.Components.Shared
+@using Platform.Web.Services
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject ToastService Toast
 
 <PageTitle>Interviews - HR</PageTitle>
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
 
 <ErrorBoundary>
     <ChildContent>
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-            <div class="mb-3">
-                <MudLink Href="/dashboard">Dashboard</MudLink>
-                <span class="mx-2">/</span>
-                <MudLink Href="/hr">HR</MudLink>
-                <span class="mx-2">/</span>
-                <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Interviews</MudText>
-            </div>
+            <PageBreadcrumb Items="_breadcrumbItems">
+                <Actions>
+                    <MudMenu Icon="@Icons.Material.Filled.FileDownload" 
+                             Label="Export" 
+                             Variant="Variant.Outlined" 
+                             Color="Color.Default" 
+                             Size="Size.Small"
+                             EndIcon="@Icons.Material.Filled.ArrowDropDown">
+                        <MudMenuItem Icon="@Icons.Material.Filled.TableView" OnClick="@(() => ExportToCsv())">
+                            Export to CSV
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.PictureAsPdf" OnClick="@(() => ExportToPdf())">
+                            Export to PDF
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Description" OnClick="@(() => ExportToExcel())">
+                            Export to Excel
+                        </MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem Icon="@Icons.Material.Filled.Print" OnClick="@(() => Print())">
+                            Print
+                        </MudMenuItem>
+                    </MudMenu>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/interviews/create"))">
+                        Schedule Interview
+                    </MudButton>
+                </Actions>
+            </PageBreadcrumb>
 
             <div class="d-flex justify-space-between align-center mb-4">
                 <div>
@@ -25,9 +51,6 @@
                     </MudText>
                     <MudText Typo="Typo.body1" Color="Color.Secondary">Schedule and manage candidate interviews</MudText>
                 </div>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="@(() => Navigation.NavigateTo("/hr/interviews/create"))">
-                    Schedule Interview
-                </MudButton>
             </div>
 
             @if (isLoading)
@@ -264,8 +287,81 @@
         if (confirmed != true) return;
 
         allInterviews.RemoveAll(i => i.Id == id);
-        Snackbar.Add("Interview deleted", Severity.Success);
+        Toast.Deleted("Interview", null);
         FilterInterviews();
         await Task.CompletedTask;
+    }
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() 
+        { 
+            Text = "HR", 
+            Href = "/hr",
+            Icon = Icons.Material.Filled.People,
+            SubModules = new List<PageBreadcrumb.SubModuleItem>
+            {
+                new() { Text = "HR Dashboard", Href = "/hr", Icon = Icons.Material.Filled.Dashboard, Color = Color.Default },
+                new() { Text = "Employees", Href = "/hr/employees", Icon = Icons.Material.Filled.People, Color = Color.Primary },
+                new() { Text = "Departments", Href = "/hr/departments", Icon = Icons.Material.Filled.AccountTree, Color = Color.Success },
+                new() { Text = "Recruiting", Href = "/hr/recruiting-hub", Icon = Icons.Material.Filled.PersonSearch, Color = Color.Info },
+                new() { Text = "Performance", Href = "/hr/performance-hub", Icon = Icons.Material.Filled.TrendingUp, Color = Color.Warning },
+                new() { Text = "Training", Href = "/hr/training-hub", Icon = Icons.Material.Filled.School, Color = Color.Secondary },
+                new() { Text = "Administration", Href = "/hr/hr-admin-hub", Icon = Icons.Material.Filled.AdminPanelSettings, Color = Color.Default },
+                new() { Text = "Timesheets", Href = "/hr/timesheets", Icon = Icons.Material.Filled.AccessTime, Color = Color.Primary },
+                new() { Text = "Approvals", Href = "/hr/approvals", Icon = Icons.Material.Filled.CheckCircle, Color = Color.Success },
+                new() { Text = "Reports", Href = "/hr/reports", Icon = Icons.Material.Filled.Assessment, Color = Color.Info },
+                new() { Text = "Settings", Href = "/hr/settings", Icon = Icons.Material.Filled.Settings, Color = Color.Secondary }
+            }
+        },
+        new() { Text = "Recruiting", Href = "/hr/recruiting-hub", Icon = Icons.Material.Filled.PersonSearch },
+        new() { Text = "Interviews", Href = "/hr/interviews" }
+    };
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "g-d": Navigation.NavigateTo("/dashboard"); break;
+            case "g-u": Navigation.NavigateTo("/hr/recruiting-hub"); break;
+            case "alt-n": Navigation.NavigateTo("/hr/interviews/create"); break;
+            case "question": await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts"); break;
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        var interviewsToExport = interviews ?? new List<Interview>();
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Candidate,Position,Interviewer,Date,Time,Status,Location");
+
+        foreach (var interview in interviewsToExport)
+        {
+            csv.AppendLine($"\"{interview.CandidateName}\",\"{interview.Position}\",\"{interview.Interviewer}\",\"{interview.ScheduledDate:yyyy-MM-dd}\",\"{interview.Duration}\",\"{interview.Status}\",\"{interview.Location}\"");
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+        var fileName = $"interviews-export-{DateTime.Now:yyyy-MM-dd}.csv";
+
+        await JS.InvokeVoidAsync("downloadFile", fileName, base64, "text/csv");
+        Toast.Success($"Exported {interviewsToExport.Count} interview(s) to CSV");
+    }
+
+    private void ExportToPdf()
+    {
+        Toast.Info("PDF export coming soon");
+    }
+
+    private void ExportToExcel()
+    {
+        Toast.Info("Excel export coming soon");
+    }
+
+    private void Print()
+    {
+        Toast.Info("Print view coming soon");
     }
 }

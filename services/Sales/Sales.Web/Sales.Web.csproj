@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sales.Application\Sales.Application.csproj" />
     <ProjectReference Include="..\Sales.Contracts\Sales.Contracts.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

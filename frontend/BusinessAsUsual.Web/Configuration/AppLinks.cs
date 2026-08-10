@@ -11,10 +11,9 @@ public static class AppLinks
 {
     /// <summary>
     /// AppsOnAir public install/share URL for the Android build.
-    /// TODO: Replace with the real AppsOnAir Android install URL after uploading app-debug.apk.
+    /// Updated: August 9, 2026 - v1.1 (Build 2)
     /// </summary>
-    //public const string AndroidInstallUrl = "https://www.appsonair.com/apps/REPLACE_WITH_ANDROID_APP_ID";
-    public const string AndroidInstallUrl = "https://sin1.contabostorage.com/127726bae0334a7b8a8425a4789fb816:appsonair-prod/1fb49565-d637-4e0d-ada6-7c80eb8e03b4/pif1UagsPW15jEhxX4k9b.apk";
+    public const string AndroidInstallUrl = "https://app.appsonair.com/install/XHllBXZJ";
 
     /// <summary>
     /// AppsOnAir public install/share URL for the iOS build.
@@ -28,7 +27,7 @@ public static class AppLinks
     /// <summary>
     /// Gets the current version of the application.
     /// </summary>
-    public const string AppVersion = "1.0.0";
+    public const string AppVersion = "1.1 (Build 2)";
 
     /// <summary>
     /// Gets the minimum Android OS version required.

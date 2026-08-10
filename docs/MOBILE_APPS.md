@@ -6,7 +6,17 @@ Business As Usual is available as native mobile applications for both Android an
 
 ### Download
 
+<div align="center">
+
 [![Download on AppsOnAir](https://img.shields.io/badge/Download-AppsOnAir-00C853?style=for-the-badge&logo=android)](https://app.appsonair.com/install/XHllBXZJ)
+
+**📱 Scan to Download:**
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://app.appsonair.com/install/XHllBXZJ" alt="QR Code for Android App Download" width="200" height="200">
+
+_Scan this QR code with your Android device to download_
+
+</div>
 
 **Current Version:** v1.1 (Build 2)  
 **Release Date:** August 9, 2026  

@@ -1,17 +1,16 @@
 @page "/hr/hr-admin-hub"
 @using MudBlazor
+@using Platform.Web.Components.Shared
+@using Platform.Web.Services
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject ToastService Toast
 
-<PageTitle>HR Administration</PageTitle>
+<PageTitle>HR Administration - HR</PageTitle>
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudLink Href="/hr">HR</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">HR Administration</MudText>
-    </div>
+    <PageBreadcrumb Items="_breadcrumbItems" />
 
     <div class="d-flex justify-space-between align-center mb-4">
         <div>
@@ -168,8 +167,56 @@
 </MudContainer>
 
 @code {
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() 
+        { 
+            Text = "HR", 
+            Href = "/hr",
+            Icon = Icons.Material.Filled.People,
+            SubModules = new List<PageBreadcrumb.SubModuleItem>
+            {
+                new() { Text = "HR Dashboard", Href = "/hr", Icon = Icons.Material.Filled.Dashboard, Color = Color.Default },
+                new() { Text = "Employees", Href = "/hr/employees", Icon = Icons.Material.Filled.People, Color = Color.Primary },
+                new() { Text = "Departments", Href = "/hr/departments", Icon = Icons.Material.Filled.AccountTree, Color = Color.Success },
+                new() { Text = "Recruiting", Href = "/hr/recruiting-hub", Icon = Icons.Material.Filled.PersonSearch, Color = Color.Info },
+                new() { Text = "Performance", Href = "/hr/performance-hub", Icon = Icons.Material.Filled.TrendingUp, Color = Color.Warning },
+                new() { Text = "Training", Href = "/hr/training-hub", Icon = Icons.Material.Filled.School, Color = Color.Secondary },
+                new() { Text = "Administration", Href = "/hr/hr-admin-hub", Icon = Icons.Material.Filled.AdminPanelSettings, Color = Color.Default },
+                new() { Text = "Timesheets", Href = "/hr/timesheets", Icon = Icons.Material.Filled.AccessTime, Color = Color.Primary },
+                new() { Text = "Approvals", Href = "/hr/approvals", Icon = Icons.Material.Filled.CheckCircle, Color = Color.Success },
+                new() { Text = "Reports", Href = "/hr/reports", Icon = Icons.Material.Filled.Assessment, Color = Color.Info },
+                new() { Text = "Settings", Href = "/hr/settings", Icon = Icons.Material.Filled.Settings, Color = Color.Secondary }
+            }
+        },
+        new() { Text = "Administration", Href = "/hr/hr-admin-hub", Icon = Icons.Material.Filled.AdminPanelSettings }
+    };
+
     private void Navigate(string url)
     {
         NavigationManager.NavigateTo(url);
+    }
+
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "g-d":
+                NavigationManager.NavigateTo("/dashboard");
+                break;
+            case "g-u":
+                NavigationManager.NavigateTo("/hr");
+                break;
+            case "g-o":
+                NavigationManager.NavigateTo("/hr/onboarding");
+                break;
+            case "g-b":
+                NavigationManager.NavigateTo("/hr/benefits");
+                break;
+            case "question":
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+        }
     }
 }

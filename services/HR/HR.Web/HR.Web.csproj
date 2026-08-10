@@ -3,11 +3,12 @@
   <ItemGroup>
     <ProjectReference Include="..\HR.Application\HR.Application.csproj" />
     <ProjectReference Include="..\HR.Infrastructure\HR.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
-    <PackageReference Include="MudBlazor" Version="9.3.0" />
+    <PackageReference Include="MudBlazor" Version="9.6.0" />
   </ItemGroup>
 
   <PropertyGroup>

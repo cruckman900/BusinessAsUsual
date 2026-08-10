@@ -31,23 +31,52 @@
     [JSInvokable]
     public async Task HandleShortcut(string shortcut)
     {
-        Console.WriteLine($"🎯 Shortcut received in C#: {shortcut}");
-        await OnShortcut.InvokeAsync(shortcut);
+        try
+        {
+            Console.WriteLine($"🎯 Shortcut received in C#: {shortcut}");
+            if (OnShortcut.HasDelegate)
+            {
+                await OnShortcut.InvokeAsync(shortcut);
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Component was disposed while handling shortcut - ignore
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ KeyboardShortcutHandler error: {ex.Message}");
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_instance != null)
+        try
         {
-            await _instance.InvokeVoidAsync("dispose");
-            await _instance.DisposeAsync();
-        }
+            if (_instance != null)
+            {
+                await _instance.InvokeVoidAsync("dispose");
+                await _instance.DisposeAsync();
+            }
 
-        if (_module != null)
+            if (_module != null)
+            {
+                await _module.DisposeAsync();
+            }
+
+            _objRef?.Dispose();
+        }
+        catch (JSDisconnectedException)
         {
-            await _module.DisposeAsync();
+            // Circuit disconnected - ignore cleanup errors
         }
-
-        _objRef?.Dispose();
+        catch (ObjectDisposedException)
+        {
+            // Already disposed - ignore
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ KeyboardShortcutHandler disposal warning: {ex.Message}");
+        }
     }
 }

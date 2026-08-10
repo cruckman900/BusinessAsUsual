@@ -29,13 +29,22 @@ It powers a suite of business modules—products, services, accounting, inventor
 
 **Business As Usual** is available as a native mobile app for Android and iOS!
 
+<div align="center">
+
 [![Download Android APK](https://img.shields.io/badge/Download-Android_APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://app.appsonair.com/install/XHllBXZJ)
 ![iOS](https://img.shields.io/badge/iOS-Coming_Soon-999999?style=for-the-badge&logo=apple&logoColor=white)
+
+**📱 Scan to Download Android App:**
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://app.appsonair.com/install/XHllBXZJ" alt="Download Android App" width="180" height="180">
+
+</div>
 
 - **Android:** v1.1 (Build 2) - Available now via AppsOnAir
 - **iOS:** Coming soon to TestFlight
 - **Features:** Native Jetpack Compose UI, offline-first architecture, clean domain design
 - **Repository:** [BusinessAsUsual-Android](https://github.com/cruckman900/BusinessAsUsual-Android)
+- **Full Mobile Documentation:** See [docs/MOBILE_APPS.md](docs/MOBILE_APPS.md)
 
 ## 🧩 Modular Breakdown
 

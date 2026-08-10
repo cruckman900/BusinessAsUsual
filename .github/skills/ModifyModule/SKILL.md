@@ -352,7 +352,53 @@ Remove-Item -Force Weather.razor
 
 ## UX Enhancement Patterns (MANDATORY)
 
-When modifying or creating module pages, implement these patterns to maintain consistency:
+When modifying or creating module pages, implement these patterns to maintain consistency across all modules. These enhancements significantly improve usability, accessibility, and user experience.
+
+### ✅ UX Enhancement Checklist
+
+Apply ALL of the following to every module page:
+
+#### Required Components
+- ✅ **PageBreadcrumb** - Always use `<PageBreadcrumb Items="_breadcrumbItems">` with Actions slot for page actions
+- ✅ **KeyboardShortcutHandler** - Add `<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />` after PageTitle
+- ✅ **ToastService** - Inject and use for all user feedback (create/save/delete/error operations)
+- ✅ **SmartDefaultsService** - Inject and use to remember/prefill form values across sessions
+- ✅ **Quick Filter** - Add search/filter functionality to all data grids with `_searchString` binding
+
+#### Recommended Components (Context-Dependent)
+- ✅ **ContextualHint** - Show inline help for empty states, getting started, warnings
+- ✅ **HelpTooltip** - Wrap complex form fields with contextual help text
+- ✅ **LoadingSpinner** / **Skeleton Loaders** - Show loading states for async operations
+- ✅ **Smart Empty States** - Provide helpful guidance when no data exists
+- ✅ **Progressive Disclosure** - Hide advanced/rarely-used options in expansion panels
+- ✅ **Bulk Actions** - Enable multi-select and bulk operations for data grids
+- ✅ **Export Functionality** - Add CSV/PDF export for reports and data grids
+
+#### Standard Keyboard Shortcuts (Alt+ to avoid browser conflicts)
+- `Alt+N` → Create/Add (match breadcrumb primary action)
+- `Alt+S` → Save
+- `Alt+E` → Export
+- `Alt+K` → Command Palette
+- `Alt+F` → Focus Search/Filter
+- `Escape` → Close Dialog
+- `?` → Show Keyboard Shortcuts Help
+- `g+d` → Go to Dashboard
+- `g+u` → Go to Users
+- `g+r` → Go to Roles
+- `g+n` → Go to Notifications
+- `g+s` → Go to Settings
+
+**Reference Implementations:**
+- `services/Platform/Platform.Web/Components/Pages/Users.razor` (Lines 1-578) - Gold standard for all patterns
+- `services/Platform/Platform.Web/Components/Pages/Roles.razor` - Full pattern implementation
+- `services/Platform/Platform.Web/Components/Pages/Settings.razor` - Settings page patterns
+
+**See Also:**
+- `.github/skills/CreateModule/SKILL.md` section 8.2.1 for detailed UX component implementation examples
+- `services/Platform/Platform.Web/Components/Shared/` for all reusable UX components
+- `services/Platform/Platform.Web/Services/` for ToastService and SmartDefaultsService
+
+---
 
 ### Smart Empty States
 **Apply to:** All data grids, lists, and collections  
@@ -513,14 +559,20 @@ private async Task HandleKeyboardShortcut(string shortcut)
 {
     switch (shortcut)
     {
-        case "cmd-n":
+        case "alt-n":  // Changed from cmd-n to avoid browser conflicts
             OpenCreateDialog(); // Match primary action
             break;
-        case "cmd-s":
+        case "alt-s":  // Changed from cmd-s
             await SaveChanges(); // If applicable
             break;
-        case "cmd-e":
+        case "alt-e":  // Changed from cmd-e
             await ExportData(); // If export exists
+            break;
+        case "alt-k":  // Command palette
+            await ShowCommandPalette();
+            break;
+        case "alt-f":  // Focus search/filter
+            FocusSearchField();
             break;
         case "escape":
             if (_dialogVisible)
@@ -532,19 +584,38 @@ private async Task HandleKeyboardShortcut(string shortcut)
         case "g-d":
             Navigation.NavigateTo("/dashboard");
             break;
+        case "g-u":
+            Navigation.NavigateTo("/platform/users");
+            break;
+        case "g-r":
+            Navigation.NavigateTo("/platform/roles");
+            break;
+        case "g-n":
+            Navigation.NavigateTo("/platform/notifications");
+            break;
+        case "g-s":
+            Navigation.NavigateTo("/platform/settings");
+            break;
         // Add g-[key] for module-specific navigation
     }
 }
 ```
 
 **Standard Shortcuts to Implement:**
-- `cmd-n` → Match "Create/Add" breadcrumb action
-- `cmd-s` → Match "Save" breadcrumb action (if exists)
-- `cmd-e` → Match "Export" breadcrumb action (if exists)
+- `alt-n` → Match "Create/Add" breadcrumb action
+- `alt-s` → Match "Save" breadcrumb action (if exists)
+- `alt-e` → Match "Export" breadcrumb action (if exists)
+- `alt-k` → Command palette (if implemented)
+- `alt-f` → Focus search/filter field
 - `escape` → Close open dialog
-- `question` → Show help (always)
+- `question` or `?` → Show help (always)
 - `g-d` → Dashboard (always)
 - `g-[key]` → Module pages (match your module)
+
+**⚠️ CRITICAL: Use Alt+ not Ctrl+**
+- **Always use `alt-` prefix** to avoid browser conflicts (Ctrl+S = Save Page, Ctrl+N = New Window)
+- The KeyboardShortcutHandler component already handles Alt modifier
+- Update KeyboardShortcutsDialog.razor to show "Alt+" in help text
 
 **Required:**
 - Always add `question` and `g-d`

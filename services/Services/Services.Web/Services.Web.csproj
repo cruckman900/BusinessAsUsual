@@ -10,5 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Services.Application\Services.Application.csproj" />
     <ProjectReference Include="..\Services.Infrastructure\Services.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
   </ItemGroup>
 </Project>

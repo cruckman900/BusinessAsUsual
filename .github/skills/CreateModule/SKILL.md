@@ -2227,10 +2227,237 @@ Create `{ModuleName}.Web/Components/_Imports.razor` to avoid repetitive using st
 - Final breadcrumb uses `MudText` with `Color.Primary` (not a link)
 - Keep breadcrumbs hierarchical: Dashboard → Module → SubPage → Detail
 
+**⚠️ DEPRECATED - Manual Breadcrumbs:**
+The above manual breadcrumb pattern is deprecated. **Instead, use the PageBreadcrumb component** (see section 8.2.1 below).
+
 **Container Rules:**
 - **Always** use `MaxWidth.ExtraExtraLarge` (not `ExtraLarge`)
 - **Always** use `Class="mt-2 pa-0"` (not `mt-4`)
 - This ensures consistent spacing and padding across all modules
+
+#### 8.2.1 Modern Page Layout with UX Enhancements (REQUIRED)
+
+**All new module pages MUST use these modern patterns:**
+
+##### PageBreadcrumb Component
+Replace manual breadcrumbs with the PageBreadcrumb component:
+
+```razor
+<PageBreadcrumb Items="_breadcrumbItems">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" StartIcon="@Icons.Material.Filled.FileDownload" Size="Size.Small" OnClick="ExportData">
+            Export
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="OpenCreateDialog">
+            Add New
+        </MudButton>
+    </Actions>
+</PageBreadcrumb>
+
+@code {
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Module Name", Href = "/module" },
+        new() { Text = "Current Page", Href = "/module/page", Icon = Icons.Material.Filled.PageIcon }
+    };
+}
+```
+
+**Benefits:**
+- Consistent breadcrumb styling across all pages
+- Built-in dropdown support for navigation
+- Actions slot eliminates need for separate action button row
+- Reduces page header boilerplate
+
+##### Keyboard Shortcuts Handler
+Add keyboard shortcut support to every page:
+
+```razor
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>Page Name</PageTitle>
+<KeyboardShortcutHandler OnShortcut="HandleKeyboardShortcut" />
+
+@code {
+    private async Task HandleKeyboardShortcut(string shortcut)
+    {
+        switch (shortcut)
+        {
+            case "alt-n":  // Create/Add
+                OpenCreateDialog();
+                break;
+            case "alt-s":  // Save
+                await SaveChanges();
+                break;
+            case "alt-e":  // Export
+                await ExportData();
+                break;
+            case "alt-f":  // Focus search
+                FocusSearchField();
+                break;
+            case "escape":  // Close dialog
+                if (_dialogVisible) CloseDialog();
+                break;
+            case "question":  // Show help
+                await DialogService.ShowAsync<KeyboardShortcutsDialog>("Keyboard Shortcuts");
+                break;
+            case "g-d":  // Go to dashboard
+                Navigation.NavigateTo("/dashboard");
+                break;
+        }
+    }
+}
+```
+
+**Standard Shortcuts (Alt+ to avoid browser conflicts):**
+- `Alt+N` → Create/Add
+- `Alt+S` → Save
+- `Alt+E` → Export
+- `Alt+K` → Command Palette
+- `Alt+F` → Focus Search
+- `Escape` → Close Dialog
+- `?` → Show Help
+- `g+d` → Dashboard
+- `g+u/r/n/s` → Platform pages
+
+##### Toast Notifications
+Use ToastService for all user feedback:
+
+```razor
+@inject ToastService Toast
+
+@code {
+    private async Task SaveItem()
+    {
+        try
+        {
+            // ... save logic ...
+            Toast.Saved("Item");
+        }
+        catch (Exception ex)
+        {
+            Toast.Error($"Failed to save: {ex.Message}");
+        }
+    }
+
+    private void DeleteItem(ItemModel item)
+    {
+        var deleted = item;
+        _items.Remove(item);
+        Toast.Deleted(item.Name, () =>
+        {
+            _items.Add(deleted);  // Undo action
+            StateHasChanged();
+        });
+    }
+}
+```
+
+**Toast Methods:**
+- `Toast.Success(message)` - Generic success
+- `Toast.Info(message)` - Informational
+- `Toast.Warning(message)` - Warnings
+- `Toast.Error(message)` - Errors
+- `Toast.Created(name)` - Item created
+- `Toast.Saved(name)` - Item saved
+- `Toast.Deleted(name, undoAction)` - Item deleted with undo
+
+##### Smart Defaults Service
+Remember and prefill form values:
+
+```razor
+@inject SmartDefaultsService Defaults
+
+@code {
+    private void OpenCreateDialog()
+    {
+        // Get remembered defaults
+        var userDefaults = Defaults.GetUserDefaults();
+
+        _newItem = new ItemModel
+        {
+            IsActive = userDefaults.DefaultActive,
+            Status = Defaults.GetValue<string>("item.lastStatus") ?? "Pending",
+            Category = Defaults.GetValue<string>("item.lastCategory") ?? ""
+        };
+
+        _dialogVisible = true;
+    }
+
+    private async Task SaveItem()
+    {
+        // ... save logic ...
+
+        // Remember selections for next time
+        Defaults.RememberValue("item.lastStatus", _newItem.Status);
+        Defaults.RememberValue("item.lastCategory", _newItem.Category);
+        Defaults.RememberUserFormData(_newItem.IsActive, "", "");
+    }
+}
+```
+
+##### Quick Filter
+Add search/filter to all data grids:
+
+```razor
+<MudTextField @bind-Value="_searchString"
+              Placeholder="Search..."
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Immediate="true"
+              Class="mb-4" />
+
+<MudDataGrid Items="@FilteredItems">
+    <!-- columns -->
+</MudDataGrid>
+
+@code {
+    private string _searchString = "";
+
+    private IEnumerable<ItemModel> FilteredItems =>
+        string.IsNullOrWhiteSpace(_searchString)
+            ? _items
+            : _items.Where(x =>
+                x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                x.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
+}
+```
+
+##### Contextual Help
+Add inline help and tooltips:
+
+```razor
+<!-- Page-level hint -->
+@if (_items.Count == 0)
+{
+    <ContextualHint Title="Getting Started" 
+                    Message="Create your first item to get started. Click 'Add New' above." 
+                    Dismissible="true" />
+}
+
+<!-- Field-level help -->
+<HelpTooltip HelpText="This email will be used for system notifications and login">
+    <MudTextField @bind-Value="_model.Email" Label="Email Address" />
+</HelpTooltip>
+```
+
+**UX Enhancement Checklist for All Pages:**
+- ✅ PageBreadcrumb with Actions (not manual breadcrumbs)
+- ✅ KeyboardShortcutHandler with standard shortcuts
+- ✅ ToastService for user feedback
+- ✅ SmartDefaultsService for form prefill
+- ✅ Quick filter for data grids
+- ✅ ContextualHint for empty states
+- ✅ HelpTooltip for complex fields
+- ✅ LoadingSpinner or skeleton loaders for async operations
+- ✅ Smart empty states with helpful guidance
+
+**Reference Implementation:**
+See `services/Platform/Platform.Web/Components/Pages/Users.razor` for a complete example with all patterns.
+
+---
 
 #### 8.3 Create Dashboard Page
 Create in `{ModuleName}.Web/Components/Pages/Dashboard.razor`:
