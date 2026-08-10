@@ -171,6 +171,15 @@ namespace BusinessAsUsual.Web
             // Register Services Module services (for embedded Services.Web components)
             RegisterServicesModuleServices(builder.Services, builder.Configuration);
 
+            // Register Platform Module services (for embedded Platform.Web components)
+            RegisterPlatformModuleServices(builder.Services, builder.Configuration);
+
+            // Register Sales Module services (for embedded Sales.Web components)
+            RegisterSalesModuleServices(builder.Services, builder.Configuration);
+
+            // Register Inventory Module services (for embedded Inventory.Web components)
+            RegisterInventoryModuleServices(builder.Services, builder.Configuration);
+
             if (builder.Environment.IsProduction())
             {
                 builder.Services.AddAWSService<IAmazonCloudWatch>();
@@ -287,6 +296,36 @@ namespace BusinessAsUsual.Web
         private static void RegisterServicesModuleServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<global::Services.Application.Services.IServiceService, global::Services.Application.Services.MockServiceService>();
+        }
+
+        /// <summary>
+        /// Registers Platform module services for embedded Platform.Web components.
+        /// Uses mock services to prevent errors when API is unavailable.
+        /// </summary>
+        private static void RegisterPlatformModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<Platform.Application.Interfaces.IUserService, Platform.Application.Services.MockUserService>();
+            services.AddScoped<Platform.Application.Interfaces.IRoleService, Platform.Application.Services.MockRoleService>();
+            services.AddScoped<Platform.Application.Interfaces.IPermissionService, Platform.Application.Services.MockPermissionService>();
+        }
+
+        /// <summary>
+        /// Registers Sales module services for embedded Sales.Web components.
+        /// Uses mock services to prevent errors when API is unavailable.
+        /// </summary>
+        private static void RegisterSalesModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<Sales.Application.Services.IOrderService, Sales.Application.Services.MockOrderService>();
+            services.AddScoped<Sales.Application.Services.IQuoteService, Sales.Application.Services.MockQuoteService>();
+        }
+
+        /// <summary>
+        /// Registers Inventory module services for embedded Inventory.Web components.
+        /// Uses mock service to prevent errors when API is unavailable.
+        /// </summary>
+        private static void RegisterInventoryModuleServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<Inventory.Application.Services.IInventoryService, Inventory.Application.Services.MockInventoryService>();
         }
 
         /// <summary>
