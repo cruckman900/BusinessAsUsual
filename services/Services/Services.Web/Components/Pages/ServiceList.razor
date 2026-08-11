@@ -1,9 +1,10 @@
 @page "/services/list"
 @using global::Services.Application.DTOs
+@using global::Services.Application.Services
 @using System.Net.Http.Json
 @using MudBlazor
 @using BusinessAsUsual.Modules.Services.Web.Shared
-@inject IHttpClientFactory HttpClientFactory
+@inject IServiceService ServiceService
 @inject Microsoft.AspNetCore.Components.NavigationManager Navigation
 
 <PageTitle>Services - Service Catalog</PageTitle>
@@ -63,8 +64,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var client = HttpClientFactory.CreateClient("ServicesApi");
-        services = await client.GetFromJsonAsync<List<ServiceDto>>("api/services");
+        var result = await ServiceService.GetAllServicesAsync();
+        services = result.ToList();
     }
 
     private void GoToDetails(Guid id) => Navigation.NavigateTo($"/services/details/{id}");

@@ -13,8 +13,28 @@ public class MockServiceService : IServiceService
         return Task.FromResult(Enumerable.Empty<ServiceDto>());
     }
 
-    public Task<ServiceDto?> GetServiceByIdAsync(int id)
+    public Task<ServiceDto?> GetServiceByIdAsync(Guid id)
     {
         return Task.FromResult<ServiceDto?>(null);
+    }
+
+    public Task<ServiceDto> CreateServiceAsync(ServiceDto service)
+    {
+        // Return the service with a new ID
+        service.Id = Guid.NewGuid();
+        return Task.FromResult(service);
+    }
+
+    public Task<ServiceDto> UpdateServiceAsync(Guid id, ServiceDto service)
+    {
+        // Return the updated service
+        service.Id = id;
+        return Task.FromResult(service);
+    }
+
+    public Task<bool> DeleteServiceAsync(Guid id)
+    {
+        // Return success
+        return Task.FromResult(true);
     }
 }

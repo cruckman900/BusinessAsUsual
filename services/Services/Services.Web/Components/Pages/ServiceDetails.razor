@@ -1,6 +1,7 @@
 @page "/services/details/{Id:guid}"
 @using global::Services.Application.DTOs
-@inject IHttpClientFactory HttpClientFactory
+@using global::Services.Application.Services
+@inject IServiceService ServiceService
 @inject NavigationManager Navigation
 
 <PageTitle>Service Details</PageTitle>
@@ -68,8 +69,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var client = HttpClientFactory.CreateClient("ServicesApi");
-        service = await client.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+        service = await ServiceService.GetServiceByIdAsync(Id);
     }
 
     private void GoBack() => Navigation.NavigateTo("/services/list");

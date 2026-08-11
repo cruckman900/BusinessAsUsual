@@ -1,9 +1,10 @@
 @page "/services/create"
 @using global::Services.Application.DTOs
+@using global::Services.Application.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using MudBlazor
-@inject IHttpClientFactory HttpClientFactory
+@inject IServiceService ServiceService
 @inject NavigationManager Navigation
 @inject MudBlazor.ISnackbar Snackbar
 
@@ -65,19 +66,14 @@
         isSaving = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("ServicesApi");
-            var res = await client.PostAsJsonAsync("api/services", model);
-            if (res.IsSuccessStatusCode)
-            {
-                Snackbar.Add("Service created successfully", Severity.Success);
-                Navigation.NavigateTo("/services/list");
-            }
-            else
-            {
-                var msg = $"Create failed: {res.StatusCode}";
-                Snackbar.Add(msg, Severity.Error);
-                Console.WriteLine(msg);
-            }
+            var result = await ServiceService.CreateServiceAsync(model);
+            Snackbar.Add("Service created successfully", Severity.Success);
+            Navigation.NavigateTo("/services/list");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
+            Console.WriteLine(ex.Message);
         }
         finally
         {

@@ -1,8 +1,9 @@
 @page "/services/delete/{Id:guid}"
 @using global::Services.Application.DTOs
+@using global::Services.Application.Services
 @using System.Net.Http.Json
 @using MudBlazor
-@inject IHttpClientFactory HttpClientFactory
+@inject IServiceService ServiceService
 @inject NavigationManager Navigation
 @inject MudBlazor.ISnackbar Snackbar
 
@@ -70,22 +71,27 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var client = HttpClientFactory.CreateClient("ServicesApi");
-        service = await client.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+        service = await ServiceService.GetServiceByIdAsync(Id);
     }
 
     private async Task ConfirmDelete()
     {
-        var client = HttpClientFactory.CreateClient("ServicesApi");
-        var res = await client.DeleteAsync($"api/services/{Id}");
-        if (res.IsSuccessStatusCode)
+        try
         {
-            Snackbar.Add("Service deleted successfully", Severity.Success);
-            Navigation.NavigateTo("/services/list");
+            var result = await ServiceService.DeleteServiceAsync(Id);
+            if (result)
+            {
+                Snackbar.Add("Service deleted successfully", Severity.Success);
+                Navigation.NavigateTo("/services/list");
+            }
+            else
+            {
+                Snackbar.Add("Delete failed", Severity.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Snackbar.Add($"Delete failed: {res.StatusCode}", Severity.Error);
+            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
         }
     }
 

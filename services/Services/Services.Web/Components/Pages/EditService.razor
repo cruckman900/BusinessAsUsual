@@ -1,9 +1,10 @@
 @page "/services/edit/{Id:guid}"
 @using global::Services.Application.DTOs
+@using global::Services.Application.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using MudBlazor
-@inject IHttpClientFactory HttpClientFactory
+@inject IServiceService ServiceService
 @inject NavigationManager Navigation
 @inject MudBlazor.ISnackbar Snackbar
 
@@ -72,8 +73,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var client = HttpClientFactory.CreateClient("ServicesApi");
-        model = await client.GetFromJsonAsync<ServiceDto>($"api/services/{Id}");
+        model = await ServiceService.GetServiceByIdAsync(Id);
     }
 
     private async Task HandleValidSubmit()
@@ -82,18 +82,13 @@
         isSaving = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("ServicesApi");
-            var res = await client.PutAsJsonAsync($"api/services/{Id}", model);
-            if (res.IsSuccessStatusCode)
-            {
-                Snackbar.Add("Service updated successfully", Severity.Success);
-                Navigation.NavigateTo("/services/list");
-            }
-            else
-            {
-                var msg = $"Update failed: {res.StatusCode}";
-                Snackbar.Add(msg, Severity.Error);
-            }
+            var result = await ServiceService.UpdateServiceAsync(Id, model);
+            Snackbar.Add("Service updated successfully", Severity.Success);
+            Navigation.NavigateTo("/services/list");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
         }
         finally
         {
