@@ -3,8 +3,9 @@
 @using MudBlazor
 @using Sales.Web.Components.Shared
 @using Sales.Application.DTOs
+@using Sales.Application.Services
 @using Sales.Domain.Enums
-@inject IHttpClientFactory HttpClientFactory
+@inject IOrderService OrderService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -232,8 +233,8 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            _orders = await client.GetFromJsonAsync<List<OrderDto>>("api/sales/orders") ?? new();
+            var result = await OrderService.GetAllOrdersAsync();
+            _orders = result.ToList();
         }
         catch (Exception ex)
         {
@@ -297,10 +298,7 @@
     {
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            var response = await client.PostAsync($"api/sales/orders/{order.Id}/confirm", null);
-            response.EnsureSuccessStatusCode();
-
+            await OrderService.ConfirmOrderAsync(order.Id);
             Snackbar.Add($"Order {order.OrderNumber} confirmed successfully", Severity.Success);
             await LoadOrders();
         }
@@ -314,11 +312,8 @@
     {
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            var shipDto = new { TrackingNumber = "TRK" + DateTime.UtcNow.Ticks.ToString().Substring(0, 10) };
-            var response = await client.PostAsJsonAsync($"api/sales/orders/{order.Id}/ship", shipDto);
-            response.EnsureSuccessStatusCode();
-
+            var trackingNumber = "TRK" + DateTime.UtcNow.Ticks.ToString().Substring(0, 10);
+            await OrderService.ShipOrderAsync(order.Id, trackingNumber);
             Snackbar.Add($"Order {order.OrderNumber} marked as shipped", Severity.Success);
             await LoadOrders();
         }
@@ -345,10 +340,7 @@
         {
             try
             {
-                var client = HttpClientFactory.CreateClient("SalesApi");
-                var response = await client.DeleteAsync($"api/sales/orders/{order.Id}");
-                response.EnsureSuccessStatusCode();
-
+                await OrderService.DeleteOrderAsync(order.Id);
                 Snackbar.Add($"Order '{order.OrderNumber}' deleted successfully", Severity.Success);
                 await LoadOrders();
             }

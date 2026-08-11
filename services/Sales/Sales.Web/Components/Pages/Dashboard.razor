@@ -2,8 +2,10 @@
 @page "/sales/home"
 @using System.Net.Http.Json
 @using MudBlazor
+@using Sales.Application.Services
 @inject NavigationManager Navigation
-@inject IHttpClientFactory HttpClientFactory
+@inject IOrderService OrderService
+@inject IQuoteService QuoteService
 
 <PageTitle>Sales Dashboard</PageTitle>
 
@@ -304,32 +306,24 @@
             _loading = true;
             _errorMessage = null;
 
-            // Try to load from API first
-            try
-            {
-                var client = HttpClientFactory.CreateClient("SalesApi");
-                _stats = await client.GetFromJsonAsync<DashboardStats>("api/sales/dashboard/stats");
-                return; // Success - exit early
-            }
-            catch (HttpRequestException)
-            {
-                // API not available - fall back to mock data
-                Console.WriteLine("Sales.API not available, using mock data");
-            }
+            // Load data from services
+            var quotes = await QuoteService.GetAllQuotesAsync();
+            var orders = await OrderService.GetAllOrdersAsync();
 
-            // Use mock data as fallback
-            await Task.Delay(100); // Simulate async call
+            // Compute stats from service data
+            var quoteList = quotes.ToList();
+            var orderList = orders.ToList();
 
             _stats = new DashboardStats
             {
-                ActiveQuotes = 12,
-                OpenOrders = 8,
-                MonthlyRevenue = 45750.00m,
-                PendingShipments = 5,
-                TotalQuotes = 47,
-                TotalOrders = 32,
-                AverageOrderValue = 1429.69m,
-                ConversionRate = 68.09m
+                ActiveQuotes = quoteList.Count(q => q.Status == global::Sales.Domain.Enums.QuoteStatus.Draft || q.Status == global::Sales.Domain.Enums.QuoteStatus.Sent),
+                OpenOrders = orderList.Count(o => o.Status == global::Sales.Domain.Enums.OrderStatus.Pending || o.Status == global::Sales.Domain.Enums.OrderStatus.Confirmed),
+                MonthlyRevenue = orderList.Where(o => o.OrderDate >= DateTime.UtcNow.AddMonths(-1)).Sum(o => o.Total),
+                PendingShipments = orderList.Count(o => o.Status == global::Sales.Domain.Enums.OrderStatus.Confirmed),
+                TotalQuotes = quoteList.Count,
+                TotalOrders = orderList.Count,
+                AverageOrderValue = orderList.Any() ? orderList.Average(o => o.Total) : 0,
+                ConversionRate = quoteList.Count > 0 ? (orderList.Count / (decimal)quoteList.Count) * 100 : 0
             };
         }
         catch (Exception ex)

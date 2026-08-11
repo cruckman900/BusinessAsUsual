@@ -4,6 +4,8 @@
     <ProjectReference Include="..\Sales.Application\Sales.Application.csproj" />
     <ProjectReference Include="..\Sales.Contracts\Sales.Contracts.csproj" />
     <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
+    <ProjectReference Include="..\..\CRM\CRM.Application\CRM.Application.csproj" />
+    <ProjectReference Include="..\..\Inventory\Inventory.Application\Inventory.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

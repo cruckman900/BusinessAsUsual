@@ -1,8 +1,10 @@
 @page "/sales/reports"
 @using System.Net.Http.Json
 @using MudBlazor
+@using Sales.Application.Services
 @using Sales.Domain.Enums
-@inject IHttpClientFactory HttpClientFactory
+@inject IOrderService OrderService
+@inject IQuoteService QuoteService
 @inject NavigationManager Navigation
 
 <PageTitle>Sales Reports</PageTitle>
@@ -185,14 +187,23 @@
         {
             _loading = true;
             _errorMessage = null;
-            var client = HttpClientFactory.CreateClient("SalesApi");
 
-            // Load dashboard stats
-            _stats = await client.GetFromJsonAsync<DashboardStats>("api/sales/dashboard/stats");
+            // Load quotes and orders from services
+            var quotes = (await QuoteService.GetAllQuotesAsync()).ToList();
+            var orders = (await OrderService.GetAllOrdersAsync()).ToList();
 
-            // Load quotes and orders for detailed breakdowns
-            var quotes = await client.GetFromJsonAsync<List<QuoteDto>>("api/sales/quotes") ?? new();
-            var orders = await client.GetFromJsonAsync<List<OrderDto>>("api/sales/orders") ?? new();
+            // Compute dashboard stats from service data
+            _stats = new DashboardStats
+            {
+                ActiveQuotes = quotes.Count(q => q.Status == global::Sales.Domain.Enums.QuoteStatus.Draft || q.Status == global::Sales.Domain.Enums.QuoteStatus.Sent),
+                OpenOrders = orders.Count(o => o.Status == global::Sales.Domain.Enums.OrderStatus.Pending || o.Status == global::Sales.Domain.Enums.OrderStatus.Confirmed),
+                MonthlyRevenue = orders.Where(o => o.OrderDate >= DateTime.UtcNow.AddMonths(-1)).Sum(o => o.Total),
+                PendingShipments = orders.Count(o => o.Status == global::Sales.Domain.Enums.OrderStatus.Confirmed),
+                TotalQuotes = quotes.Count,
+                TotalOrders = orders.Count,
+                AverageOrderValue = orders.Any() ? orders.Average(o => o.Total) : 0,
+                ConversionRate = quotes.Count > 0 ? (orders.Count / (decimal)quotes.Count) * 100 : 0
+            };
 
             // Calculate quotes by status
             var quoteGroups = quotes.GroupBy(q => q.Status.ToString()).ToList();
@@ -218,8 +229,8 @@
                 {
                     CustomerName = g.Key.CustomerName,
                     OrderCount = g.Count(),
-                    TotalRevenue = g.Sum(o => o.TotalAmount),
-                    AverageOrderValue = g.Average(o => o.TotalAmount)
+                    TotalRevenue = g.Sum(o => o.Total),
+                    AverageOrderValue = g.Average(o => o.Total)
                 })
                 .OrderByDescending(c => c.TotalRevenue)
                 .Take(10)
@@ -228,7 +239,7 @@
             _completedOrders = orders.Count(o => o.Status == OrderStatus.Delivered);
             _convertedQuotes = quotes.Count(q => q.Status == QuoteStatus.Accepted || q.Status == QuoteStatus.Converted);
             _pipelineValue = quotes.Where(q => q.Status == QuoteStatus.Sent || q.Status == QuoteStatus.Viewed)
-                .Sum(q => q.TotalAmount);
+                .Sum(q => q.Total);
         }
         catch (Exception ex)
         {

@@ -1,8 +1,11 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using Sales.Application.DTOs
+@using Sales.Application.Services
 @using Sales.Domain.Enums
-@inject IHttpClientFactory HttpClientFactory
+@using CRM.Application.DTOs
+@using Inventory.Application.DTOs
+@inject IQuoteService QuoteService
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -315,8 +318,8 @@
     private bool _isValid = false;
     private bool _saving = false;
     private QuoteFormModel _model = new();
-    private CustomerPicker.CustomerDto? _selectedCustomer;
-    private ProductPicker.ProductDto? _selectedProduct;
+    private CustomerDto? _selectedCustomer;
+    private ProductDto? _selectedProduct;
     private bool _showProductPanel = false;
     private decimal _productQuantity = 1;
 
@@ -357,7 +360,7 @@
         }
     }
 
-    private async Task OnCustomerSelectedAsync(CustomerPicker.CustomerDto? customer)
+    private async Task OnCustomerSelectedAsync(CustomerDto? customer)
     {
         _selectedCustomer = customer;
 
@@ -413,7 +416,7 @@
         {
             _model.LineItems.Add(new QuoteLineItemModel
             {
-                ProductId = _selectedProduct.Id,
+                ProductId = _selectedProduct.Id.ToString(),
                 ProductName = _selectedProduct.Name,
                 Description = _selectedProduct.Description,
                 Quantity = _productQuantity,
@@ -505,8 +508,6 @@
         _saving = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-
             if (IsEdit)
             {
                 var updateDto = new UpdateQuoteDto
@@ -532,9 +533,7 @@
                     }).ToList()
                 };
 
-                var response = await client.PutAsJsonAsync($"api/sales/quotes/{_model.Id}", updateDto);
-                response.EnsureSuccessStatusCode();
-
+                await QuoteService.UpdateQuoteAsync(updateDto);
                 Snackbar.Add("Quote updated successfully", Severity.Success);
             }
             else
@@ -561,9 +560,7 @@
                     }).ToList()
                 };
 
-                var response = await client.PostAsJsonAsync("api/sales/quotes", createDto);
-                response.EnsureSuccessStatusCode();
-
+                await QuoteService.CreateQuoteAsync(createDto);
                 Snackbar.Add("Quote created successfully", Severity.Success);
             }
 

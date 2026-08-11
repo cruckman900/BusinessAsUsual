@@ -3,8 +3,9 @@
 @using MudBlazor
 @using Sales.Web.Components.Shared
 @using Sales.Application.DTOs
+@using Sales.Application.Services
 @using Sales.Domain.Enums
-@inject IHttpClientFactory HttpClientFactory
+@inject IQuoteService QuoteService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -243,8 +244,8 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            _quotes = await client.GetFromJsonAsync<List<QuoteDto>>("api/sales/quotes") ?? new();
+            var result = await QuoteService.GetAllQuotesAsync();
+            _quotes = result.ToList();
         }
         catch (Exception ex)
         {
@@ -308,10 +309,7 @@
     {
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            var response = await client.PostAsync($"api/sales/quotes/{quote.Id}/send", null);
-            response.EnsureSuccessStatusCode();
-
+            await QuoteService.SendQuoteAsync(quote.Id);
             Snackbar.Add($"Quote {quote.QuoteNumber} sent successfully", Severity.Success);
             await LoadQuotes();
         }
@@ -325,10 +323,7 @@
     {
         try
         {
-            var client = HttpClientFactory.CreateClient("SalesApi");
-            var response = await client.PostAsync($"api/sales/quotes/{quote.Id}/accept", null);
-            response.EnsureSuccessStatusCode();
-
+            await QuoteService.AcceptQuoteAsync(quote.Id);
             Snackbar.Add($"Quote {quote.QuoteNumber} accepted", Severity.Success);
             await LoadQuotes();
         }
@@ -355,10 +350,7 @@
         {
             try
             {
-                var client = HttpClientFactory.CreateClient("SalesApi");
-                var response = await client.PostAsync($"api/sales/quotes/{quote.Id}/convert", null);
-                response.EnsureSuccessStatusCode();
-
+                await QuoteService.ConvertQuoteToOrderAsync(quote.Id);
                 Snackbar.Add($"Quote '{quote.QuoteNumber}' converted to order successfully", Severity.Success);
                 await LoadQuotes();
             }
@@ -386,10 +378,7 @@
         {
             try
             {
-                var client = HttpClientFactory.CreateClient("SalesApi");
-                var response = await client.DeleteAsync($"api/sales/quotes/{quote.Id}");
-                response.EnsureSuccessStatusCode();
-
+                await QuoteService.DeleteQuoteAsync(quote.Id);
                 Snackbar.Add($"Quote '{quote.QuoteNumber}' deleted successfully", Severity.Success);
                 await LoadQuotes();
             }
