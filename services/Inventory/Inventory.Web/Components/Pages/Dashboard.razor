@@ -1,8 +1,9 @@
 @page "/inventory"
 @using System.Net.Http.Json
 @using MudBlazor
+@using Inventory.Application.Services
 @inject NavigationManager Navigation
-@inject IHttpClientFactory HttpClientFactory
+@inject IInventoryService InventoryService
 
 <PageTitle>Inventory Dashboard</PageTitle>
 
@@ -378,20 +379,7 @@
     {
         try
         {
-            // Try to load from API first
-            try
-            {
-                var httpClient = HttpClientFactory.CreateClient("InventoryApi");
-                _summary = await httpClient.GetFromJsonAsync<InventorySummary>("/api/inventory/dashboard/summary");
-                return; // Success - exit early
-            }
-            catch (HttpRequestException)
-            {
-                // API not available - fall back to mock data
-                Console.WriteLine("Inventory.API not available, using mock data");
-            }
-
-            // Use mock data as fallback
+            // Use mock data (service-based summary not yet implemented)
             await Task.Delay(100); // Simulate async call
 
             _summary = new InventorySummary

@@ -2,7 +2,10 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using Inventory.Web.Components.Shared
-@inject IHttpClientFactory HttpClientFactory
+@using Inventory.Application.Services
+@using StockItemDto = Inventory.Application.DTOs.StockItemDto
+@using WarehouseDto = Inventory.Application.DTOs.WarehouseDto
+@inject IInventoryService InventoryService
 @inject ISnackbar Snackbar
 
 <PageTitle>Stock Items</PageTitle>
@@ -222,9 +225,10 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("InventoryApi");
-            _stockItems = await client.GetFromJsonAsync<List<StockItemDto>>("api/inventory/stock/items") ?? new();
-            _warehouses = await client.GetFromJsonAsync<List<WarehouseDto>>("api/inventory/warehouses") ?? new();
+            var stockResult = await InventoryService.GetAllStockItemsAsync();
+            _stockItems = stockResult.ToList();
+            var warehouseResult = await InventoryService.GetAllWarehousesAsync();
+            _warehouses = warehouseResult.ToList();
         }
         catch (Exception ex)
         {
@@ -241,29 +245,6 @@
     {
         _warehouseFilter = null;
         _stockFilter = null;
-    }
-
-    public class StockItemDto
-    {
-        public Guid Id { get; set; }
-        public Guid ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string ProductSKU { get; set; } = string.Empty;
-        public Guid WarehouseId { get; set; }
-        public string WarehouseName { get; set; } = string.Empty;
-        public Guid? BinLocationId { get; set; }
-        public string? BinLocationCode { get; set; }
-        public int QuantityOnHand { get; set; }
-        public int QuantityAllocated { get; set; }
-        public int QuantityAvailable { get; set; }
-        public decimal AverageCost { get; set; }
-        public DateTime LastStockDate { get; set; }
-    }
-
-    public class WarehouseDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
     }
 }
 

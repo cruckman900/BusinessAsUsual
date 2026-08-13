@@ -2,7 +2,11 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using Inventory.Web.Components.Shared
-@inject IHttpClientFactory HttpClientFactory
+@using Inventory.Application.Services
+@using InventoryTransactionDto = Inventory.Application.DTOs.InventoryTransactionDto
+@using WarehouseDto = Inventory.Application.DTOs.WarehouseDto
+@using ProductDto = Inventory.Application.DTOs.ProductDto
+@inject IInventoryService InventoryService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -83,9 +87,9 @@
                             </CellTemplate>
                         </PropertyColumn>
                         <PropertyColumn Property="x => x.WarehouseName" Title="From → To" T="InventoryTransactionDto" TProperty="string" />
-                        <PropertyColumn Property="x => x.ReferenceType" Title="Direction" T="InventoryTransactionDto" TProperty="string">
+                        <PropertyColumn Property="x => x.Quantity" Title="Direction" T="InventoryTransactionDto" TProperty="int">
                             <CellTemplate>
-                                @if (context.Item.ReferenceType == "Transfer-Out")
+                                @if (context.Item.Quantity < 0)
                                 {
                                     <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.CallMade">Out</MudChip>
                                 }
@@ -144,11 +148,11 @@
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">Units Transferred</MudText>
-                    <MudText Typo="Typo.h6">@_transfers.Where(t => t.ReferenceType == "Transfer-Out").Sum(t => Math.Abs(t.Quantity))</MudText>
+                    <MudText Typo="Typo.h6">@_transfers.Where(t => t.Quantity < 0).Sum(t => Math.Abs(t.Quantity))</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">Total Value Moved</MudText>
-                    <MudText Typo="Typo.h6">@_transfers.Where(t => t.ReferenceType == "Transfer-Out").Sum(t => Math.Abs(t.TotalCost)).ToString("C")</MudText>
+                    <MudText Typo="Typo.h6">@_transfers.Where(t => t.Quantity < 0).Sum(t => Math.Abs(t.TotalCost)).ToString("C")</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Color="Color.Secondary">This Month</MudText>
@@ -183,8 +187,8 @@
             {
                 items = _directionFilter switch
                 {
-                    "in" => items.Where(t => t.ReferenceType == "Transfer-In"),
-                    "out" => items.Where(t => t.ReferenceType == "Transfer-Out"),
+                    "in" => items.Where(t => t.Quantity >= 0),
+                    "out" => items.Where(t => t.Quantity < 0),
                     _ => items
                 };
             }
@@ -203,11 +207,11 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("InventoryApi");
-            var transactions = await client.GetFromJsonAsync<List<InventoryTransactionDto>>("api/inventory/stock/transactions") ?? new();
+            var transactions = await InventoryService.GetAllInventoryTransactionsAsync();
             _transfers = transactions.Where(t => t.TransactionType == "Transfer").ToList();
-            _warehouses = await client.GetFromJsonAsync<List<WarehouseDto>>("api/inventory/warehouses") ?? new();
-            var products = await client.GetFromJsonAsync<List<ProductDto>>("api/inventory/products") ?? new();
+            var warehouseResult = await InventoryService.GetAllWarehousesAsync();
+            _warehouses = warehouseResult.ToList();
+            var products = await InventoryService.GetAllProductsAsync();
             _products = products.Select(p => new ProductOption { Id = p.Id, Name = p.Name, SKU = p.SKU }).ToList();
         }
         catch (Exception ex)
@@ -233,39 +237,6 @@
         var dialog = await DialogService.ShowAsync<StockTransferDialog>("Create Stock Transfer", parameters, options);
         var result = await dialog.Result;
         if (result != null && !result.Canceled) await LoadData();
-    }
-
-    public class InventoryTransactionDto
-    {
-        public Guid Id { get; set; }
-        public Guid ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string ProductSKU { get; set; } = string.Empty;
-        public Guid WarehouseId { get; set; }
-        public string WarehouseName { get; set; } = string.Empty;
-        public string TransactionType { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-        public decimal UnitCost { get; set; }
-        public decimal TotalCost { get; set; }
-        public int RunningBalance { get; set; }
-        public string? ReferenceNumber { get; set; }
-        public string? ReferenceType { get; set; }
-        public string? Notes { get; set; }
-        public DateTime TransactionDate { get; set; }
-        public string CreatedBy { get; set; } = string.Empty;
-    }
-
-    public class WarehouseDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-    }
-
-    public class ProductDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string SKU { get; set; } = string.Empty;
     }
 
     public class ProductOption

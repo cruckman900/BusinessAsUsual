@@ -2,7 +2,11 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using Inventory.Web.Components.Shared
-@inject IHttpClientFactory HttpClientFactory
+@using Inventory.Application.Services
+@using ProductDto = Inventory.Application.DTOs.ProductDto
+@using CreateProductDto = Inventory.Application.DTOs.CreateProductDto
+@using UpdateProductDto = Inventory.Application.DTOs.UpdateProductDto
+@inject IInventoryService InventoryService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -231,8 +235,8 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("InventoryApi");
-            _products = await client.GetFromJsonAsync<List<ProductDto>>("api/inventory/products") ?? new();
+            var result = await InventoryService.GetAllProductsAsync();
+            _products = result.ToList();
         }
         catch (Exception ex)
         {
@@ -328,36 +332,17 @@
         {
             try
             {
-                var client = HttpClientFactory.CreateClient("InventoryApi");
-                var response = await client.DeleteAsync($"api/inventory/products/{product.Id}");
-                response.EnsureSuccessStatusCode();
-
-                Snackbar.Add($"Product '{product.Name}' deleted successfully", Severity.Success);
-                await LoadProducts();
+                var success = await InventoryService.DeleteProductAsync(product.Id);
+                if (success)
+                {
+                    Snackbar.Add($"Product '{product.Name}' deleted successfully", Severity.Success);
+                    await LoadProducts();
+                }
             }
             catch (Exception ex)
             {
                 Snackbar.Add($"Error deleting product: {ex.Message}", Severity.Error);
             }
         }
-    }
-
-    public class ProductDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public string SKU { get; set; } = string.Empty;
-        public string? Barcode { get; set; }
-        public decimal Cost { get; set; }
-        public decimal Price { get; set; }
-        public int ReorderPoint { get; set; }
-        public int ReorderQuantity { get; set; }
-        public string? Category { get; set; }
-        public string UnitOfMeasure { get; set; } = "EA";
-        public bool IsActive { get; set; }
-        public bool IsTrackedInventory { get; set; }
-        public string? ImageUrl { get; set; }
-        public int TotalStock { get; set; }
     }
 }

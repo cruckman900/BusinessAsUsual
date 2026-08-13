@@ -2,7 +2,10 @@
 @using System.Net.Http.Json
 @using MudBlazor
 @using Inventory.Web.Components.Shared
-@inject IHttpClientFactory HttpClientFactory
+@using Inventory.Application.Services
+@using PurchaseOrderDto = Inventory.Application.DTOs.PurchaseOrderDto
+@using SupplierDto = Inventory.Application.DTOs.SupplierDto
+@inject IInventoryService InventoryService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -221,9 +224,10 @@
         _loading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("InventoryApi");
-            _orders = await client.GetFromJsonAsync<List<PurchaseOrderDto>>("api/inventory/purchaseorders") ?? new();
-            _suppliers = await client.GetFromJsonAsync<List<SupplierDto>>("api/inventory/suppliers") ?? new();
+            var ordersResult = await InventoryService.GetAllPurchaseOrdersAsync();
+            _orders = ordersResult.ToList();
+            var suppliersResult = await InventoryService.GetAllSuppliersAsync();
+            _suppliers = suppliersResult.ToList();
         }
         catch (Exception ex)
         {
@@ -273,12 +277,9 @@
     {
         try
         {
-            var client = HttpClientFactory.CreateClient("InventoryApi");
-            var dto = new { Status = newStatus, ApprovedBy = "System" };
-            var response = await client.PutAsJsonAsync($"api/inventory/purchaseorders/{orderId}/status", dto);
-            response.EnsureSuccessStatusCode();
-            Snackbar.Add($"Purchase order status updated to {newStatus}", Severity.Success);
-            await LoadData();
+            // TODO: Add UpdatePurchaseOrderStatusAsync to IInventoryService
+            Snackbar.Add($"Status update not yet implemented in service layer", Severity.Info);
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -301,57 +302,18 @@
         {
             try
             {
-                var client = HttpClientFactory.CreateClient("InventoryApi");
-                var response = await client.DeleteAsync($"api/inventory/purchaseorders/{order.Id}");
-                response.EnsureSuccessStatusCode();
-                Snackbar.Add($"PO {order.OrderNumber} deleted successfully", Severity.Success);
-                await LoadData();
+                var success = await InventoryService.DeletePurchaseOrderAsync(order.Id);
+                if (success)
+                {
+                    Snackbar.Add($"PO {order.OrderNumber} deleted successfully", Severity.Success);
+                    await LoadData();
+                }
             }
             catch (Exception ex)
             {
                 Snackbar.Add($"Error deleting PO: {ex.Message}", Severity.Error);
             }
         }
-    }
-
-    public class PurchaseOrderDto
-    {
-        public Guid Id { get; set; }
-        public string OrderNumber { get; set; } = string.Empty;
-        public Guid SupplierId { get; set; }
-        public string SupplierName { get; set; } = string.Empty;
-        public Guid WarehouseId { get; set; }
-        public string WarehouseName { get; set; } = string.Empty;
-        public DateTime OrderDate { get; set; }
-        public DateTime? ExpectedDeliveryDate { get; set; }
-        public DateTime? ActualDeliveryDate { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public decimal SubTotal { get; set; }
-        public decimal TaxAmount { get; set; }
-        public decimal ShippingCost { get; set; }
-        public decimal Total { get; set; }
-        public string? Notes { get; set; }
-        public List<PurchaseOrderLineDto> Lines { get; set; } = new();
-    }
-
-    public class PurchaseOrderLineDto
-    {
-        public Guid Id { get; set; }
-        public Guid ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string ProductSKU { get; set; } = string.Empty;
-        public int QuantityOrdered { get; set; }
-        public int QuantityReceived { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal TaxRate { get; set; }
-        public decimal LineTotal { get; set; }
-        public string? Notes { get; set; }
-    }
-
-    public class SupplierDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
     }
 }
 

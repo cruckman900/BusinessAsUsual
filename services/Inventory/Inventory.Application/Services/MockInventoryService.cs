@@ -83,4 +83,60 @@ public class MockInventoryService : IInventoryService
     {
         return Task.FromResult(Enumerable.Empty<StockItemDto>());
     }
+
+    public Task<IEnumerable<StockItemDto>> GetAllStockItemsAsync()
+    {
+        return Task.FromResult(Enumerable.Empty<StockItemDto>());
+    }
+
+    public Task<IEnumerable<WarehouseDto>> GetAllWarehousesAsync()
+    {
+        return Task.FromResult(Enumerable.Empty<WarehouseDto>());
+    }
+
+    public Task<WarehouseDto?> GetWarehouseByIdAsync(Guid id)
+    {
+        return Task.FromResult<WarehouseDto?>(null);
+    }
+
+    public Task<bool> DeleteWarehouseAsync(Guid id)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<IEnumerable<SupplierDto>> GetAllSuppliersAsync()
+    {
+        return Task.FromResult(Enumerable.Empty<SupplierDto>());
+    }
+
+    public Task<bool> DeleteSupplierAsync(Guid id)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<IEnumerable<PurchaseOrderDto>> GetAllPurchaseOrdersAsync()
+    {
+        return Task.FromResult(Enumerable.Empty<PurchaseOrderDto>());
+    }
+
+    public Task<bool> DeletePurchaseOrderAsync(Guid id)
+    {
+        return Task.FromResult(true);
+    }
+
+    public Task<PurchaseOrderDto> ReceivePurchaseOrderAsync(Guid id)
+    {
+        // Return a minimal PO to prevent null refs
+        return Task.FromResult(new PurchaseOrderDto
+        {
+            Id = id,
+            OrderNumber = "MOCK-PO",
+            Status = "Received"
+        });
+    }
+
+    public Task<IEnumerable<InventoryTransactionDto>> GetAllInventoryTransactionsAsync()
+    {
+        return Task.FromResult(Enumerable.Empty<InventoryTransactionDto>());
+    }
 }
