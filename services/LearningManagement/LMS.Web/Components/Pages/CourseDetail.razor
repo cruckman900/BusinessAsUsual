@@ -1,0 +1,180 @@
+@page "/courses/{id:guid}"
+@using LMS.Domain.Repositories
+@inject ICourseRepository CourseRepository
+@inject NavigationManager Navigation
+
+<PageTitle>@(course?.Title ?? "Course") - LMS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="mt-2">Loading course...</MudText>
+    }
+    else if (course == null)
+    {
+        <MudAlert Severity="Severity.Error">Course not found</MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-3"
+                   OnClick="@(() => Navigation.NavigateTo("/courses"))">
+            Back to Courses
+        </MudButton>
+    }
+    else
+    {
+        <!-- Course Header -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudText Typo="Typo.h3" Class="mb-2">@course.Title</MudText>
+            <MudText Typo="Typo.body1" Class="mb-3">@course.Description</MudText>
+
+            <MudStack Row="true" Spacing="2" Class="mb-3">
+                <MudChip T="string" Size="Size.Medium" Color="@GetStatusColor(course.Status)">
+                    @course.Status.ToString()
+                </MudChip>
+                <MudChip T="string" Size="Size.Medium" Color="@GetDifficultyColor(course.Difficulty)" Icon="@Icons.Material.Filled.TrendingUp">
+                    @course.Difficulty.ToString()
+                </MudChip>
+                <MudChip T="string" Size="Size.Medium" Color="Color.Info" Icon="@Icons.Material.Filled.Schedule">
+                    @course.EstimatedDurationMinutes min
+                </MudChip>
+                @if (course.IssuesCertificate)
+                {
+                    <MudChip T="string" Size="Size.Medium" Color="Color.Success" Icon="@Icons.Material.Filled.CardMembership">
+                        Certificate Issued
+                    </MudChip>
+                }
+            </MudStack>
+
+            <MudDivider Class="my-3" />
+
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        <strong>Category:</strong> @(course.Category ?? "General")
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        <strong>Created:</strong> @course.CreatedAt.ToString("MMM dd, yyyy")
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Course Content -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudText Typo="Typo.h5" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-2" />
+                Course Content
+            </MudText>
+
+            @if (course.Modules?.Any() == true)
+            {
+                <MudList T="string">
+                    @foreach (var module in course.Modules.OrderBy(m => m.OrderIndex))
+                    {
+                        <MudListItem>
+                            <MudPaper Elevation="1" Class="pa-3 mb-2">
+                                <MudText Typo="Typo.h6" Class="mb-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Class="mr-1" />
+                                    Module @module.OrderIndex: @module.Title
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                    @module.Description
+                                </MudText>
+
+                                @if (module.Lessons?.Any() == true)
+                                {
+                                    <MudDivider Class="my-2" />
+                                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="mb-1">
+                                        📖 @module.Lessons.Count Lessons
+                                    </MudText>
+                                    <MudList Dense="true">
+                                        @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                                        {
+                                            <MudListItem Icon="@Icons.Material.Filled.Article" IconSize="Size.Small">
+                                                <MudText Typo="Typo.body2">@lesson.Title</MudText>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudPaper>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">
+                    This course doesn't have any modules yet.
+                </MudAlert>
+            }
+        </MudPaper>
+
+        <!-- Action Buttons -->
+        <MudPaper Elevation="2" Class="pa-4">
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.PlayArrow"
+                           Size="Size.Large">
+                    Start Course
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" 
+                           StartIcon="@Icons.Material.Filled.Edit"
+                           OnClick="@(() => Navigation.NavigateTo($"/builder/{course.Id}"))">
+                    Edit in Builder
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Default" 
+                           OnClick="@(() => Navigation.NavigateTo("/courses"))">
+                    Back to Catalog
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private LMS.Domain.Entities.Course? course;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            course = await CourseRepository.GetWithFullStructureAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading course: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Color GetStatusColor(LMS.Domain.Entities.CourseStatus status)
+    {
+        return status switch
+        {
+            LMS.Domain.Entities.CourseStatus.Published => Color.Success,
+            LMS.Domain.Entities.CourseStatus.Draft => Color.Warning,
+            LMS.Domain.Entities.CourseStatus.Archived => Color.Default,
+            _ => Color.Info
+        };
+    }
+
+    private Color GetDifficultyColor(LMS.Domain.Entities.CourseDifficulty difficulty)
+    {
+        return difficulty switch
+        {
+            LMS.Domain.Entities.CourseDifficulty.Beginner => Color.Success,
+            LMS.Domain.Entities.CourseDifficulty.Intermediate => Color.Info,
+            LMS.Domain.Entities.CourseDifficulty.Advanced => Color.Warning,
+            LMS.Domain.Entities.CourseDifficulty.Expert => Color.Error,
+            _ => Color.Default
+        };
+    }
+}

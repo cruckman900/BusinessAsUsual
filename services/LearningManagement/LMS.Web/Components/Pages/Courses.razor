@@ -1,0 +1,88 @@
+@page "/courses"
+@using LMS.Domain.Repositories
+@inject ICourseRepository CourseRepository
+
+<PageTitle>Course Catalog</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h3" Class="mb-4">📚 Course Catalog</MudText>
+
+    @if (courses == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="mt-2">Loading courses...</MudText>
+    }
+    else if (!courses.Any())
+    {
+        <MudAlert Severity="Severity.Info">
+            No courses available yet. Check back later!
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var course in courses)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@course.Title</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="GetDifficultyColor(course.Difficulty)">
+                                    @course.Difficulty.ToString()
+                                </MudChip>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Class="mb-2">
+                                @course.Description
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Duration: ~@course.EstimatedDurationMinutes min
+                            </MudText>
+                            <MudDivider Class="my-2" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @course.Modules.Count modules
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" 
+                                       Href="@($"/builder/{course.Id}")">
+                                View in Builder
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<LMS.Domain.Entities.Course>? courses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var publishedCourses = await CourseRepository.GetPublishedCoursesAsync();
+            courses = publishedCourses.ToList();
+        }
+        catch (Exception ex)
+        {
+            // Log error
+            courses = new List<LMS.Domain.Entities.Course>();
+        }
+    }
+
+    private Color GetDifficultyColor(LMS.Domain.Entities.CourseDifficulty difficulty)
+    {
+        return difficulty switch
+        {
+            LMS.Domain.Entities.CourseDifficulty.Beginner => Color.Success,
+            LMS.Domain.Entities.CourseDifficulty.Intermediate => Color.Warning,
+            LMS.Domain.Entities.CourseDifficulty.Advanced => Color.Error,
+            _ => Color.Default
+        };
+    }
+}

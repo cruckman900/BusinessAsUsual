@@ -1,0 +1,190 @@
+@page "/lms/my-certificates"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using global::LMS.Application.Common
+@using global::LMS.Application.Features.Learning.Queries
+@using global::LMS.Domain.Entities
+@using Microsoft.AspNetCore.Components.Authorization
+@using Platform.Web.Components.Shared
+@layout MainLayout
+@inherits LMSLandingBase
+@inject global::LMS.Application.Common.IQueryHandler<global::LMS.Application.Features.Learning.Queries.GetMyCertificatesQuery, List<global::LMS.Domain.Entities.Certificate>> CertificatesQueryHandler
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
+@inject IConfiguration Config
+
+<PageTitle>My Certificates - Learning</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.CardMembership" Class="mr-2" />
+                My Certificates
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">View and download your earned certificates</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    @if (certificates.Any())
+    {
+        <MudGrid>
+            @foreach (var cert in certificates)
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Class="mb-3" Elevation="3">
+                        <MudCardContent>
+                            <div class="d-flex justify-space-between align-center mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.CardMembership" Size="Size.Large" Color="Color.Primary" />
+                                <MudChip T="string" Size="Size.Small" Color="@GetCertificateStatusColor(cert.Status)">
+                                    @cert.Status
+                                </MudChip>
+                            </div>
+
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                @cert.Course?.Title
+                            </MudText>
+
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                <strong>Certificate #:</strong> @cert.CertificateNumber
+                            </MudText>
+
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                <strong>Issued:</strong> @cert.IssuedDate.ToString("MMMM dd, yyyy")
+                            </MudText>
+
+                            @if (cert.ExpirationDate.HasValue)
+                            {
+                                var isExpired = cert.ExpirationDate.Value < DateTime.UtcNow;
+                                <MudText Typo="Typo.body2" Color="@(isExpired ? Color.Error : Color.Success)" Class="mb-2">
+                                    <strong>@(isExpired ? "Expired:" : "Valid Until:"):</strong> @cert.ExpirationDate.Value.ToString("MMMM dd, yyyy")
+                                </MudText>
+                            }
+
+                            @if (cert.Score.HasValue)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    <strong>Score:</strong> @cert.Score.Value.ToString("F0")%
+                                </MudText>
+                            }
+                        </MudCardContent>
+                        <MudCardActions>
+                            @if (!string.IsNullOrEmpty(cert.CertificateUrl))
+                            {
+                                <MudButton 
+                                    Variant="Variant.Text" 
+                                    Color="Color.Primary" 
+                                    StartIcon="@Icons.Material.Filled.Download"
+                                    Href="@cert.CertificateUrl"
+                                    Target="_blank">
+                                    Download
+                                </MudButton>
+                            }
+                            <MudButton 
+                                Variant="Variant.Text" 
+                                Color="Color.Secondary" 
+                                StartIcon="@Icons.Material.Filled.Visibility"
+                                Href="@GetCertificateViewUrl(cert.Id)"
+                                Target="_blank">
+                                View
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.CardMembership" Size="Size.Large" Color="Color.Secondary" Class="mb-3" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">No Certificates Yet</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                Complete courses to earn certificates that demonstrate your skills and knowledge.
+            </MudText>
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                StartIcon="@Icons.Material.Filled.School"
+                Href="/lms/my-courses"
+                Class="mt-4">
+                View My Courses
+            </MudButton>
+        </MudPaper>
+    }
+}
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private List<global::LMS.Domain.Entities.Certificate> certificates = new();
+    private string _employeeId = string.Empty;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() 
+        { 
+            Text = "Learning", 
+            Href = "/lms",
+            Icon = Icons.Material.Filled.School
+        },
+        new() { Text = "My Certificates", Href = "/lms/my-certificates" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                _employeeId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                    ?? user.Identity.Name ?? string.Empty;
+
+                var query = new global::LMS.Application.Features.Learning.Queries.GetMyCertificatesQuery
+                {
+                    EmployeeId = _employeeId,
+                    ActiveOnly = false
+                };
+
+                certificates = await CertificatesQueryHandler.HandleAsync(query);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading certificates: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Color GetCertificateStatusColor(global::LMS.Domain.Entities.CertificateStatus status) => status switch
+    {
+        global::LMS.Domain.Entities.CertificateStatus.Active => Color.Success,
+        global::LMS.Domain.Entities.CertificateStatus.Expired => Color.Error,
+        global::LMS.Domain.Entities.CertificateStatus.Revoked => Color.Dark,
+        _ => Color.Default
+    };
+
+    private string GetCertificateViewUrl(Guid certificateId)
+    {
+        // Use the integrated app's certificate endpoint
+        return $"/certificates/{certificateId}";
+    }
+}
+

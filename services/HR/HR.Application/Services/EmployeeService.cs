@@ -206,6 +206,22 @@ public class EmployeeService : IEmployeeService
             ManagedDepartmentNames = employee.ManagedDepartments
                 .Where(dm => dm.EndDate == null)
                 .Select(dm => dm.Department?.Name ?? "Unknown")
+                .ToList(),
+
+            // Training completions from LMS
+            TrainingCompletions = employee.TrainingCompletions
+                .OrderByDescending(tc => tc.CompletionDate)
+                .Select(tc => new TrainingCompletionDto
+                {
+                    Id = tc.Id,
+                    CourseId = tc.CourseId,
+                    CourseName = tc.CourseName,
+                    CompletionDate = tc.CompletionDate,
+                    Score = tc.Score,
+                    CertificateNumber = tc.CertificateNumber,
+                    TimeSpentMinutes = tc.TimeSpentMinutes,
+                    RecordedAt = tc.RecordedAt
+                })
                 .ToList()
         };
     }

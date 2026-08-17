@@ -4,20 +4,23 @@
 @using Microsoft.AspNetCore.Components.Web
 @using BusinessAsUsual.Web.Components
 @using System.Reflection
+@using Microsoft.AspNetCore.Components.Authorization
 
-<ErrorBoundaryLogger>
-    <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="@_additionalAssemblies">
-        <Found Context="routeData">
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        </Found>
-        <NotFound>
-            <PageTitle>404 - Page Not Found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <NotFound />
-            </LayoutView>
-        </NotFound>
-    </Router>
-</ErrorBoundaryLogger>
+<CascadingAuthenticationState>
+    <ErrorBoundaryLogger>
+        <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="@_additionalAssemblies">
+            <Found Context="routeData">
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            </Found>
+            <NotFound>
+                <PageTitle>404 - Page Not Found</PageTitle>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <NotFound />
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ErrorBoundaryLogger>
+</CascadingAuthenticationState>
 
 @code {
     private readonly Assembly[] _additionalAssemblies = new[]

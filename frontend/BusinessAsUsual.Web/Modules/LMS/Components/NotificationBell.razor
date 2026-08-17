@@ -1,0 +1,228 @@
+@using global::LMS.Application.Common
+@using global::LMS.Application.Features.Notifications.Queries
+@using global::LMS.Domain.Entities
+@using Microsoft.AspNetCore.Components.Authorization
+@inject global::LMS.Application.Common.IQueryHandler<global::LMS.Application.Features.Notifications.Queries.GetMyNotificationsQuery, List<global::LMS.Domain.Entities.Notification>> NotificationQueryHandler
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<MudBadge Content="@_unreadCount" Color="Color.Error" Overlap="true" Visible="@(_unreadCount > 0)">
+    <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                   Color="Color.Inherit" 
+                   OnClick="@ToggleNotifications" />
+</MudBadge>
+
+<MudPopover Open="@_isOpen" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Class="notification-popover">
+    <MudPaper Elevation="8" Class="pa-0" Style="width: 400px; max-height: 600px;">
+        <MudToolBar Dense="true">
+            <MudText Typo="Typo.h6">Notifications</MudText>
+            <MudSpacer />
+            @if (_notifications.Any(n => !n.IsRead))
+            {
+                <MudButton Size="Size.Small" 
+                           Color="Color.Primary" 
+                           Variant="Variant.Text" 
+                           OnClick="@MarkAllAsRead">
+                    Mark All Read
+                </MudButton>
+            }
+            <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                           Size="Size.Small" 
+                           OnClick="@ToggleNotifications" />
+        </MudToolBar>
+
+        <MudDivider />
+
+        <div style="max-height: 500px; overflow-y: auto;">
+            @if (_loading)
+            {
+                <div class="pa-4 text-center">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                </div>
+            }
+            else if (!_notifications.Any())
+            {
+                <div class="pa-6 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">No notifications yet</MudText>
+                </div>
+            }
+            else
+            {
+                @foreach (var notification in _notifications)
+                {
+                    <MudPaper Elevation="0" 
+                              Class="@($"notification-item {(!notification.IsRead ? "unread" : "")}")" 
+                              @onclick="@(() => HandleNotificationClick(notification))">
+                        <div class="d-flex align-center pa-3">
+                            <MudIcon Icon="@GetNotificationIcon(notification.Type)" 
+                                     Color="@GetNotificationColor(notification.Priority)" 
+                                     Class="mr-3" />
+                            <div class="flex-grow-1">
+                                <MudText Typo="Typo.subtitle2" Class="@(!notification.IsRead ? "font-weight-bold" : "")">
+                                    @notification.Title
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.85rem;">
+                                    @notification.Message
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @GetTimeAgo(notification.CreatedAt)
+                                </MudText>
+                            </div>
+                            @if (!notification.IsRead)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.FiberManualRecord" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Small" />
+                            }
+                        </div>
+                        <MudDivider />
+                    </MudPaper>
+                }
+            }
+        </div>
+    </MudPaper>
+</MudPopover>
+
+<style>
+    .notification-popover {
+        z-index: 1400;
+    }
+
+    .notification-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+        background-color: var(--mud-palette-action-default-hover);
+    }
+
+    .notification-item.unread {
+        background-color: var(--mud-palette-primary-lighten);
+    }
+</style>
+
+@code {
+    private bool _isOpen = false;
+    private bool _loading = true;
+    private List<global::LMS.Domain.Entities.Notification> _notifications = new();
+    private int _unreadCount = 0;
+    private string _employeeId = string.Empty;
+    private System.Threading.Timer? _refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            _employeeId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                ?? user.Identity.Name ?? string.Empty;
+
+            await LoadNotifications();
+
+            // Refresh every 30 seconds
+            _refreshTimer = new System.Threading.Timer(async _ => await InvokeAsync(async () =>
+            {
+                await LoadNotifications();
+                StateHasChanged();
+            }), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+
+        _loading = false;
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            var query = new global::LMS.Application.Features.Notifications.Queries.GetMyNotificationsQuery
+            {
+                EmployeeId = _employeeId,
+                UnreadOnly = false
+            };
+
+            _notifications = await NotificationQueryHandler.HandleAsync(query);
+            _unreadCount = _notifications.Count(n => !n.IsRead);
+        }
+        catch
+        {
+            // Silently fail for now
+        }
+    }
+
+    private void ToggleNotifications()
+    {
+        _isOpen = !_isOpen;
+    }
+
+    private async Task HandleNotificationClick(global::LMS.Domain.Entities.Notification notification)
+    {
+        // Mark as read
+        if (!notification.IsRead)
+        {
+            // TODO: Call mark as read command
+            notification.IsRead = true;
+            _unreadCount--;
+        }
+
+        // Navigate if there's an action URL
+        if (!string.IsNullOrEmpty(notification.ActionUrl))
+        {
+            NavigationManager.NavigateTo(notification.ActionUrl);
+        }
+
+        _isOpen = false;
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        // TODO: Call mark all as read command
+        foreach (var notification in _notifications.Where(n => !n.IsRead))
+        {
+            notification.IsRead = true;
+        }
+        _unreadCount = 0;
+    }
+
+    private string GetNotificationIcon(global::LMS.Domain.Entities.NotificationType type) => type switch
+    {
+        global::LMS.Domain.Entities.NotificationType.CourseAssigned => Icons.Material.Filled.Assignment,
+        global::LMS.Domain.Entities.NotificationType.CourseStarted => Icons.Material.Filled.PlayArrow,
+        global::LMS.Domain.Entities.NotificationType.CourseCompleted => Icons.Material.Filled.CheckCircle,
+        global::LMS.Domain.Entities.NotificationType.CertificateIssued => Icons.Material.Filled.CardMembership,
+        global::LMS.Domain.Entities.NotificationType.QuizPassed => Icons.Material.Filled.ThumbUp,
+        global::LMS.Domain.Entities.NotificationType.QuizFailed => Icons.Material.Filled.ThumbDown,
+        global::LMS.Domain.Entities.NotificationType.AssignmentDueSoon => Icons.Material.Filled.Schedule,
+        global::LMS.Domain.Entities.NotificationType.AssignmentOverdue => Icons.Material.Filled.Warning,
+        global::LMS.Domain.Entities.NotificationType.CertificateExpiring => Icons.Material.Filled.Event,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private Color GetNotificationColor(global::LMS.Domain.Entities.NotificationPriority priority) => priority switch
+    {
+        global::LMS.Domain.Entities.NotificationPriority.Urgent => Color.Error,
+        global::LMS.Domain.Entities.NotificationPriority.High => Color.Warning,
+        global::LMS.Domain.Entities.NotificationPriority.Normal => Color.Primary,
+        _ => Color.Default
+    };
+
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+
+        if (timeSpan.TotalMinutes < 1) return "Just now";
+        if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours}h ago";
+        if (timeSpan.TotalDays < 7) return $"{(int)timeSpan.TotalDays}d ago";
+        return dateTime.ToString("MMM dd");
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

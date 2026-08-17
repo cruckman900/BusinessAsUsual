@@ -1,14 +1,26 @@
 ﻿@* OLD HARDCODED PAGE - Route removed to avoid conflict with injected HR.Web module *@
 @* @page "/hr/onboarding" *@
-
 @using BusinessAsUsual.Web.Modules.HR.Services
 @using BusinessAsUsual.Web.Modules.HR.Components
 @using BusinessAsUsual.Web.Modules._Shared
-
+@using Platform.Web.Components.Shared
 @inherits HRLandingBase
-@inject PageHeaderService HeaderService
-
 @inject IHRService HRService
+
+<PageTitle>Onboard Employee - HR</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                Onboard Employee
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Start the onboarding process for a new hire</MudText>
+        </div>
+    </div>
 
 <MudPaper Class="pa-4">
     <MudStepper>
@@ -24,19 +36,16 @@
         </MudStep>
     </MudStepper>
 </MudPaper>
+</MudContainer>
 
 @code {
     private string _position = "";
     private string _department = "";
 
-    private RenderFragment HeaderContent =>@<PageHeader
-            Title="Onboard Employee"
-            Description="Start the onboarding process for a new hire."
-            Breadcrumbs="@(BuildBreadCrumbs("Onboard Employee"))" />
-    ;
-
-    protected override void OnInitialized()
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
     {
-        HeaderService.SetHeader(HeaderContent);
-    }
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Human Resources", Href = "/hr", Icon = Icons.Material.Filled.People },
+        new() { Text = "Onboard Employee", Href = "/hr/onboarding" }
+    };
 }

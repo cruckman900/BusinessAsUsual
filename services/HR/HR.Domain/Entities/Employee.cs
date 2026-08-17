@@ -57,6 +57,7 @@ public class Employee
     public ICollection<EmployeeDepartment> EmployeeDepartments { get; set; } = new List<EmployeeDepartment>();
     public ICollection<DepartmentManager> ManagedDepartments { get; set; } = new List<DepartmentManager>();
     public ICollection<Employee> DirectReports { get; set; } = new List<Employee>();
+    public ICollection<TrainingCompletion> TrainingCompletions { get; set; } = new List<TrainingCompletion>();
 
     // Computed Properties
     public string FullName => $"{FirstName} {LastName}";

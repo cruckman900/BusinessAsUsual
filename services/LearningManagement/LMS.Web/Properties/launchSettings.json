@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "LMS.Web": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59171;http://localhost:59173"
+    }
+  }
+}

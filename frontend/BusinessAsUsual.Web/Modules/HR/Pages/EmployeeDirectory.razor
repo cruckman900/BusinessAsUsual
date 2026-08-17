@@ -1,36 +1,73 @@
 ﻿@page "/hr/directory"
-
-@inherits HRLandingBase
-@inject PageHeaderService HeaderService
-
 @using BusinessAsUsual.Web.Modules.HR.Services
 @using BusinessAsUsual.Web.Modules._Shared
+@using Platform.Web.Components.Shared
+@inherits HRLandingBase
 @inject IHRService HRService
 
-<MudTable Items="_employees">
-    <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Department</MudTh>
-        <MudTh>Email</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Department">@context.Department</MudTd>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
-    </RowTemplate>
-</MudTable>
+<PageTitle>Employee Directory - HR</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                Employee Directory
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Browse and manage employee records</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <MudTable Items="_employees" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>First Name</MudTh>
+            <MudTh>Last Name</MudTh>
+            <MudTh>Department</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+            <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+            <MudTd DataLabel="Department">@context.Department</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Primary" 
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Visibility"
+                           Href="@($"/hr/employees/{context.Id}")">
+                    Details
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+</MudContainer>
 
 @code {
+    private bool isLoading = true;
     private IEnumerable<Employee> _employees = Enumerable.Empty<Employee>();
 
-    private RenderFragment HeaderContent =>@<PageHeader Title="Employee Directory"
-            Description="Browse and manage employee records."
-            Breadcrumbs="@(BuildBreadCrumbs("Employee Directory"))" />
-    ;
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Human Resources", Href = "/hr", Icon = Icons.Material.Filled.People },
+        new() { Text = "Employee Directory", Href = "/hr/directory" }
+    };
 
     protected override async Task OnInitializedAsync()
     {
+        base.OnInitialized();
         _employees = await HRService.GetEmployeesAsync();
-        HeaderService.SetHeader(HeaderContent);
+        isLoading = false;
     }
 }

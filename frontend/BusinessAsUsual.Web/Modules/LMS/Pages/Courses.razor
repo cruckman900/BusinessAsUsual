@@ -1,0 +1,113 @@
+@page "/lms/courses"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Services
+@using Platform.Web.Components.Shared
+@layout MainLayout
+@inherits LMSLandingBase
+@inject ILMSService LMSService
+@inject IConfiguration Configuration
+
+<PageTitle>Course Catalog - Learning</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Class="mr-2" />
+                Course Catalog
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Browse all available training courses</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else if (!courses.Any())
+{
+    <MudPaper Class="pa-8 text-center" Elevation="2">
+        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Color="Color.Secondary" />
+        <MudText Typo="Typo.h6" Class="mt-4">No courses available yet</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Check back soon for new training opportunities!</MudText>
+    </MudPaper>
+}
+else
+{
+    <MudGrid Spacing="3">
+        @foreach (var course in courses)
+        {
+            <MudItem xs="12" md="6" lg="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6" Class="mb-2">@course.Title</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                            @course.Description
+                        </MudText>
+                        <MudStack Row="true" Spacing="2">
+                            <MudChip T="string" Size="Size.Small" Color="@GetDifficultyColor(course.DifficultyLevel)">
+                                @course.DifficultyLevel
+                            </MudChip>
+                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Timer">
+                                @FormatDuration(course.EstimatedDuration)
+                            </MudChip>
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton 
+                            Variant="Variant.Text" 
+                            Color="Color.Primary"
+                            Href="@($"/lms/courses/{course.Id}")"
+                            StartIcon="@Icons.Material.Filled.PlayArrow">
+                            View Details
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+            </MudGrid>
+    }
+    </MudContainer>
+
+    @code {
+        private bool isLoading = true;
+        private List<CourseDto> courses = new();
+
+        private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+        {
+            new() { Text = "Dashboard", Href = "/dashboard" },
+            new() 
+            { 
+                Text = "Learning", 
+                Href = "/lms",
+                Icon = Icons.Material.Filled.School
+            },
+            new() { Text = "Course Catalog", Href = "/lms/courses" }
+        };
+
+        protected override async Task OnInitializedAsync()
+        {
+            base.OnInitialized();
+            var result = await LMSService.GetPublishedCoursesAsync();
+            courses = result.ToList();
+            isLoading = false;
+        }
+
+    private Color GetDifficultyColor(string difficulty) => difficulty switch
+    {
+        "Beginner" => Color.Success,
+        "Intermediate" => Color.Info,
+        "Advanced" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalHours >= 1)
+            return $"{duration.TotalHours:F0}h";
+        return $"{duration.TotalMinutes:F0}m";
+    }
+}

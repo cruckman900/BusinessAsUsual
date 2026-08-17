@@ -51,8 +51,11 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 // + HR timekeeping. Time-clock punches are recorded into an in-memory (EF-ready)
 // store and published as integration events; on an end-of-day punch HR closes the
 // timesheet and publishes TimesheetSubmitted so Finance can hold it as pending
-// payroll. HR is a publisher only, so no handlers are declared here.
-builder.Services.AddEventBus(builder.Configuration, _ => { });
+// payroll. HR also consumes CourseCompletedEvent from LMS to track employee training.
+builder.Services.AddEventBus(builder.Configuration, bus =>
+{
+    bus.AddHandler<HR.Application.EventHandlers.CourseCompletedEvent, HR.Application.EventHandlers.CourseCompletedEventHandler>();
+});
 builder.Services.AddSingleton<TimekeepingDataStore>();
 builder.Services.AddScoped<ITimekeepingService, TimekeepingService>();
 

@@ -22,10 +22,10 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
         /// <summary>
         /// Asynchronously retrieves the employee record with the specified unique identifier.
         /// </summary>
-        /// <param name="id">The unique identifier of the employee to retrieve. Must be a positive integer.</param>
+        /// <param name="id">The unique identifier of the employee to retrieve.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="Employee"/>
         /// instance if found; otherwise, <c>null</c>.</returns>
-        Task<Employee?> GetEmployeeByIdAsync(int id);
+        Task<Employee?> GetEmployeeByIdAsync(Guid id);
 
         /// <summary>
         /// Asynchronously adds a new employee to the data store.
@@ -48,10 +48,11 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
     /// Represents an employee with identifying information and department assignment.
     /// </summary>
     /// <param name="Id">The unique identifier for the employee.</param>
-    /// <param name="Name">The full name of the employee.</param>
+    /// <param name="FirstName">The first name of the employee.</param>
+    /// <param name="LastName">The last name of the employee.</param>
     /// <param name="Department">The name of the department to which the employee is assigned.</param>
     /// <param name="Email">The email address of the employee.</param>
-    public record Employee(int Id, string Name, string Department, string Email);
+    public record Employee(Guid Id, string FirstName, string LastName, string Department, string Email);
 
     /// <summary>
     /// Represents a feature or service with a name and an enabled state.

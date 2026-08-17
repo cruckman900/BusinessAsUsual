@@ -1,0 +1,226 @@
+@page "/admin"
+@using LMS.Domain.Repositories
+@inject ICourseRepository CourseRepository
+@inject IAssignmentRepository AssignmentRepository
+@inject ICourseCompletionRepository CompletionRepository
+
+<PageTitle>LMS Admin Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h3" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+        Learning Management System - Admin Dashboard
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    }
+
+    <MudGrid>
+        <!-- Quick Stats -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.h4">@totalCourses</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Courses</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Large" Color="Color.Primary" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.h4">@activeAssignments</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Assignments</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Info" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.h4">@totalCompletions</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Completions</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <MudText Typo="Typo.h4">@completionRate%</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Completion Rate</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Warning" />
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Quick Actions -->
+        <MudItem xs="12">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-3">⚡ Quick Actions</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   Href="/admin/courses/create">
+                            Create New Course
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Info" 
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.AssignmentInd"
+                                   Href="/admin/assignments">
+                            Manage Assignments
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Secondary" 
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.People"
+                                   Href="/admin/learners">
+                            View Learners
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Tertiary" 
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Assessment"
+                                   Href="/admin/reports">
+                            View Reports
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Recent Activity -->
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 400px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-3">📋 Recent Courses</MudText>
+                @if (recentCourses?.Any() == true)
+                {
+                    <MudList T="string">
+                        @foreach (var course in recentCourses.Take(5))
+                        {
+                            <MudListItem T="string">
+                                <div class="d-flex justify-space-between align-center">
+                                    <div>
+                                        <MudText Typo="Typo.body1">@course.Title</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @course.Status.ToString() • @(course.UpdatedAt?.ToShortDateString() ?? "N/A")
+                                        </MudText>
+                                    </div>
+                                    <MudButton Size="Size.Small" 
+                                               Variant="Variant.Text" 
+                                               Color="Color.Primary"
+                                               Href="@($"/admin/courses/{course.Id}")">
+                                        Edit
+                                    </MudButton>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">No courses yet. Create your first course!</MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 400px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-3">🎓 Recent Completions</MudText>
+                @if (recentCompletions?.Any() == true)
+                {
+                    <MudList T="string">
+                        @foreach (var completion in recentCompletions.Take(5))
+                        {
+                            <MudListItem T="string">
+                                <div>
+                                    <MudText Typo="Typo.body1">
+                                        Employee @completion.EmployeeId completed training
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Score: @completion.FinalScore% • @completion.CompletedAt.ToString("MMM dd")
+                                    </MudText>
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">No completions yet.</MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private int totalCourses = 0;
+    private int activeAssignments = 0;
+    private int totalCompletions = 0;
+    private int completionRate = 0;
+
+    private List<LMS.Domain.Entities.Course>? recentCourses;
+    private List<LMS.Domain.Entities.CourseCompletion>? recentCompletions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Load stats
+            var allCourses = await CourseRepository.GetAllAsync();
+            totalCourses = allCourses.Count();
+            recentCourses = allCourses.OrderByDescending(c => c.UpdatedAt).ToList();
+
+            // Placeholder for assignments count
+            this.activeAssignments = 0;
+
+            // For completions, we'll implement these when we have better query methods
+            totalCompletions = 0;
+            recentCompletions = new List<LMS.Domain.Entities.CourseCompletion>();
+            completionRate = 0;
+        }
+        catch (Exception)
+        {
+            // Handle error
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

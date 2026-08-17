@@ -1,0 +1,378 @@
+@page "/lms/admin/courses/{courseId:guid}/builder"
+@rendermode InteractiveServer
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using Platform.Web.Components.Shared
+@using global::LMS.Domain.Repositories
+@using global::LMS.Domain.Entities
+@using BusinessAsUsual.Web.Modules.LMS.Components
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@layout MainLayout
+@inherits LMSLandingBase
+@inject ICourseRepository CourseRepository
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Course Builder - @(course?.Title ?? "Loading...")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    @if (course == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="mt-2">Loading course builder...</MudText>
+    }
+    else
+    {
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudText Typo="Typo.h4" Class="mb-2">
+                🎨 Course Builder: @course.Title
+            </MudText>
+            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(course.Status)">
+                @course.Status.ToString()
+            </MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Info">
+                @course.Difficulty.ToString()
+            </MudChip>
+        </MudPaper>
+
+        <MudGrid>
+            <!-- Left Panel - Course Structure -->
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="2" Class="pa-4" Style="height: 70vh; overflow-y: auto;">
+                    <MudText Typo="Typo.h6" Class="mb-3">📋 Course Structure</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-2" Color="Color.Secondary">
+                        @course.Modules.Count modules
+                    </MudText>
+
+                    @if (course.Modules?.Any() == true)
+                    {
+                        @foreach (var module in course.Modules.OrderBy(m => m.OrderIndex))
+                        {
+                            <MudPaper Elevation="1" Class="pa-3 mb-3">
+                                <MudText Typo="Typo.h6">@module.Title</MudText>
+                                <MudText Typo="Typo.body2" Class="mb-2">@module.Description</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Order: @module.OrderIndex
+                                </MudText>
+
+                                @if (module.Lessons?.Any() == true)
+                                {
+                                    <MudDivider Class="my-2" />
+                                    <MudText Typo="Typo.caption" Color="Color.Primary">
+                                        📖 @module.Lessons.Count lessons
+                                    </MudText>
+                                    @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                                    {
+                                        <MudButton Variant="Variant.Text" Size="Size.Small" 
+                                                   OnClick="@(() => SelectLesson(lesson))"
+                                                   FullWidth="true" Class="mt-1"
+                                                   Color="@(selectedLesson?.Id == lesson.Id ? Color.Primary : Color.Default)">
+                                            @lesson.Title
+                                        </MudButton>
+                                    }
+                                }
+                            </MudPaper>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info">
+                            No modules yet. Add your first module to get started!
+                        </MudAlert>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Right Panel - Content Editor -->
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="2" Class="pa-4" Style="height: 70vh; overflow-y: auto;">
+                    @if (selectedLesson != null)
+                    {
+                        <MudText Typo="Typo.h5" Class="mb-3">
+                            ✏️ @selectedLesson.Title
+                        </MudText>
+                        <MudText Typo="Typo.body1" Class="mb-2">@selectedLesson.Description</MudText>
+                        <MudDivider Class="my-3" />
+
+                        <MudTabs Elevation="2" Rounded="true" PanelClass="pa-3" @bind-ActivePanelIndex="_activeTabIndex">
+                            <MudTabPanel Text="Content Blocks" Icon="@Icons.Material.Filled.Article">
+
+
+                        @if (selectedLesson.ContentBlocks?.Any() == true)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
+                                @selectedLesson.ContentBlocks.Count content blocks
+                            </MudText>
+
+                            @foreach (var block in selectedLesson.ContentBlocks.OrderBy(b => b.OrderIndex))
+                            {
+                                <ContentBlockEditor BlockType="@block.BlockType"
+                                                   JsonContent="@block.JsonContent"
+                                                   OnDelete="@(() => DeleteBlock(block))"
+                                                   OnContentChanged="@((json) => UpdateBlockContent(block, json))" />
+                            }
+
+                            <MudStack Row="true" Spacing="2" Class="mt-3">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Primary" 
+                                          StartIcon="@Icons.Material.Filled.Add"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Text))">
+                                    Add Text
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Primary" 
+                                          StartIcon="@Icons.Material.Filled.Title"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Heading))">
+                                    Add Heading
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Info" 
+                                          StartIcon="@Icons.Material.Filled.Info"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Callout))">
+                                    Add Callout
+                                </MudButton>
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mb-3">
+                                No content blocks yet. Start building your lesson!
+                            </MudAlert>
+
+                            <MudStack Row="true" Spacing="2">
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Primary" 
+                                          StartIcon="@Icons.Material.Filled.Add"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Text))">
+                                    Add Text
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Primary" 
+                                          StartIcon="@Icons.Material.Filled.Title"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Heading))">
+                                    Add Heading
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Info" 
+                                          StartIcon="@Icons.Material.Filled.Info"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Callout))">
+                                    Add Callout
+                                </MudButton>
+                            </MudStack>
+                        }
+                            </MudTabPanel>
+
+                            <MudTabPanel Text="Quizzes" Icon="@Icons.Material.Filled.Quiz">
+                                @if (selectedLesson.Quizzes?.Any() == true)
+                                {
+                                    @foreach (var quiz in selectedLesson.Quizzes.OrderBy(q => q.CreatedAt))
+                                    {
+                                        <QuizEditor Quiz="@quiz" 
+                                                   OnDelete="@(() => DeleteQuiz(quiz))"
+                                                   OnChange="@(() => _hasUnsavedChanges = true)" />
+                                    }
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Class="mb-3">
+                                        No quizzes yet. Add a quiz to assess learner knowledge!
+                                    </MudAlert>
+                                }
+
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Success" 
+                                          StartIcon="@Icons.Material.Filled.Add"
+                                          OnClick="AddQuiz">
+                                    Add Quiz to Lesson
+                                </MudButton>
+                            </MudTabPanel>
+                        </MudTabs>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h5" Align="Align.Center" Class="my-16" Color="Color.Secondary">
+                            👈 Select a lesson from the left to view its content
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudPaper Elevation="2" Class="pa-4 mt-4">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="flex-grow: 1;">
+                    💡 Use the rich-text editor to create and format course content.
+                </MudText>
+                @if (_hasUnsavedChanges)
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small">Unsaved Changes</MudChip>
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              StartIcon="@Icons.Material.Filled.Save"
+                              OnClick="@SaveChanges">
+                        💾 Save Changes
+                    </MudButton>
+                }
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
+                           OnClick="@(() => Navigation.NavigateTo("/lms/admin/courses"))">
+                    Back to Course Management
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid CourseId { get; set; }
+
+    private Course? course;
+    private Lesson? selectedLesson;
+    private bool _hasUnsavedChanges = false;
+    private int _activeTabIndex = 0;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            course = await CourseRepository.GetWithFullStructureAsync(CourseId);
+
+            _breadcrumbItems = new()
+            {
+                new() { Text = "Dashboard", Href = "/dashboard" },
+                new() { Text = "Learning Management", Href = "/lms" },
+                new() { Text = "Admin", Href = "/lms/admin" },
+                new() { Text = "Courses", Href = "/lms/admin/courses" },
+                new() { Text = course?.Title ?? "Builder", Href = null }
+            };
+        }
+        catch (Exception ex)
+        {
+            // Handle error - could show a snackbar notification
+            Snackbar.Add($"Failed to load course: {ex.Message}", Severity.Error);
+            Console.WriteLine($"CourseBuilder error: {ex}");
+        }
+    }
+
+    private void SelectLesson(Lesson lesson)
+    {
+        selectedLesson = lesson;
+        StateHasChanged();
+    }
+
+    private void AddBlock(ContentBlockType blockType)
+    {
+        if (selectedLesson == null) return;
+
+        var defaultContent = blockType switch
+        {
+            ContentBlockType.Heading => """{"content": "<h2>Your Heading Here</h2>"}""",
+            ContentBlockType.Callout => """{"content": "<p>💡 Important information or tip...</p>"}""",
+            _ => """{"content": "<p>Start typing your content here...</p>"}"""
+        };
+
+        var newBlock = new ContentBlock
+        {
+            Id = Guid.NewGuid(),
+            LessonId = selectedLesson.Id,
+            Lesson = selectedLesson,
+            BlockType = blockType,
+            OrderIndex = selectedLesson.ContentBlocks?.Count ?? 0,
+            JsonContent = defaultContent,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "admin" // TODO: Get from auth context
+        };
+
+        selectedLesson.ContentBlocks ??= new List<ContentBlock>();
+        selectedLesson.ContentBlocks.Add(newBlock);
+        _hasUnsavedChanges = true;
+        StateHasChanged();
+    }
+
+    private void DeleteBlock(ContentBlock block)
+    {
+        if (selectedLesson?.ContentBlocks == null) return;
+
+        selectedLesson.ContentBlocks.Remove(block);
+        _hasUnsavedChanges = true;
+        StateHasChanged();
+    }
+
+    private void UpdateBlockContent(ContentBlock block, string json)
+    {
+        block.JsonContent = json;
+        _hasUnsavedChanges = true;
+    }
+
+    private void AddQuiz()
+    {
+        if (selectedLesson == null) return;
+
+        var newQuiz = new global::LMS.Domain.Entities.Quiz
+        {
+            Id = Guid.NewGuid(),
+            LessonId = selectedLesson.Id,
+            Lesson = selectedLesson,
+            Title = "New Quiz",
+            QuizType = global::LMS.Domain.Entities.QuizType.Practice,
+            PassingScore = 70,
+            ShowResultsImmediately = true,
+            AllowReview = true,
+            Questions = new List<global::LMS.Domain.Entities.Question>(),
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "admin" // TODO: Get from auth context
+        };
+
+        selectedLesson.Quizzes ??= new List<global::LMS.Domain.Entities.Quiz>();
+        selectedLesson.Quizzes.Add(newQuiz);
+        _hasUnsavedChanges = true;
+        StateHasChanged();
+    }
+
+    private void DeleteQuiz(global::LMS.Domain.Entities.Quiz quiz)
+    {
+        if (selectedLesson?.Quizzes == null) return;
+
+        selectedLesson.Quizzes.Remove(quiz);
+        _hasUnsavedChanges = true;
+        StateHasChanged();
+    }
+
+    private async Task SaveChanges()
+    {
+        if (course == null) return;
+
+        try
+        {
+            await CourseRepository.UpdateAsync(course);
+            _hasUnsavedChanges = false;
+            StateHasChanged();
+            Snackbar.Add("✅ Course saved successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"❌ Save failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(CourseStatus status)
+    {
+        return status switch
+        {
+            CourseStatus.Published => Color.Success,
+            CourseStatus.Draft => Color.Warning,
+            CourseStatus.Archived => Color.Default,
+            _ => Color.Info
+        };
+    }
+}

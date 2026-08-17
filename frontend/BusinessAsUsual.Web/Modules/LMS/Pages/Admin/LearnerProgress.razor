@@ -1,0 +1,228 @@
+@page "/lms/admin/progress"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Services
+@using Platform.Web.Components.Shared
+@layout MainLayout
+@inherits LMSLandingBase
+@inject ILMSService LMSService
+@inject IConfiguration Config
+
+<PageTitle>Learner Progress - Learning Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                Learner Progress
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Monitor and track learner course progress</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard Class="mb-4" Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Learner Progress Tracking</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton 
+                            Variant="Variant.Filled" 
+                            Color="Color.Primary" 
+                            StartIcon="@Icons.Material.Filled.Analytics"
+                            Href="@GetStandaloneReportsUrl()"
+                            Target="_blank">
+                            View Full Reports
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                        Monitor learner progress across all courses. View detailed analytics in the standalone LMS app.
+                    </MudText>
+
+                    <MudGrid Class="mb-3">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Outlined="true">
+                                <MudCardContent Class="text-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.h4">@totalLearners</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Active Learners</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Outlined="true">
+                                <MudCardContent Class="text-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.h4">@completionRate%</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Completion Rate</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Outlined="true">
+                                <MudCardContent Class="text-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Info" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.h4">@avgTimeSpentHours h</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Avg. Time Spent</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Outlined="true">
+                                <MudCardContent Class="text-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Warning" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.h4">@certificatesIssued</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Certificates Issued</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.h6" Class="mb-3">Active Learners</MudText>
+
+                    @if (assignments.Any())
+                    {
+                        <MudTable Items="@assignments" Hover="true" Dense="true" Striped="true">
+                            <HeaderContent>
+                                <MudTh>Learner</MudTh>
+                                <MudTh>Course</MudTh>
+                                <MudTh>Progress</MudTh>
+                                <MudTh>Status</MudTh>
+                                <MudTh>Started</MudTh>
+                                <MudTh>Last Activity</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Learner">@context.UserId</MudTd>
+                                <MudTd DataLabel="Course">@context.CourseTitle</MudTd>
+                                <MudTd DataLabel="Progress">
+                                    <div style="min-width: 150px;">
+                                        <MudProgressLinear 
+                                            Color="@GetProgressColor(context.PercentComplete)" 
+                                            Value="@((double)context.PercentComplete)" 
+                                            Size="Size.Small"
+                                            Class="my-0">
+                                        </MudProgressLinear>
+                                        <MudText Typo="Typo.caption">@context.PercentComplete.ToString("F0")%</MudText>
+                                    </div>
+                                </MudTd>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                        @context.Status
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Started">
+                                    @context.AssignedDate.ToString("MMM dd, yyyy")
+                                </MudTd>
+                                <MudTd DataLabel="Last Activity">
+                                    @GetLastActivityText(context)
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center pa-4">
+                            No active learners found
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private List<AssignmentDto> assignments = new();
+    private int totalLearners = 0;
+    private int completionRate = 0;
+    private int avgTimeSpentHours = 0;
+    private int certificatesIssued = 0;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() 
+        { 
+            Text = "Learning", 
+            Href = "/lms",
+            Icon = Icons.Material.Filled.School
+        },
+        new() { Text = "Admin", Href = "/lms/admin" },
+        new() { Text = "Learner Progress", Href = "/lms/admin/progress" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        try
+        {
+            // For demo, fetch assignments as progress data
+            assignments = (await LMSService.GetUserAssignmentsAsync("demo-user")).ToList();
+
+            // Calculate stats (in a real implementation, this would be dedicated API endpoints)
+            totalLearners = assignments.Select(a => a.UserId).Distinct().Count();
+            completionRate = assignments.Any() 
+                ? (int)(assignments.Average(a => a.PercentComplete))
+                : 0;
+            avgTimeSpentHours = 12; // Mock data
+            certificatesIssued = assignments.Count(a => a.Status == "Completed");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Completed" => Color.Success,
+        "InProgress" => Color.Info,
+        "Overdue" => Color.Error,
+        "Cancelled" => Color.Dark,
+        _ => Color.Default
+    };
+
+    private Color GetProgressColor(decimal percent)
+    {
+        if (percent >= 100) return Color.Success;
+        if (percent >= 75) return Color.Info;
+        if (percent >= 50) return Color.Warning;
+        return Color.Default;
+    }
+
+    private string GetLastActivityText(AssignmentDto assignment)
+    {
+        if (assignment.PercentComplete == 0)
+            return "Not started";
+
+        // Mock - in real implementation, track actual last activity date
+        var daysSince = (int)(DateTime.UtcNow - assignment.AssignedDate).TotalDays;
+        if (daysSince == 0) return "Today";
+        if (daysSince == 1) return "Yesterday";
+        return $"{daysSince} days ago";
+    }
+
+    private string GetStandaloneReportsUrl()
+    {
+        var lmsWebUrl = Config["LMS:WebUrl"] ?? "http://localhost:5180";
+        return $"{lmsWebUrl}/admin/reports";
+    }
+}

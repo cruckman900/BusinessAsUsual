@@ -1,0 +1,234 @@
+@page "/lms"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Services
+@using Platform.Web.Components.Shared
+@layout MainLayout
+@inherits LMSLandingBase
+@inject ILMSService LMSService
+@inject IConfiguration Configuration
+
+<PageTitle>Learning Management - BusinessAsUsual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                Learning Management
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Access training, track progress, and manage learning initiatives</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+
+<MudGrid Spacing="3">
+    <!-- Quick Stats Row -->
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Available Courses</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Primary">@stats.TotalCourses</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">My Active Courses</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Info">@stats.ActiveAssignments</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Completions</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Success">@stats.Completions</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Completion Rate</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Warning">@stats.CompletionRate.ToString("F0")%</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <!-- My Learning Section -->
+    <MudItem xs="12">
+        <MudText Typo="Typo.h6" Class="mb-2">My Learning</MudText>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.PlayCircle" Size="Size.Large" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6">My Courses</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Continue your assigned training courses
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lms/my-courses">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.Large" Color="Color.Success" />
+                    <MudText Typo="Typo.h6">My Certificates</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        View earned certificates and achievements
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lms/my-certificates">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.LibraryBooks" Size="Size.Large" Color="Color.Info" />
+                    <MudText Typo="Typo.h6">Course Catalog</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Browse all available training courses
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/lms/courses">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Admin Section -->
+    <MudItem xs="12" Class="mt-4">
+        <MudDivider />
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h6">Administration</MudText>
+            <MudButton 
+                Variant="Variant.Outlined" 
+                StartIcon="@Icons.Material.Filled.OpenInNew"
+                Size="Size.Small"
+                Href="@standaloneLmsUrl" Target="_blank">
+                Launch Standalone
+            </MudButton>
+        </MudStack>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Large" Color="Color.Secondary" />
+                    <MudText Typo="Typo.h6">Admin Dashboard</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Overview of courses, assignments, and completions
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="/lms/admin">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Color="Color.Secondary" />
+                    <MudText Typo="Typo.h6">Manage Courses</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Create, edit, and publish training courses
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Href="/lms/admin/courses">
+                    Open
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Construction" Size="Size.Large" Color="Color.Tertiary" />
+                    <MudText Typo="Typo.h6">Course Builder</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Launch full course authoring environment
+                    </MudText>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton 
+                    Variant="Variant.Outlined" 
+                    Color="Color.Secondary" 
+                    StartIcon="@Icons.Material.Filled.OpenInNew"
+                    Href="@(standaloneLmsUrl + "/builder")" Target="_blank">
+                    Launch
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private AdminStatsDto stats = new();
+    private string standaloneLmsUrl = "http://localhost:5180";
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Learning Management", Href = "/lms", Icon = Icons.Material.Filled.School }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        // Get standalone LMS URL from config
+        standaloneLmsUrl = Configuration["LMS:WebUrl"] ?? "http://localhost:5180";
+
+        // Load admin stats
+        stats = await LMSService.GetAdminStatsAsync();
+        isLoading = false;
+    }
+}

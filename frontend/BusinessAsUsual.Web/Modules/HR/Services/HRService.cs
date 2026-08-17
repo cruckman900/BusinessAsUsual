@@ -13,8 +13,8 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
     {
         private readonly List<Employee> _employees = new()
         {
-            new Employee(1, "Alice Johnson", "Engineering", "alice@company.com"),
-            new Employee(2, "Bob Smith", "HR", "bob@company.com")
+            new Employee(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Alice", "Johnson", "Engineering", "alice@company.com"),
+            new Employee(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Bob", "Smith", "HR", "bob@company.com")
         };
 
         private readonly List<Benefit> _benefits = new()
@@ -38,7 +38,7 @@ namespace BusinessAsUsual.Web.Modules.HR.Services
         /// <param name="id">The unique identifier of the employee to retrieve.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="Employee"/> with
         /// the specified identifier, or <see langword="null"/> if no such employee exists.</returns>
-        public Task<Employee?> GetEmployeeByIdAsync(int id) => Task.FromResult(_employees.FirstOrDefault(e  => e.Id == id));
+        public Task<Employee?> GetEmployeeByIdAsync(Guid id) => Task.FromResult(_employees.FirstOrDefault(e  => e.Id == id));
 
         /// <summary>
         /// Asynchronously adds the specified employee to the collection.

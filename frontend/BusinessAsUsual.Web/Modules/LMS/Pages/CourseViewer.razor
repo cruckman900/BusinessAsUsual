@@ -1,0 +1,385 @@
+@page "/lms/courses/{CourseId:guid}"
+@using BusinessAsUsual.Web.Modules.LMS.Components
+@using global::LMS.Domain.Entities
+@using global::LMS.Domain.Repositories
+@using global::LMS.Application.Features.Learning.Commands
+@using global::LMS.Application.Common
+@using BusinessAsUsual.Web.Services
+@using BusinessAsUsual.Web.Components.Layout
+@using Platform.Web.Components.Shared
+@using Microsoft.AspNetCore.Components.Authorization
+@layout MainLayout
+@inject ICourseRepository CourseRepository
+@inject ILearnerProgressRepository ProgressRepository
+@inject IQuizAttemptRepository QuizAttemptRepository
+@inject ICommandHandler<SubmitQuizAttemptCommand, Result<QuizAttemptResult>> SubmitQuizHandler
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<PageTitle>@(_course?.Title ?? "Course") - LMS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (_course == null)
+    {
+        <MudAlert Severity="Severity.Error">Course not found</MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Left Sidebar: Course Navigation -->
+            <MudItem xs="12" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" GutterBottom="true">Course Content</MudText>
+
+                    <MudProgressLinear Value="_progressPercent" Color="Color.Primary" Class="my-2" />
+                    <MudText Typo="Typo.caption" Class="mb-4">@_progressPercent% Complete</MudText>
+
+                    @foreach (var module in _course.Modules.OrderBy(m => m.OrderIndex))
+                    {
+                        <MudText Typo="Typo.subtitle2" Class="mt-3 mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" />
+                            @module.Title
+                        </MudText>
+
+                        @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                        {
+                            var isCompleted = _progress?.CompletedLessons.Contains(lesson.Id) ?? false;
+                            var isActive = _currentLesson?.Id == lesson.Id;
+
+                            <MudButton 
+                                Variant="@(isActive ? Variant.Filled : Variant.Text)"
+                                Color="@(isActive ? Color.Primary : Color.Default)"
+                                FullWidth="true"
+                                StartIcon="@(isCompleted ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Circle)"
+                                IconColor="@(isCompleted ? Color.Success : Color.Default)"
+                                Class="justify-start text-left mb-1"
+                                Size="Size.Small"
+                                OnClick="@(() => SelectLesson(lesson))">
+                                @lesson.Title
+                            </MudButton>
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Main Content: Lesson Viewer -->
+            <MudItem xs="12" md="9">
+                <MudPaper Class="pa-4" Elevation="2">
+                    @if (_currentLesson != null)
+                    {
+                        <div class="d-flex justify-space-between align-center mb-4">
+                            <MudText Typo="Typo.h5">@_currentLesson.Title</MudText>
+
+                            @if (_progress?.CompletedLessons.Contains(_currentLesson.Id) ?? false)
+                            {
+                                <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">Completed</MudChip>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(_currentLesson.Description))
+                        {
+                            <MudText Typo="Typo.body1" Class="mb-4">@_currentLesson.Description</MudText>
+                        }
+
+                        <MudDivider Class="mb-4" />
+
+                        <!-- Content Blocks -->
+                        @foreach (var block in _currentLesson.ContentBlocks.OrderBy(b => b.OrderIndex))
+                        {
+                            <div class="mb-4">
+                                @if (block.BlockType == ContentBlockType.Text)
+                                {
+                                    <div>@((MarkupString)GetBlockContent(block))</div>
+                                }
+                                else if (block.BlockType == ContentBlockType.Heading)
+                                {
+                                    <MudText Typo="Typo.h6" Class="mb-2">@((MarkupString)GetBlockContent(block))</MudText>
+                                }
+                                else if (block.BlockType == ContentBlockType.Callout)
+                                {
+                                    <MudAlert Severity="Severity.Info" Class="mb-3">
+                                        @((MarkupString)GetBlockContent(block))
+                                    </MudAlert>
+                                }
+                            </div>
+                        }
+
+                        <!-- Quizzes -->
+                        @if (_currentLesson.Quizzes?.Any() == true)
+                        {
+                            <MudDivider Class="my-4" />
+
+                            @foreach (var quiz in _currentLesson.Quizzes.OrderBy(q => q.CreatedAt))
+                            {
+                                <QuizViewer Quiz="@quiz" 
+                                           EmployeeId="@_currentEmployeeId"
+                                           OnQuizCompleted="@((attempt) => OnQuizCompleted(quiz, attempt))" />
+                            }
+                        }
+
+                        <!-- Lesson Navigation -->
+                        <MudDivider Class="my-4" />
+
+                        <div class="d-flex justify-space-between align-center">
+                            <MudButton 
+                                Variant="Variant.Outlined" 
+                                Color="Color.Primary"
+                                StartIcon="@Icons.Material.Filled.ArrowBack"
+                                Disabled="@(_previousLesson == null)"
+                                OnClick="NavigateToPrevious">
+                                Previous Lesson
+                            </MudButton>
+
+                            @if (!(_progress?.CompletedLessons.Contains(_currentLesson.Id) ?? false))
+                            {
+                                <MudButton 
+                                    Variant="Variant.Filled" 
+                                    Color="Color.Success"
+                                    StartIcon="@Icons.Material.Filled.CheckCircle"
+                                    OnClick="MarkLessonComplete">
+                                    Mark as Complete
+                                </MudButton>
+                            }
+
+                            <MudButton 
+                                Variant="Variant.Filled" 
+                                Color="Color.Primary"
+                                EndIcon="@Icons.Material.Filled.ArrowForward"
+                                Disabled="@(_nextLesson == null)"
+                                OnClick="NavigateToNext">
+                                Next Lesson
+                            </MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Select a lesson to begin</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid CourseId { get; set; }
+
+    private Course? _course;
+    private LearnerProgress? _progress;
+    private Lesson? _currentLesson;
+    private Lesson? _previousLesson;
+    private Lesson? _nextLesson;
+    private bool _loading = true;
+    private double _progressPercent = 0;
+    private string _currentEmployeeId = "demo-employee-1";
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            _currentEmployeeId = authState.User.Identity?.Name ?? "demo-employee-1";
+
+            // Load course with full structure (modules, lessons, content, quizzes)
+            _course = await CourseRepository.GetWithFullStructureAsync(CourseId);
+
+            if (_course != null)
+            {
+                // Load or create progress
+                _progress = await ProgressRepository.GetByEmployeeAndCourseAsync(_currentEmployeeId, CourseId);
+
+                if (_progress == null)
+                {
+                    _progress = new LearnerProgress
+                    {
+                        EmployeeId = _currentEmployeeId,
+                        CourseId = CourseId,
+                        Course = _course
+                    };
+                    _progress = await ProgressRepository.AddAsync(_progress);
+                }
+
+                CalculateProgress();
+
+                // Select first incomplete lesson or first lesson
+                var firstIncompleteLesson = _course.Modules
+                    .OrderBy(m => m.OrderIndex)
+                    .SelectMany(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                    .FirstOrDefault(l => !_progress.CompletedLessons.Contains(l.Id));
+
+                _currentLesson = firstIncompleteLesson ?? _course.Modules
+                    .OrderBy(m => m.OrderIndex)
+                    .SelectMany(m => m.Lessons.OrderBy(l => l.OrderIndex))
+                    .FirstOrDefault();
+
+                if (_currentLesson != null)
+                {
+                    UpdateLessonNavigation();
+                }
+
+                _breadcrumbItems = new()
+                {
+                    new() { Text = "Dashboard", Href = "/dashboard" },
+                    new() { Text = "My Courses", Href = "/lms/my-courses" },
+                    new() { Text = _course.Title, Href = $"/lms/courses/{CourseId}" }
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading course: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectLesson(Lesson lesson)
+    {
+        _currentLesson = lesson;
+        UpdateLessonNavigation();
+    }
+
+    private void UpdateLessonNavigation()
+    {
+        if (_course == null || _currentLesson == null) return;
+
+        var allLessons = _course.Modules
+            .OrderBy(m => m.OrderIndex)
+            .SelectMany(m => m.Lessons.OrderBy(l => l.OrderIndex))
+            .ToList();
+
+        var currentIndex = allLessons.FindIndex(l => l.Id == _currentLesson.Id);
+        _previousLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+        _nextLesson = currentIndex < allLessons.Count - 1 ? allLessons[currentIndex + 1] : null;
+    }
+
+    private void NavigateToPrevious()
+    {
+        if (_previousLesson != null)
+        {
+            SelectLesson(_previousLesson);
+        }
+    }
+
+    private void NavigateToNext()
+    {
+        if (_nextLesson != null)
+        {
+            SelectLesson(_nextLesson);
+        }
+    }
+
+    private async Task MarkLessonComplete()
+    {
+        if (_currentLesson == null || _progress == null) return;
+
+        try
+        {
+            if (!_progress.CompletedLessons.Contains(_currentLesson.Id))
+            {
+                _progress.CompletedLessons.Add(_currentLesson.Id);
+                _progress.CurrentLessonId = _nextLesson?.Id;
+                _progress.LastAccessedAt = DateTime.UtcNow;
+
+                CalculateProgress();
+
+                await ProgressRepository.UpdateAsync(_progress);
+
+                Snackbar.Add("Lesson marked as complete!", Severity.Success);
+
+                // Auto-advance to next lesson
+                if (_nextLesson != null)
+                {
+                    SelectLesson(_nextLesson);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving progress: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void CalculateProgress()
+    {
+        if (_course == null || _progress == null) return;
+
+        var totalLessons = _course.Modules.SelectMany(m => m.Lessons).Count();
+        if (totalLessons > 0)
+        {
+            _progressPercent = Math.Round((double)_progress.CompletedLessons.Count / totalLessons * 100, 0);
+            _progress.ProgressPercentage = (int)_progressPercent;
+        }
+    }
+
+    private async Task OnQuizCompleted(Quiz quiz, QuizAttempt attempt)
+    {
+        try
+        {
+            // The attempt is already graded by QuizViewer, just save it
+            // In the future, we could move grading to the server via SubmitQuizHandler
+            await QuizAttemptRepository.AddAsync(attempt);
+
+            // Show success message
+            if (attempt.Passed)
+            {
+                Snackbar.Add($"🎉 Great job! You passed with {attempt.ScorePercentage:F0}%", Severity.Success);
+
+                // If it's an assessment quiz, mark lesson as complete
+                if (quiz.QuizType == QuizType.Assessment && _currentLesson != null)
+                {
+                    await MarkLessonComplete();
+                }
+            }
+            else
+            {
+                Snackbar.Add($"You scored {attempt.ScorePercentage:F0}%. Keep practicing!", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving quiz results: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private string GetBlockContent(ContentBlock block)
+    {
+        if (string.IsNullOrEmpty(block.JsonContent))
+            return string.Empty;
+
+        try
+        {
+            var json = System.Text.Json.JsonDocument.Parse(block.JsonContent);
+
+            // Try "content" property first (Text and Callout blocks)
+            if (json.RootElement.TryGetProperty("content", out var contentProp))
+            {
+                return contentProp.GetString() ?? string.Empty;
+            }
+
+            // Try "text" property (Heading blocks)
+            if (json.RootElement.TryGetProperty("text", out var textProp))
+            {
+                return textProp.GetString() ?? string.Empty;
+            }
+        }
+        catch
+        {
+            // If not JSON, return as-is
+        }
+
+        return block.JsonContent;
+    }
+}

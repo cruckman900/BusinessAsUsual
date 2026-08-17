@@ -432,9 +432,48 @@ Apply ALL of the following to every module page:
 - Provide context (why this feature matters)
 - Add helpful tips or next steps
 
-### Skeleton Loaders
-**Apply to:** All pages with async data loading  
-**Pattern:**
+### Professional Loading States
+**Apply to:** Every page with async data loading  
+
+**Pattern (PREFERRED - Top Linear Progress):**
+```razor
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <!-- Your page content -->
+}
+```
+
+**Why This Pattern:**
+- ✅ **Professional** - Clean, unobtrusive, full-width feedback
+- ✅ **Consistent** - Same loading UX across entire platform
+- ✅ **Performant** - Lightweight, no heavy skeleton rendering
+- ✅ **Fast** - Instant visual feedback at top of page
+
+**Implementation:**
+1. Add `isLoading` field to `@code` block (camelCase for consistency)
+2. Initialize to `true` for immediate feedback
+3. Set `isLoading = false` after data loads
+4. Wrap content in `else` branch
+
+```csharp
+@code {
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Data loads while progress bar shows
+        _data = await FetchDataAsync();
+        isLoading = false;
+    }
+}
+```
+
+**Alternative: Skeleton Loaders (Use Sparingly)**  
+Only for complex multi-section layouts:
 ```razor
 @if (_isLoading)
 {
@@ -446,24 +485,20 @@ else
 }
 ```
 
-**Implementation:**
-1. Add `_isLoading` field to `@code` block
-2. Switch to `OnInitializedAsync` for data loading
-3. Set `_isLoading = true` before fetch, `false` after
-4. Call `StateHasChanged()` before async operation
-5. Wrap UI in loading branch using `SkeletonLoader`
-
-**Available Types:**
+**Available Skeleton Types:**
 - `DataGrid` - Table/grid with rows
 - `Card` - Content cards
 - `StatsCard` - Metric cards
 - `List` - Simple lists
 
 **Best Practices:**
-- Match skeleton type to actual layout
-- Use realistic row counts
-- Keep load times brief (< 1s ideal)
-- Show skeleton for initial load only
+- ✅ **ALWAYS use `MudProgressLinear` as default** - It's the BAU standard
+- ✅ Use `isLoading` (camelCase) for field naming consistency
+- ✅ Start with `isLoading = true` for immediate feedback
+- ✅ Keep load times brief (< 1s ideal, < 2s max)
+- ✅ Only use skeleton loaders for complex multi-section layouts
+- ⚠️ Don't use `MudProgressCircular` (spinning circles) - They look dated
+- ⚠️ Don't show loading for cached/instant data
 
 ---
 

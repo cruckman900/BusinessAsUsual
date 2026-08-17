@@ -165,12 +165,33 @@
 
 
 @code {
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+
     private IEnumerable<EmployeeDto>? employees;
     private bool isLoading = true;
     private string searchString = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        // Clear any previous module's header (if running in integrated shell)
+        try
+        {
+            var headerServiceType = Type.GetType("BusinessAsUsual.Web.Services.PageHeaderService, BusinessAsUsual.Web");
+            if (headerServiceType != null)
+            {
+                var headerService = ServiceProvider.GetService(headerServiceType);
+                if (headerService != null)
+                {
+                    var clearMethod = headerServiceType.GetMethod("ClearHeader");
+                    clearMethod?.Invoke(headerService, null);
+                }
+            }
+        }
+        catch
+        {
+            // If not running in integrated shell, ignore
+        }
+
         try
         {
             employees = await EmployeeService.GetAllEmployeesAsync();

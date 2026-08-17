@@ -40,7 +40,7 @@ namespace BusinessAsUsual.Admin
         [ExcludeFromCodeCoverage]
         public static async Task Main(string[] args)
         {
-            var app = CreateHostBuilder(args);
+            var app = await CreateHostBuilder(args);
 
             try
             {
@@ -59,7 +59,7 @@ namespace BusinessAsUsual.Admin
         /// <param name="args">Command-line arguments.</param>
         /// <returns>Configured WebApplication instance.</returns>
         [ExcludeFromCodeCoverage]
-        public static WebApplication CreateHostBuilder(string[] args)
+        public static async Task<WebApplication> CreateHostBuilder(string[] args)
         {
             SerilogBootstrapper.Initialize();
 
@@ -113,7 +113,7 @@ namespace BusinessAsUsual.Admin
                 SerilogBootstrapper.Initialize();
 
                 // Register your services
-                builder.Services.AddBusinessAsUsualServices();
+                builder.Services.AddBusinessAsUsualServices(builder.Configuration);
 
                 if (builder.Environment.IsProduction())
                 {
@@ -147,6 +147,13 @@ namespace BusinessAsUsual.Admin
                 });
 
                 var app = builder.Build();
+
+                // Initialize and seed databases
+                using (var scope = app.Services.CreateScope())
+                {
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                    await app.Services.InitializeAndSeedDatabasesAsync(logger);
+                }
 
                 if (app.Environment.IsProduction())
                 {

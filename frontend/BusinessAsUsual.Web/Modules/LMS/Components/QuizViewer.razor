@@ -1,0 +1,498 @@
+@using global::LMS.Domain.Entities
+@using MudBlazor
+
+<MudCard Elevation="3" Class="mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">
+                <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
+                @Quiz.Title
+            </MudText>
+            @if (!string.IsNullOrEmpty(Quiz.Description))
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@Quiz.Description</MudText>
+            }
+        </CardHeaderContent>
+    </MudCardHeader>
+
+    <MudCardContent>
+        @if (_currentAttempt == null && !_showResults)
+        {
+            <!-- Quiz Start Screen -->
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info">
+                    <MudStack Spacing="1">
+                        <MudText><strong>Quiz Type:</strong> @(Quiz.QuizType == QuizType.Assessment ? "Assessment (Required)" : "Practice")</MudText>
+                        <MudText><strong>Questions:</strong> @Quiz.Questions.Count</MudText>
+                        <MudText><strong>Passing Score:</strong> @Quiz.PassingScore%</MudText>
+                        @if (Quiz.TimeLimitMinutes > 0)
+                        {
+                            <MudText><strong>Time Limit:</strong> @Quiz.TimeLimitMinutes minutes</MudText>
+                        }
+                        @if (Quiz.MaxAttempts > 0)
+                        {
+                            <MudText><strong>Attempts Allowed:</strong> @Quiz.MaxAttempts</MudText>
+                            <MudText><strong>Attempts Used:</strong> @_attemptCount</MudText>
+                        }
+                    </MudStack>
+                </MudAlert>
+
+                @if (_previousAttempts?.Any() == true)
+                {
+                    <MudText Typo="Typo.h6">Previous Attempts</MudText>
+                    <MudSimpleTable Elevation="0" Dense="true">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Score</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var attempt in _previousAttempts.OrderByDescending(a => a.CompletedAt).Take(5))
+                            {
+                                <tr>
+                                    <td>@attempt.CompletedAt?.ToString("g")</td>
+                                    <td>@attempt.ScorePercentage.ToString("F0")%</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@(attempt.Passed ? Color.Success : Color.Error)">
+                                            @(attempt.Passed ? "Passed" : "Failed")
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          Size="Size.Large"
+                          StartIcon="@Icons.Material.Filled.PlayArrow"
+                          OnClick="StartQuiz"
+                          Disabled="@(_attemptsExceeded)">
+                    @(_attemptsExceeded ? "Maximum Attempts Reached" : "Start Quiz")
+                </MudButton>
+            </MudStack>
+        }
+        else if (_currentAttempt != null && !_showResults)
+        {
+            <!-- Quiz Taking Screen -->
+            <MudStack Spacing="3">
+                @if (Quiz.TimeLimitMinutes > 0 && _timeRemaining.HasValue)
+                {
+                    <MudAlert Severity="@(_timeRemaining.Value.TotalMinutes < 5 ? Severity.Warning : Severity.Info)">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Timer" />
+                            <MudText>Time Remaining: @_timeRemaining.Value.ToString(@"mm\:ss")</MudText>
+                        </MudStack>
+                    </MudAlert>
+                }
+
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Question @(_currentQuestionIndex + 1) of @_questions.Count
+                </MudText>
+
+                @if (_currentQuestion != null)
+                {
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" Class="mb-3">@_currentQuestion.QuestionText</MudText>
+
+                            @if (_currentQuestion.Type == QuestionType.MultipleChoice)
+                            {
+                                <MudRadioGroup T="Guid?" @bind-Value="_selectedOptionId">
+                                    @foreach (var option in _currentQuestion.Options.OrderBy(o => o.OrderIndex))
+                                    {
+                                        <MudRadio T="Guid?" Value="@option.Id" Color="Color.Primary">
+                                            @option.OptionText
+                                        </MudRadio>
+                                    }
+                                </MudRadioGroup>
+                            }
+                            else if (_currentQuestion.Type == QuestionType.TrueFalse)
+                            {
+                                <MudRadioGroup T="Guid?" @bind-Value="_selectedOptionId">
+                                    @foreach (var option in _currentQuestion.Options.OrderBy(o => o.OrderIndex))
+                                    {
+                                        <MudRadio T="Guid?" Value="@option.Id" Color="Color.Primary">
+                                            @option.OptionText
+                                        </MudRadio>
+                                    }
+                                </MudRadioGroup>
+                            }
+                            else if (_currentQuestion.Type == QuestionType.MultipleSelect)
+                            {
+                                @foreach (var option in _currentQuestion.Options.OrderBy(o => o.OrderIndex))
+                                {
+                                    <MudCheckBox T="bool" 
+                                                Value="@_selectedOptionIds.Contains(option.Id)"
+                                                ValueChanged="@((value) => ToggleMultipleSelect(option.Id, value))"
+                                                Color="Color.Primary">
+                                        @option.OptionText
+                                    </MudCheckBox>
+                                }
+                            }
+                            else if (_currentQuestion.Type == QuestionType.ShortAnswer)
+                            {
+                                <MudTextField T="string" 
+                                             @bind-Value="_textAnswer"
+                                             Label="Your Answer"
+                                             Variant="Variant.Outlined"
+                                             Lines="3" />
+                            }
+
+                            @if (!string.IsNullOrEmpty(_currentQuestion.HintText))
+                            {
+                                <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">
+                                    <strong>Hint:</strong> @_currentQuestion.HintText
+                                </MudAlert>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                }
+
+                <MudStack Row="true" Spacing="2" Justify="Justify.SpaceBetween">
+                    <MudButton Variant="Variant.Outlined" 
+                              OnClick="PreviousQuestion"
+                              Disabled="@(_currentQuestionIndex == 0)">
+                        Previous
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary"
+                              OnClick="NextQuestion">
+                        @(_currentQuestionIndex == _questions.Count - 1 ? "Submit Quiz" : "Next")
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        }
+        else if (_showResults)
+        {
+            <!-- Quiz Results Screen -->
+            <MudStack Spacing="3">
+                <MudAlert Severity="@(_attemptResult!.Passed ? Severity.Success : Severity.Warning)">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h5">
+                            @(_attemptResult.Passed ? "🎉 Congratulations!" : "Keep Trying!")
+                        </MudText>
+                        <MudText Typo="Typo.h6">
+                            Score: @_attemptResult.ScorePercentage.ToString("F0")% 
+                            (@_attemptResult.PointsEarned / @_attemptResult.TotalPoints points)
+                        </MudText>
+                        <MudText>
+                            @(_attemptResult.Passed ? "You passed this quiz!" : $"You need {Quiz.PassingScore}% to pass.")
+                        </MudText>
+                    </MudStack>
+                </MudAlert>
+
+                @if (Quiz.AllowReview && _attemptResult?.Answers?.Any() == true)
+                {
+                    <MudText Typo="Typo.h6">Review Answers</MudText>
+                    @foreach (var answer in _attemptResult.Answers.OrderBy(a => a.Question.OrderIndex))
+                    {
+                        <MudCard Elevation="1">
+                            <MudCardContent>
+                                <MudStack Spacing="2">
+                                    <MudText Typo="Typo.subtitle1">
+                                        <strong>Question @(answer.Question.OrderIndex + 1):</strong> @answer.Question.QuestionText
+                                    </MudText>
+
+                                    <MudChip T="string" Size="Size.Small" Color="@(answer.IsCorrect ? Color.Success : Color.Error)">
+                                        @(answer.IsCorrect ? "Correct" : "Incorrect") - @answer.PointsEarned / @answer.Question.Points points
+                                    </MudChip>
+
+                                    @if (answer.Question.Type == QuestionType.MultipleChoice || answer.Question.Type == QuestionType.TrueFalse)
+                                    {
+                                        <MudText><strong>Your Answer:</strong> @answer.SelectedOption?.OptionText</MudText>
+                                        @if (!answer.IsCorrect)
+                                        {
+                                            var correctOption = answer.Question.Options.FirstOrDefault(o => o.IsCorrect);
+                                            <MudText Color="Color.Success"><strong>Correct Answer:</strong> @correctOption?.OptionText</MudText>
+                                        }
+                                    }
+                                    else if (answer.Question.Type == QuestionType.MultipleSelect)
+                                    {
+                                        <MudText><strong>Your Answers:</strong></MudText>
+                                        @foreach (var optionId in answer.SelectedOptionIds)
+                                        {
+                                            var option = answer.Question.Options.FirstOrDefault(o => o.Id == optionId);
+                                            <MudText>• @option?.OptionText</MudText>
+                                        }
+                                        @if (!answer.IsCorrect)
+                                        {
+                                            <MudText Color="Color.Success"><strong>Correct Answers:</strong></MudText>
+                                            @foreach (var option in answer.Question.Options.Where(o => o.IsCorrect))
+                                            {
+                                                <MudText Color="Color.Success">• @option.OptionText</MudText>
+                                            }
+                                        }
+                                    }
+                                    else if (answer.Question.Type == QuestionType.ShortAnswer)
+                                    {
+                                        <MudText><strong>Your Answer:</strong> @answer.TextAnswer</MudText>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(answer.Question.Explanation))
+                                    {
+                                        <MudAlert Severity="Severity.Info" Dense="true">
+                                            <strong>Explanation:</strong> @answer.Question.Explanation
+                                        </MudAlert>
+                                    }
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                }
+
+                <MudButton Variant="Variant.Outlined" 
+                          OnClick="ReturnToStart">
+                    Back to Quiz Info
+                </MudButton>
+            </MudStack>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Quiz Quiz { get; set; } = null!;
+
+    [Parameter]
+    public string EmployeeId { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<QuizAttempt> OnQuizCompleted { get; set; }
+
+    private QuizAttempt? _currentAttempt;
+    private QuizAttempt? _attemptResult;
+    private List<QuizAttempt>? _previousAttempts;
+    private int _attemptCount;
+    private bool _attemptsExceeded;
+    private bool _showResults;
+
+    private List<Question> _questions = new();
+    private int _currentQuestionIndex = 0;
+    private Question? _currentQuestion => _currentQuestionIndex < _questions.Count ? _questions[_currentQuestionIndex] : null;
+
+    // Answer tracking
+    private Dictionary<Guid, Answer> _answers = new();
+    private Guid? _selectedOptionId;
+    private List<Guid> _selectedOptionIds = new();
+    private string? _textAnswer;
+
+    // Timer
+    private TimeSpan? _timeRemaining;
+    private System.Threading.Timer? _timer;
+    private DateTime? _startTime;
+
+    protected override void OnInitialized()
+    {
+        // Initialize questions (shuffle if configured)
+        _questions = Quiz.ShuffleQuestions 
+            ? Quiz.Questions.OrderBy(_ => Guid.NewGuid()).ToList()
+            : Quiz.Questions.OrderBy(q => q.OrderIndex).ToList();
+    }
+
+    private void StartQuiz()
+    {
+        _currentAttempt = new QuizAttempt
+        {
+            Id = Guid.NewGuid(),
+            QuizId = Quiz.Id,
+            Quiz = Quiz,
+            EmployeeId = EmployeeId,
+            AttemptNumber = _attemptCount + 1,
+            StartedAt = DateTime.UtcNow,
+            Status = QuizAttemptStatus.InProgress,
+            Answers = new List<Answer>()
+        };
+
+        _currentQuestionIndex = 0;
+        _answers.Clear();
+        _showResults = false;
+
+        // Initialize timer if time limit is set
+        if (Quiz.TimeLimitMinutes > 0)
+        {
+            _startTime = DateTime.UtcNow;
+            _timeRemaining = TimeSpan.FromMinutes(Quiz.TimeLimitMinutes);
+            _timer = new System.Threading.Timer(OnTimerTick, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        }
+
+        LoadCurrentQuestionAnswer();
+    }
+
+    private void OnTimerTick(object? state)
+    {
+        if (_startTime.HasValue && Quiz.TimeLimitMinutes > 0)
+        {
+            var elapsed = DateTime.UtcNow - _startTime.Value;
+            _timeRemaining = TimeSpan.FromMinutes(Quiz.TimeLimitMinutes) - elapsed;
+
+            if (_timeRemaining.Value.TotalSeconds <= 0)
+            {
+                _timer?.Dispose();
+                InvokeAsync(() =>
+                {
+                    SubmitQuiz();
+                    StateHasChanged();
+                });
+            }
+            else
+            {
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private void LoadCurrentQuestionAnswer()
+    {
+        if (_currentQuestion == null) return;
+
+        if (_answers.TryGetValue(_currentQuestion.Id, out var existingAnswer))
+        {
+            _selectedOptionId = existingAnswer.SelectedOptionId;
+            _selectedOptionIds = new List<Guid>(existingAnswer.SelectedOptionIds);
+            _textAnswer = existingAnswer.TextAnswer;
+        }
+        else
+        {
+            _selectedOptionId = null;
+            _selectedOptionIds.Clear();
+            _textAnswer = null;
+        }
+    }
+
+    private void SaveCurrentQuestionAnswer()
+    {
+        if (_currentQuestion == null) return;
+
+        var answer = new Answer
+        {
+            Id = Guid.NewGuid(),
+            QuizAttemptId = _currentAttempt!.Id,
+            QuizAttempt = _currentAttempt,
+            QuestionId = _currentQuestion.Id,
+            Question = _currentQuestion,
+            SelectedOptionId = _selectedOptionId,
+            SelectedOptionIds = new List<Guid>(_selectedOptionIds),
+            TextAnswer = _textAnswer
+        };
+
+        _answers[_currentQuestion.Id] = answer;
+    }
+
+    private void NextQuestion()
+    {
+        SaveCurrentQuestionAnswer();
+
+        if (_currentQuestionIndex < _questions.Count - 1)
+        {
+            _currentQuestionIndex++;
+            LoadCurrentQuestionAnswer();
+        }
+        else
+        {
+            SubmitQuiz();
+        }
+    }
+
+    private void PreviousQuestion()
+    {
+        SaveCurrentQuestionAnswer();
+
+        if (_currentQuestionIndex > 0)
+        {
+            _currentQuestionIndex--;
+            LoadCurrentQuestionAnswer();
+        }
+    }
+
+    private void ToggleMultipleSelect(Guid optionId, bool selected)
+    {
+        if (selected && !_selectedOptionIds.Contains(optionId))
+        {
+            _selectedOptionIds.Add(optionId);
+        }
+        else if (!selected && _selectedOptionIds.Contains(optionId))
+        {
+            _selectedOptionIds.Remove(optionId);
+        }
+    }
+
+    private void SubmitQuiz()
+    {
+        SaveCurrentQuestionAnswer();
+        _timer?.Dispose();
+
+        _currentAttempt!.CompletedAt = DateTime.UtcNow;
+        _currentAttempt.Status = QuizAttemptStatus.Completed;
+        _currentAttempt.Answers = _answers.Values.ToList();
+
+        // Grade the quiz (this will be moved to a command handler in step 4)
+        GradeQuiz(_currentAttempt);
+
+        _attemptResult = _currentAttempt;
+        _showResults = true;
+        _currentAttempt = null;
+
+        OnQuizCompleted.InvokeAsync(_attemptResult);
+    }
+
+    private void GradeQuiz(QuizAttempt attempt)
+    {
+        int totalPoints = 0;
+        int earnedPoints = 0;
+
+        foreach (var answer in attempt.Answers)
+        {
+            totalPoints += answer.Question.Points;
+
+            if (answer.Question.Type == QuestionType.MultipleChoice || answer.Question.Type == QuestionType.TrueFalse)
+            {
+                var correctOption = answer.Question.Options.FirstOrDefault(o => o.IsCorrect);
+                if (correctOption != null && answer.SelectedOptionId == correctOption.Id)
+                {
+                    answer.IsCorrect = true;
+                    answer.PointsEarned = answer.Question.Points;
+                    earnedPoints += answer.Question.Points;
+                }
+            }
+            else if (answer.Question.Type == QuestionType.MultipleSelect)
+            {
+                var correctOptionIds = answer.Question.Options.Where(o => o.IsCorrect).Select(o => o.Id).ToHashSet();
+                if (answer.SelectedOptionIds.OrderBy(x => x).SequenceEqual(correctOptionIds.OrderBy(x => x)))
+                {
+                    answer.IsCorrect = true;
+                    answer.PointsEarned = answer.Question.Points;
+                    earnedPoints += answer.Question.Points;
+                }
+            }
+            // ShortAnswer requires manual grading - for now we skip it
+        }
+
+        attempt.TotalPoints = totalPoints;
+        attempt.PointsEarned = earnedPoints;
+        attempt.ScorePercentage = totalPoints > 0 ? (decimal)earnedPoints / totalPoints * 100 : 0;
+        attempt.Passed = attempt.ScorePercentage >= Quiz.PassingScore;
+    }
+
+    private void ReturnToStart()
+    {
+        _showResults = false;
+        _attemptResult = null;
+    }
+
+    public void SetPreviousAttempts(List<QuizAttempt> attempts)
+    {
+        _previousAttempts = attempts;
+        _attemptCount = attempts.Count;
+        _attemptsExceeded = Quiz.MaxAttempts > 0 && _attemptCount >= Quiz.MaxAttempts;
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

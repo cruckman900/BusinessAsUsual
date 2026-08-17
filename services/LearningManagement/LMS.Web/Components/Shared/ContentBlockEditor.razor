@@ -1,0 +1,111 @@
+@using System.Text.Json
+@using LMS.Domain.Entities
+@using Radzen
+@using Radzen.Blazor
+
+<MudCard Elevation="2" Class="mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@GetBlockTypeLabel()</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                          Color="Color.Error" 
+                          OnClick="OnDelete" 
+                          Title="Delete Block" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (BlockType == ContentBlockType.Text || BlockType == ContentBlockType.Heading || BlockType == ContentBlockType.Callout)
+        {
+            <RadzenHtmlEditor @bind-Value="@_htmlContent" 
+                            Style="height: 300px;"
+                            UploadUrl="upload/image"
+                            Execute="@OnExecute">
+                <RadzenHtmlEditorUndo />
+                <RadzenHtmlEditorRedo />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorBold />
+                <RadzenHtmlEditorItalic />
+                <RadzenHtmlEditorUnderline />
+                <RadzenHtmlEditorStrikeThrough />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorAlignLeft />
+                <RadzenHtmlEditorAlignCenter />
+                <RadzenHtmlEditorAlignRight />
+                <RadzenHtmlEditorJustify />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorUnorderedList />
+                <RadzenHtmlEditorOrderedList />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorLink />
+                <RadzenHtmlEditorUnlink />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorColor />
+                <RadzenHtmlEditorBackground />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorRemoveFormat />
+                <RadzenHtmlEditorSeparator />
+                <RadzenHtmlEditorSource />
+            </RadzenHtmlEditor>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info">
+                Rich text editing for @BlockType.ToString() blocks is not yet supported.
+            </MudAlert>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public ContentBlockType BlockType { get; set; }
+    [Parameter] public string JsonContent { get; set; } = "{}";
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback<string> OnContentChanged { get; set; }
+
+    private string _htmlContent = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        LoadContentFromJson();
+    }
+
+    private void LoadContentFromJson()
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(JsonContent);
+            if (doc.RootElement.TryGetProperty("content", out var contentProp))
+            {
+                _htmlContent = contentProp.GetString() ?? string.Empty;
+            }
+        }
+        catch
+        {
+            _htmlContent = string.Empty;
+        }
+    }
+
+    private void OnExecute(HtmlEditorExecuteEventArgs args)
+    {
+        // Content changed, serialize to JSON
+        var json = JsonSerializer.Serialize(new { content = _htmlContent });
+        OnContentChanged.InvokeAsync(json);
+    }
+
+    private string GetBlockTypeLabel()
+    {
+        return BlockType switch
+        {
+            ContentBlockType.Text => "Text Block",
+            ContentBlockType.Heading => "Heading Block",
+            ContentBlockType.Callout => "Callout Block",
+            ContentBlockType.CodeSnippet => "Code Snippet Block",
+            ContentBlockType.Image => "Image Block",
+            ContentBlockType.Video => "Video Block",
+            _ => "Content Block"
+        };
+    }
+}

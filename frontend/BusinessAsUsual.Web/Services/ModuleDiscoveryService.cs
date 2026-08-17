@@ -543,6 +543,71 @@ public class ModuleDiscoveryService : IModuleDiscoveryService
                     new() { Label = "Providers", Route = "/services/providers", Icon = Icons.Material.Filled.Person },
                     new() { Label = "Appointments", Route = "/services/appointments", Icon = Icons.Material.Filled.Event }
                 }
+            },
+
+            // ============================================================
+            // LMS (Learning Management System)
+            // ============================================================
+            new ModuleDto
+            {
+                ModuleId = "lms",
+                Key = "lms",
+                DisplayName = "Learning",
+                Description = "Training courses, certifications, and learning paths",
+                UiEntryPoint = "/lms",
+                Icon = Icons.Material.Filled.School,
+                IsActive = true,
+                NavigationItems = new List<NavigationItemDto>
+                {
+                    new() { Label = "Home", Route = "/lms", Icon = Icons.Material.Filled.Home },
+
+                    // My Learning Group
+                    new()
+                    {
+                        Label = "My Learning",
+                        Route = "/lms/my-courses",
+                        Icon = Icons.Material.Filled.MenuBook,
+                        ExpandedByDefault = true,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "My Courses", Route = "/lms/my-courses", Icon = Icons.Material.Filled.PlayCircle },
+                            new() { Label = "My Certificates", Route = "/lms/my-certificates", Icon = Icons.Material.Filled.Verified },
+                            new() { Label = "Learning Path", Route = "/lms/learning-path", Icon = Icons.Material.Filled.Route }
+                        }
+                    },
+
+                    // Course Catalog Group
+                    new()
+                    {
+                        Label = "Course Catalog",
+                        Route = "/lms/courses",
+                        Icon = Icons.Material.Filled.LibraryBooks,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "All Courses", Route = "/lms/courses", Icon = Icons.Material.Filled.List },
+                            new() { Label = "By Category", Route = "/lms/courses/categories", Icon = Icons.Material.Filled.Category }
+                        }
+                    },
+
+                    // Administration Group (role-restricted in actual UI)
+                    new()
+                    {
+                        Label = "Administration",
+                        Route = "/lms/admin",
+                        Icon = Icons.Material.Filled.AdminPanelSettings,
+                        ExpandedByDefault = false,
+                        Children = new List<NavigationItemDto>
+                        {
+                            new() { Label = "Dashboard", Route = "/lms/admin", Icon = Icons.Material.Filled.Dashboard },
+                            new() { Label = "Manage Courses", Route = "/lms/admin/courses", Icon = Icons.Material.Filled.Edit },
+                            new() { Label = "Assignments", Route = "/lms/admin/assignments", Icon = Icons.Material.Filled.Assignment },
+                            new() { Label = "Learners", Route = "/lms/admin/learners", Icon = Icons.Material.Filled.People },
+                            new() { Label = "Reports", Route = "/lms/admin/reports", Icon = Icons.Material.Filled.Assessment },
+                            new() { Label = "Launch Course Builder", Route = "/lms/admin/builder", Icon = Icons.Material.Filled.Construction }
+                        }
+                    }
+                }
             }
         };
     }

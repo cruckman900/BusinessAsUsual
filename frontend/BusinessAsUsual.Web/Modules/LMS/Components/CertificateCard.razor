@@ -1,0 +1,109 @@
+@using global::LMS.Domain.Entities
+
+<MudCard Elevation="4" Class="certificate-card">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@Certificate.Course?.Title</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Certificate #@Certificate.CertificateNumber
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            @if (Certificate.Status == global::LMS.Domain.Entities.CertificateStatus.Active)
+            {
+                <MudChip T="string" Color="Color.Success" Size="Size.Small">Active</MudChip>
+            }
+            else if (Certificate.Status == global::LMS.Domain.Entities.CertificateStatus.Expired)
+            {
+                <MudChip T="string" Color="Color.Warning" Size="Size.Small">Expired</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Error" Size="Size.Small">Revoked</MudChip>
+            }
+        </CardHeaderActions>
+    </MudCardHeader>
+
+    <MudCardContent>
+        <div class="certificate-visual">
+            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" 
+                     Color="@(Certificate.Status == global::LMS.Domain.Entities.CertificateStatus.Active ? Color.Primary : Color.Default)" 
+                     Size="Size.Large" 
+                     Class="mb-2" />
+
+            <MudText Typo="Typo.body2" Class="mb-1">
+                <strong>Issued:</strong> @Certificate.IssuedDate.ToString("MMM dd, yyyy")
+            </MudText>
+
+            @if (Certificate.ExpirationDate.HasValue)
+            {
+                <MudText Typo="Typo.body2" Class="mb-1">
+                    <strong>Expires:</strong> @Certificate.ExpirationDate.Value.ToString("MMM dd, yyyy")
+                </MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Class="mb-1" Color="Color.Success">
+                    <strong>No Expiration</strong>
+                </MudText>
+            }
+
+            @if (Certificate.Score.HasValue)
+            {
+                <MudText Typo="Typo.body2" Class="mb-1">
+                    <strong>Score:</strong> @Certificate.Score.Value.ToString("F1")%
+                </MudText>
+            }
+
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                Issued by @Certificate.IssuedBy
+            </MudText>
+        </div>
+    </MudCardContent>
+
+    <MudCardActions>
+        <MudButton StartIcon="@Icons.Material.Filled.Visibility" 
+                   Color="Color.Primary" 
+                   Variant="Variant.Text"
+                   OnClick="@(() => OnView.InvokeAsync(Certificate))">
+            View
+        </MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Download" 
+                   Color="Color.Secondary" 
+                   Variant="Variant.Text"
+                   OnClick="@(() => OnDownload.InvokeAsync(Certificate))"
+                   Disabled="@(Certificate.Status != global::LMS.Domain.Entities.CertificateStatus.Active)">
+            Download PDF
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+<style>
+    .certificate-card {
+        height: 100%;
+        transition: transform 0.2s;
+    }
+
+    .certificate-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .certificate-visual {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--mud-palette-primary-lighten) 0%, var(--mud-palette-background) 100%);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Certificate Certificate { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<Certificate> OnView { get; set; }
+
+    [Parameter]
+    public EventCallback<Certificate> OnDownload { get; set; }
+}

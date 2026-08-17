@@ -1,0 +1,265 @@
+@page "/lms/admin/assignments"
+@using global::LMS.Domain.Entities
+@using global::LMS.Domain.Repositories
+@using global::LMS.Application.Features.Learning.Commands
+@using global::LMS.Application.Common
+@using BusinessAsUsual.Web.Services
+@using BusinessAsUsual.Web.Modules.HR.Services
+@using Platform.Web.Components.Shared
+@using BusinessAsUsual.Web.Components.Layout
+@layout MainLayout
+@inject ICourseRepository CourseRepository
+@inject IAssignmentRepository AssignmentRepository
+@inject ICommandHandler<AssignCourseCommand, Result<List<Guid>>> AssignCourseHandler
+@inject IHRService HRService
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<PageTitle>Course Assignments - LMS Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
+                Course Assignments
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Assign courses to employees</MudText>
+        </div>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Primary"
+            StartIcon="@Icons.Material.Filled.Add"
+            OnClick="OpenAssignmentDialog">
+            New Assignment
+        </MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        <MudDataGrid T="Assignment" 
+                     Items="@_assignments" 
+                     Filterable="true" 
+                     FilterMode="DataGridFilterMode.ColumnFilterRow"
+                     SortMode="SortMode.Multiple">
+            <Columns>
+                <PropertyColumn Property="x => x.Course!.Title" Title="Course" />
+                <PropertyColumn Property="x => x.EmployeeId" Title="Employee ID" />
+                <PropertyColumn Property="x => x.AssignedDate" Title="Assigned" Format="MMM dd, yyyy" />
+                <PropertyColumn Property="x => x.DueDate" Title="Due Date" Format="MMM dd, yyyy" />
+                <PropertyColumn Property="x => x.Status" Title="Status">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">
+                            @context.Item.Status
+                        </MudChip>
+                    </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                    <CellTemplate>
+                        <MudIconButton 
+                            Icon="@Icons.Material.Filled.Delete" 
+                            Color="Color.Error" 
+                            Size="Size.Small"
+                            OnClick="@(() => DeleteAssignment(context.Item))" />
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    }
+</MudContainer>
+
+<!-- Assignment Dialog -->
+@if (_showAssignmentDialog)
+{
+    <MudDialog @bind-Visible="_showAssignmentDialog" Options="_dialogOptions">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Class="mr-2" />
+                Assign Course
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudForm @ref="_form">
+                <MudSelect T="Guid" 
+                           Label="Course" 
+                           @bind-Value="_newAssignment.CourseId"
+                           Required="true"
+                           RequiredError="Please select a course">
+                    @foreach (var course in _courses)
+                    {
+                        <MudSelectItem T="Guid" Value="@course.Id">@course.Title</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="string" 
+                           Label="Employee" 
+                           @bind-Value="_newAssignment.EmployeeId"
+                           Required="true"
+                           RequiredError="Please select an employee"
+                           MultiSelection="false"
+                           Class="mt-3">
+                    @foreach (var employee in _employees)
+                    {
+                        <MudSelectItem T="string" Value="@employee.Id.ToString()">
+                            @employee.FirstName @employee.LastName (@employee.Email)
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudDatePicker 
+                    Label="Due Date (Optional)" 
+                    @bind-Date="_dueDate"
+                    MinDate="DateTime.Today"
+                    Class="mt-3" />
+            </MudForm>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="CloseAssignmentDialog">Cancel</MudButton>
+            <MudButton 
+                Color="Color.Primary" 
+                Variant="Variant.Filled"
+                OnClick="SaveAssignment">
+                Assign Course
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@code {
+    private List<Assignment> _assignments = new();
+    private List<Course> _courses = new();
+    private List<Employee> _employees = new();
+    private bool _loading = true;
+    private bool _showAssignmentDialog = false;
+    private MudForm? _form;
+    private DateTime? _dueDate;
+
+    private Assignment _newAssignment = new();
+
+    private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "LMS Admin", Href = "/lms/admin" },
+        new() { Text = "Assignments", Href = "/lms/admin/assignments" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            // Load courses, employees, and assignments in parallel
+            var coursesTask = CourseRepository.GetAllAsync();
+            var employeesTask = HRService.GetEmployeesAsync();
+
+            await Task.WhenAll(coursesTask, employeesTask);
+
+            _courses = (await coursesTask).ToList();
+            _employees = (await employeesTask).ToList();
+
+            // Load all assignments - if this is slow, consider adding GetAllAsync to the repository
+            var assignmentTasks = _employees.Select(e => 
+                AssignmentRepository.GetByEmployeeIdAsync(e.Id.ToString())
+            );
+
+            var assignmentResults = await Task.WhenAll(assignmentTasks);
+            _assignments = assignmentResults.SelectMany(a => a).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OpenAssignmentDialog()
+    {
+        _newAssignment = new Assignment
+        {
+            AssignedDate = DateTime.UtcNow,
+            Status = AssignmentStatus.NotStarted
+        };
+        _dueDate = null;
+        _showAssignmentDialog = true;
+    }
+
+    private void CloseAssignmentDialog()
+    {
+        _showAssignmentDialog = false;
+    }
+
+    private async Task SaveAssignment()
+    {
+        await _form!.Validate();
+
+        if (_form.IsValid)
+        {
+            try
+            {
+                var command = new AssignCourseCommand
+                {
+                    CourseId = _newAssignment.CourseId,
+                    EmployeeIds = new List<string> { _newAssignment.EmployeeId },
+                    DueDate = _dueDate,
+                    AssignedBy = "admin", // TODO: Get from auth context
+                    IsMandatory = true
+                };
+
+                var result = await AssignCourseHandler.HandleAsync(command);
+
+                if (result.Success)
+                {
+                    Snackbar.Add("Course assigned successfully!", Severity.Success);
+                    _showAssignmentDialog = false;
+                    await LoadData();
+                }
+                else
+                {
+                    Snackbar.Add($"Failed to assign course: {result.ErrorMessage}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error saving assignment: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteAssignment(Assignment assignment)
+    {
+        try
+        {
+            await AssignmentRepository.DeleteAsync(assignment.Id);
+            Snackbar.Add("Assignment deleted", Severity.Success);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting assignment: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(AssignmentStatus status) => status switch
+    {
+        AssignmentStatus.Completed => Color.Success,
+        AssignmentStatus.InProgress => Color.Info,
+        AssignmentStatus.Overdue => Color.Error,
+        _ => Color.Default
+    };
+}

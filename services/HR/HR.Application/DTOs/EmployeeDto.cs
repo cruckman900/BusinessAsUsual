@@ -56,6 +56,9 @@ public class EmployeeDto
     // Managed Departments (new)
     public List<string> ManagedDepartmentNames { get; set; } = new();
 
+    // Training Completions (from LMS integration)
+    public List<TrainingCompletionDto> TrainingCompletions { get; set; } = new();
+
     // Computed Properties
     public string FullName => $"{FirstName} {LastName}";
     public int? Age => DateOfBirth.HasValue ? (int)((DateTime.Now - DateOfBirth.Value).TotalDays / 365.25) : null;
@@ -71,4 +74,19 @@ public class EmployeeDepartmentDto
     public bool IsPrimary { get; set; }
     public int? AllocationPercentage { get; set; }
     public DateTime JoinedDate { get; set; }
+}
+
+/// <summary>
+/// Represents a training course completion record
+/// </summary>
+public class TrainingCompletionDto
+{
+    public Guid Id { get; set; }
+    public Guid CourseId { get; set; }
+    public string CourseName { get; set; } = string.Empty;
+    public DateTime CompletionDate { get; set; }
+    public decimal Score { get; set; }
+    public string? CertificateNumber { get; set; }
+    public int TimeSpentMinutes { get; set; }
+    public DateTime RecordedAt { get; set; }
 }

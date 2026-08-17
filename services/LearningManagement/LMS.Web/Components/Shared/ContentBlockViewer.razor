@@ -1,0 +1,65 @@
+@using System.Text.Json
+@using LMS.Domain.Entities
+
+@if (BlockType == ContentBlockType.Text || BlockType == ContentBlockType.Heading)
+{
+    <div class="content-block content-block-@BlockType.ToString().ToLower()">
+        @((MarkupString)_htmlContent)
+    </div>
+}
+else if (BlockType == ContentBlockType.Callout)
+{
+    <MudAlert Severity="Severity.Info" Class="my-3">
+        @((MarkupString)_htmlContent)
+    </MudAlert>
+}
+else if (BlockType == ContentBlockType.CodeSnippet)
+{
+    <MudPaper Elevation="1" Class="pa-3 my-3" Style="background-color: #f5f5f5;">
+        <pre><code>@_htmlContent</code></pre>
+    </MudPaper>
+}
+else if (BlockType == ContentBlockType.Divider)
+{
+    <MudDivider Class="my-4" />
+}
+else
+{
+    <MudAlert Severity="Severity.Warning" Dense="true" Class="my-2">
+        Unsupported block type: @BlockType
+    </MudAlert>
+}
+
+@code {
+    [Parameter] public ContentBlockType BlockType { get; set; }
+    [Parameter] public string JsonContent { get; set; } = "{}";
+
+    private string _htmlContent = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        LoadContentFromJson();
+    }
+
+    private void LoadContentFromJson()
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(JsonContent);
+            if (doc.RootElement.TryGetProperty("content", out var contentProp))
+            {
+                _htmlContent = contentProp.GetString() ?? string.Empty;
+            }
+            else if (doc.RootElement.TryGetProperty("text", out var textProp))
+            {
+                // Handle legacy heading format
+                _htmlContent = textProp.GetString() ?? string.Empty;
+            }
+        }
+        catch
+        {
+            _htmlContent = string.Empty;
+        }
+    }
+}

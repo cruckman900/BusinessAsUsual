@@ -1,0 +1,135 @@
+@page "/lms/admin/courses"
+@using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Services
+@using Platform.Web.Components.Shared
+@using global::LMS.Domain.Repositories
+@layout MainLayout
+@inherits LMSLandingBase
+@inject IConfiguration Configuration
+@inject ILMSService LMSService
+@inject ICourseRepository CourseRepository
+
+<PageTitle>Course Management - Learning Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                Course Management
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Create and manage training courses</MudText>
+        </div>
+    </div>
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudStack Row="true" Spacing="2">
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                StartIcon="@Icons.Material.Filled.Add">
+                Create New Course
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-3">Available Courses</MudText>
+
+        @if (courses == null || !courses.Any())
+        {
+            <MudAlert Severity="Severity.Info">
+                No courses available. The database may need to be seeded.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid>
+                @foreach (var course in courses)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6">@course.Title</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
+                                    @course.Description
+                                </MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">
+                                    @course.Difficulty
+                                </MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                    @course.Category
+                                </MudChip>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton 
+                                    Variant="Variant.Text" 
+                                    Color="Color.Primary" 
+                                    StartIcon="@Icons.Material.Filled.Visibility"
+                                    Href="@($"/lms/courses/{course.Id}")"
+                                    Size="Size.Small">
+                                    Preview
+                                </MudButton>
+                                <MudButton 
+                                    Variant="Variant.Filled" 
+                                    Color="Color.Success" 
+                                    StartIcon="@Icons.Material.Filled.Edit"
+                                    Href="@($"/lms/admin/courses/{course.Id}/builder")">
+                                    Open Builder
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </MudPaper>
+}
+</MudContainer>
+
+@code {
+    private bool isLoading = true;
+    private List<global::LMS.Domain.Entities.Course> courses = new();
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() 
+        { 
+            Text = "Learning", 
+            Href = "/lms",
+            Icon = Icons.Material.Filled.School
+        },
+        new() { Text = "Admin", Href = "/lms/admin" },
+        new() { Text = "Course Management", Href = "/lms/admin/courses" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        try
+        {
+            // Load courses from database
+            var allCourses = await CourseRepository.GetAllAsync();
+            courses = allCourses.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading courses: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

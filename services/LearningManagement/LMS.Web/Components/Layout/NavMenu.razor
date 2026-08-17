@@ -1,0 +1,46 @@
+<MudNavMenu>
+    <MudText Typo="Typo.h6" Class="px-4 pt-4">LMS Portal</MudText>
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Home
+    </MudNavLink>
+
+    <MudNavGroup Title="Learning" Icon="@Icons.Material.Filled.School" Expanded="true">
+        <MudNavLink Href="/courses" Icon="@Icons.Material.Filled.LibraryBooks">
+            Course Catalog
+        </MudNavLink>
+        <MudNavLink Href="/my-courses" Icon="@Icons.Material.Filled.BookmarkBorder">
+            My Courses
+        </MudNavLink>
+        <MudNavLink Href="/assignments" Icon="@Icons.Material.Filled.Assignment">
+            My Assignments
+        </MudNavLink>
+    </MudNavGroup>
+
+    <MudDivider Class="my-2" />
+
+    <MudNavGroup Title="Administration" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+        <MudNavLink Href="/admin" Icon="@Icons.Material.Filled.Dashboard">
+            Admin Dashboard
+        </MudNavLink>
+        <MudNavLink Href="/admin/courses" Icon="@Icons.Material.Filled.Edit">
+            Manage Courses
+        </MudNavLink>
+        <MudNavLink Href="/admin/assignments" Icon="@Icons.Material.Filled.AssignmentInd">
+            Manage Assignments
+        </MudNavLink>
+        <MudNavLink Href="/admin/learners" Icon="@Icons.Material.Filled.People">
+            Learner Progress
+        </MudNavLink>
+        <MudNavLink Href="/admin/reports" Icon="@Icons.Material.Filled.Assessment">
+            Reports & Analytics
+        </MudNavLink>
+    </MudNavGroup>
+
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Href="/certificates" Icon="@Icons.Material.Filled.CardMembership">
+        Certificates
+    </MudNavLink>
+</MudNavMenu>

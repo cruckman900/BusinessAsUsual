@@ -1,11 +1,15 @@
 using Amazon.CloudWatch;
 using ApexCharts;
+using BusinessAsUsual.Core.Events;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Web.Modules.HR.Services;
 using BusinessAsUsual.Web.Services;
+using LMS.Application;
+using LMS.Infrastructure;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using Radzen;
 
 namespace BusinessAsUsual.Web
 {
@@ -52,6 +56,9 @@ namespace BusinessAsUsual.Web
             });
             builder.Services.AddMudServices();
 
+            // Add Radzen components for LMS rich-text editor
+            builder.Services.AddRadzenComponents();
+
             // Add ApexCharts for CRM reports
             builder.Services.AddApexCharts();
 
@@ -68,10 +75,10 @@ namespace BusinessAsUsual.Web
 
             // Register Scoped services
             builder.Services.AddScoped<CircuitHandler, LoggingCircuitHandler>();
-            builder.Services.AddScoped<PageHeaderService>();
 
-            // Register Authentication Service
+            // Register Authentication Service and State Provider
             builder.Services.AddScoped<AuthenticationService>();
+            builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
             // Register Platform module services
             builder.Services.AddScoped<Platform.Web.Services.ToastService>();
@@ -120,6 +127,9 @@ namespace BusinessAsUsual.Web
                 client.BaseAddress = new Uri(inventoryServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
+
+            // Register LMS Service for integrated learning module (using repositories, not HTTP)
+            builder.Services.AddScoped<ILMSService, LMSService>();
 
             // Register named HttpClient for the Sales microservice
             var salesServiceUrl = builder.Configuration["SalesApi:Url"] ?? "http://localhost:5143";
@@ -180,6 +190,13 @@ namespace BusinessAsUsual.Web
             // Register Inventory Module services (for embedded Inventory.Web components)
             RegisterInventoryModuleServices(builder.Services, builder.Configuration);
 
+            // Register LMS Module services for integrated course builder
+            builder.Services.AddLMSApplication();
+            builder.Services.AddLMSInfrastructure(builder.Configuration);
+
+            // Register EventBus for LMS integration events
+            builder.Services.AddInProcessEventBus();
+
             if (builder.Environment.IsProduction())
             {
                 builder.Services.AddAWSService<IAmazonCloudWatch>();
@@ -200,6 +217,7 @@ namespace BusinessAsUsual.Web
             if (app.Environment.IsDevelopment())
             {
                 await SeedHRDataAsync(app.Services);
+                await SeedLMSDataAsync(app.Services);
             }
 
             if (app.Environment.IsProduction())
@@ -224,6 +242,28 @@ namespace BusinessAsUsual.Web
             app.UseHttpsRedirection();
 
             app.MapControllers(); // Map MVC controllers for API endpoints for testing purposes
+
+            // Map LMS certificate PDF endpoint
+            app.MapGet("/certificates/{certificateId:guid}", async (Guid certificateId, LMS.Application.Services.ICertificatePdfService pdfService, LMS.Domain.Repositories.ICertificateRepository certRepo) =>
+            {
+                var certificate = await certRepo.GetByIdAsync(certificateId);
+                if (certificate == null)
+                {
+                    return Results.NotFound("Certificate not found");
+                }
+
+                try
+                {
+                    var pdfBytes = await pdfService.GenerateCertificatePdfAsync(certificateId);
+
+                    return Results.File(pdfBytes, "application/pdf", $"Certificate-{certificate.CertificateNumber}.pdf");
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error generating certificate: {ex.Message}");
+                }
+            });
+
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 
@@ -662,5 +702,30 @@ namespace BusinessAsUsual.Web
             Console.WriteLine("  - Department hierarchy (Engineering with Frontend/Backend teams)");
         }
 #pragma warning restore CS0618
+
+        /// <summary>
+        /// Seeds the LMS database with demo courses and content
+        /// </summary>
+        private static async Task SeedLMSDataAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<LMS.Infrastructure.Persistence.LMSDbContext>();
+            var seedData = scope.ServiceProvider.GetRequiredService<LMS.Infrastructure.Data.LMSSeedData>();
+
+            try
+            {
+                // Ensure database is created
+                await context.Database.EnsureCreatedAsync();
+                Console.WriteLine("✓ LMS database schema created");
+
+                // Seed the data
+                await seedData.SeedAsync();
+                Console.WriteLine("✓ Seeded LMS data successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Error initializing LMS database: {ex.Message}");
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 @page "/hr/employees/{id}"
+@page "/hr/employees/details/{id}"
 @rendermode InteractiveServer
 @using Platform.Web.Components.Shared
 @using Platform.Web.Services
@@ -328,6 +329,60 @@
                 </MudItem>
             }
 
+            <!-- Training History Card -->
+            @if (employee.TrainingCompletions != null && employee.TrainingCompletions.Any())
+            {
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" GutterBottom="true">
+                                <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                                Training History
+                            </MudText>
+                            <MudDivider Class="mb-3" />
+
+                            <MudTable Items="@employee.TrainingCompletions" Dense="true" Hover="true" Striped="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Course</MudTh>
+                                    <MudTh>Completed</MudTh>
+                                    <MudTh>Score</MudTh>
+                                    <MudTh>Time Spent</MudTh>
+                                    <MudTh>Certificate</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Course">
+                                        <MudText Typo="Typo.body2"><strong>@context.CourseName</strong></MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Completed">
+                                        <MudText Typo="Typo.body2">@context.CompletionDate.ToString("MMM dd, yyyy")</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Score">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetScoreColor(context.Score)" Variant="Variant.Filled">
+                                            @context.Score.ToString("0")%
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel="Time Spent">
+                                        <MudText Typo="Typo.body2">@FormatTimeSpent(context.TimeSpentMinutes)</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Certificate">
+                                        @if (!string.IsNullOrEmpty(context.CertificateNumber))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.VerifiedUser">
+                                                @context.CertificateNumber
+                                            </MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">N/A</MudText>
+                                        }
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
             <!-- Additional Details Card (kept but simplified) -->
             <MudItem xs="12">
                 <MudCard Elevation="2">
@@ -456,6 +511,28 @@
             return id;
 
         return $"{id.Substring(0, 8)}...";
+    }
+
+    private Color GetScoreColor(decimal score)
+    {
+        if (score >= 90) return Color.Success;
+        if (score >= 80) return Color.Info;
+        if (score >= 70) return Color.Warning;
+        return Color.Error;
+    }
+
+    private string FormatTimeSpent(int minutes)
+    {
+        if (minutes < 60)
+            return $"{minutes} min";
+
+        var hours = minutes / 60;
+        var remainingMinutes = minutes % 60;
+
+        if (remainingMinutes == 0)
+            return $"{hours} hr";
+
+        return $"{hours} hr {remainingMinutes} min";
     }
 
     private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new();

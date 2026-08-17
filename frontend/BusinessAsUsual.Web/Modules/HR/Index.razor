@@ -2,9 +2,24 @@
 @* @page "/hr" *@
 @using BusinessAsUsual.Web.Components.Layout
 @using BusinessAsUsual.Web.Modules._Shared
+@using Platform.Web.Components.Shared
 @layout MainLayout
 @inherits HRLandingBase
-@inject PageHeaderService HeaderService
+
+<PageTitle>Human Resources - BusinessAsUsual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h4" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                Human Resources
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Manage employee onboarding, directory, and benefits</MudText>
+        </div>
+    </div>
 
 <MudGrid>
     <MudItem xs="12" sm="6" md="4">
@@ -49,19 +64,12 @@
         </MudCard>
     </MudItem>
 </MudGrid>
+</MudContainer>
 
 @code {
-    private RenderFragment HeaderContent =>@<PageHeader
-        Title="@ModuleName"
-        Description="@ModuleDescription"
-        Breadcrumbs="@BuildBreadCrumbs()" />
-    ;
-
-    protected override void OnAfterRender(bool firstRender)
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
     {
-        if (firstRender)
-        {
-            HeaderService.SetHeader(HeaderContent);
-        }
-    }
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new() { Text = "Human Resources", Href = "/hr", Icon = Icons.Material.Filled.People }
+    };
 }

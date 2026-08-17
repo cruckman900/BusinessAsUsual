@@ -1,4 +1,5 @@
 ﻿@using BusinessAsUsual.Web.Modules._Shared
+@using BusinessAsUsual.Web.Modules.LMS.Components
 @inject IConfiguration Configuration
 @* ============================
    DESKTOP TOP BAR
@@ -40,6 +41,7 @@
 
         <div class="topbar-actions">
             <TenantDisplay CurrentTenant="@CurrentTenant" />
+            <NotificationBell />
             <UserMenu />
             <!-- AI Assistant toggle is injected here so it's always available but unobtrusive -->
             <div class="ai-assistant-host">
@@ -63,6 +65,7 @@
 
         <MudSpacer />
 
+        <NotificationBell />
         <UserMenu />
     </div>
 </MudHidden>

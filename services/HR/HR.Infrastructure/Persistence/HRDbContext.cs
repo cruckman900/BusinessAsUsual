@@ -16,6 +16,7 @@ public class HRDbContext : DbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<EmployeeDepartment> EmployeeDepartments => Set<EmployeeDepartment>();
     public DbSet<DepartmentManager> DepartmentManagers => Set<DepartmentManager>();
+    public DbSet<TrainingCompletion> TrainingCompletions => Set<TrainingCompletion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -126,6 +127,34 @@ public class HRDbContext : DbContext
             entity.Property(dm => dm.ManagerRole).HasMaxLength(100);
             entity.HasIndex(dm => dm.IsPrimary);
             entity.HasIndex(dm => dm.EndDate);
+        });
+
+        // TrainingCompletion Configuration
+        modelBuilder.Entity<TrainingCompletion>(entity =>
+        {
+            entity.HasKey(tc => tc.Id);
+
+            entity.Property(tc => tc.CourseName).IsRequired().HasMaxLength(200);
+            entity.Property(tc => tc.CertificateNumber).HasMaxLength(100);
+            entity.Property(tc => tc.CompletionDate).IsRequired();
+            entity.Property(tc => tc.RecordedAt).IsRequired();
+
+            entity.HasOne(tc => tc.Employee)
+                  .WithMany(e => e.TrainingCompletions)
+                  .HasForeignKey(tc => tc.EmployeeId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for idempotency check
+            entity.HasIndex(tc => tc.SourceEventId).IsUnique();
+
+            // Index for querying completions by employee
+            entity.HasIndex(tc => tc.EmployeeId);
+
+            // Index for querying completions by course
+            entity.HasIndex(tc => tc.CourseId);
+
+            // Index for querying recent completions
+            entity.HasIndex(tc => tc.CompletionDate);
         });
     }
 }

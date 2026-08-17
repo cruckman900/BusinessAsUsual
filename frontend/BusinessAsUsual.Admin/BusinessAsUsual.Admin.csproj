@@ -31,6 +31,11 @@
     <Folder Include="Modules\HR.Admin\Views\" />
     <Folder Include="Modules\Inventory.Admin\Controllers\" />
     <Folder Include="Modules\Inventory.Admin\Views\" />
+    <Folder Include="Modules\LMS.Admin\Controllers\" />
+    <Folder Include="Modules\LMS.Admin\Views\" />
+    <Folder Include="Modules\LMS.Admin\Views\Courses\" />
+    <Folder Include="Modules\LMS.Admin\Views\Assignments\" />
+    <Folder Include="Modules\LMS.Admin\Views\Reports\" />
     <Folder Include="Modules\Orders.Admin\Controllers\" />
     <Folder Include="Modules\Orders.Admin\Views\" />
     <Folder Include="Modules\Timekeeping.Admin\Controllers\" />
@@ -83,6 +88,7 @@
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
     <ProjectReference Include="..\..\BusinessAsUsual.Core\BusinessAsUsual.Core.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Infrastructure\HR.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

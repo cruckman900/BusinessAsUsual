@@ -1,0 +1,266 @@
+@using global::LMS.Domain.Entities
+@using MudBlazor
+
+<MudPaper Class="pa-4 mb-3" Elevation="2">
+    <MudStack Spacing="3">
+        <div class="d-flex justify-space-between align-center">
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-2" />
+                Quiz: @Quiz.Title
+            </MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                          Color="Color.Error" 
+                          Size="Size.Small"
+                          OnClick="OnDelete" />
+        </div>
+
+        <MudDivider />
+
+        <MudStack Row="true" Spacing="2">
+            <MudTextField T="string" 
+                         Label="Quiz Title" 
+                         @bind-Value="Quiz.Title"
+                         Variant="Variant.Outlined"
+                         Required="true" />
+
+            <MudSelect T="QuizType" 
+                      Label="Quiz Type" 
+                      @bind-Value="Quiz.QuizType"
+                      Variant="Variant.Outlined">
+                <MudSelectItem T="QuizType" Value="QuizType.Practice">Practice (Optional)</MudSelectItem>
+                <MudSelectItem T="QuizType" Value="QuizType.Assessment">Assessment (Required)</MudSelectItem>
+            </MudSelect>
+        </MudStack>
+
+        <MudTextField T="string" 
+                     Label="Description (Optional)" 
+                     @bind-Value="Quiz.Description"
+                     Variant="Variant.Outlined"
+                     Lines="2" />
+
+        <MudStack Row="true" Spacing="2">
+            <MudNumericField T="int" 
+                            Label="Time Limit (minutes, 0 = unlimited)" 
+                            @bind-Value="Quiz.TimeLimitMinutes"
+                            Variant="Variant.Outlined"
+                            Min="0" />
+
+            <MudNumericField T="int" 
+                            Label="Passing Score (%)" 
+                            @bind-Value="Quiz.PassingScore"
+                            Variant="Variant.Outlined"
+                            Min="0"
+                            Max="100" />
+
+            <MudNumericField T="int" 
+                            Label="Max Attempts (0 = unlimited)" 
+                            @bind-Value="Quiz.MaxAttempts"
+                            Variant="Variant.Outlined"
+                            Min="0" />
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2">
+            <MudSwitch T="bool" 
+                      @bind-Value="Quiz.ShuffleQuestions" 
+                      Label="Shuffle Questions"
+                      Color="Color.Primary" />
+
+            <MudSwitch T="bool" 
+                      @bind-Value="Quiz.ShowResultsImmediately" 
+                      Label="Show Results Immediately"
+                      Color="Color.Primary" />
+
+            <MudSwitch T="bool" 
+                      @bind-Value="Quiz.AllowReview" 
+                      Label="Allow Answer Review"
+                      Color="Color.Primary" />
+        </MudStack>
+
+        <MudDivider />
+
+        <div class="d-flex justify-space-between align-center">
+            <MudText Typo="Typo.subtitle1"><strong>Questions (@Quiz.Questions.Count)</strong></MudText>
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Success" 
+                      StartIcon="@Icons.Material.Filled.Add"
+                      OnClick="AddQuestion"
+                      Size="Size.Small">
+                Add Question
+            </MudButton>
+        </div>
+
+        @foreach (var question in Quiz.Questions.OrderBy(q => q.OrderIndex))
+        {
+            <MudCard Elevation="1">
+                <MudCardContent>
+                    <MudStack Spacing="2">
+                        <div class="d-flex justify-space-between align-center">
+                            <MudText Typo="Typo.subtitle2">Question @(question.OrderIndex + 1)</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                          Color="Color.Error" 
+                                          Size="Size.Small"
+                                          OnClick="() => DeleteQuestion(question)" />
+                        </div>
+
+                        <MudStack Row="true" Spacing="2">
+                            <MudSelect T="QuestionType" 
+                                      Label="Question Type" 
+                                      @bind-Value="question.Type"
+                                      Variant="Variant.Outlined"
+                                      Style="max-width: 200px;">
+                                <MudSelectItem T="QuestionType" Value="QuestionType.MultipleChoice">Multiple Choice</MudSelectItem>
+                                <MudSelectItem T="QuestionType" Value="QuestionType.TrueFalse">True/False</MudSelectItem>
+                                <MudSelectItem T="QuestionType" Value="QuestionType.ShortAnswer">Short Answer</MudSelectItem>
+                                <MudSelectItem T="QuestionType" Value="QuestionType.MultipleSelect">Multiple Select</MudSelectItem>
+                            </MudSelect>
+
+                            <MudNumericField T="int" 
+                                            Label="Points" 
+                                            @bind-Value="question.Points"
+                                            Variant="Variant.Outlined"
+                                            Min="1"
+                                            Style="max-width: 100px;" />
+                        </MudStack>
+
+                        <MudTextField T="string" 
+                                     Label="Question Text" 
+                                     @bind-Value="question.QuestionText"
+                                     Variant="Variant.Outlined"
+                                     Lines="2"
+                                     Required="true" />
+
+                        @if (question.Type == QuestionType.MultipleChoice || question.Type == QuestionType.TrueFalse || question.Type == QuestionType.MultipleSelect)
+                        {
+                            <MudText Typo="Typo.body2" Class="mt-2"><strong>Answer Options:</strong></MudText>
+
+                            @foreach (var option in question.Options.OrderBy(o => o.OrderIndex))
+                            {
+                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                    <MudCheckBox T="bool" 
+                                                @bind-Value="option.IsCorrect" 
+                                                Color="Color.Success"
+                                                Dense="true" />
+                                    <MudTextField T="string" 
+                                                 @bind-Value="option.OptionText"
+                                                 Variant="Variant.Outlined"
+                                                 Placeholder="Option text"
+                                                 Dense="true"
+                                                 Style="flex-grow: 1;" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                  Color="Color.Error" 
+                                                  Size="Size.Small"
+                                                  OnClick="() => DeleteOption(question, option)" />
+                                </MudStack>
+                            }
+
+                            <MudButton Variant="Variant.Text" 
+                                      Color="Color.Primary" 
+                                      StartIcon="@Icons.Material.Filled.Add"
+                                      OnClick="() => AddOption(question)"
+                                      Size="Size.Small">
+                                Add Option
+                            </MudButton>
+                        }
+
+                        <MudTextField T="string" 
+                                     Label="Explanation (shown after answering)" 
+                                     @bind-Value="question.Explanation"
+                                     Variant="Variant.Outlined"
+                                     Lines="2" />
+
+                        <MudTextField T="string" 
+                                     Label="Hint (optional)" 
+                                     @bind-Value="question.HintText"
+                                     Variant="Variant.Outlined" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public Quiz Quiz { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    private void AddQuestion()
+    {
+        var newQuestion = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuizId = Quiz.Id,
+            Quiz = Quiz,
+            Type = QuestionType.MultipleChoice,
+            OrderIndex = Quiz.Questions.Count,
+            Points = 1,
+            QuestionText = "",
+            Options = new List<QuestionOption>()
+        };
+
+        // Add default options for multiple choice
+        newQuestion.Options.Add(new QuestionOption 
+        { 
+            Id = Guid.NewGuid(),
+            QuestionId = newQuestion.Id,
+            Question = newQuestion,
+            OptionText = "", 
+            OrderIndex = 0 
+        });
+        newQuestion.Options.Add(new QuestionOption 
+        { 
+            Id = Guid.NewGuid(),
+            QuestionId = newQuestion.Id,
+            Question = newQuestion,
+            OptionText = "", 
+            OrderIndex = 1 
+        });
+
+        Quiz.Questions.Add(newQuestion);
+        OnChange.InvokeAsync();
+    }
+
+    private void DeleteQuestion(Question question)
+    {
+        Quiz.Questions.Remove(question);
+        // Reindex
+        var ordered = Quiz.Questions.OrderBy(q => q.OrderIndex).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].OrderIndex = i;
+        }
+        OnChange.InvokeAsync();
+    }
+
+    private void AddOption(Question question)
+    {
+        var newOption = new QuestionOption
+        {
+            Id = Guid.NewGuid(),
+            QuestionId = question.Id,
+            Question = question,
+            OptionText = "",
+            OrderIndex = question.Options.Count,
+            IsCorrect = false
+        };
+        question.Options.Add(newOption);
+        OnChange.InvokeAsync();
+    }
+
+    private void DeleteOption(Question question, QuestionOption option)
+    {
+        question.Options.Remove(option);
+        // Reindex
+        var ordered = question.Options.OrderBy(o => o.OrderIndex).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].OrderIndex = i;
+        }
+        OnChange.InvokeAsync();
+    }
+}

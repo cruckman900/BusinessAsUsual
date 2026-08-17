@@ -39,14 +39,6 @@ namespace BusinessAsUsual.Web.Components.Layout
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         /// <summary>
-        /// Gets or sets the service used to manage the page header state and content.
-        /// </summary>
-        /// <remarks>This property is typically injected by the framework to provide access to page header
-        /// functionality within the component. Do not set this property manually unless performing advanced
-        /// customization or testing.</remarks>
-        [Inject] public PageHeaderService HeaderService { get; set; } = default!;
-
-        /// <summary>
         /// Gets or sets the module discovery service used to discover modules from Module Registry Service.
         /// </summary>
         [Inject] public IModuleDiscoveryService ModuleDiscoveryService { get; set; } = default!;
@@ -91,7 +83,6 @@ namespace BusinessAsUsual.Web.Components.Layout
         protected override async Task OnInitializedAsync()
         {
             Nav.LocationChanged += HandleLocationChanged;
-            HeaderService.OnChange += HandleHeaderChanged;
 
             // Load modules from Module Registry Service FIRST
             await LoadModulesAsync();
@@ -134,11 +125,6 @@ namespace BusinessAsUsual.Web.Components.Layout
                 // Log error but don't crash the app
                 Console.WriteLine($"Error loading modules: {ex.Message}");
             }
-        }
-
-        private void HandleHeaderChanged()
-        {
-            InvokeAsync(StateHasChanged);
         }
 
         // ------------------------------------------------------------
@@ -192,6 +178,8 @@ namespace BusinessAsUsual.Web.Components.Layout
                 _currentModule = "Sales";
             else if (path.StartsWith("/services"))
                 _currentModule = "Services";
+            else if (path.StartsWith("/lms"))
+                _currentModule = "Learning";
             else if (path.StartsWith("/platform"))
                 _currentModule = "Platform";
             else if (path.StartsWith("/timekeeping"))
@@ -262,7 +250,6 @@ namespace BusinessAsUsual.Web.Components.Layout
         public void Dispose()
         {
             Nav.LocationChanged -= HandleLocationChanged;
-            HeaderService.OnChange -= HandleHeaderChanged;
         }
     }
 }

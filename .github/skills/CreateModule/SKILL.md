@@ -200,9 +200,44 @@ else
 
 ---
 
-#### B. Skeleton Loaders
-**When:** Data is loading from API/database  
-**Pattern:**
+#### B. Professional Loading States
+**When:** Every page with async data loading  
+**Pattern (PREFERRED - Top Linear Progress):**
+```razor
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <!-- Your page content -->
+}
+```
+
+**Why This Pattern:**
+- ✅ **Professional** - Clean, unobtrusive, full-width feedback
+- ✅ **Consistent** - Same loading UX across entire platform
+- ✅ **Performant** - Lightweight, no heavy skeleton rendering
+- ✅ **Fast** - Instant visual feedback at top of page
+- ✅ **Accessible** - Clear loading state for all users
+
+**Implementation:**
+```csharp
+@code {
+    private bool isLoading = true;  // Start with loading state
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Data loads while progress bar shows
+        _data = await FetchDataAsync();
+
+        isLoading = false;  // Hide progress bar, show content
+    }
+}
+```
+
+**Alternative: Skeleton Loaders (Use Sparingly)**  
+For complex layouts where you want to show structure during load:
 ```razor
 @if (_isLoading)
 {
@@ -210,56 +245,29 @@ else
 }
 else if (!_items.Any())
 {
-    <!-- Smart empty state here -->
+    <!-- Smart empty state -->
 }
 else
 {
-    <!-- Actual data grid/list -->
+    <!-- Actual content -->
 }
 ```
 
-**Implementation:**
-1. **Create Shared Component:** `Components/Shared/SkeletonLoader.razor`
-   - Reusable component with configurable types: `DataGrid`, `Card`, `StatsCard`, `List`
-   - Parameterized row count for flexible layouts
-   - Uses MudBlazor `MudSkeleton` primitives
-
-2. **Import in `_Imports.razor`:**
-   ```razor
-   @using {ModuleName}.Web.Components.Shared
-   ```
-
-3. **Add Loading State:**
-   ```csharp
-   private bool _isLoading = false;
-
-   protected override async Task OnInitializedAsync()
-   {
-       _isLoading = true;
-       StateHasChanged();
-
-       // API call or data load
-       await Task.Delay(800); // Simulate API
-       _data = await FetchData();
-
-       _isLoading = false;
-   }
-   ```
-
 **Skeleton Types:**
-- `DataGrid` - For table/grid listings (avatar + 2 text lines + badges)
-- `Card` - For card-based layouts (title + description + actions)
-- `StatsCard` - For metric cards (label + value + icon)
-- `List` - For simple list items (icon + 2 text lines + metadata)
+- `DataGrid` - Table/grid layouts
+- `Card` - Card-based layouts
+- `StatsCard` - Metric/dashboard cards
+- `List` - Simple list items
 
 **Best Practices:**
-- ✅ Always show skeleton during initial load
-- ✅ Call `StateHasChanged()` before async operations to trigger skeleton
-- ✅ Match skeleton type to actual content layout
-- ✅ Use realistic row counts (5-8 for grids, 3-4 for cards)
-- ✅ Keep skeleton duration brief (< 1s ideal, < 2s max)
-- ⚠️ Don't show skeleton for cached/instant data
-- ⚠️ Don't use skeleton for sub-200ms loads (feels janky)
+- ✅ **ALWAYS use `MudProgressLinear` as default** - It's the BAU standard
+- ✅ Use `isLoading` (camelCase) for field naming consistency
+- ✅ Start with `isLoading = true` for immediate feedback
+- ✅ Keep load times brief (< 1s ideal, < 2s max)
+- ✅ Only use skeleton loaders for complex multi-section layouts
+- ⚠️ Don't use `MudProgressCircular` (spinning circles) - They look dated
+- ⚠️ Don't show loading for cached/instant data
+- ⚠️ Don't use skeleton for sub-200ms loads
 
 ---
 

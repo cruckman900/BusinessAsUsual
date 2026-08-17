@@ -25,6 +25,7 @@ public class EmployeeRepository : IEmployeeRepository
                 .ThenInclude(ed => ed.Department)
             .Include(e => e.ManagedDepartments)
                 .ThenInclude(dm => dm.Department)
+            .Include(e => e.TrainingCompletions)
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
             .ToListAsync();
@@ -39,6 +40,7 @@ public class EmployeeRepository : IEmployeeRepository
             .Include(e => e.ManagedDepartments)
                 .ThenInclude(dm => dm.Department)
             .Include(e => e.DirectReports)
+            .Include(e => e.TrainingCompletions)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
