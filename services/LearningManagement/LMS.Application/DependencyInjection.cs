@@ -6,6 +6,7 @@ using LMS.Application.Features.Learning.Commands;
 using LMS.Application.Features.Learning.Queries;
 using LMS.Application.Features.Notifications.Commands;
 using LMS.Application.Features.Notifications.Queries;
+using LMS.Application.Features.Media.Commands;
 using LMS.Domain.Entities;
 
 namespace LMS.Application;
@@ -41,6 +42,9 @@ public static class DependencyInjection
         // Register Notification handlers
         services.AddScoped<SendNotificationCommandHandler>();
         services.AddScoped<GetMyNotificationsQueryHandler>();
+
+        // Register Media handlers
+        services.AddScoped<UploadMediaCommandHandler>();
 
         // Register command handlers as ICommandHandler interfaces for DI
         services.AddScoped<ICommandHandler<AssignCourseCommand, Result<List<Guid>>>>(

@@ -1,0 +1,58 @@
+@using System.Text.Json
+@using global::LMS.Domain.Entities
+
+@if (!string.IsNullOrWhiteSpace(_imageUrl))
+{
+    <MudPaper Class="content-block-image my-4" Elevation="0">
+        <MudImage Src="@_imageUrl" 
+                  Alt="@_altText" 
+                  Class="content-image"
+                  Style="max-width: 100%; height: auto; border-radius: 8px;" />
+
+        @if (!string.IsNullOrWhiteSpace(_caption))
+        {
+            <MudText Typo="Typo.caption" 
+                     Color="Color.Secondary" 
+                     Align="Align.Center" 
+                     Class="mt-2">
+                @_caption
+            </MudText>
+        }
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string JsonContent { get; set; } = "{}";
+
+    private string? _imageUrl;
+    private string? _altText;
+    private string? _caption;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ParseContent();
+    }
+
+    private void ParseContent()
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(JsonContent);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("url", out var urlProp))
+                _imageUrl = urlProp.GetString();
+
+            if (root.TryGetProperty("alt", out var altProp))
+                _altText = altProp.GetString();
+
+            if (root.TryGetProperty("caption", out var capProp))
+                _caption = capProp.GetString();
+        }
+        catch
+        {
+            // Invalid JSON, ignore
+        }
+    }
+}

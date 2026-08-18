@@ -93,10 +93,14 @@ public class CompleteCourseCommandHandlerTests
             .ReturnsAsync((CourseCompletion?)null);
         _mockCompletionRepository.Setup(r => r.AddAsync(It.IsAny<CourseCompletion>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((CourseCompletion c, CancellationToken ct) => { c.Id = Guid.NewGuid(); return c; });
+        _mockCompletionRepository.Setup(r => r.UpdateAsync(It.IsAny<CourseCompletion>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _mockAssignmentRepository.Setup(r => r.GetByEmployeeIdAsync(employeeId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(assignments);
         _mockAssignmentRepository.Setup(r => r.UpdateAsync(It.IsAny<Assignment>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        _mockIssueCertificateHandler.Setup(h => h.HandleAsync(It.IsAny<IssueCertificateCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<Certificate>.Ok(new Certificate { Id = Guid.NewGuid() }));
         _mockEventBus.Setup(e => e.PublishAsync(It.IsAny<TrainingCompletedIntegrationEvent>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 

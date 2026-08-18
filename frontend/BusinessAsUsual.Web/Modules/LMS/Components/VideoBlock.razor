@@ -1,0 +1,56 @@
+@using System.Text.Json
+@using global::LMS.Domain.Entities
+
+@if (!string.IsNullOrWhiteSpace(_videoUrl))
+{
+    <MudPaper Class="content-block-video my-4" Elevation="1">
+        <video controls 
+               style="width: 100%; max-height: 600px; border-radius: 8px;"
+               preload="metadata">
+            <source src="@_videoUrl" />
+            Your browser does not support the video tag.
+        </video>
+
+        @if (!string.IsNullOrWhiteSpace(_caption))
+        {
+            <MudText Typo="Typo.caption" 
+                     Color="Color.Secondary" 
+                     Align="Align.Center" 
+                     Class="pa-2">
+                @_caption
+            </MudText>
+        }
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string JsonContent { get; set; } = "{}";
+
+    private string? _videoUrl;
+    private string? _caption;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ParseContent();
+    }
+
+    private void ParseContent()
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(JsonContent);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("url", out var urlProp))
+                _videoUrl = urlProp.GetString();
+
+            if (root.TryGetProperty("caption", out var capProp))
+                _caption = capProp.GetString();
+        }
+        catch
+        {
+            // Invalid JSON, ignore
+        }
+    }
+}

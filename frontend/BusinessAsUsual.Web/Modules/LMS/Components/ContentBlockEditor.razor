@@ -49,6 +49,88 @@
                 <RadzenHtmlEditorSource />
             </RadzenHtmlEditor>
         }
+        else if (BlockType == ContentBlockType.Image)
+        {
+            <MediaUploader 
+                Title="Upload Image"
+                Description="Select an image file to display in this lesson"
+                AssetType="Image"
+                CourseId="@CourseId"
+                AllowedExtensions=".jpg,.jpeg,.png,.gif,.webp,.svg"
+                AcceptedTypes="image/*"
+                MaxFileSizeMB="50"
+                OnUploadComplete="HandleImageUpload" />
+
+            @if (!string.IsNullOrWhiteSpace(_imageUrl))
+            {
+                <MudDivider Class="my-4" />
+                <MudStack Spacing="2">
+                    <MudTextField @bind-Value="_altText" Label="Alt Text" Placeholder="Describe the image" 
+                                 HelperText="For accessibility" Variant="MudBlazor.Variant.Outlined" />
+                    <MudTextField @bind-Value="_caption" Label="Caption" Placeholder="Optional caption" 
+                                 Variant="MudBlazor.Variant.Outlined" />
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Preview:</MudText>
+                    <MudImage Src="@_imageUrl" Alt="@_altText" Style="max-width: 100%; max-height: 300px;" />
+                </MudStack>
+            }
+        }
+        else if (BlockType == ContentBlockType.Video)
+        {
+            <MediaUploader 
+                Title="Upload Video"
+                Description="Select a video file for this lesson"
+                AssetType="Video"
+                CourseId="@CourseId"
+                AllowedExtensions=".mp4,.webm,.mov,.avi"
+                AcceptedTypes="video/*"
+                MaxFileSizeMB="200"
+                OnUploadComplete="HandleVideoUpload" />
+
+            @if (!string.IsNullOrWhiteSpace(_videoUrl))
+            {
+                <MudDivider Class="my-4" />
+                <MudStack Spacing="2">
+                    <MudTextField @bind-Value="_caption" Label="Caption" Placeholder="Optional caption" 
+                                 Variant="MudBlazor.Variant.Outlined" />
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Preview:</MudText>
+                    <video controls style="max-width: 100%; max-height: 400px;">
+                        <source src="@_videoUrl" />
+                        Your browser does not support the video tag.
+                    </video>
+                </MudStack>
+            }
+        }
+        else if (BlockType == ContentBlockType.File)
+        {
+            <MediaUploader 
+                Title="Upload File"
+                Description="Upload a file resource (PDF, document, etc.)"
+                AssetType="Document"
+                CourseId="@CourseId"
+                AllowedExtensions=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                AcceptedTypes=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                MaxFileSizeMB="50"
+                OnUploadComplete="HandleFileUpload" />
+
+            @if (!string.IsNullOrWhiteSpace(_fileUrl))
+            {
+                <MudDivider Class="my-4" />
+                <MudStack Spacing="2">
+                    <MudTextField @bind-Value="_caption" Label="Description" Placeholder="Describe this file" 
+                                 Variant="MudBlazor.Variant.Outlined" />
+                    <MudPaper Class="pa-3" Outlined="true">
+                        <MudStack Row="true" AlignItems="MudBlazor.AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachFile" />
+                            <MudText>@_fileName</MudText>
+                            <MudSpacer />
+                            <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Primary" Href="@_fileUrl" Target="_blank">
+                                Download
+                            </MudButton>
+                        </MudStack>
+                    </MudPaper>
+                </MudStack>
+            }
+        }
         else
         {
             <MudAlert Severity="Severity.Info">
@@ -61,10 +143,18 @@
 @code {
     [Parameter] public ContentBlockType BlockType { get; set; }
     [Parameter] public string JsonContent { get; set; } = "{}";
+    [Parameter] public Guid? CourseId { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback<string> OnContentChanged { get; set; }
 
     private string _htmlContent = string.Empty;
+    private string? _imageUrl;
+    private string? _videoUrl;
+    private string? _fileUrl;
+    private string? _fileName;
+    private string? _altText;
+    private string? _caption;
+    private Guid? _mediaId;
 
     protected override void OnParametersSet()
     {
@@ -77,7 +167,40 @@
         try
         {
             var doc = JsonDocument.Parse(JsonContent);
-            if (doc.RootElement.TryGetProperty("content", out var contentProp))
+            var root = doc.RootElement;
+
+            if (BlockType == ContentBlockType.Image)
+            {
+                if (root.TryGetProperty("url", out var urlProp))
+                    _imageUrl = urlProp.GetString();
+                if (root.TryGetProperty("alt", out var altProp))
+                    _altText = altProp.GetString();
+                if (root.TryGetProperty("caption", out var capProp))
+                    _caption = capProp.GetString();
+                if (root.TryGetProperty("mediaId", out var mediaProp) && mediaProp.TryGetGuid(out var mediaGuid))
+                    _mediaId = mediaGuid;
+            }
+            else if (BlockType == ContentBlockType.Video)
+            {
+                if (root.TryGetProperty("url", out var urlProp))
+                    _videoUrl = urlProp.GetString();
+                if (root.TryGetProperty("caption", out var capProp))
+                    _caption = capProp.GetString();
+                if (root.TryGetProperty("mediaId", out var mediaProp) && mediaProp.TryGetGuid(out var mediaGuid))
+                    _mediaId = mediaGuid;
+            }
+            else if (BlockType == ContentBlockType.File)
+            {
+                if (root.TryGetProperty("url", out var urlProp))
+                    _fileUrl = urlProp.GetString();
+                if (root.TryGetProperty("filename", out var nameProp))
+                    _fileName = nameProp.GetString();
+                if (root.TryGetProperty("caption", out var capProp))
+                    _caption = capProp.GetString();
+                if (root.TryGetProperty("mediaId", out var mediaProp) && mediaProp.TryGetGuid(out var mediaGuid))
+                    _mediaId = mediaGuid;
+            }
+            else if (root.TryGetProperty("content", out var contentProp))
             {
                 _htmlContent = contentProp.GetString() ?? string.Empty;
             }
@@ -86,6 +209,63 @@
         {
             _htmlContent = string.Empty;
         }
+    }
+
+    private async Task HandleImageUpload(MediaUploader.UploadResult result)
+    {
+        _imageUrl = result.Url;
+        _mediaId = result.MediaId;
+        await SaveImageContent();
+    }
+
+    private async Task HandleVideoUpload(MediaUploader.UploadResult result)
+    {
+        _videoUrl = result.Url;
+        _mediaId = result.MediaId;
+        await SaveVideoContent();
+    }
+
+    private async Task HandleFileUpload(MediaUploader.UploadResult result)
+    {
+        _fileUrl = result.Url;
+        _fileName = result.FileName;
+        _mediaId = result.MediaId;
+        await SaveFileContent();
+    }
+
+    private async Task SaveImageContent()
+    {
+        var json = JsonSerializer.Serialize(new 
+        { 
+            url = _imageUrl,
+            alt = _altText,
+            caption = _caption,
+            mediaId = _mediaId
+        });
+        await OnContentChanged.InvokeAsync(json);
+    }
+
+    private async Task SaveVideoContent()
+    {
+        var json = JsonSerializer.Serialize(new 
+        { 
+            url = _videoUrl,
+            caption = _caption,
+            mediaId = _mediaId
+        });
+        await OnContentChanged.InvokeAsync(json);
+    }
+
+    private async Task SaveFileContent()
+    {
+        var json = JsonSerializer.Serialize(new 
+        { 
+            url = _fileUrl,
+            filename = _fileName,
+            caption = _caption,
+            mediaId = _mediaId
+        });
+        await OnContentChanged.InvokeAsync(json);
     }
 
     private void OnExecute(HtmlEditorExecuteEventArgs args)
@@ -105,6 +285,7 @@
             ContentBlockType.CodeSnippet => "Code Snippet Block",
             ContentBlockType.Image => "Image Block",
             ContentBlockType.Video => "Video Block",
+            ContentBlockType.File => "File Block",
             _ => "Content Block"
         };
     }

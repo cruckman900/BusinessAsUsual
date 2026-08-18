@@ -28,6 +28,7 @@ public class LMSDbContext : DbContext
     public DbSet<DetailedLearnerProgress> DetailedLearnerProgress => Set<DetailedLearnerProgress>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -202,6 +203,23 @@ public class LMSDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // MediaAsset configuration
+        modelBuilder.Entity<MediaAsset>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.OriginalFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.StoragePath).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ThumbnailPath).HasMaxLength(500);
+            entity.Property(e => e.UploadedBy).IsRequired().HasMaxLength(256);
+            entity.HasOne(e => e.Course)
+                .WithMany()
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
         });
     }
 }

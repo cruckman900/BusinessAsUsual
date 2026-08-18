@@ -4,11 +4,14 @@
 @using BusinessAsUsual.Web.Services
 @using Platform.Web.Components.Shared
 @using global::LMS.Domain.Repositories
+@using global::LMS.Application.Features.Courses.Commands
 @layout MainLayout
 @inherits LMSLandingBase
 @inject IConfiguration Configuration
 @inject ILMSService LMSService
 @inject ICourseRepository CourseRepository
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Course Management - Learning Admin</PageTitle>
 
@@ -36,7 +39,8 @@ else
             <MudButton 
                 Variant="Variant.Filled" 
                 Color="Color.Primary" 
-                StartIcon="@Icons.Material.Filled.Add">
+                StartIcon="@Icons.Material.Filled.Add"
+                OnClick="ShowCreateCourseDialog">
                 Create New Course
             </MudButton>
         </MudStack>
@@ -59,7 +63,12 @@ else
                     <MudItem xs="12" sm="6" md="4">
                         <MudCard Elevation="2">
                             <MudCardContent>
-                                <MudText Typo="Typo.h6">@course.Title</MudText>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-2">
+                                    <MudText Typo="Typo.h6">@course.Title</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(course.Status)">
+                                        @course.Status
+                                    </MudChip>
+                                </MudStack>
                                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">
                                     @course.Description
                                 </MudText>
@@ -69,6 +78,12 @@ else
                                 <MudChip T="string" Size="Size.Small" Color="Color.Primary">
                                     @course.Category
                                 </MudChip>
+                                @if (course.PublishedDate.HasValue)
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                        Published: @course.PublishedDate.Value.ToShortDateString()
+                                    </MudText>
+                                }
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButton 
@@ -80,12 +95,35 @@ else
                                     Preview
                                 </MudButton>
                                 <MudButton 
-                                    Variant="Variant.Filled" 
+                                    Variant="Variant.Text" 
                                     Color="Color.Success" 
                                     StartIcon="@Icons.Material.Filled.Edit"
-                                    Href="@($"/lms/admin/courses/{course.Id}/builder")">
-                                    Open Builder
+                                    Href="@($"/lms/admin/courses/{course.Id}/builder")"
+                                    Size="Size.Small">
+                                    Edit
                                 </MudButton>
+                                @if (course.Status == global::LMS.Domain.Entities.CourseStatus.Draft)
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Text" 
+                                        Color="Color.Warning" 
+                                        StartIcon="@Icons.Material.Filled.Publish"
+                                        OnClick="@(() => PublishCourse(course))"
+                                        Size="Size.Small">
+                                        Publish
+                                    </MudButton>
+                                }
+                                else if (course.Status == global::LMS.Domain.Entities.CourseStatus.Published)
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Text" 
+                                        Color="Color.Default" 
+                                        StartIcon="@Icons.Material.Filled.Unpublished"
+                                        OnClick="@(() => UnpublishCourse(course))"
+                                        Size="Size.Small">
+                                        Unpublish
+                                    </MudButton>
+                                }
                             </MudCardActions>
                         </MudCard>
                     </MudItem>
@@ -96,9 +134,76 @@ else
 }
 </MudContainer>
 
+<!-- Create Course Dialog -->
+<MudDialog @bind-Visible="_showCreateDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Create New Course</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_newCourseTitle" 
+                      Label="Course Title" 
+                      Required="true" 
+                      HelperText="Enter a descriptive title"
+                      Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_newCourseDescription" 
+                      Label="Description" 
+                      Lines="3"
+                      Required="true"
+                      HelperText="Provide an overview of what learners will gain"
+                      Variant="Variant.Outlined" 
+                      Class="mt-3" />
+        <MudTextField @bind-Value="_newCourseCategory" 
+                      Label="Category" 
+                      HelperText="e.g., Leadership, Technical, Compliance"
+                      Variant="Variant.Outlined" 
+                      Class="mt-3" />
+        <MudSelect @bind-Value="_newCourseDifficulty" 
+                   Label="Difficulty Level" 
+                   Variant="Variant.Outlined" 
+                   Class="mt-3">
+            <MudSelectItem Value="global::LMS.Domain.Entities.CourseDifficulty.Beginner">Beginner</MudSelectItem>
+            <MudSelectItem Value="global::LMS.Domain.Entities.CourseDifficulty.Intermediate">Intermediate</MudSelectItem>
+            <MudSelectItem Value="global::LMS.Domain.Entities.CourseDifficulty.Advanced">Advanced</MudSelectItem>
+        </MudSelect>
+        <MudNumericField @bind-Value="_newCourseDuration" 
+                         Label="Estimated Duration (minutes)" 
+                         HelperText="How long will this course take?"
+                         Variant="Variant.Outlined" 
+                         Min="1"
+                         Class="mt-3" />
+        <MudSwitch @bind-Value="_newCourseIssuesCertificate" 
+                   Label="Issues Certificate Upon Completion" 
+                   Color="Color.Primary"
+                   Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showCreateDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="CreateCourse">
+            Create Course
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private bool isLoading = true;
     private List<global::LMS.Domain.Entities.Course> courses = new();
+
+    // Create course dialog
+    private bool _showCreateDialog = false;
+    private string _newCourseTitle = "";
+    private string _newCourseDescription = "";
+    private string _newCourseCategory = "General";
+    private global::LMS.Domain.Entities.CourseDifficulty _newCourseDifficulty = global::LMS.Domain.Entities.CourseDifficulty.Beginner;
+    private int _newCourseDuration = 60;
+    private bool _newCourseIssuesCertificate = true;
+
+    private DialogOptions _dialogOptions = new() 
+    { 
+        MaxWidth = MaxWidth.Medium, 
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
 
     private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
     {
@@ -117,8 +222,14 @@ else
     {
         base.OnInitialized();
 
+        await LoadCourses();
+    }
+
+    private async Task LoadCourses()
+    {
         try
         {
+            isLoading = true;
             // Load courses from database
             var allCourses = await CourseRepository.GetAllAsync();
             courses = allCourses.ToList();
@@ -126,10 +237,136 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading courses: {ex.Message}");
+            Snackbar.Add($"Error loading courses: {ex.Message}", Severity.Error);
         }
         finally
         {
             isLoading = false;
         }
+    }
+
+    private void ShowCreateCourseDialog()
+    {
+        _newCourseTitle = "";
+        _newCourseDescription = "";
+        _newCourseCategory = "General";
+        _newCourseDifficulty = global::LMS.Domain.Entities.CourseDifficulty.Beginner;
+        _newCourseDuration = 60;
+        _newCourseIssuesCertificate = true;
+        _showCreateDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task CreateCourse()
+    {
+        if (string.IsNullOrWhiteSpace(_newCourseTitle))
+        {
+            Snackbar.Add("Course title is required", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_newCourseDescription))
+        {
+            Snackbar.Add("Course description is required", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var newCourse = new global::LMS.Domain.Entities.Course
+            {
+                Id = Guid.NewGuid(),
+                Title = _newCourseTitle,
+                Description = _newCourseDescription,
+                Category = _newCourseCategory,
+                Difficulty = _newCourseDifficulty,
+                EstimatedDurationMinutes = _newCourseDuration,
+                Status = global::LMS.Domain.Entities.CourseStatus.Draft,
+                IssuesCertificate = _newCourseIssuesCertificate,
+                RequiresAssessment = true,
+                PassingScore = 70,
+                MaxAttempts = 3,
+                Modules = new List<global::LMS.Domain.Entities.Module>(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "admin" // TODO: Get from auth
+            };
+
+            await CourseRepository.AddAsync(newCourse);
+
+            _showCreateDialog = false;
+            Snackbar.Add($"✅ Course '{_newCourseTitle}' created successfully!", Severity.Success);
+
+            // Reload courses
+            await LoadCourses();
+
+            // Navigate to builder
+            Navigation.NavigateTo($"/lms/admin/courses/{newCourse.Id}/builder");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating course: {ex}");
+            Snackbar.Add($"❌ Error creating course: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task PublishCourse(global::LMS.Domain.Entities.Course course)
+    {
+        try
+        {
+            // Validate course has content
+            var fullCourse = await CourseRepository.GetWithModulesAsync(course.Id);
+            if (fullCourse == null || !fullCourse.Modules.Any())
+            {
+                Snackbar.Add("Cannot publish course without modules", Severity.Warning);
+                return;
+            }
+
+            course.Status = global::LMS.Domain.Entities.CourseStatus.Published;
+            course.PublishedDate = DateTime.UtcNow;
+            course.PublishedBy = "admin"; // TODO: Get from auth
+            course.LastModifiedDate = DateTime.UtcNow;
+            course.LastModifiedBy = "admin"; // TODO: Get from auth
+
+            await CourseRepository.UpdateAsync(course);
+
+            Snackbar.Add($"✅ Course '{course.Title}' published successfully!", Severity.Success);
+            await LoadCourses();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error publishing course: {ex}");
+            Snackbar.Add($"❌ Error publishing course: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task UnpublishCourse(global::LMS.Domain.Entities.Course course)
+    {
+        try
+        {
+            course.Status = global::LMS.Domain.Entities.CourseStatus.Draft;
+            course.LastModifiedDate = DateTime.UtcNow;
+            course.LastModifiedBy = "admin"; // TODO: Get from auth
+
+            await CourseRepository.UpdateAsync(course);
+
+            Snackbar.Add($"✅ Course '{course.Title}' unpublished (reverted to draft)", Severity.Success);
+            await LoadCourses();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error unpublishing course: {ex}");
+            Snackbar.Add($"❌ Error unpublishing course: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(global::LMS.Domain.Entities.CourseStatus status)
+    {
+        return status switch
+        {
+            global::LMS.Domain.Entities.CourseStatus.Published => Color.Success,
+            global::LMS.Domain.Entities.CourseStatus.Draft => Color.Warning,
+            global::LMS.Domain.Entities.CourseStatus.Archived => Color.Default,
+            _ => Color.Info
+        };
     }
 }

@@ -18,6 +18,7 @@ public class ContentBlock : BaseEntity
     /// - Image: { "url": "/media/...", "alt": "...", "caption": "..." }
     /// - Video: { "url": "/media/...", "thumbnail": "...", "duration": 120 }
     /// - Audio: { "url": "/media/...", "duration": 60 }
+    /// - File: { "url": "/media/...", "filename": "document.pdf", "size": 1024000, "mimeType": "application/pdf" }
     /// - Quiz: { "quizId": "guid" }
     /// - Divider: { "style": "solid|dashed" }
     /// </summary>
@@ -35,6 +36,7 @@ public enum ContentBlockType
     Image,
     Video,
     Audio,
+    File, // PDF, documents, downloads
     Quiz,
     Divider,
     CodeSnippet,

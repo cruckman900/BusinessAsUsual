@@ -1,0 +1,271 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4" Outlined="true">
+    <MudStack Spacing="3">
+        <MudText Typo="Typo.h6">@Title</MudText>
+
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Description</MudText>
+        }
+
+        <MudPaper Class="upload-dropzone pa-6 d-flex flex-column align-center justify-center" 
+                  Style="border: 2px dashed var(--mud-palette-divider); min-height: 200px; cursor: pointer;"
+                  @ondragover="HandleDragOver"
+                  @ondrop="HandleDrop"
+                  @ondragenter="HandleDragEnter"
+                  @ondragleave="HandleDragLeave">
+
+            @if (IsUploading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.body1" Class="mt-3">Uploading...</MudText>
+                @if (UploadProgress > 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@UploadProgress%</MudText>
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(UploadedFileUrl))
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.body1" Class="mt-2">File uploaded successfully!</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@UploadedFileName</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ClearUpload" Class="mt-2">
+                    Upload Another
+                </MudButton>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.body1" Class="mt-2">Drag and drop @AssetTypeLabel here</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-2">or</MudText>
+                <InputFile id="@_inputId" OnChange="HandleFileSelected" hidden accept="@AcceptedTypes" />
+                <MudButton HtmlTag="label" for="@_inputId" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AttachFile">
+                    Browse Files
+                </MudButton>
+
+                @if (!string.IsNullOrWhiteSpace(AllowedExtensions))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-3">
+                        Allowed: @AllowedExtensions
+                    </MudText>
+                }
+                @if (MaxFileSizeMB > 0)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Max size: @MaxFileSizeMB MB
+                    </MudText>
+                }
+            }
+        </MudPaper>
+
+        @if (!string.IsNullOrWhiteSpace(ValidationMessage))
+        {
+            <MudAlert Severity="Severity.Error" Dense="true">@ValidationMessage</MudAlert>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Upload File";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public string AssetType { get; set; } = "Image"; // Image, Video, Audio, Document, Archive, Other
+    [Parameter] public Guid? CourseId { get; set; }
+    [Parameter] public string? AltText { get; set; }
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public EventCallback<UploadResult> OnUploadComplete { get; set; }
+    [Parameter] public int MaxFileSizeMB { get; set; } = 50;
+    [Parameter] public string AllowedExtensions { get; set; } = "";
+    [Parameter] public string AcceptedTypes { get; set; } = "*/*";
+
+    private string _inputId = $"file-input-{Guid.NewGuid()}";
+    private bool IsUploading = false;
+    private int UploadProgress = 0;
+    private string? ValidationMessage;
+    private string? UploadedFileUrl;
+    private string? UploadedFileName;
+    private Guid? UploadedMediaId;
+
+    private string AssetTypeLabel => AssetType.ToLower() switch
+    {
+        "image" => "images",
+        "video" => "videos",
+        "audio" => "audio files",
+        "document" => "documents",
+        "archive" => "archive files",
+        _ => "files"
+    };
+
+    private void HandleDragOver(DragEventArgs e)
+    {
+        // Prevent default to allow drop
+    }
+
+    private void HandleDragEnter(DragEventArgs e)
+    {
+        // Could add visual feedback here
+    }
+
+    private void HandleDragLeave(DragEventArgs e)
+    {
+        // Could remove visual feedback here
+    }
+
+    private async Task HandleDrop(DragEventArgs e)
+    {
+        // Note: File access from drag events requires JavaScript interop
+        // For now, users will use the browse button
+        Snackbar.Add("Please use the Browse Files button to select files", Severity.Info);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        ValidationMessage = null;
+
+        // Validate file size
+        var maxBytes = MaxFileSizeMB * 1024 * 1024;
+        if (file.Size > maxBytes)
+        {
+            ValidationMessage = $"File size exceeds maximum of {MaxFileSizeMB} MB";
+            return;
+        }
+
+        // Validate extension if specified
+        if (!string.IsNullOrWhiteSpace(AllowedExtensions))
+        {
+            var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+            var allowed = AllowedExtensions.Split(',').Select(x => x.Trim().ToLowerInvariant()).ToList();
+            if (!allowed.Contains(extension))
+            {
+                ValidationMessage = $"File type {extension} is not allowed";
+                return;
+            }
+        }
+
+        await UploadFile(file);
+    }
+
+    private async Task UploadFile(IBrowserFile file)
+    {
+        ValidationMessage = null;
+        MemoryStream? memoryStream = null;
+        HttpClient? httpClient = null;
+
+        try
+        {
+            // Read file into memory FIRST before any state changes to avoid losing file reference
+            var maxFileSize = MaxFileSizeMB * 1024 * 1024;
+            using var fileStream = file.OpenReadStream(maxAllowedSize: maxFileSize);
+            memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            // NOW we can safely update UI state
+            IsUploading = true;
+            UploadProgress = 0;
+            StateHasChanged();
+
+            httpClient = HttpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+            httpClient.Timeout = TimeSpan.FromMinutes(5); // Allow time for large uploads
+
+            using var content = new MultipartFormDataContent();
+
+            // Add file from memory stream
+            var fileContent = new StreamContent(memoryStream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "file", file.Name);
+
+            // Add metadata
+            content.Add(new StringContent(AssetType), "assetType");
+            if (CourseId.HasValue)
+                content.Add(new StringContent(CourseId.Value.ToString()), "courseId");
+            if (!string.IsNullOrWhiteSpace(AltText))
+                content.Add(new StringContent(AltText), "altText");
+            if (!string.IsNullOrWhiteSpace(Caption))
+                content.Add(new StringContent(Caption), "caption");
+
+            // Upload - stream must stay alive until this completes
+            var response = await httpClient.PostAsync("api/lms/media/upload", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UploadResponse>();
+                if (result != null)
+                {
+                    UploadedFileUrl = result.Url;
+                    UploadedFileName = result.Filename;
+                    UploadedMediaId = result.Id;
+
+                    Snackbar.Add($"File uploaded: {file.Name}", Severity.Success);
+
+                    if (OnUploadComplete.HasDelegate)
+                    {
+                        await OnUploadComplete.InvokeAsync(new UploadResult
+                        {
+                            MediaId = result.Id,
+                            Url = result.Url,
+                            FileName = result.Filename,
+                            ContentType = result.ContentType,
+                            Size = result.Size
+                        });
+                    }
+                }
+            }
+            else
+            {
+                var errorText = await response.Content.ReadAsStringAsync();
+                ValidationMessage = $"Upload failed: {errorText}";
+                Snackbar.Add("Upload failed", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            ValidationMessage = $"Error: {ex.Message}";
+            Snackbar.Add($"Upload error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            // Clean up resources
+            memoryStream?.Dispose();
+            httpClient?.Dispose();
+
+            IsUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearUpload()
+    {
+        UploadedFileUrl = null;
+        UploadedFileName = null;
+        UploadedMediaId = null;
+        ValidationMessage = null;
+        StateHasChanged();
+    }
+
+    public class UploadResponse
+    {
+        public Guid Id { get; set; }
+        public string Url { get; set; } = "";
+        public string Filename { get; set; } = "";
+        public string ContentType { get; set; } = "";
+        public long Size { get; set; }
+        public string AssetType { get; set; } = "";
+    }
+
+    public class UploadResult
+    {
+        public Guid MediaId { get; set; }
+        public string Url { get; set; } = "";
+        public string FileName { get; set; } = "";
+        public string ContentType { get; set; } = "";
+        public long Size { get; set; }
+    }
+}

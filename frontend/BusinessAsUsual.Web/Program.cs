@@ -38,6 +38,13 @@ namespace BusinessAsUsual.Web
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configure Kestrel for large file uploads
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.Limits.MaxRequestBodySize = 512 * 1024 * 1024; // 512MB
+            });
+
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor(options =>
             {
@@ -52,7 +59,7 @@ namespace BusinessAsUsual.Web
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
                 options.HandshakeTimeout = TimeSpan.FromSeconds(30);
                 options.KeepAliveInterval = TimeSpan.FromSeconds(15);
-                options.MaximumReceiveMessageSize = 128 * 1024; // 128KB
+                options.MaximumReceiveMessageSize = 512 * 1024 * 1024; // 512MB for large file uploads
             });
             builder.Services.AddMudServices();
 

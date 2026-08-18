@@ -41,7 +41,16 @@
             <!-- Left Panel - Course Structure -->
             <MudItem xs="12" md="4">
                 <MudPaper Elevation="2" Class="pa-4" Style="height: 70vh; overflow-y: auto;">
-                    <MudText Typo="Typo.h6" Class="mb-3">📋 Course Structure</MudText>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">📋 Course Structure</MudText>
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Primary" 
+                                  Size="Size.Small"
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  OnClick="ShowAddModuleDialog">
+                            Add Module
+                        </MudButton>
+                    </MudStack>
                     <MudText Typo="Typo.body2" Class="mb-2" Color="Color.Secondary">
                         @course.Modules.Count modules
                     </MudText>
@@ -51,11 +60,25 @@
                         @foreach (var module in course.Modules.OrderBy(m => m.OrderIndex))
                         {
                             <MudPaper Elevation="1" Class="pa-3 mb-3">
-                                <MudText Typo="Typo.h6">@module.Title</MudText>
-                                <MudText Typo="Typo.body2" Class="mb-2">@module.Description</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    Order: @module.OrderIndex
-                                </MudText>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <div style="flex: 1;">
+                                        <MudText Typo="Typo.h6">@module.Title</MudText>
+                                        <MudText Typo="Typo.body2" Class="mb-2">@module.Description</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            Order: @module.OrderIndex
+                                        </MudText>
+                                    </div>
+                                    <MudStack Row="true" Spacing="1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                      Size="Size.Small" 
+                                                      Color="Color.Primary"
+                                                      OnClick="@(() => ShowEditModuleDialog(module))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                      Size="Size.Small" 
+                                                      Color="Color.Error"
+                                                      OnClick="@(() => DeleteModule(module))" />
+                                    </MudStack>
+                                </MudStack>
 
                                 @if (module.Lessons?.Any() == true)
                                 {
@@ -65,14 +88,36 @@
                                     </MudText>
                                     @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
                                     {
-                                        <MudButton Variant="Variant.Text" Size="Size.Small" 
-                                                   OnClick="@(() => SelectLesson(lesson))"
-                                                   FullWidth="true" Class="mt-1"
-                                                   Color="@(selectedLesson?.Id == lesson.Id ? Color.Primary : Color.Default)">
-                                            @lesson.Title
-                                        </MudButton>
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mt-1">
+                                            <MudButton Variant="Variant.Text" Size="Size.Small" 
+                                                      OnClick="@(() => SelectLesson(lesson))"
+                                                      Style="flex: 1; justify-content: flex-start;"
+                                                      Color="@(selectedLesson?.Id == lesson.Id ? Color.Primary : Color.Default)">
+                                                @lesson.Title
+                                            </MudButton>
+                                            <MudStack Row="true" Spacing="0">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                              Size="Size.Small" 
+                                                              Color="Color.Primary"
+                                                              OnClick="@(() => ShowEditLessonDialog(lesson))" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                              Size="Size.Small" 
+                                                              Color="Color.Error"
+                                                              OnClick="@(() => DeleteLesson(lesson))" />
+                                            </MudStack>
+                                        </MudStack>
                                     }
                                 }
+
+                                <MudButton Variant="Variant.Text" 
+                                          Color="Color.Success" 
+                                          Size="Size.Small"
+                                          StartIcon="@Icons.Material.Filled.Add"
+                                          FullWidth="true"
+                                          Class="mt-2"
+                                          OnClick="@(() => ShowAddLessonDialog(module))">
+                                    Add Lesson
+                                </MudButton>
                             </MudPaper>
                         }
                     }
@@ -110,6 +155,7 @@
                             {
                                 <ContentBlockEditor BlockType="@block.BlockType"
                                                    JsonContent="@block.JsonContent"
+                                                   CourseId="@CourseId"
                                                    OnDelete="@(() => DeleteBlock(block))"
                                                    OnContentChanged="@((json) => UpdateBlockContent(block, json))" />
                             }
@@ -135,6 +181,30 @@
                                           Style="flex: 1;"
                                           OnClick="@(() => AddBlock(ContentBlockType.Callout))">
                                     Add Callout
+                                </MudButton>
+                            </MudStack>
+
+                            <MudStack Row="true" Spacing="2" Class="mt-2">
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.Image"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Image))">
+                                    Add Image
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.VideoLibrary"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Video))">
+                                    Add Video
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.AttachFile"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.File))">
+                                    Add File
                                 </MudButton>
                             </MudStack>
                         }
@@ -165,6 +235,30 @@
                                           Style="flex: 1;"
                                           OnClick="@(() => AddBlock(ContentBlockType.Callout))">
                                     Add Callout
+                                </MudButton>
+                            </MudStack>
+
+                            <MudStack Row="true" Spacing="2" Class="mt-2">
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.Image"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Image))">
+                                    Add Image
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.VideoLibrary"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.Video))">
+                                    Add Video
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled" 
+                                          Color="Color.Secondary" 
+                                          StartIcon="@Icons.Material.Filled.AttachFile"
+                                          Style="flex: 1;"
+                                          OnClick="@(() => AddBlock(ContentBlockType.File))">
+                                    Add File
                                 </MudButton>
                             </MudStack>
                         }
@@ -230,6 +324,80 @@
     }
 </MudContainer>
 
+<!-- Module Dialog -->
+<MudDialog @bind-Visible="_showModuleDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @(_editingModule == null ? "Add Module" : "Edit Module")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_moduleTitle" 
+                      Label="Module Title" 
+                      Required="true" 
+                      HelperText="Enter a descriptive title for this module"
+                      Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_moduleDescription" 
+                      Label="Description" 
+                      Lines="3"
+                      HelperText="Provide a brief overview of what this module covers"
+                      Variant="Variant.Outlined" 
+                      Class="mt-3" />
+        <MudNumericField @bind-Value="_moduleOrderIndex" 
+                         Label="Order Index" 
+                         HelperText="Position of this module in the course (0-based)"
+                         Variant="Variant.Outlined" 
+                         Min="0"
+                         Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showModuleDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveModule">
+            @(_editingModule == null ? "Add Module" : "Save Changes")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Lesson Dialog -->
+<MudDialog @bind-Visible="_showLessonDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @(_editingLesson == null ? "Add Lesson" : "Edit Lesson")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_lessonTitle" 
+                      Label="Lesson Title" 
+                      Required="true" 
+                      HelperText="Enter a descriptive title for this lesson"
+                      Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_lessonDescription" 
+                      Label="Description" 
+                      Lines="3"
+                      HelperText="Provide a brief overview of what this lesson teaches"
+                      Variant="Variant.Outlined" 
+                      Class="mt-3" />
+        <MudNumericField @bind-Value="_lessonOrderIndex" 
+                         Label="Order Index" 
+                         HelperText="Position of this lesson in the module (0-based)"
+                         Variant="Variant.Outlined" 
+                         Min="0"
+                         Class="mt-3" />
+        <MudNumericField @bind-Value="_lessonDuration" 
+                         Label="Estimated Duration (minutes)" 
+                         HelperText="How long should this lesson take to complete?"
+                         Variant="Variant.Outlined" 
+                         Min="1"
+                         Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showLessonDialog = false)">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveLesson">
+            @(_editingLesson == null ? "Add Lesson" : "Save Changes")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     [Parameter]
     public Guid CourseId { get; set; }
@@ -240,6 +408,14 @@
     private int _activeTabIndex = 0;
 
     private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new();
+
+    private DialogOptions _dialogOptions = new() 
+    { 
+        MaxWidth = MaxWidth.Small, 
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -278,6 +454,9 @@
         {
             ContentBlockType.Heading => """{"content": "<h2>Your Heading Here</h2>"}""",
             ContentBlockType.Callout => """{"content": "<p>💡 Important information or tip...</p>"}""",
+            ContentBlockType.Image => """{"url": "", "alt": "Image description", "caption": ""}""",
+            ContentBlockType.Video => """{"url": "", "thumbnail": "", "duration": 0}""",
+            ContentBlockType.File => """{"url": "", "filename": "document.pdf", "size": 0, "mimeType": "application/pdf"}""",
             _ => """{"content": "<p>Start typing your content here...</p>"}"""
         };
 
@@ -374,5 +553,175 @@
             CourseStatus.Archived => Color.Default,
             _ => Color.Info
         };
+    }
+
+    // Module Management
+    private Module? _editingModule;
+    private bool _showModuleDialog = false;
+    private string _moduleTitle = "";
+    private string _moduleDescription = "";
+    private int _moduleOrderIndex = 0;
+
+    private void ShowAddModuleDialog()
+    {
+        _editingModule = null;
+        _moduleTitle = "";
+        _moduleDescription = "";
+        _moduleOrderIndex = course?.Modules?.Count ?? 0;
+        _showModuleDialog = true;
+        StateHasChanged();
+    }
+
+    private void ShowEditModuleDialog(Module module)
+    {
+        _editingModule = module;
+        _moduleTitle = module.Title;
+        _moduleDescription = module.Description ?? "";
+        _moduleOrderIndex = module.OrderIndex;
+        _showModuleDialog = true;
+        StateHasChanged();
+    }
+
+    private void SaveModule()
+    {
+        if (string.IsNullOrWhiteSpace(_moduleTitle))
+        {
+            Snackbar.Add("Module title is required", Severity.Warning);
+            return;
+        }
+
+        if (_editingModule != null)
+        {
+            // Edit existing module
+            _editingModule.Title = _moduleTitle;
+            _editingModule.Description = _moduleDescription;
+            _editingModule.OrderIndex = _moduleOrderIndex;
+        }
+        else
+        {
+            // Create new module
+            var newModule = new Module
+            {
+                Id = Guid.NewGuid(),
+                CourseId = course!.Id,
+                Course = course,
+                Title = _moduleTitle,
+                Description = _moduleDescription,
+                OrderIndex = _moduleOrderIndex,
+                Lessons = new List<Lesson>(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "admin" // TODO: Get from auth context
+            };
+
+            course.Modules ??= new List<Module>();
+            ((List<Module>)course.Modules).Add(newModule);
+        }
+
+        _hasUnsavedChanges = true;
+        _showModuleDialog = false;
+        StateHasChanged();
+    }
+
+    private void DeleteModule(Module module)
+    {
+        if (course?.Modules == null) return;
+
+        ((List<Module>)course.Modules).Remove(module);
+        if (selectedLesson?.ModuleId == module.Id)
+        {
+            selectedLesson = null;
+        }
+        _hasUnsavedChanges = true;
+        StateHasChanged();
+    }
+
+    // Lesson Management
+    private Module? _parentModule;
+    private Lesson? _editingLesson;
+    private bool _showLessonDialog = false;
+    private string _lessonTitle = "";
+    private string _lessonDescription = "";
+    private int _lessonOrderIndex = 0;
+    private int _lessonDuration = 15;
+
+    private void ShowAddLessonDialog(Module module)
+    {
+        _parentModule = module;
+        _editingLesson = null;
+        _lessonTitle = "";
+        _lessonDescription = "";
+        _lessonOrderIndex = module.Lessons?.Count ?? 0;
+        _lessonDuration = 15;
+        _showLessonDialog = true;
+        StateHasChanged();
+    }
+
+    private void ShowEditLessonDialog(Lesson lesson)
+    {
+        _parentModule = course?.Modules?.FirstOrDefault(m => m.Id == lesson.ModuleId);
+        _editingLesson = lesson;
+        _lessonTitle = lesson.Title;
+        _lessonDescription = lesson.Description ?? "";
+        _lessonOrderIndex = lesson.OrderIndex;
+        _lessonDuration = lesson.EstimatedDurationMinutes;
+        _showLessonDialog = true;
+        StateHasChanged();
+    }
+
+    private void SaveLesson()
+    {
+        if (string.IsNullOrWhiteSpace(_lessonTitle))
+        {
+            Snackbar.Add("Lesson title is required", Severity.Warning);
+            return;
+        }
+
+        if (_editingLesson != null)
+        {
+            // Edit existing lesson
+            _editingLesson.Title = _lessonTitle;
+            _editingLesson.Description = _lessonDescription;
+            _editingLesson.OrderIndex = _lessonOrderIndex;
+            _editingLesson.EstimatedDurationMinutes = _lessonDuration;
+        }
+        else if (_parentModule != null)
+        {
+            // Create new lesson
+            var newLesson = new Lesson
+            {
+                Id = Guid.NewGuid(),
+                ModuleId = _parentModule.Id,
+                Module = _parentModule,
+                Title = _lessonTitle,
+                Description = _lessonDescription,
+                OrderIndex = _lessonOrderIndex,
+                EstimatedDurationMinutes = _lessonDuration,
+                ContentBlocks = new List<ContentBlock>(),
+                Quizzes = new List<global::LMS.Domain.Entities.Quiz>(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "admin" // TODO: Get from auth context
+            };
+
+            _parentModule.Lessons ??= new List<Lesson>();
+            ((List<Lesson>)_parentModule.Lessons).Add(newLesson);
+        }
+
+        _hasUnsavedChanges = true;
+        _showLessonDialog = false;
+        StateHasChanged();
+    }
+
+    private void DeleteLesson(Lesson lesson)
+    {
+        var module = course?.Modules?.FirstOrDefault(m => m.Id == lesson.ModuleId);
+        if (module?.Lessons == null) return;
+
+        ((List<Lesson>)module.Lessons).Remove(lesson);
+        if (selectedLesson?.Id == lesson.Id)
+        {
+            selectedLesson = null;
+        }
+        _hasUnsavedChanges = true;
+        StateHasChanged();
     }
 }

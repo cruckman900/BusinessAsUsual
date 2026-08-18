@@ -1,0 +1,86 @@
+@using System.Text.Json
+@using global::LMS.Domain.Entities
+
+@if (!string.IsNullOrWhiteSpace(_fileUrl))
+{
+    <MudPaper Class="content-block-file my-4 pa-4" Outlined="true">
+        <MudStack Row="true" AlignItems="MudBlazor.AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@GetFileIcon()" 
+                     Color="Color.Primary" 
+                     Size="Size.Large" />
+
+            <MudStack Spacing="1" Style="flex: 1;">
+                <MudText Typo="Typo.subtitle1">@_fileName</MudText>
+
+                @if (!string.IsNullOrWhiteSpace(_caption))
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @_caption
+                    </MudText>
+                }
+            </MudStack>
+
+            <MudButton Variant="MudBlazor.Variant.Filled" 
+                       Color="Color.Primary"
+                       Href="@_fileUrl"
+                       Target="_blank"
+                       StartIcon="@Icons.Material.Filled.Download">
+                Download
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string JsonContent { get; set; } = "{}";
+
+    private string? _fileUrl;
+    private string? _fileName;
+    private string? _caption;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ParseContent();
+    }
+
+    private void ParseContent()
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(JsonContent);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("url", out var urlProp))
+                _fileUrl = urlProp.GetString();
+
+            if (root.TryGetProperty("filename", out var nameProp))
+                _fileName = nameProp.GetString();
+
+            if (root.TryGetProperty("caption", out var capProp))
+                _caption = capProp.GetString();
+        }
+        catch
+        {
+            // Invalid JSON, ignore
+        }
+    }
+
+    private string GetFileIcon()
+    {
+        if (string.IsNullOrWhiteSpace(_fileName))
+            return Icons.Material.Filled.InsertDriveFile;
+
+        var extension = Path.GetExtension(_fileName).ToLowerInvariant();
+        return extension switch
+        {
+            ".pdf" => Icons.Material.Filled.PictureAsPdf,
+            ".doc" or ".docx" => Icons.Material.Filled.Description,
+            ".xls" or ".xlsx" => Icons.Material.Filled.TableChart,
+            ".ppt" or ".pptx" => Icons.Material.Filled.Slideshow,
+            ".txt" => Icons.Material.Filled.TextSnippet,
+            ".zip" or ".rar" or ".7z" => Icons.Material.Filled.FolderZip,
+            _ => Icons.Material.Filled.InsertDriveFile
+        };
+    }
+}

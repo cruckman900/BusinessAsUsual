@@ -48,6 +48,8 @@ public class PublishCourseCommandHandler : ICommandHandler<PublishCourseCommand,
             course.Status = CourseStatus.Published;
             course.PublishedDate = DateTime.UtcNow;
             course.PublishedBy = command.PublishedBy;
+            course.LastModifiedDate = DateTime.UtcNow;
+            course.LastModifiedBy = command.PublishedBy;
             course.UpdatedAt = DateTime.UtcNow;
 
             await _courseRepository.UpdateAsync(course, cancellationToken);

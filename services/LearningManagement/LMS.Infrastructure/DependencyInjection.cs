@@ -26,6 +26,7 @@ public static class DependencyInjection
         // Add Services
         services.AddScoped<ICertificateGenerator, CertificateGenerator>();
         services.AddScoped<ICertificatePdfService, CertificatePdfService>();
+        services.AddScoped<IMediaStorageService, MediaStorageService>();
 
         // Add Repositories
         services.AddScoped<ICourseRepository, CourseRepository>();
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
         services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
 
         // Add Seed Data
         services.AddScoped<LMSSeedData>();

@@ -15,6 +15,8 @@ public class Course : BaseEntity
     public List<string> Tags { get; set; } = new();
     public DateTime? PublishedDate { get; set; }
     public string? PublishedBy { get; set; }
+    public DateTime? LastModifiedDate { get; set; }
+    public string? LastModifiedBy { get; set; }
 
     // Assessment settings
     public bool RequiresAssessment { get; set; } = true;
