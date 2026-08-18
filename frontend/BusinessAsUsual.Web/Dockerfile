@@ -45,6 +45,12 @@ COPY services/Platform/Platform.Application/Platform.Application.csproj services
 COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj services/Platform/Platform.Infrastructure/
 COPY services/Platform/Platform.Contracts/Platform.Contracts.csproj services/Platform/Platform.Contracts/
 COPY services/Platform/Platform.Web/Platform.Web.csproj services/Platform/Platform.Web/
+# LMS service projects referenced by the web shell
+COPY services/LearningManagement/LMS.Domain/LMS.Domain.csproj services/LearningManagement/LMS.Domain/
+COPY services/LearningManagement/LMS.Application/LMS.Application.csproj services/LearningManagement/LMS.Application/
+COPY services/LearningManagement/LMS.Infrastructure/LMS.Infrastructure.csproj services/LearningManagement/LMS.Infrastructure/
+COPY services/LearningManagement/LMS.API/LMS.API.csproj services/LearningManagement/LMS.API/
+COPY services/LearningManagement/LMS.Contracts/LMS.Contracts.csproj services/LearningManagement/LMS.Contracts/
 # Shared core (event bus, integration events)
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
@@ -92,6 +98,12 @@ COPY services/Platform/Platform.Application services/Platform/Platform.Applicati
 COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infrastructure
 COPY services/Platform/Platform.Contracts services/Platform/Platform.Contracts
 COPY services/Platform/Platform.Web services/Platform/Platform.Web
+# LMS service source
+COPY services/LearningManagement/LMS.Domain services/LearningManagement/LMS.Domain
+COPY services/LearningManagement/LMS.Application services/LearningManagement/LMS.Application
+COPY services/LearningManagement/LMS.Infrastructure services/LearningManagement/LMS.Infrastructure
+COPY services/LearningManagement/LMS.API services/LearningManagement/LMS.API
+COPY services/LearningManagement/LMS.Contracts services/LearningManagement/LMS.Contracts
 # Shared core source
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
