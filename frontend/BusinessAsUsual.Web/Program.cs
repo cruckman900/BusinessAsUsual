@@ -220,6 +220,9 @@ namespace BusinessAsUsual.Web
 
             var app = builder.Build();
 
+            // Initialize LMS database in all environments (migrations only, no seed data in production)
+            await InitializeLMSDatabaseAsync(app.Services);
+
             // Seed HR data in development
             if (app.Environment.IsDevelopment())
             {
@@ -711,6 +714,34 @@ namespace BusinessAsUsual.Web
 #pragma warning restore CS0618
 
         /// <summary>
+        /// Initialize LMS database (run migrations) in all environments
+        /// </summary>
+        private static async Task InitializeLMSDatabaseAsync(IServiceProvider services)
+        {
+            try
+            {
+                using var scope = services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<LMS.Infrastructure.Persistence.LMSDbContext>();
+
+                if (context.Database.IsRelational())
+                {
+                    Console.WriteLine("Applying LMS database migrations...");
+                    await context.Database.MigrateAsync();
+                    Console.WriteLine("✓ LMS database migrations applied");
+                }
+                else
+                {
+                    Console.WriteLine("✓ In-memory database ready for LMS");
+                    await context.Database.EnsureCreatedAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️  Warning: LMS database initialization failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Seeds the LMS database with demo courses and content
         /// </summary>
         private static async Task SeedLMSDataAsync(IServiceProvider services)
@@ -721,17 +752,13 @@ namespace BusinessAsUsual.Web
 
             try
             {
-                // Ensure database is created
-                await context.Database.EnsureCreatedAsync();
-                Console.WriteLine("✓ LMS database schema created");
-
-                // Seed the data
+                // Seed the data (database already initialized by InitializeLMSDatabaseAsync)
                 await seedData.SeedAsync();
                 Console.WriteLine("✓ Seeded LMS data successfully");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"✗ Error initializing LMS database: {ex.Message}");
+                Console.WriteLine($"✗ Error seeding LMS data: {ex.Message}");
             }
         }
     }
