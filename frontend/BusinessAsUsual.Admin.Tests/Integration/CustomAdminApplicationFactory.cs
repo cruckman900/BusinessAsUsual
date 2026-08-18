@@ -15,6 +15,26 @@ public class CustomAdminApplicationFactory : WebApplicationFactory<BusinessAsUsu
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Set the content root to the correct path for both local and CI environments
+        var projectDir = Directory.GetCurrentDirectory();
+        var adminProjectPath = Path.GetFullPath(Path.Combine(projectDir, "..", "BusinessAsUsual.Admin"));
+
+        // If the path doesn't exist, try alternative paths (for CI)
+        if (!Directory.Exists(adminProjectPath))
+        {
+            // Try finding from solution root
+            var solutionDir = FindSolutionRoot(projectDir);
+            if (solutionDir != null)
+            {
+                adminProjectPath = Path.Combine(solutionDir, "frontend", "BusinessAsUsual.Admin");
+            }
+        }
+
+        if (Directory.Exists(adminProjectPath))
+        {
+            builder.UseContentRoot(adminProjectPath);
+        }
+
         // Use Development environment to ensure all services are configured properly
         builder.UseEnvironment("Development");
 
@@ -59,5 +79,19 @@ public class CustomAdminApplicationFactory : WebApplicationFactory<BusinessAsUsu
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
             throw;
         }
+    }
+
+    private static string? FindSolutionRoot(string startPath)
+    {
+        var directory = new DirectoryInfo(startPath);
+        while (directory != null)
+        {
+            if (directory.GetFiles("*.sln").Any())
+            {
+                return directory.FullName;
+            }
+            directory = directory.Parent;
+        }
+        return null;
     }
 }
