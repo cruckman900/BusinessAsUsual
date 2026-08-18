@@ -1,0 +1,243 @@
+@page "/lms/admin/learning-analytics"
+@using BusinessAsUsual.Web.Modules.LMS.Shared.DTOs
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Learning Analytics Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">📊 Learning Analytics Dashboard</MudText>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (_dashboard != null)
+    {
+        <!-- Date Range Selector -->
+        <MudPaper Class="pa-4 mb-4">
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Start Date" @bind-Date="_startDate" MaxDate="DateTime.Today" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="End Date" @bind-Date="_endDate" MaxDate="DateTime.Today" />
+                </MudItem>
+                <MudItem xs="12" sm="4" Class="d-flex align-center">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadDashboardAsync">
+                        Refresh Data
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- Overall Metrics Cards -->
+        <MudText Typo="Typo.h6" Class="mb-3">Overall Metrics</MudText>
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.TotalEnrollments</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Enrollments</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.ActiveLearners</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active Learners</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.CompletedCourses</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Completed Courses</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.OverallCompletionRate.ToString("F1")%</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Completion Rate</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.AverageProgressPercentage.ToString("F1")%</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Average Progress</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h3">@_dashboard.OverallMetrics.CertificatesIssued</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Certificates Issued</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Popular Courses -->
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Most Popular Courses</MudText>
+            @if (_dashboard.PopularCourses.Any())
+            {
+                <MudTable Items="@_dashboard.PopularCourses" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Course</MudTh>
+                        <MudTh>Enrollments</MudTh>
+                        <MudTh>Completions</MudTh>
+                        <MudTh>Completion Rate</MudTh>
+                        <MudTh>Avg. Time to Complete</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Course">
+                            <MudLink Href="@($"/lms/admin/courses/{context.CourseId}")">@context.CourseTitle</MudLink>
+                        </MudTd>
+                        <MudTd DataLabel="Enrollments">@context.EnrollmentCount</MudTd>
+                        <MudTd DataLabel="Completions">@context.CompletionCount</MudTd>
+                        <MudTd DataLabel="Completion Rate">@context.CompletionRate.ToString("F1")%</MudTd>
+                        <MudTd DataLabel="Avg. Time">@context.AverageTimeToCompleteHours.ToString("F1") hrs</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudText Color="Color.Secondary">No course data available.</MudText>
+            }
+        </MudPaper>
+
+        <!-- Completion Trends -->
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Completion Trends</MudText>
+            @if (_dashboard.CompletionTrends.Any())
+            {
+                <MudSimpleTable Dense="true">
+                    <thead>
+                        <tr>
+                            <th>Week</th>
+                            <th>Enrollments</th>
+                            <th>Completions</th>
+                            <th>Completion Rate</th>
+                            <th>Active Learners</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var trend in _dashboard.CompletionTrends.OrderByDescending(t => t.Date).Take(10))
+                        {
+                            <tr>
+                                <td>@trend.Date.ToString("MMM dd, yyyy")</td>
+                                <td>@trend.Enrollments</td>
+                                <td>@trend.Completions</td>
+                                <td>@trend.CompletionRate.ToString("F1")%</td>
+                                <td>@trend.ActiveLearners</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+            else
+            {
+                <MudText Color="Color.Secondary">No trend data available.</MudText>
+            }
+        </MudPaper>
+
+        <!-- Engagement Metrics -->
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Engagement Metrics</MudText>
+            @if (_dashboard.EngagementMetrics.Any())
+            {
+                <MudSimpleTable Dense="true">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Active Users</th>
+                            <th>Sessions</th>
+                            <th>Dropoffs</th>
+                            <th>Dropoff Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var metric in _dashboard.EngagementMetrics.OrderByDescending(e => e.Period).Take(10))
+                        {
+                            <tr>
+                                <td>@metric.Period.ToString("MMM dd, yyyy")</td>
+                                <td>@metric.ActiveUsers</td>
+                                <td>@metric.SessionCount</td>
+                                <td>@metric.DropoffCount</td>
+                                <td>@metric.DropoffRate.ToString("F1")%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+            else
+            {
+                <MudText Color="Color.Secondary">No engagement data available.</MudText>
+            }
+        </MudPaper>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+</MudContainer>
+
+@code {
+    private LearningAnalyticsDashboardDto? _dashboard;
+    private bool _loading = true;
+    private string? _errorMessage;
+    private DateTime? _startDate = DateTime.Today.AddMonths(-6);
+    private DateTime? _endDate = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        _loading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+            var startParam = _startDate?.ToString("yyyy-MM-dd") ?? "";
+            var endParam = _endDate?.ToString("yyyy-MM-dd") ?? "";
+            var url = $"api/lms/analytics/dashboard?startDate={startParam}&endDate={endParam}";
+
+            var response = await httpClient.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _dashboard = await response.Content.ReadFromJsonAsync<LearningAnalyticsDashboardDto>();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                _errorMessage = $"Failed to load dashboard: {error}";
+                Snackbar.Add(_errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading dashboard: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

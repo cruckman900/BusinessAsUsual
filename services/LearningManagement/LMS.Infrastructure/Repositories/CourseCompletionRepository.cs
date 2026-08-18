@@ -48,6 +48,15 @@ public class CourseCompletionRepository : ICourseCompletionRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<CourseCompletion>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.CourseCompletions
+            .Include(c => c.Course)
+            .Include(c => c.FinalAssessmentAttempt)
+            .Where(c => !c.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<CourseCompletion> AddAsync(CourseCompletion completion, CancellationToken cancellationToken = default)
     {
         _context.CourseCompletions.Add(completion);

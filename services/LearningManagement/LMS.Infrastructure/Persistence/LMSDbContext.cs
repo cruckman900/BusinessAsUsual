@@ -28,7 +28,19 @@ public class LMSDbContext : DbContext
     public DbSet<DetailedLearnerProgress> DetailedLearnerProgress => Set<DetailedLearnerProgress>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
     public DbSet<Notification> Notifications => Set<Notification>();
+
+    // Learning paths
+    public DbSet<LearningPath> LearningPaths => Set<LearningPath>();
+    public DbSet<LearningPathCourse> LearningPathCourses => Set<LearningPathCourse>();
+    public DbSet<LearningPathEnrollment> LearningPathEnrollments => Set<LearningPathEnrollment>();
+    public DbSet<CoursePrerequisite> CoursePrerequisites => Set<CoursePrerequisite>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
+
+    // Gamification
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<EarnedBadge> EarnedBadges => Set<EarnedBadge>();
+    public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<LearnerGamification> LearnerGamifications => Set<LearnerGamification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

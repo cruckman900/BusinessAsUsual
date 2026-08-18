@@ -1,0 +1,270 @@
+@page "/lms/admin/analytics"
+@rendermode InteractiveServer
+@using BusinessAsUsual.Web.Components.Layout
+@using global::LMS.Domain.DTOs
+@layout MainLayout
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>LMS Analytics Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="mt-2">Loading analytics dashboard...</MudText>
+    }
+    else if (_summary == null)
+    {
+        <MudAlert Severity="Severity.Error">Failed to load analytics data</MudAlert>
+    }
+    else
+    {
+        <!-- Header -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.h4">📊 LMS Analytics Dashboard</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Overall quiz performance metrics</MudText>
+                </div>
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary"
+                          StartIcon="@Icons.Material.Filled.Download"
+                          OnClick="ExportSummary">
+                    Export Summary
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Key Metrics -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Quizzes</MudText>
+                            <MudText Typo="Typo.h3">@_summary.TotalQuizzes</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Attempts</MudText>
+                            <MudText Typo="Typo.h3">@_summary.TotalAttempts</MudText>
+                            <MudText Typo="Typo.caption">@_summary.TotalCompletions completed</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Overall Avg Score</MudText>
+                            <MudText Typo="Typo.h3" Color="@GetScoreColor(_summary.OverallAverageScore)">
+                                @_summary.OverallAverageScore%
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Overall Pass Rate</MudText>
+                            <MudText Typo="Typo.h3" Color="@GetPassRateColor(_summary.OverallPassRate)">
+                                @_summary.OverallPassRate%
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Learners</MudText>
+                            <MudText Typo="Typo.h3">@_summary.ActiveLearners</MudText>
+                            <MudText Typo="Typo.caption">have taken quizzes</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Top Performing Quizzes -->
+        @if (_summary.TopPerformingQuizzes.Any())
+        {
+            <MudPaper Elevation="2" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6" Class="mb-3">🏆 Top Performing Quizzes (by Average Score)</MudText>
+                <MudTable Items="@_summary.TopPerformingQuizzes" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Quiz</MudTh>
+                        <MudTh>Attempts</MudTh>
+                        <MudTh>Avg Score</MudTh>
+                        <MudTh>Pass Rate</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Quiz">@context.Title</MudTd>
+                        <MudTd DataLabel="Attempts">@context.AttemptCount</MudTd>
+                        <MudTd DataLabel="Avg Score">
+                            <MudChip T="string" Size="Size.Small" Color="@GetScoreColor(context.AverageScore)">
+                                @context.AverageScore%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Pass Rate">
+                            <MudChip T="string" Size="Size.Small" Color="@GetPassRateColor(context.PassRate)">
+                                @context.PassRate%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButton Variant="Variant.Text" 
+                                      Size="Size.Small"
+                                      StartIcon="@Icons.Material.Filled.Analytics"
+                                      Href="@($"/lms/admin/analytics/quiz/{context.QuizId}")">
+                                View Details
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+
+        <!-- Lowest Performing Quizzes -->
+        @if (_summary.LowestPerformingQuizzes.Any())
+        {
+            <MudPaper Elevation="2" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6" Class="mb-3">⚠️ Lowest Performing Quizzes (by Pass Rate)</MudText>
+                <MudAlert Severity="Severity.Warning" Class="mb-3">These quizzes may need content review or difficulty adjustment</MudAlert>
+                <MudTable Items="@_summary.LowestPerformingQuizzes" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Quiz</MudTh>
+                        <MudTh>Attempts</MudTh>
+                        <MudTh>Avg Score</MudTh>
+                        <MudTh>Pass Rate</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Quiz">@context.Title</MudTd>
+                        <MudTd DataLabel="Attempts">@context.AttemptCount</MudTd>
+                        <MudTd DataLabel="Avg Score">
+                            <MudChip T="string" Size="Size.Small" Color="@GetScoreColor(context.AverageScore)">
+                                @context.AverageScore%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Pass Rate">
+                            <MudChip T="string" Size="Size.Small" Color="@GetPassRateColor(context.PassRate)">
+                                @context.PassRate%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButton Variant="Variant.Text" 
+                                      Size="Size.Small"
+                                      StartIcon="@Icons.Material.Filled.Analytics"
+                                      Href="@($"/lms/admin/analytics/quiz/{context.QuizId}")">
+                                View Details
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+
+        <!-- Most Attempted Quizzes -->
+        @if (_summary.MostAttemptedQuizzes.Any())
+        {
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-3">🔥 Most Attempted Quizzes</MudText>
+                <MudTable Items="@_summary.MostAttemptedQuizzes" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Quiz</MudTh>
+                        <MudTh>Attempts</MudTh>
+                        <MudTh>Avg Score</MudTh>
+                        <MudTh>Pass Rate</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Quiz">@context.Title</MudTd>
+                        <MudTd DataLabel="Attempts">@context.AttemptCount</MudTd>
+                        <MudTd DataLabel="Avg Score">
+                            <MudChip T="string" Size="Size.Small" Color="@GetScoreColor(context.AverageScore)">
+                                @context.AverageScore%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Pass Rate">
+                            <MudChip T="string" Size="Size.Small" Color="@GetPassRateColor(context.PassRate)">
+                                @context.PassRate%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButton Variant="Variant.Text" 
+                                      Size="Size.Small"
+                                      StartIcon="@Icons.Material.Filled.Analytics"
+                                      Href="@($"/lms/admin/analytics/quiz/{context.QuizId}")">
+                                View Details
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+    }
+</MudContainer>
+
+@code {
+    private QuizPerformanceSummaryDto? _summary;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSummary();
+    }
+
+    private async Task LoadSummary()
+    {
+        _loading = true;
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+            _summary = await httpClient.GetFromJsonAsync<QuizPerformanceSummaryDto>("api/lms/analytics/summary");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading analytics summary: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ExportSummary()
+    {
+        Navigation.NavigateTo("/api/lms/analytics/summary/export", forceLoad: true);
+        Snackbar.Add("Downloading summary report...", Severity.Success);
+    }
+
+    private Color GetScoreColor(decimal score) => score switch
+    {
+        >= 90 => Color.Success,
+        >= 70 => Color.Info,
+        >= 50 => Color.Warning,
+        _ => Color.Error
+    };
+
+    private Color GetPassRateColor(decimal rate) => rate switch
+    {
+        >= 80 => Color.Success,
+        >= 60 => Color.Info,
+        >= 40 => Color.Warning,
+        _ => Color.Error
+    };
+}

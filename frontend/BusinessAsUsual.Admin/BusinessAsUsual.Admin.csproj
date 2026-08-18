@@ -88,7 +88,7 @@
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
     <ProjectReference Include="..\..\backend\BusinessAsUsual.Domain\BusinessAsUsual.Domain.csproj" />
     <ProjectReference Include="..\..\BusinessAsUsual.Core\BusinessAsUsual.Core.csproj" />
-    <ProjectReference Include="..\..\services\HR\HR.Infrastructure\HR.Infrastructure.csproj" />
+    <!-- HR.Infrastructure reference removed to fix Docker build - Admin uses API calls instead -->
   </ItemGroup>
 
 </Project>

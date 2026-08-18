@@ -28,6 +28,16 @@ public class QuizRepository : IQuizRepository
             .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted, cancellationToken);
     }
 
+    public async Task<Quiz?> GetWithAttemptsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Quizzes
+            .Include(q => q.Questions)
+                .ThenInclude(q => q.Options)
+            .Include(q => q.Attempts)
+                .ThenInclude(a => a.Answers)
+            .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted, cancellationToken);
+    }
+
     public async Task<IEnumerable<Quiz>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         return await _context.Quizzes
@@ -43,6 +53,24 @@ public class QuizRepository : IQuizRepository
             .Include(q => q.Questions)
             .Where(q => q.LessonId == lessonId && !q.IsDeleted)
             .OrderBy(q => q.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Quiz>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Quizzes
+            .Where(q => !q.IsDeleted)
+            .OrderBy(q => q.Title)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Quiz>> GetAllWithAttemptsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Quizzes
+            .Include(q => q.Attempts)
+                .ThenInclude(a => a.Answers)
+            .Where(q => !q.IsDeleted)
+            .OrderBy(q => q.Title)
             .ToListAsync(cancellationToken);
     }
 

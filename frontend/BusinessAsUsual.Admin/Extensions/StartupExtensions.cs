@@ -1,9 +1,10 @@
 ﻿using BusinessAsUsual.Admin.Services;
 using BusinessAsUsual.Admin.Services.Logs;
-using HR.Infrastructure.Persistence;
-using HR.Infrastructure.Repositories;
-using HR.Infrastructure.Data;
-using HR.Domain.Repositories;
+// HR infrastructure references removed to fix Docker build
+// using HR.Infrastructure.Persistence;
+// using HR.Infrastructure.Repositories;
+// using HR.Infrastructure.Data;
+// using HR.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Admin.Extensions
@@ -42,7 +43,9 @@ namespace BusinessAsUsual.Admin.Extensions
             services.AddSignalR();
             services.AddHttpContextAccessor();
 
-            // Add HR Infrastructure
+            // HR Infrastructure moved to HR microservice
+            // Admin application uses HR API for employee/department data
+            /* Commented out to fix Docker build
             var hrConnectionString = configuration.GetConnectionString("HRDatabase") ?? "Server=(localdb)\\mssqllocaldb;Database=BAUAdmin_HR;Trusted_Connection=True;MultipleActiveResultSets=true";
             services.AddDbContext<HRDbContext>(options =>
                 options.UseSqlServer(hrConnectionString));
@@ -50,6 +53,7 @@ namespace BusinessAsUsual.Admin.Extensions
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             services.AddScoped<HRSeedData>();
+            */
 
             return services;
         }

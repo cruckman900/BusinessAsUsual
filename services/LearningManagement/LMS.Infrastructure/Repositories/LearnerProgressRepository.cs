@@ -29,6 +29,14 @@ public class LearnerProgressRepository : ILearnerProgressRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<LearnerProgress>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.LearnerProgresses
+            .Include(p => p.Course)
+            .Where(p => !p.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<LearnerProgress> AddAsync(LearnerProgress progress, CancellationToken cancellationToken = default)
     {
         _context.LearnerProgresses.Add(progress);

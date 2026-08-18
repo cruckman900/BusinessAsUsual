@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<ICertificateGenerator, CertificateGenerator>();
         services.AddScoped<ICertificatePdfService, CertificatePdfService>();
         services.AddScoped<IMediaStorageService, MediaStorageService>();
+        services.AddScoped<IReportGenerationService, CsvReportGenerationService>();
 
         // Add Repositories
         services.AddScoped<ICourseRepository, CourseRepository>();
@@ -38,6 +39,12 @@ public static class DependencyInjection
         services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
+        services.AddScoped<ILearningPathRepository, LearningPathRepository>();
+        services.AddScoped<ILearningPathEnrollmentRepository, LearningPathEnrollmentRepository>();
+        services.AddScoped<ICoursePrerequisiteRepository, CoursePrerequisiteRepository>();
+        services.AddScoped<ILearnerGamificationRepository, LearnerGamificationRepository>();
+        services.AddScoped<IBadgeRepository, BadgeRepository>();
+        services.AddScoped<IEarnedBadgeRepository, EarnedBadgeRepository>();
 
         // Add Seed Data
         services.AddScoped<LMSSeedData>();
@@ -45,4 +52,3 @@ public static class DependencyInjection
         return services;
     }
 }
-

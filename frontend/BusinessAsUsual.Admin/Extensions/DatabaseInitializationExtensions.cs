@@ -1,5 +1,6 @@
-using HR.Infrastructure.Persistence;
-using HR.Infrastructure.Data;
+// HR infrastructure references removed to fix Docker build
+// using HR.Infrastructure.Persistence;
+// using HR.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessAsUsual.Admin.Extensions;
@@ -20,7 +21,11 @@ public static class DatabaseInitializationExtensions
         try
         {
             // Initialize HR database
-            await InitializeHRDatabaseAsync(scopedServices, logger);
+            // Commented out - HR module uses its own initialization
+            // await InitializeHRDatabaseAsync(scopedServices, logger);
+
+            logger.LogInformation("Database initialization complete. HR module initializes separately.");
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -28,6 +33,7 @@ public static class DatabaseInitializationExtensions
         }
     }
 
+    /* HR database initialization moved to HR service
     private static async Task InitializeHRDatabaseAsync(IServiceProvider services, ILogger logger)
     {
         try
@@ -54,4 +60,5 @@ public static class DatabaseInitializationExtensions
             throw;
         }
     }
+    */
 }

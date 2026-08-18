@@ -1,0 +1,116 @@
+@page "/lms/admin/learning-paths"
+@using BusinessAsUsual.Web.Modules.LMS.Shared.DTOs
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Learning Paths Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">🛤️ Learning Paths</MudText>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mb-4" OnClick="@(() => _showCreateDialog = true)">
+        Create New Learning Path
+    </MudButton>
+
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (_paths != null && _paths.Any())
+    {
+        <MudGrid>
+            @foreach (var path in _paths)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@path.Title</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@path.Category | @path.Difficulty</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText>@path.Description</MudText>
+                            <MudText Typo="Typo.body2" Class="mt-2">
+                                <strong>Courses:</strong> @path.CourseCount
+                            </MudText>
+                            <MudText Typo="Typo.body2">
+                                <strong>Estimated:</strong> @path.EstimatedHours hours
+                            </MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@(path.IsPublished ? Color.Success : Color.Default)">
+                                @(path.IsPublished ? "Published" : "Draft")
+                            </MudChip>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary">
+                                View Details
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Info">No learning paths found. Create your first learning path to get started!</MudAlert>
+    }
+</MudContainer>
+
+<!-- Create Dialog - Placeholder for now -->
+<MudDialog @bind-IsVisible="_showCreateDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Create Learning Path</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Learning path creation form will be implemented here.</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">This feature allows you to create structured learning paths with multiple courses.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showCreateDialog = false)">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<BusinessAsUsual.Web.Modules.LMS.Shared.DTOs.LearningPathDto>? _paths;
+    private bool _loading = true;
+    private bool _showCreateDialog = false;
+    private readonly DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPathsAsync();
+    }
+
+    private async Task LoadPathsAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+            var response = await httpClient.GetAsync("api/lms/learning-paths?publishedOnly=false");
+
+            if (response.IsSuccessStatusCode)
+            {
+                _paths = await response.Content.ReadFromJsonAsync<List<BusinessAsUsual.Web.Modules.LMS.Shared.DTOs.LearningPathDto>>();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to load learning paths: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading learning paths: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

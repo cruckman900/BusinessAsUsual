@@ -55,6 +55,14 @@ public class CertificateRepository : ICertificateRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Certificate>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Certificates
+            .Include(c => c.Course)
+            .OrderByDescending(c => c.IssuedDate)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Certificate> AddAsync(Certificate certificate, CancellationToken cancellationToken = default)
     {
         _context.Certificates.Add(certificate);

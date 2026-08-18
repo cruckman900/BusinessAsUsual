@@ -102,28 +102,26 @@ else
                                     Size="Size.Small">
                                     Edit
                                 </MudButton>
-                                @if (course.Status == global::LMS.Domain.Entities.CourseStatus.Draft)
-                                {
-                                    <MudButton 
-                                        Variant="Variant.Text" 
-                                        Color="Color.Warning" 
-                                        StartIcon="@Icons.Material.Filled.Publish"
-                                        OnClick="@(() => PublishCourse(course))"
-                                        Size="Size.Small">
-                                        Publish
-                                    </MudButton>
-                                }
-                                else if (course.Status == global::LMS.Domain.Entities.CourseStatus.Published)
-                                {
-                                    <MudButton 
-                                        Variant="Variant.Text" 
-                                        Color="Color.Default" 
-                                        StartIcon="@Icons.Material.Filled.Unpublished"
-                                        OnClick="@(() => UnpublishCourse(course))"
-                                        Size="Size.Small">
-                                        Unpublish
-                                    </MudButton>
-                                }
+                                <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" AnchorOrigin="Origin.BottomRight">
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Analytics" 
+                                                Href="@($"/lms/admin/analytics")">
+                                        Analytics
+                                    </MudMenuItem>
+                                    @if (course.Status == global::LMS.Domain.Entities.CourseStatus.Draft)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Publish" 
+                                                    OnClick="@(() => PublishCourse(course))">
+                                            Publish
+                                        </MudMenuItem>
+                                    }
+                                    else if (course.Status == global::LMS.Domain.Entities.CourseStatus.Published)
+                                    {
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Unpublished" 
+                                                    OnClick="@(() => UnpublishCourse(course))">
+                                            Unpublish
+                                        </MudMenuItem>
+                                    }
+                                </MudMenu>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>

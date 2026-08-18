@@ -1,0 +1,417 @@
+@page "/lms/admin/analytics/quiz/{QuizId:guid}"
+@rendermode InteractiveServer
+@using BusinessAsUsual.Web.Components.Layout
+@using global::LMS.Domain.DTOs
+@layout MainLayout
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Quiz Analytics</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="mt-2">Loading analytics...</MudText>
+    }
+    else if (_analytics == null)
+    {
+        <MudAlert Severity="Severity.Error">Failed to load analytics data</MudAlert>
+    }
+    else
+    {
+        <!-- Header -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.h4">📊 Quiz Analytics</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">@_analytics.QuizTitle</MudText>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info">@_analytics.QuizType</MudChip>
+                </div>
+                <MudStack>
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.Download"
+                              OnClick="ExportAnalytics">
+                        Export Report
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                              StartIcon="@Icons.Material.Filled.ArrowBack"
+                              Href="/lms/admin/courses">
+                        Back to Courses
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Key Metrics Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Attempts</MudText>
+                            <MudText Typo="Typo.h4">@_analytics.TotalAttempts</MudText>
+                            <MudText Typo="Typo.caption">@_analytics.UniqueLearnersAttempted unique learners</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Average Score</MudText>
+                            <MudText Typo="Typo.h4" Color="@GetScoreColor(_analytics.AverageScore)">
+                                @_analytics.AverageScore%
+                            </MudText>
+                            <MudText Typo="Typo.caption">Median: @_analytics.MedianScore%</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Pass Rate</MudText>
+                            <MudText Typo="Typo.h4" Color="@GetPassRateColor(_analytics.PassRate)">
+                                @_analytics.PassRate%
+                            </MudText>
+                            <MudText Typo="Typo.caption">@_analytics.PassCount / @_analytics.CompletedAttempts</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Avg Completion Time</MudText>
+                            <MudText Typo="Typo.h4">@Math.Round(_analytics.AverageCompletionTimeMinutes, 1)m</MudText>
+                            <MudText Typo="Typo.caption">Range: @Math.Round(_analytics.FastestCompletionTimeMinutes, 1)m - @Math.Round(_analytics.SlowestCompletionTimeMinutes, 1)m</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Status Distribution -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Attempt Status Distribution</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudProgressLinear Color="Color.Success" Size="Size.Large" Value="@GetPercentage(_analytics.CompletedAttempts, _analytics.TotalAttempts)" />
+                    <MudText Typo="Typo.body2" Class="mt-1">Completed: @_analytics.CompletedAttempts (@GetPercentage(_analytics.CompletedAttempts, _analytics.TotalAttempts)%)</MudText>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudProgressLinear Color="Color.Warning" Size="Size.Large" Value="@GetPercentage(_analytics.InProgressAttempts, _analytics.TotalAttempts)" />
+                    <MudText Typo="Typo.body2" Class="mt-1">In Progress: @_analytics.InProgressAttempts (@GetPercentage(_analytics.InProgressAttempts, _analytics.TotalAttempts)%)</MudText>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudProgressLinear Color="Color.Error" Size="Size.Large" Value="@GetPercentage(_analytics.AbandonedAttempts, _analytics.TotalAttempts)" />
+                    <MudText Typo="Typo.body2" Class="mt-1">Abandoned: @_analytics.AbandonedAttempts (@GetPercentage(_analytics.AbandonedAttempts, _analytics.TotalAttempts)%)</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- First Attempt Success -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-2">First Attempt Success Rate</MudText>
+            <MudProgressLinear Color="@GetPassRateColor(_analytics.FirstAttemptPassRate)" 
+                              Size="Size.Large" 
+                              Value="@((double)_analytics.FirstAttemptPassRate)" />
+            <MudText Typo="Typo.body1" Class="mt-2">
+                @_analytics.FirstAttemptPassCount out of @_analytics.AttemptDistribution.GetValueOrDefault(1, 0) learners passed on their first attempt (@_analytics.FirstAttemptPassRate%)
+            </MudText>
+        </MudPaper>
+
+        <!-- Question-Level Metrics -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.h6">Question Performance</MudText>
+                <MudButton Variant="Variant.Text" 
+                          Color="Color.Primary"
+                          StartIcon="@Icons.Material.Filled.Download"
+                          OnClick="ExportQuestionMetrics">
+                    Export Questions
+                </MudButton>
+            </MudStack>
+
+            @if (_analytics.QuestionMetrics.Any())
+            {
+                <MudTable Items="@_analytics.QuestionMetrics.OrderBy(q => q.OrderIndex)" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Question</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Answers</MudTh>
+                        <MudTh>Success Rate</MudTh>
+                        <MudTh>Avg Points</MudTh>
+                        <MudTh>Difficulty</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Question">
+                            <MudText Typo="Typo.body2">
+                                @(context.QuestionText.Length > 60 
+                                    ? context.QuestionText.Substring(0, 60) + "..." 
+                                    : context.QuestionText)
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Type">
+                            <MudChip T="string" Size="Size.Small">@context.QuestionType</MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Answers">
+                            @context.TotalAnswers
+                            <MudText Typo="Typo.caption" Color="Color.Success">✓@context.CorrectAnswers</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Error">✗@context.IncorrectAnswers</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Success Rate">
+                            <MudProgressLinear Color="@GetSuccessRateColor(context.SuccessRate)" 
+                                              Value="@((double)context.SuccessRate)" 
+                                              Size="Size.Small" />
+                            <MudText Typo="Typo.caption">@context.SuccessRate%</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Avg Points">
+                            @context.AveragePointsEarned / @context.MaxPoints
+                        </MudTd>
+                        <MudTd DataLabel="Difficulty">
+                            <MudChip T="string" Size="Size.Small" Color="@GetDifficultyColor(context.PerceivedDifficulty)">
+                                @context.PerceivedDifficulty
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Info" 
+                                          Size="Size.Small"
+                                          OnClick="@(() => ShowQuestionDetails(context))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">No question metrics available yet.</MudAlert>
+            }
+        </MudPaper>
+
+        <!-- Attempt Distribution Chart -->
+        @if (_analytics.AttemptDistribution.Any())
+        {
+            <MudPaper Elevation="2" Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Attempt Distribution</MudText>
+                <MudTable Items="@_analytics.AttemptDistribution.OrderBy(x => x.Key)" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Attempt Number</MudTh>
+                        <MudTh>Count</MudTh>
+                        <MudTh>Percentage</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>Attempt #@context.Key</MudTd>
+                        <MudTd>@context.Value</MudTd>
+                        <MudTd>
+                            <MudProgressLinear Value="@GetPercentage(context.Value, _analytics.CompletedAttempts)" 
+                                              Color="Color.Primary" 
+                                              Size="Size.Small" />
+                            @GetPercentage(context.Value, _analytics.CompletedAttempts)%
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+
+        <!-- Daily Trends -->
+        @if (_analytics.DailyMetrics.Any())
+        {
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Daily Trends</MudText>
+                <MudTable Items="@_analytics.DailyMetrics.OrderByDescending(d => d.Date).Take(14)" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Date</MudTh>
+                        <MudTh>Attempts</MudTh>
+                        <MudTh>Avg Score</MudTh>
+                        <MudTh>Pass Rate</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
+                        <MudTd>@context.AttemptCount</MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@GetScoreColor(context.AverageScore)">
+                                @context.AverageScore%
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@GetPassRateColor(context.PassRate)">
+                                @context.PassRate%
+                            </MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        }
+    }
+</MudContainer>
+
+<!-- Question Details Dialog -->
+<MudDialog @bind-Visible="_showQuestionDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Question Details</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_selectedQuestion != null)
+        {
+            <MudStack Spacing="3">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Question</MudText>
+                    <MudText Typo="Typo.body1">@_selectedQuestion.QuestionText</MudText>
+                </div>
+
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Type</MudText>
+                        <MudText>@_selectedQuestion.QuestionType</MudText>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Difficulty</MudText>
+                        <MudChip T="string" Color="@GetDifficultyColor(_selectedQuestion.PerceivedDifficulty)">
+                            @_selectedQuestion.PerceivedDifficulty
+                        </MudChip>
+                    </MudItem>
+                </MudGrid>
+
+                <MudDivider />
+
+                <div>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Performance</MudText>
+                    <MudGrid>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.caption">Total Answers</MudText>
+                            <MudText Typo="Typo.h6">@_selectedQuestion.TotalAnswers</MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.caption" Color="Color.Success">Correct</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Success">@_selectedQuestion.CorrectAnswers</MudText>
+                        </MudItem>
+                        <MudItem xs="4">
+                            <MudText Typo="Typo.caption" Color="Color.Error">Incorrect</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Error">@_selectedQuestion.IncorrectAnswers</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </div>
+
+                @if (_selectedQuestion.CommonWrongAnswers.Any())
+                {
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-2">Common Wrong Answers</MudText>
+                        @foreach (var wrong in _selectedQuestion.CommonWrongAnswers)
+                        {
+                            <MudPaper Elevation="1" Class="pa-2 mb-2">
+                                <MudText Typo="Typo.body2">@wrong.OptionText</MudText>
+                                <MudStack Row="true" Spacing="2">
+                                    <MudText Typo="Typo.caption">Selected @wrong.SelectionCount times</MudText>
+                                    <MudText Typo="Typo.caption">(@wrong.SelectionRate% of wrong answers)</MudText>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    </div>
+                }
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _showQuestionDialog = false)">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public Guid QuizId { get; set; }
+
+    private QuizAnalyticsDto? _analytics;
+    private bool _loading = true;
+    private QuestionMetricsDto? _selectedQuestion;
+    private bool _showQuestionDialog = false;
+    private DialogOptions _dialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAnalytics();
+    }
+
+    private async Task LoadAnalytics()
+    {
+        _loading = true;
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+            _analytics = await httpClient.GetFromJsonAsync<QuizAnalyticsDto>($"api/lms/analytics/quiz/{QuizId}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading analytics: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ExportAnalytics()
+    {
+        Navigation.NavigateTo($"/api/lms/analytics/quiz/{QuizId}/export", forceLoad: true);
+        Snackbar.Add("Downloading analytics report...", Severity.Success);
+    }
+
+    private async Task ExportQuestionMetrics()
+    {
+        Navigation.NavigateTo($"/api/lms/analytics/quiz/{QuizId}/questions/export", forceLoad: true);
+        Snackbar.Add("Downloading question metrics report...", Severity.Success);
+    }
+
+    private void ShowQuestionDetails(QuestionMetricsDto question)
+    {
+        _selectedQuestion = question;
+        _showQuestionDialog = true;
+    }
+
+    private Color GetScoreColor(decimal score) => score switch
+    {
+        >= 90 => Color.Success,
+        >= 70 => Color.Info,
+        >= 50 => Color.Warning,
+        _ => Color.Error
+    };
+
+    private Color GetPassRateColor(decimal rate) => rate switch
+    {
+        >= 80 => Color.Success,
+        >= 60 => Color.Info,
+        >= 40 => Color.Warning,
+        _ => Color.Error
+    };
+
+    private Color GetSuccessRateColor(decimal rate) => rate switch
+    {
+        >= 75 => Color.Success,
+        >= 50 => Color.Warning,
+        _ => Color.Error
+    };
+
+    private Color GetDifficultyColor(DifficultyLevel difficulty) => difficulty switch
+    {
+        DifficultyLevel.VeryEasy => Color.Success,
+        DifficultyLevel.Easy => Color.Info,
+        DifficultyLevel.Moderate => Color.Warning,
+        DifficultyLevel.Hard => Color.Error,
+        DifficultyLevel.VeryHard => Color.Error,
+        _ => Color.Default
+    };
+
+    private double GetPercentage(int part, int total)
+    {
+        if (total == 0) return 0;
+        return Math.Round((double)part / total * 100, 1);
+    }
+}
