@@ -12,200 +12,200 @@
             // ============================================================
             // PLATFORM (System-level, cross-cutting)
             // ============================================================
-            new("Platform", "UserManagement", "User Management", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000001"), "Platform", "UserManagement", "User Management", new []
             {
-                new SubmoduleDefinition("Users", "Users"),
-                new SubmoduleDefinition("Roles", "Roles"),
-                new SubmoduleDefinition("Permissions", "Permissions")
+                new SubmoduleDefinition(Guid.Parse("10000000-0001-0000-0000-000000000001"), "Users", "Users"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0001-0000-0000-000000000002"), "Roles", "Roles"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0001-0000-0000-000000000003"), "Permissions", "Permissions")
             }),
 
-            new("Platform", "AuditLogs", "Audit Logs", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000002"), "Platform", "AuditLogs", "Audit Logs", new []
             {
-                new SubmoduleDefinition("SystemEvents", "System Events"),
-                new SubmoduleDefinition("SecurityEvents", "Security Events")
+                new SubmoduleDefinition(Guid.Parse("10000000-0002-0000-0000-000000000001"), "SystemEvents", "System Events"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0002-0000-0000-000000000002"), "SecurityEvents", "Security Events")
             }),
 
-            new("Platform", "Notifications", "Notifications", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000003"), "Platform", "Notifications", "Notifications", new []
             {
-                new SubmoduleDefinition("Email", "Email"),
-                new SubmoduleDefinition("SMS", "SMS"),
-                new SubmoduleDefinition("Push", "Push Notifications")
+                new SubmoduleDefinition(Guid.Parse("10000000-0003-0000-0000-000000000001"), "Email", "Email"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0003-0000-0000-000000000002"), "SMS", "SMS"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0003-0000-0000-000000000003"), "Push", "Push Notifications")
             }),
 
-            new("Platform", "Reporting", "Reporting & Analytics", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000004"), "Platform", "Reporting", "Reporting & Analytics", new []
             {
-                new SubmoduleDefinition("Dashboards", "Dashboards"),
-                new SubmoduleDefinition("Exports", "Exports"),
-                new SubmoduleDefinition("KPIs", "KPIs")
+                new SubmoduleDefinition(Guid.Parse("10000000-0004-0000-0000-000000000001"), "Dashboards", "Dashboards"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0004-0000-0000-000000000002"), "Exports", "Exports"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0004-0000-0000-000000000003"), "KPIs", "KPIs")
             }),
 
-            new("Platform", "Integrations", "Integrations", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000005"), "Platform", "Integrations", "Integrations", new []
             {
-                new SubmoduleDefinition("APIKeys", "API Keys"),
-                new SubmoduleDefinition("Webhooks", "Webhooks"),
-                new SubmoduleDefinition("Connectors", "Connectors")
+                new SubmoduleDefinition(Guid.Parse("10000000-0005-0000-0000-000000000001"), "APIKeys", "API Keys"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0005-0000-0000-000000000002"), "Webhooks", "Webhooks"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0005-0000-0000-000000000003"), "Connectors", "Connectors")
             }),
 
-            new("Platform", "Settings", "System Settings", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000006"), "Platform", "Settings", "System Settings", new []
             {
-                new SubmoduleDefinition("CompanyProfile", "Company Profile"),
-                new SubmoduleDefinition("Preferences", "Preferences")
+                new SubmoduleDefinition(Guid.Parse("10000000-0006-0000-0000-000000000001"), "CompanyProfile", "Company Profile"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0006-0000-0000-000000000002"), "Preferences", "Preferences")
             }),
 
-            new("Platform", "Localization", "Localization", new []
+            new(Guid.Parse("10000000-0000-0000-0000-000000000007"), "Platform", "Localization", "Localization", new []
             {
-                new SubmoduleDefinition("Languages", "Languages"),
-                new SubmoduleDefinition("Regions", "Regions")
+                new SubmoduleDefinition(Guid.Parse("10000000-0007-0000-0000-000000000001"), "Languages", "Languages"),
+                new SubmoduleDefinition(Guid.Parse("10000000-0007-0000-0000-000000000002"), "Regions", "Regions")
             }),
 
             // ============================================================
             // FINANCIAL
             // ============================================================
-            new("Financial", "finance", "Finance", new []
+            new(Guid.Parse("20000000-0000-0000-0000-000000000001"), "Financial", "finance", "Finance", new []
             {
-                new SubmoduleDefinition("AccountsReceivable", "Accounts Receivable"),
-                new SubmoduleDefinition("AccountsPayable", "Accounts Payable"),
-                new SubmoduleDefinition("GeneralLedger", "General Ledger"),
-                new SubmoduleDefinition("Banking", "Banking"),
-                new SubmoduleDefinition("Payments", "Payments"),
-                new SubmoduleDefinition("Payroll", "Payroll"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000001"), "AccountsReceivable", "Accounts Receivable"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000002"), "AccountsPayable", "Accounts Payable"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000003"), "GeneralLedger", "General Ledger"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000004"), "Banking", "Banking"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000005"), "Payments", "Payments"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000006"), "Payroll", "Payroll"),
+                new SubmoduleDefinition(Guid.Parse("20000000-0001-0000-0000-000000000007"), "Reports", "Reports")
             }),
 
             // ============================================================
             // SALES & CRM
             // ============================================================
-            new("Sales", "crm", "CRM", new []
+            new(Guid.Parse("30000000-0000-0000-0000-000000000001"), "Sales", "crm", "CRM", new []
             {
-                new SubmoduleDefinition("Leads", "Leads"),
-                new SubmoduleDefinition("Opportunities", "Opportunities"),
-                new SubmoduleDefinition("Customers", "Customers"),
-                new SubmoduleDefinition("Activities", "Activities"),
-                new SubmoduleDefinition("EmailTemplates", "Email Templates"),
-                new SubmoduleDefinition("Reports", "Reports"),
-                new SubmoduleDefinition("Settings", "Settings")
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000001"), "Leads", "Leads"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000002"), "Opportunities", "Opportunities"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000003"), "Customers", "Customers"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000004"), "Activities", "Activities"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000005"), "EmailTemplates", "Email Templates"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000006"), "Reports", "Reports"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0001-0000-0000-000000000007"), "Settings", "Settings")
             }),
 
-            new("Sales", "sales", "Sales", new []
+            new(Guid.Parse("30000000-0000-0000-0000-000000000002"), "Sales", "sales", "Sales", new []
             {
-                new SubmoduleDefinition("Quotes", "Quotes"),
-                new SubmoduleDefinition("Orders", "Orders"),
-                new SubmoduleDefinition("Customers", "Customers"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("30000000-0002-0000-0000-000000000001"), "Quotes", "Quotes"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0002-0000-0000-000000000002"), "Orders", "Orders"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0002-0000-0000-000000000003"), "Customers", "Customers"),
+                new SubmoduleDefinition(Guid.Parse("30000000-0002-0000-0000-000000000004"), "Reports", "Reports")
             }),
 
             // ============================================================
             // OPERATIONS
             // ============================================================
-            new("Operations", "inventory", "Inventory", new []
+            new(Guid.Parse("40000000-0000-0000-0000-000000000001"), "Operations", "inventory", "Inventory", new []
             {
-                new SubmoduleDefinition("Products", "Products"),
-                new SubmoduleDefinition("Warehouses", "Warehouses"),
-                new SubmoduleDefinition("Stock", "Stock Management"),
-                new SubmoduleDefinition("PurchaseOrders", "Purchase Orders"),
-                new SubmoduleDefinition("Suppliers", "Suppliers"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000001"), "Products", "Products"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000002"), "Warehouses", "Warehouses"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000003"), "Stock", "Stock Management"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000004"), "PurchaseOrders", "Purchase Orders"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000005"), "Suppliers", "Suppliers"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0001-0000-0000-000000000006"), "Reports", "Reports")
             }),
 
-            new("Operations", "services", "Services", new []
+            new(Guid.Parse("40000000-0000-0000-0000-000000000002"), "Operations", "services", "Services", new []
             {
-                new SubmoduleDefinition("ServiceCatalog", "Service Catalog"),
-                new SubmoduleDefinition("Providers", "Providers"),
-                new SubmoduleDefinition("Appointments", "Appointments"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("40000000-0002-0000-0000-000000000001"), "ServiceCatalog", "Service Catalog"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0002-0000-0000-000000000002"), "Providers", "Providers"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0002-0000-0000-000000000003"), "Appointments", "Appointments"),
+                new SubmoduleDefinition(Guid.Parse("40000000-0002-0000-0000-000000000004"), "Reports", "Reports")
             }),
 
             // ============================================================
             // HR & PEOPLE
             // ============================================================
-            new("HR", "hr", "Human Resources", new []
+            new(Guid.Parse("50000000-0000-0000-0000-000000000001"), "HR", "hr", "Human Resources", new []
             {
-                new SubmoduleDefinition("Employees", "Employee Management"),
-                new SubmoduleDefinition("Departments", "Departments"),
-                new SubmoduleDefinition("Recruiting", "Recruiting"),
-                new SubmoduleDefinition("Performance", "Performance"),
-                new SubmoduleDefinition("Training", "Training"),
-                new SubmoduleDefinition("Timekeeping", "Timekeeping"),
-                new SubmoduleDefinition("HRAdministration", "HR Administration"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000001"), "Employees", "Employee Management"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000002"), "Departments", "Departments"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000003"), "Recruiting", "Recruiting"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000004"), "Performance", "Performance"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000005"), "Training", "Training"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000006"), "Timekeeping", "Timekeeping"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000007"), "HRAdministration", "HR Administration"),
+                new SubmoduleDefinition(Guid.Parse("50000000-0001-0000-0000-000000000008"), "Reports", "Reports")
             }),
 
             // ============================================================
             // DOCUMENTS & COMMUNICATION
             // ============================================================
-            new("Documents", "Documents", "Document Management", new []
+            new(Guid.Parse("60000000-0000-0000-0000-000000000001"), "Documents", "Documents", "Document Management", new []
             {
-                new SubmoduleDefinition("Storage", "Storage"),
-                new SubmoduleDefinition("Sharing", "Sharing")
+                new SubmoduleDefinition(Guid.Parse("60000000-0001-0000-0000-000000000001"), "Storage", "Storage"),
+                new SubmoduleDefinition(Guid.Parse("60000000-0001-0000-0000-000000000002"), "Sharing", "Sharing")
             }),
 
-            new("Documents", "Messaging", "Messaging", new []
+            new(Guid.Parse("60000000-0000-0000-0000-000000000002"), "Documents", "Messaging", "Messaging", new []
             {
-                new SubmoduleDefinition("Conversations", "Conversations"),
-                new SubmoduleDefinition("Channels", "Channels")
+                new SubmoduleDefinition(Guid.Parse("60000000-0002-0000-0000-000000000001"), "Conversations", "Conversations"),
+                new SubmoduleDefinition(Guid.Parse("60000000-0002-0000-0000-000000000002"), "Channels", "Channels")
             }),
 
-            new("Documents", "KnowledgeBase", "Knowledge Base", new []
+            new(Guid.Parse("60000000-0000-0000-0000-000000000003"), "Documents", "KnowledgeBase", "Knowledge Base", new []
             {
-                new SubmoduleDefinition("Articles", "Articles"),
-                new SubmoduleDefinition("Categories", "Categories")
+                new SubmoduleDefinition(Guid.Parse("60000000-0003-0000-0000-000000000001"), "Articles", "Articles"),
+                new SubmoduleDefinition(Guid.Parse("60000000-0003-0000-0000-000000000002"), "Categories", "Categories")
             }),
 
-            new("Documents", "FileStorage", "File Storage", new []
+            new(Guid.Parse("60000000-0000-0000-0000-000000000004"), "Documents", "FileStorage", "File Storage", new []
             {
-                new SubmoduleDefinition("Uploads", "Uploads"),
-                new SubmoduleDefinition("Folders", "Folders")
+                new SubmoduleDefinition(Guid.Parse("60000000-0004-0000-0000-000000000001"), "Uploads", "Uploads"),
+                new SubmoduleDefinition(Guid.Parse("60000000-0004-0000-0000-000000000002"), "Folders", "Folders")
             }),
 
             // ============================================================
             // INDUSTRY-SPECIFIC
             // ============================================================
-            new("Healthcare", "Patients", "Patients", new []
+            new(Guid.Parse("70000000-0000-0000-0000-000000000001"), "Healthcare", "Patients", "Patients", new []
             {
-                new SubmoduleDefinition("Records", "Records"),
-                new SubmoduleDefinition("Visits", "Visits")
+                new SubmoduleDefinition(Guid.Parse("70000000-0001-0000-0000-000000000001"), "Records", "Records"),
+                new SubmoduleDefinition(Guid.Parse("70000000-0001-0000-0000-000000000002"), "Visits", "Visits")
             }),
 
-            new("Healthcare", "ClinicalNotes", "Clinical Notes", new []
+            new(Guid.Parse("70000000-0000-0000-0000-000000000002"), "Healthcare", "ClinicalNotes", "Clinical Notes", new []
             {
-                new SubmoduleDefinition("SOAP", "SOAP Notes"),
-                new SubmoduleDefinition("Charts", "Charts")
+                new SubmoduleDefinition(Guid.Parse("70000000-0002-0000-0000-000000000001"), "SOAP", "SOAP Notes"),
+                new SubmoduleDefinition(Guid.Parse("70000000-0002-0000-0000-000000000002"), "Charts", "Charts")
             }),
 
-            new("Hospitality", "Reservations", "Reservations", new []
+            new(Guid.Parse("80000000-0000-0000-0000-000000000001"), "Hospitality", "Reservations", "Reservations", new []
             {
-                new SubmoduleDefinition("Bookings", "Bookings"),
-                new SubmoduleDefinition("Calendar", "Calendar")
+                new SubmoduleDefinition(Guid.Parse("80000000-0001-0000-0000-000000000001"), "Bookings", "Bookings"),
+                new SubmoduleDefinition(Guid.Parse("80000000-0001-0000-0000-000000000002"), "Calendar", "Calendar")
             }),
 
-            new("Hospitality", "Events", "Events", new []
+            new(Guid.Parse("80000000-0000-0000-0000-000000000002"), "Hospitality", "Events", "Events", new []
             {
-                new SubmoduleDefinition("Planning", "Planning"),
-                new SubmoduleDefinition("Staffing", "Staffing")
+                new SubmoduleDefinition(Guid.Parse("80000000-0002-0000-0000-000000000001"), "Planning", "Planning"),
+                new SubmoduleDefinition(Guid.Parse("80000000-0002-0000-0000-000000000002"), "Staffing", "Staffing")
             }),
 
-            new("Mining", "Safety", "Safety", new []
+            new(Guid.Parse("90000000-0000-0000-0000-000000000001"), "Mining", "Safety", "Safety", new []
             {
-                new SubmoduleDefinition("Incidents", "Incidents"),
-                new SubmoduleDefinition("Training", "Training")
+                new SubmoduleDefinition(Guid.Parse("90000000-0001-0000-0000-000000000001"), "Incidents", "Incidents"),
+                new SubmoduleDefinition(Guid.Parse("90000000-0001-0000-0000-000000000002"), "Training", "Training")
             }),
 
-            new("Logistics", "Dispatch", "Dispatch", new []
+            new(Guid.Parse("A0000000-0000-0000-0000-000000000001"), "Logistics", "Dispatch", "Dispatch", new []
             {
-                new SubmoduleDefinition("Assignments", "Assignments"),
-                new SubmoduleDefinition("Tracking", "Tracking")
+                new SubmoduleDefinition(Guid.Parse("A0000000-0001-0000-0000-000000000001"), "Assignments", "Assignments"),
+                new SubmoduleDefinition(Guid.Parse("A0000000-0001-0000-0000-000000000002"), "Tracking", "Tracking")
             }),
 
-            new("ProfessionalServices", "Contracts", "Contracts", new []
+            new(Guid.Parse("B0000000-0000-0000-0000-000000000001"), "ProfessionalServices", "Contracts", "Contracts", new []
             {
-                new SubmoduleDefinition("Templates", "Templates"),
-                new SubmoduleDefinition("Approvals", "Approvals")
+                new SubmoduleDefinition(Guid.Parse("B0000000-0001-0000-0000-000000000001"), "Templates", "Templates"),
+                new SubmoduleDefinition(Guid.Parse("B0000000-0001-0000-0000-000000000002"), "Approvals", "Approvals")
             }),
 
-            new("ProfessionalServices", "FieldService", "Field Service", new []
+            new(Guid.Parse("B0000000-0000-0000-0000-000000000002"), "ProfessionalServices", "FieldService", "Field Service", new []
             {
-                new SubmoduleDefinition("Visits", "Visits"),
-                new SubmoduleDefinition("Reports", "Reports")
+                new SubmoduleDefinition(Guid.Parse("B0000000-0002-0000-0000-000000000001"), "Visits", "Visits"),
+                new SubmoduleDefinition(Guid.Parse("B0000000-0002-0000-0000-000000000002"), "Reports", "Reports")
             })
         };
     }

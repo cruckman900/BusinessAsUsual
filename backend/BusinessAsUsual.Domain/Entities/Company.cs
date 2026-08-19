@@ -41,16 +41,24 @@ namespace BusinessAsUsual.Domain.Entities
 
         /// <summary>
         /// Comma-separated list of enabled modules.
+        /// DEPRECATED: Use ModuleConfiguration instead.
         /// </summary>
         [Display(Name = "Modules Enabled")]
-        [Required(ErrorMessage = "Modules Enabled is required.")]
-        public string ModulesEnabled { get; set; } = "Employees,Products";
+        public string? ModulesEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether submodules are enabled.
+        /// DEPRECATED: Use ModuleConfiguration instead.
         /// </summary>
         [Display(Name = "Submodules Enabled")]
-        public string SubmodulesEnabled { get; set; } = string.Empty;
+        public string? SubmodulesEnabled { get; set; }
+
+        /// <summary>
+        /// JSON configuration of enabled modules and submodules.
+        /// Serialized from ModuleConfigurationRoot.
+        /// </summary>
+        [Display(Name = "Module Configuration")]
+        public string? ModuleConfiguration { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the object is active.

@@ -27,5 +27,11 @@
         /// Gets or sets the name of the database associated with the current tenant.
         /// </summary>
         public string? TenantDbName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a message indicating module configuration status.
+        /// Used to report if modules were registered for lazy-loading or immediately provisioned.
+        /// </summary>
+        public string? ModuleProvisioningStatus { get; set; }
     }
 }

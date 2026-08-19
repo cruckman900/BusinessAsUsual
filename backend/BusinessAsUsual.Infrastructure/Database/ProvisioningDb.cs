@@ -64,25 +64,67 @@ namespace BusinessAsUsual.Infrastructure.Database
 
                 Console.WriteLine("🟢 Created master database BusinessAsUsual");
             }
+
+            // Ensure Companies table exists with proper schema
+            await EnsureCompaniesTableExistsAsync();
         }
 
         /// <summary>
-        /// Applies the master database schema by executing the specified SQL script against the 'BusinessAsUsual'
-        /// database.
+        /// Ensures the Companies table exists in the master database with the proper schema including ModuleConfiguration column.
         /// </summary>
-        /// <param name="script">The SQL script to execute as the master schema. Cannot be null.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task ApplyMasterSchemaAsync(string script)
+        private async Task EnsureCompaniesTableExistsAsync()
         {
             var builder = new SqlConnectionStringBuilder(_rawConn)
             {
                 InitialCatalog = "BusinessAsUsual"
             };
 
-            var executor = new SchemaExecutor();
-            await executor.ExecuteScriptAsync(builder.ConnectionString, script);
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
 
-            Console.WriteLine("🟢 Master schema applied");
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Companies')
+                BEGIN
+                    CREATE TABLE Companies (
+                        Id UNIQUEIDENTIFIER PRIMARY KEY,
+                        Name NVARCHAR(100) NOT NULL,
+                        DbName NVARCHAR(100) NOT NULL,
+                        Description NVARCHAR(500),
+                        AdminEmail NVARCHAR(255) NOT NULL,
+                        BillingPlan NVARCHAR(50) NOT NULL,
+                        ModulesEnabled NVARCHAR(MAX),
+                        SubmodulesEnabled NVARCHAR(MAX),
+                        ModuleConfiguration NVARCHAR(MAX),
+                        IsActive BIT NOT NULL DEFAULT 1,
+                        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+                    );
+                END
+                ELSE
+                BEGIN
+                    -- Add ModuleConfiguration column if it doesn't exist (migration support)
+                    IF NOT EXISTS (
+                        SELECT * FROM sys.columns 
+                        WHERE object_id = OBJECT_ID('Companies') 
+                        AND name = 'ModuleConfiguration'
+                    )
+                    BEGIN
+                        ALTER TABLE Companies ADD ModuleConfiguration NVARCHAR(MAX);
+                    END
+
+                    -- Add SubmodulesEnabled column if it doesn't exist (migration support)
+                    IF NOT EXISTS (
+                        SELECT * FROM sys.columns 
+                        WHERE object_id = OBJECT_ID('Companies') 
+                        AND name = 'SubmodulesEnabled'
+                    )
+                    BEGIN
+                        ALTER TABLE Companies ADD SubmodulesEnabled NVARCHAR(MAX);
+                    END
+                END
+            ";
+
+            await cmd.ExecuteNonQueryAsync();
         }
 
         // ------------------------------------------------------------
@@ -107,9 +149,9 @@ namespace BusinessAsUsual.Infrastructure.Database
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
                 INSERT INTO Companies 
-                (Id, Name, DbName, AdminEmail, BillingPlan, ModulesEnabled, CreatedAt)
+                (Id, Name, DbName, AdminEmail, BillingPlan, ModulesEnabled, SubmodulesEnabled, ModuleConfiguration, CreatedAt)
                 VALUES 
-                (@Id, @Name, @DbName, @AdminEmail, @BillingPlan, @ModulesEnabled, @CreatedAt)
+                (@Id, @Name, @DbName, @AdminEmail, @BillingPlan, @ModulesEnabled, @SubmodulesEnabled, @ModuleConfiguration, @CreatedAt)
             ";
 
             cmd.Parameters.AddWithValue("@Id", company.Id);
@@ -117,7 +159,9 @@ namespace BusinessAsUsual.Infrastructure.Database
             cmd.Parameters.AddWithValue("@DbName", company.DbName);
             cmd.Parameters.AddWithValue("@AdminEmail", company.AdminEmail);
             cmd.Parameters.AddWithValue("@BillingPlan", company.BillingPlan ?? "");
-            cmd.Parameters.AddWithValue("@ModulesEnabled", company.ModulesEnabled ?? "");
+            cmd.Parameters.AddWithValue("@ModulesEnabled", (object?)company.ModulesEnabled ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@SubmodulesEnabled", (object?)company.SubmodulesEnabled ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ModuleConfiguration", (object?)company.ModuleConfiguration ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@CreatedAt", company.CreatedAt);
 
             await cmd.ExecuteNonQueryAsync();
@@ -175,6 +219,79 @@ namespace BusinessAsUsual.Infrastructure.Database
             await executor.ExecuteScriptAsync(builder.ConnectionString, script);
 
             Console.WriteLine($"🟢 Tenant schema applied for {dbName}");
+        }
+
+        // ------------------------------------------------------------
+        // MODULE CONFIGURATION
+        // ------------------------------------------------------------
+
+        /// <summary>
+        /// Saves the module configuration JSON to the tenant's ModuleRegistry table.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="companyId">Unique identifier of the company.</param>
+        /// <param name="moduleConfigJson">JSON string containing the module configuration.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
+        public async Task SaveModuleConfigurationToTenantAsync(string tenantDbName, Guid companyId, string moduleConfigJson)
+        {
+            var builder = new SqlConnectionStringBuilder(_rawConn)
+            {
+                InitialCatalog = tenantDbName
+            };
+
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                IF EXISTS (SELECT 1 FROM ModuleRegistry WHERE CompanyId = @CompanyId)
+                BEGIN
+                    UPDATE ModuleRegistry 
+                    SET ModuleConfiguration = @ModuleConfiguration, UpdatedAt = GETUTCDATE()
+                    WHERE CompanyId = @CompanyId
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO ModuleRegistry (Id, CompanyId, ModuleConfiguration, UpdatedAt)
+                    VALUES (NEWID(), @CompanyId, @ModuleConfiguration, GETUTCDATE())
+                END
+            ";
+
+            cmd.Parameters.AddWithValue("@CompanyId", companyId);
+            cmd.Parameters.AddWithValue("@ModuleConfiguration", moduleConfigJson);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            Console.WriteLine($"🟢 Module configuration saved to tenant {tenantDbName}");
+        }
+
+        /// <summary>
+        /// Retrieves the module configuration JSON for a specific tenant.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="companyId">Unique identifier of the company.</param>
+        /// <returns>The module configuration JSON string, or null if not found.</returns>
+        public async Task<string?> GetModuleConfigurationAsync(string tenantDbName, Guid companyId)
+        {
+            var builder = new SqlConnectionStringBuilder(_rawConn)
+            {
+                InitialCatalog = tenantDbName
+            };
+
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT ModuleConfiguration 
+                FROM ModuleRegistry 
+                WHERE CompanyId = @CompanyId
+            ";
+
+            cmd.Parameters.AddWithValue("@CompanyId", companyId);
+
+            var result = await cmd.ExecuteScalarAsync();
+            return result as string;
         }
     }
 }

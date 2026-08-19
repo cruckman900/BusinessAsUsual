@@ -53,9 +53,6 @@ namespace BusinessAsUsual.Tests.Functional
                 mockDb.Setup(d => d.EnsureMasterDatabaseExistsAsync())
                         .Returns(Task.CompletedTask);
 
-                mockDb.Setup(d => d.ApplyMasterSchemaAsync(It.IsAny<string>()))
-                        .Returns(Task.CompletedTask);
-
                 mockDb.Setup(d => d.SaveCompanyInfoAsync(It.IsAny<Company>()))
                         .Returns(Task.CompletedTask);
 

@@ -41,6 +41,11 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models
     public class SelectableModuleDefinition
     {
         /// <summary>
+        /// Gets or sets the module unique identifier.
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the module group.
         /// </summary>
         public string Group { get; set; } = "";
@@ -74,6 +79,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models
         {
             return new SelectableModuleDefinition
             {
+                Id = module.Id,
                 Group = module.Group,
                 Key = module.Key,
                 Name = module.Name,
@@ -87,6 +93,11 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models
     /// </summary>
     public class SelectableSubmoduleDefinition
     {
+        /// <summary>
+        /// Gets or sets the submodule unique identifier.
+        /// </summary>
+        public Guid Id { get; set; }
+
         /// <summary>
         /// Gets or sets the submodule key identifier.
         /// </summary>
@@ -111,6 +122,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Models
         {
             return new SelectableSubmoduleDefinition
             {
+                Id = submodule.Id,
                 Key = submodule.Key,
                 Name = submodule.Name
             };

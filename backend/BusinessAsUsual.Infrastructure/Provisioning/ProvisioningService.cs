@@ -157,21 +157,27 @@ namespace BusinessAsUsual.Infrastructure.Provisioning
                 // 1) Ensure master DB exists
                 await _db.EnsureMasterDatabaseExistsAsync();
 
-                // 2) Apply master schema (if needed)
-                var masterSchemaPath = Path.Combine(
-                    _env.ContentRootPath,
-                    "ProvisioningScripts",
-                    "MasterSchema.sql");
-
-                if (File.Exists(masterSchemaPath))
-                {
-                    var masterScript = await File.ReadAllTextAsync(masterSchemaPath, Encoding.UTF8);
-                    await _db.ApplyMasterSchemaAsync(masterScript);
-                }
-
-                // 3) Build company + tenant info
+                // 2) Build company + tenant info
                 var companyId = Guid.NewGuid();
                 var tenantDbName = BuildTenantDbName(request.CompanyName);
+
+                // 3) Serialize module configuration to JSON
+                string? moduleConfigJson = null;
+                if (request.ModuleConfiguration != null)
+                {
+                    moduleConfigJson = System.Text.Json.JsonSerializer.Serialize(request.ModuleConfiguration);
+                }
+                // Fallback: if legacy Modules array is provided, convert to ModuleConfiguration
+                else if (request.Modules != null && request.Modules.Length > 0)
+                {
+                    // For backward compatibility - map old string arrays to new structure
+                    moduleConfigJson = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        Modules = request.Modules.Select(m => new { ModuleName = m, Enabled = true }).ToList(),
+                        Version = "1.0",
+                        LastUpdated = DateTime.UtcNow
+                    });
+                }
 
                 var company = new Company
                 {
@@ -180,7 +186,9 @@ namespace BusinessAsUsual.Infrastructure.Provisioning
                     DbName = tenantDbName,
                     AdminEmail = request.AdminEmail,
                     BillingPlan = request.BillingPlan,
-                    ModulesEnabled = string.Join(",", request.Modules ?? Array.Empty<string>()),
+                    ModulesEnabled = request.Modules != null ? string.Join(",", request.Modules) : null,
+                    SubmodulesEnabled = request.Submodules != null ? string.Join(",", request.Submodules) : null,
+                    ModuleConfiguration = moduleConfigJson,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -202,7 +210,18 @@ namespace BusinessAsUsual.Infrastructure.Provisioning
                     await _db.ApplyTenantSchemaAsync(tenantDbName, tenantScript);
                 }
 
-                // 7) TODO: Provision modules, onboarding token, admin user, audit log
+                // 7) Save module configuration to tenant's ModuleRegistry table
+                if (!string.IsNullOrEmpty(moduleConfigJson))
+                {
+                    await _db.SaveModuleConfigurationToTenantAsync(tenantDbName, companyId, moduleConfigJson);
+                    result.ModuleProvisioningStatus = "Module configuration registered for lazy-loading";
+                }
+                else
+                {
+                    result.ModuleProvisioningStatus = "No modules configured";
+                }
+
+                // 8) TODO: Admin user creation, onboarding token, audit log
 
                 result.Success = true;
                 result.CompanyId = companyId;

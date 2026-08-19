@@ -1,4 +1,6 @@
-﻿namespace BusinessAsUsual.Application.Contracts
+﻿using BusinessAsUsual.Domain.Models;
+
+namespace BusinessAsUsual.Application.Contracts
 {
     /// <summary>
     /// Represents a request to provision a new company account, including administrative and billing details.
@@ -26,14 +28,22 @@
 
         /// <summary>
         /// Gets or sets the collection of module names associated with the current instance.
+        /// DEPRECATED: Use ModuleConfiguration instead.
         /// </summary>
-        public string[] Modules { get; set; } = Array.Empty<string>();
+        public string[]? Modules { get; set; }
 
         /// <summary>
         /// Gets or sets the names of the submodules associated with this instance.
+        /// DEPRECATED: Use ModuleConfiguration instead.
         /// </summary>
-        public string[] Submodules { get; set; } = Array.Empty<string>();
+        public string[]? Submodules { get; set; }
 
-        // Future: BusinessType, Submodules, OnboardingMethod, Notes, etc.
+        /// <summary>
+        /// Structured module and submodule configuration for the tenant.
+        /// This replaces the legacy Modules/Submodules string arrays.
+        /// </summary>
+        public ModuleConfigurationRoot? ModuleConfiguration { get; set; }
+
+        // Future: BusinessType, OnboardingMethod, Notes, etc.
     }
 }

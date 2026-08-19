@@ -92,11 +92,17 @@ BEGIN
         CompanyId UNIQUEIDENTIFIER NOT NULL,
         FirstName NVARCHAR(100) NOT NULL,
         LastName NVARCHAR(100) NOT NULL,
-        MiddleName NVARCHAR(100) NOT NULL,
-        Prefix NVARCHAR(50) NOT NULL,
-        Suffix NVARCHAR(50) NOT NULL,
-        Role NVARCHAR(50),
-        Email NVARCHAR(100),
+        MiddleName NVARCHAR(100),
+        Prefix NVARCHAR(50),
+        Suffix NVARCHAR(50),
+        Email NVARCHAR(255),
+        PhoneNumber NVARCHAR(25),
+        Department NVARCHAR(100),
+        JobTitle NVARCHAR(100),
+        DateOfBirth DATE,
+        HireDate DATE,
+        EmploymentType NVARCHAR(50),
+        Status NVARCHAR(50) NOT NULL DEFAULT 'Active',
         IsActive BIT NOT NULL DEFAULT 1,
         CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
         UpdatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
@@ -104,93 +110,60 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Products')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Users')
 BEGIN
-    CREATE TABLE Products (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CREATE TABLE Users (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         CompanyId UNIQUEIDENTIFIER NOT NULL,
-        Name NVARCHAR(100) NOT NULL,
-        Description NVARCHAR(MAX),
-        Price DECIMAL(18,2) NOT NULL,
-        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+        Email NVARCHAR(255) NOT NULL,
+        FirstName NVARCHAR(100),
+        LastName NVARCHAR(100),
+        Role NVARCHAR(50) NOT NULL DEFAULT 'User',
+        ExternalAuthProvider NVARCHAR(50),
+        ExternalAuthId NVARCHAR(255),
+        IsActive BIT NOT NULL DEFAULT 1,
+        LastLoginAt DATETIME,
+        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
+        UpdatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Services')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Roles')
 BEGIN
-    CREATE TABLE Services (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CREATE TABLE Roles (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         CompanyId UNIQUEIDENTIFIER NOT NULL,
-        Name NVARCHAR(100) NOT NULL,
-        Description NVARCHAR(MAX),
-        Price DECIMAL(18,2) NOT NULL,
-        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+        RoleName NVARCHAR(100) NOT NULL,
+        Permissions NVARCHAR(MAX),
+        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
+        UpdatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Customers')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ModuleRegistry')
 BEGIN
-    CREATE TABLE Customers (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CREATE TABLE ModuleRegistry (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         CompanyId UNIQUEIDENTIFIER NOT NULL,
-        FirstName NVARCHAR(100) NOT NULL,
-        LastName NVARCHAR(100) NOT NULL,
-        MiddleName NVARCHAR(100),
-        Prefix NVARCHAR(50),
-        Suffix NVARCHAR(50),
-        Email NVARCHAR(100),
-        Phone NVARCHAR(50),
-        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
+        ModuleConfiguration NVARCHAR(MAX) NOT NULL,
+        UpdatedAt DATETIME NOT NULL DEFAULT GETUTCDATE()
     );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ApiKeys')
 BEGIN
-    CREATE TABLE Orders (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
+    CREATE TABLE ApiKeys (
+        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
         CompanyId UNIQUEIDENTIFIER NOT NULL,
-        CustomerId UNIQUEIDENTIFIER NOT NULL,
-        OrderDate DATETIME NOT NULL DEFAULT GETUTCDATE(),
-        Status NVARCHAR(50) NOT NULL DEFAULT 'Pending',
-        DiscountAmount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        TaxAmount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        ShippingAmount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        FulfillmentStatus NVARCHAR(50) NOT NULL DEFAULT 'Unfulfilled',
-        Total DECIMAL(18,2) NOT NULL DEFAULT 0.00
-    );
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderItems')
-BEGIN
-    CREATE TABLE OrderItems (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
-        CompanyId UNIQUEIDENTIFIER NOT NULL,
-        OrderId UNIQUEIDENTIFIER NOT NULL,
-        ItemType NVARCHAR(50) NOT NULL, -- 'Product' or 'Service'
-        ItemId UNIQUEIDENTIFIER NOT NULL,
-        Name NVARCHAR(100) NOT NULL,
-        Quantity INT NOT NULL DEFAULT 1,
-        UnitPrice DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        DiscountAmount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        TaxAmount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
-        LineTotal DECIMAL(18,2) NOT NULL
-    );
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Fulfillment')
-BEGIN
-    CREATE TABLE Fulfillment (
-        Id UNIQUEIDENTIFIER PRIMARY KEY,
-        CompanyId UNIQUEIDENTIFIER NOT NULL,
-        OrderId UNIQUEIDENTIFIER NOT NULL,
-        FulfilledAt DATETIME,
-        FulfilledBy NVARCHAR(100),
-        Notes NVARCHAR(MAX)
+        KeyName NVARCHAR(100) NOT NULL,
+        KeyHash NVARCHAR(MAX) NOT NULL,
+        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
+        ExpiresAt DATETIME,
+        LastUsedAt DATETIME,
+        IsActive BIT NOT NULL DEFAULT 1
     );
 END
 GO
@@ -256,92 +229,42 @@ END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Products_CompanyInfo'
+    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Users_CompanyInfo'
 )
 BEGIN
-    ALTER TABLE Products
-    ADD CONSTRAINT FK_Products_CompanyInfo
+    ALTER TABLE Users
+    ADD CONSTRAINT FK_Users_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Services_CompanyInfo'
+    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Roles_CompanyInfo'
 )
 BEGIN
-    ALTER TABLE Services
-    ADD CONSTRAINT FK_Services_CompanyInfo
+    ALTER TABLE Roles
+    ADD CONSTRAINT FK_Roles_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Customers_CompanyInfo'
+    SELECT * FROM sys.foreign_keys WHERE name = 'FK_ModuleRegistry_CompanyInfo'
 )
 BEGIN
-    ALTER TABLE Customers
-    ADD CONSTRAINT FK_Customers_CompanyInfo
-    FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(id);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Orders_CompanyInfo'
-)
-BEGIN
-    ALTER TABLE Orders
-    ADD CONSTRAINT FK_Orders_CompanyInfo
+    ALTER TABLE ModuleRegistry
+    ADD CONSTRAINT FK_ModuleRegistry_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Orders_Customers'
+    SELECT * FROM sys.foreign_keys WHERE name = 'FK_ApiKeys_CompanyInfo'
 )
 BEGIN
-    ALTER TABLE Orders
-    ADD CONSTRAINT FK_Orders_Customers
-    FOREIGN KEY (CustomerId) REFERENCES Customers(Id);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_OrderItems_CompanyInfo'
-)
-BEGIN
-    ALTER TABLE OrderItems
-    ADD CONSTRAINT FK_OrderItems_CompanyInfo
+    ALTER TABLE ApiKeys
+    ADD CONSTRAINT FK_ApiKeys_CompanyInfo
     FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_OrderItems_Orders'
-)
-BEGIN
-    ALTER TABLE OrderItems
-    ADD CONSTRAINT FK_OrderItems_Orders
-    FOREIGN KEY (OrderId) REFERENCES Orders(Id);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Fulfillment_CompanyInfo'
-)
-BEGIN
-    ALTER TABLE Fulfillment
-    ADD CONSTRAINT FK_Fulfillment_CompanyInfo
-    FOREIGN KEY (CompanyId) REFERENCES CompanyInfo(Id);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.foreign_keys WHERE name = 'FK_Fulfillment_Orders'
-)
-BEGIN
-    ALTER TABLE Fulfillment
-    ADD CONSTRAINT FK_Fulfillment_Orders
-    FOREIGN KEY (OrderId) REFERENCES Orders(Id);
 END
 GO
 
@@ -394,74 +317,42 @@ END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Products_CompanyId'
+    SELECT * FROM sys.indexes WHERE name = 'IX_Users_CompanyId'
 )
 BEGIN
-    CREATE INDEX IX_Products_CompanyId ON Products(CompanyId);
+    CREATE INDEX IX_Users_CompanyId ON Users(CompanyId);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Services_CompanyId'
+    SELECT * FROM sys.indexes WHERE name = 'IX_Users_Email'
 )
 BEGIN
-    CREATE INDEX IX_Services_CompanyId ON Services(CompanyId);
+    CREATE INDEX IX_Users_Email ON Users(Email);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Customers_CompanyId'
+    SELECT * FROM sys.indexes WHERE name = 'IX_Roles_CompanyId'
 )
 BEGIN
-    CREATE INDEX IX_Customers_CompanyId ON Customers(CompanyId);
+    CREATE INDEX IX_Roles_CompanyId ON Roles(CompanyId);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Orders_CompanyId'
+    SELECT * FROM sys.indexes WHERE name = 'IX_ModuleRegistry_CompanyId'
 )
 BEGIN
-    CREATE INDEX IX_Orders_CompanyId ON Orders(CompanyId);
+    CREATE UNIQUE INDEX IX_ModuleRegistry_CompanyId ON ModuleRegistry(CompanyId);
 END
 GO
 
 IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Orders_CustomerId'
+    SELECT * FROM sys.indexes WHERE name = 'IX_ApiKeys_CompanyId'
 )
 BEGIN
-    CREATE INDEX IX_Orders_CustomerId ON Orders(CustomerId);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_OrderItems_CompanyId'
-)
-BEGIN
-    CREATE INDEX IX_OrderItems_CompanyId ON OrderItems(CompanyId);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_OrderItems_OrderId'
-)
-BEGIN
-    CREATE INDEX IX_OrderItems_OrderId ON OrderItems(OrderId);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Fulfillment_CompanyId'
-)
-BEGIN
-    CREATE INDEX IX_Fulfillment_CompanyId ON Fulfillment(CompanyId);
-END
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM sys.indexes WHERE name = 'IX_Fulfillment_OrderId'
-)
-BEGIN
-    CREATE INDEX IX_Fulfillment_OrderId ON Fulfillment(OrderId);
+    CREATE INDEX IX_ApiKeys_CompanyId ON ApiKeys(CompanyId);
 END
 GO
 

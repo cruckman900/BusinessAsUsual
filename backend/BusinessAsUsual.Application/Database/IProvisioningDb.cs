@@ -30,13 +30,6 @@ namespace BusinessAsUsual.Application.Database
         Task CreateTenantDatabaseAsync(string name);
 
         /// <summary>
-        /// Applies the specified schema script to the given database asynchronously.
-        /// </summary>
-        /// <param name="script">The SQL script containing the schema changes to execute. Cannot be null or empty.</param>
-        /// <returns>A task that represents the asynchronous operation of applying the schema script.</returns>
-        Task ApplyMasterSchemaAsync(string script);
-
-        /// <summary>
         /// Applies the specified schema script to the tenant database asynchronously.
         /// </summary>
         /// <param name="db">The name or identifier of the tenant database to which the schema script will be applied. Cannot be null or
@@ -51,5 +44,22 @@ namespace BusinessAsUsual.Application.Database
         /// <param name="company">The company entity containing the information to be saved. Cannot be null.</param>
         /// <returns>A task that represents the asynchronous save operation.</returns>
         Task SaveCompanyInfoAsync(Company company);
+
+        /// <summary>
+        /// Saves the module configuration JSON to the tenant's ModuleRegistry table.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="companyId">Unique identifier of the company.</param>
+        /// <param name="moduleConfigJson">JSON string containing the module configuration.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
+        Task SaveModuleConfigurationToTenantAsync(string tenantDbName, Guid companyId, string moduleConfigJson);
+
+        /// <summary>
+        /// Retrieves the module configuration JSON for a specific tenant.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="companyId">Unique identifier of the company.</param>
+        /// <returns>The module configuration JSON string, or null if not found.</returns>
+        Task<string?> GetModuleConfigurationAsync(string tenantDbName, Guid companyId);
     }
 }

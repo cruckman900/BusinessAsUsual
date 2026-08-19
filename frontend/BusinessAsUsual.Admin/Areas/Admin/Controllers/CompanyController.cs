@@ -4,6 +4,7 @@ using BusinessAsUsual.Admin.Hubs;
 using BusinessAsUsual.Application.Contracts;
 using BusinessAsUsual.Core.Modules;
 using BusinessAsUsual.Domain.Entities;
+using BusinessAsUsual.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -102,11 +103,47 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
 
             var company = vm.Company;
 
+            // Build ModuleConfigurationRoot from selected modules
+            var moduleConfig = new ModuleConfigurationRoot
+            {
+                Version = "1.0",
+                LastUpdated = DateTime.UtcNow,
+                Modules = new List<ModuleItem>()
+            };
+
+            // Parse selected modules and submodules from the UI
+            foreach (var group in vm.GroupedModules)
+            {
+                foreach (var module in group.Modules.Where(m => m.IsSelected))
+                {
+                    var moduleItem = new ModuleItem
+                    {
+                        ModuleId = module.Id,
+                        ModuleName = module.Name,
+                        Group = module.Group,
+                        Enabled = true,
+                        IsProvisioned = false,
+                        Submodules = module.Submodules
+                            .Where(s => s.IsSelected)
+                            .Select(s => new SubmoduleItem
+                            {
+                                SubmoduleId = s.Id,
+                                SubmoduleName = s.Name,
+                                Enabled = true
+                            })
+                            .ToList()
+                    };
+                    moduleConfig.Modules.Add(moduleItem);
+                }
+            }
+
             var request = new ProvisioningRequest
             {
                 CompanyName = company.Name,
                 AdminEmail = company.AdminEmail,
                 BillingPlan = company.BillingPlan,
+                ModuleConfiguration = moduleConfig,
+                // Keep legacy fields for backward compatibility
                 Modules = (company.ModulesEnabled ?? "")
                     .Split(",", StringSplitOptions.RemoveEmptyEntries),
                 Submodules = (company.SubmodulesEnabled ?? "")
