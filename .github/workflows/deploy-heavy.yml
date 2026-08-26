@@ -23,6 +23,9 @@ on:
       - "services/Finance/**"
       - "services/Inventory/**"
       - "services/Sales/**"
+      - "services/Services/**"
+      - "services/Platform/**"
+      - "services/LearningManagement/**"
       - "docker-compose.heavy.yml"
       - ".github/workflows/deploy-heavy.yml"
 

@@ -261,6 +261,144 @@ services:
         limits:
           memory: 384M
 
+  platform-api:
+    build:
+      context: .
+      dockerfile: services/Platform/Platform.API/Dockerfile
+    image: bau/platform-api:latest
+    container_name: bau-platform-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5014:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - ConnectionStrings__PlatformDb=${PLATFORM_SQL_CONNECTION_STRING}
+      # Platform.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  platform-web:
+    build:
+      context: .
+      dockerfile: services/Platform/Platform.Web/Dockerfile
+    image: bau/platform-web:latest
+    container_name: bau-platform-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5015:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Platform.Web calls Platform.API over the internal compose network
+      - PlatformApi__Url=http://platform-api:80
+    depends_on:
+      - platform-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  services-api:
+    build:
+      context: .
+      dockerfile: services/Services/Services.API/Dockerfile
+    image: bau/services-api:latest
+    container_name: bau-services-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5016:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # Services.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  services-web:
+    build:
+      context: .
+      dockerfile: services/Services/Services.Web/Dockerfile
+    image: bau/services-web:latest
+    container_name: bau-services-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5017:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Services.Web calls Services.API over the internal compose network
+      - ServicesApi__Url=http://services-api:80
+    depends_on:
+      - services-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  lms-api:
+    build:
+      context: .
+      dockerfile: services/LearningManagement/LMS.API/Dockerfile
+    image: bau/lms-api:latest
+    container_name: bau-lms-api
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5018:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Shared RDS (MS SQL) connection string - set in .env on the instance
+      - AWS_SQL_CONNECTION_STRING=${AWS_SQL_CONNECTION_STRING}
+      # LMS.API registers itself with the Module Registry on LIGHT.
+      - ModuleRegistry__Url=${MODULE_REGISTRY_URL}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  lms-web:
+    build:
+      context: .
+      dockerfile: services/Services/LMS.Web/Dockerfile
+    image: bau/services-web:latest
+    container_name: bau-services-web
+    restart: unless-stopped
+    networks:
+      - bau-heavy
+    ports:
+      - "5019:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      # Services.Web calls Services.API over the internal compose network
+      - ServicesApi__Url=http://services-api:80
+    depends_on:
+      - services-api
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
 networks:
   bau-heavy:
     driver: bridge
