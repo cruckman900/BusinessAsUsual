@@ -9,9 +9,14 @@ public class TrainingCompletion
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
     /// Foreign key to Employee
     /// </summary>
-    public string EmployeeId { get; set; } = string.Empty;
+    public Guid EmployeeId { get; set; }
 
     /// <summary>
     /// Navigation property to Employee

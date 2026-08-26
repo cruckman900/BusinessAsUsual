@@ -26,6 +26,7 @@
     <ProjectReference Include="..\HR.Application\HR.Application.csproj" />
     <ProjectReference Include="..\HR.Infrastructure\HR.Infrastructure.csproj" />
     <ProjectReference Include="..\HR.Domain\HR.Domain.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

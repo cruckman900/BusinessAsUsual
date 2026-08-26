@@ -39,8 +39,17 @@ public sealed class CourseCompletedEventHandler : IIntegrationEventHandler<Cours
             }
 
             // Verify employee exists in HR system
+            // Parse the UserId string to Guid
+            if (!Guid.TryParse(@event.UserId, out var employeeId))
+            {
+                _logger.LogWarning(
+                    "Invalid UserId format {UserId} for course completion event {EventId}",
+                    @event.UserId, @event.EventId);
+                return;
+            }
+
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.Id == @event.UserId, cancellationToken);
+                .FirstOrDefaultAsync(e => e.Id == employeeId, cancellationToken);
 
             if (employee == null)
             {
@@ -53,7 +62,7 @@ public sealed class CourseCompletedEventHandler : IIntegrationEventHandler<Cours
             // Create training completion record
             var completion = new TrainingCompletion
             {
-                EmployeeId = @event.UserId,
+                EmployeeId = employeeId,
                 CourseId = @event.CourseId,
                 CourseName = @event.CourseName,
                 CompletionDate = @event.CompletionDate,

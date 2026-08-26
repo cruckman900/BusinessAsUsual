@@ -11,10 +11,20 @@ namespace HR.Tests.Functional;
 public class EmployeesApiTests : IClassFixture<HrApiFactory>
 {
     private readonly HrApiFactory _factory;
+    private static readonly Guid TestCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private const string TestTenantDb = "TestTenant";
 
     public EmployeesApiTests(HrApiFactory factory)
     {
         _factory = factory;
+    }
+
+    private HttpClient CreateClientWithTenantHeaders()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Company-Id", TestCompanyId.ToString());
+        client.DefaultRequestHeaders.Add("X-Tenant-Db", TestTenantDb);
+        return client;
     }
 
     private static CreateEmployeeRequest NewEmployee(string email) => new()
@@ -32,7 +42,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task GetEmployees_ReturnsOk()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
 
         var response = await client.GetAsync("/api/hr/employees");
 
@@ -43,7 +53,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task GetEmployee_ReturnsNotFound_WhenMissing()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
 
         var response = await client.GetAsync($"/api/hr/employees/{Guid.NewGuid():N}");
 
@@ -54,7 +64,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task Create_Then_Get_RoundTrips()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
 
         var create = await client.PostAsJsonAsync("/api/hr/employees", NewEmployee($"api-{Guid.NewGuid():N}@example.com"));
         Assert.Equal(HttpStatusCode.Created, create.StatusCode);
@@ -71,7 +81,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task Update_ReturnsNotFound_ForMissing()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
 
         var response = await client.PutAsJsonAsync($"/api/hr/employees/{Guid.NewGuid():N}", new UpdateEmployeeRequest
         {
@@ -89,7 +99,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task Delete_ReturnsNoContent()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
         var create = await client.PostAsJsonAsync("/api/hr/employees", NewEmployee($"del-{Guid.NewGuid():N}@example.com"));
         var created = await create.Content.ReadFromJsonAsync<EmployeeDto>();
 
@@ -102,7 +112,7 @@ public class EmployeesApiTests : IClassFixture<HrApiFactory>
     [Fact]
     public async Task Search_ReturnsOk()
     {
-        var client = _factory.CreateClient();
+        var client = CreateClientWithTenantHeaders();
         await client.PostAsJsonAsync("/api/hr/employees", NewEmployee($"search-{Guid.NewGuid():N}@example.com"));
 
         var response = await client.GetAsync("/api/hr/employees/search?q=Tester");

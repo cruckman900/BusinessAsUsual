@@ -11,13 +11,13 @@ namespace HR.Application.Services;
 public sealed class TimekeepingDataStore
 {
     // Keyed by timesheet id.
-    public ConcurrentDictionary<string, Timesheet> Timesheets { get; } = new();
+    public ConcurrentDictionary<Guid, Timesheet> Timesheets { get; } = new();
 
     /// <summary>
     /// Finds the open timesheet for an employee on a given work date, or creates
     /// one if none exists yet.
     /// </summary>
-    public Timesheet GetOrCreateOpenTimesheet(string employeeId, string employeeName, DateTime workDate)
+    public Timesheet GetOrCreateOpenTimesheet(Guid employeeId, string employeeName, DateTime workDate)
     {
         var existing = Timesheets.Values.FirstOrDefault(t =>
             t.EmployeeId == employeeId &&

@@ -461,7 +461,7 @@
 
 @code {
     [Parameter]
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
 
     private HR.Application.DTOs.EmployeeDto? employee;
     private bool isLoading = true;
@@ -502,15 +502,9 @@
             return $"{(int)tenure.TotalDays} day{(tenure.TotalDays != 1 ? "s" : "")}";
     }
 
-    private string GetShortId(string id)
+    private string GetShortId(Guid id)
     {
-        if (string.IsNullOrEmpty(id))
-            return "N/A";
-
-        if (id.Length <= 8)
-            return id;
-
-        return $"{id.Substring(0, 8)}...";
+        return id.ToString().Substring(0, 8);
     }
 
     private Color GetScoreColor(decimal score)

@@ -1,0 +1,282 @@
+@using Platform.Application.DTOs.Import
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Configure Transformation: @Mapping?.SourceColumn</MudText>
+    </TitleContent>
+    <DialogContent>
+
+        <MudSelect T="string" @bind-Value="_selectedType" Label="Transformation Type" Variant="Variant.Outlined" Class="mb-4">
+            <MudSelectItem Value="@((string)"")"">None</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.TrimWhitespace">Trim Whitespace</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.UpperCase">Uppercase</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.LowerCase">Lowercase</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.TitleCase">Title Case</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.FormatDate">Date Format</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.Replace">Find & Replace</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.DefaultValue">Default Value</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.RemoveSpecialChars">Remove Special Characters</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.PadLeft">Pad Left</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.PadRight">Pad Right</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.Substring">Substring</MudSelectItem>
+            <MudSelectItem Value="@TransformationType.SplitFullName">Split Full Name</MudSelectItem>
+        </MudSelect>
+
+        @if (_selectedType == TransformationType.FormatDate)
+        {
+            <MudTextField @bind-Value="_sourceFormat" Label="Source Date Format" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="e.g., MM/dd/yyyy, yyyy-MM-dd, dd-MMM-yyyy" />
+            <MudTextField @bind-Value="_targetFormat" Label="Target Date Format" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="e.g., yyyy-MM-dd, MM/dd/yyyy HH:mm:ss" />
+        }
+        else if (_selectedType == TransformationType.Replace)
+        {
+            <MudTextField @bind-Value="_findPattern" Label="Find Pattern" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="Text or regex pattern to find" />
+            <MudTextField @bind-Value="_replaceValue" Label="Replace With" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="Replacement text" />
+            <MudCheckBox @bind-Value="_useRegex" Label="Use Regular Expression" />
+        }
+        else if (_selectedType == TransformationType.DefaultValue)
+        {
+            <MudTextField @bind-Value="_defaultValue" Label="Default Value" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="Value to use when source is empty" />
+        }
+        else if (_selectedType == TransformationType.PadLeft || _selectedType == TransformationType.PadRight)
+        {
+            <MudNumericField @bind-Value="_padLength" Label="Pad Length" 
+                             Variant="Variant.Outlined" Class="mb-2"
+                             Min="1" Max="100"
+                             HelperText="Total length after padding" />
+            <MudTextField @bind-Value="_padChar" Label="Pad Character" 
+                          Variant="Variant.Outlined" Class="mb-2"
+                          HelperText="Character to use for padding (default: space)" MaxLength="1" />
+        }
+        else if (_selectedType == TransformationType.Substring)
+        {
+            <MudNumericField @bind-Value="_substringStart" Label="Start Index" 
+                             Variant="Variant.Outlined" Class="mb-2"
+                             Min="0"
+                             HelperText="Starting position (0-based)" />
+            <MudNumericField @bind-Value="_substringLength" Label="Length" 
+                             Variant="Variant.Outlined" Class="mb-2"
+                             Min="1"
+                             HelperText="Number of characters to extract (leave 0 for all)" />
+        }
+        else if (_selectedType == TransformationType.SplitFullName)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-2">
+                Splits a full name (e.g., "John Doe") into FirstName and LastName columns.
+                Make sure both target columns are mapped.
+            </MudAlert>
+        }
+
+        @if (!string.IsNullOrEmpty(_selectedType))
+        {
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Preview</MudText>
+            <MudTextField @bind-Value="_previewInput" Label="Sample Input" 
+                          Variant="Variant.Outlined" Class="mb-2" />
+            <MudTextField Value="@_previewOutput" Label="Preview Output" 
+                          Variant="Variant.Outlined" ReadOnly="true"
+                          HelperText="Preview of transformation result" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Apply">Apply</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public ColumnMappingDefinition? Mapping { get; set; }
+
+    private string _selectedType = "";
+    private string _sourceFormat = "MM/dd/yyyy";
+    private string _targetFormat = "yyyy-MM-dd";
+    private string _findPattern = "";
+    private string _replaceValue = "";
+    private bool _useRegex = false;
+    private string _defaultValue = "";
+    private int _padLength = 10;
+    private string _padChar = " ";
+    private int _substringStart = 0;
+    private int _substringLength = 0;
+    private string _previewInput = "Sample Data";
+    private string _previewOutput = "";
+
+    protected override void OnParametersSet()
+    {
+        if (Mapping?.Transformation != null)
+        {
+            _selectedType = Mapping.Transformation.TransformationType;
+
+            // Load existing transformation parameters
+            if (Mapping.Transformation.Parameters.TryGetValue("SourceFormat", out var sf))
+                _sourceFormat = sf;
+            if (Mapping.Transformation.Parameters.TryGetValue("TargetFormat", out var tf))
+                _targetFormat = tf;
+            if (Mapping.Transformation.Parameters.TryGetValue("FindPattern", out var fp))
+                _findPattern = fp;
+            if (Mapping.Transformation.Parameters.TryGetValue("ReplaceValue", out var rv))
+                _replaceValue = rv;
+            if (Mapping.Transformation.Parameters.TryGetValue("UseRegex", out var ur))
+                _useRegex = bool.Parse(ur);
+            if (Mapping.Transformation.Parameters.TryGetValue("DefaultValue", out var dv))
+                _defaultValue = dv;
+            if (Mapping.Transformation.Parameters.TryGetValue("PadLength", out var pl))
+                _padLength = int.Parse(pl);
+            if (Mapping.Transformation.Parameters.TryGetValue("PadChar", out var pc))
+                _padChar = pc;
+            if (Mapping.Transformation.Parameters.TryGetValue("SubstringStart", out var ss))
+                _substringStart = int.Parse(ss);
+            if (Mapping.Transformation.Parameters.TryGetValue("SubstringLength", out var sl))
+                _substringLength = int.Parse(sl);
+        }
+
+        UpdatePreview();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            UpdatePreview();
+            StateHasChanged();
+        }
+    }
+
+    private void UpdatePreview()
+    {
+        try
+        {
+            _previewOutput = _selectedType switch
+            {
+                var t when t == TransformationType.TrimWhitespace => _previewInput?.Trim() ?? "",
+                var t when t == TransformationType.UpperCase => _previewInput?.ToUpperInvariant() ?? "",
+                var t when t == TransformationType.LowerCase => _previewInput?.ToLowerInvariant() ?? "",
+                var t when t == TransformationType.TitleCase => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_previewInput?.ToLower() ?? ""),
+                var t when t == TransformationType.FormatDate => TryFormatDate(_previewInput),
+                var t when t == TransformationType.Replace => _useRegex 
+                    ? System.Text.RegularExpressions.Regex.Replace(_previewInput ?? "", _findPattern, _replaceValue)
+                    : (_previewInput ?? "").Replace(_findPattern, _replaceValue),
+                var t when t == TransformationType.DefaultValue => string.IsNullOrWhiteSpace(_previewInput) ? _defaultValue : _previewInput,
+                var t when t == TransformationType.RemoveSpecialChars => System.Text.RegularExpressions.Regex.Replace(_previewInput ?? "", @"[^a-zA-Z0-9\s]", ""),
+                var t when t == TransformationType.PadLeft => (_previewInput ?? "").PadLeft(_padLength, string.IsNullOrEmpty(_padChar) ? ' ' : _padChar[0]),
+                var t when t == TransformationType.PadRight => (_previewInput ?? "").PadRight(_padLength, string.IsNullOrEmpty(_padChar) ? ' ' : _padChar[0]),
+                var t when t == TransformationType.Substring => ExtractSubstring(_previewInput),
+                var t when t == TransformationType.SplitFullName => SplitName(_previewInput),
+                _ => _previewInput ?? ""
+            };
+        }
+        catch (Exception ex)
+        {
+            _previewOutput = $"Error: {ex.Message}";
+        }
+    }
+
+    private string TryFormatDate(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+        try
+        {
+            var date = DateTime.ParseExact(input, _sourceFormat, System.Globalization.CultureInfo.InvariantCulture);
+            return date.ToString(_targetFormat);
+        }
+        catch
+        {
+            return $"Invalid date format (expected: {_sourceFormat})";
+        }
+    }
+
+    private string ExtractSubstring(string? input)
+    {
+        if (string.IsNullOrEmpty(input)) return "";
+        if (_substringStart >= input.Length) return "";
+        if (_substringLength == 0 || _substringStart + _substringLength > input.Length)
+            return input.Substring(_substringStart);
+        return input.Substring(_substringStart, _substringLength);
+    }
+
+    private string SplitName(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+        var parts = input.Trim().Split(' ', 2);
+        return parts.Length == 2 ? $"First: {parts[0]}, Last: {parts[1]}" : $"First: {input}, Last: (empty)";
+    }
+
+    private async Task Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Apply()
+    {
+        if (Mapping == null) return;
+
+        if (string.IsNullOrEmpty(_selectedType))
+        {
+            Mapping.Transformation = null;
+        }
+        else
+        {
+            var transformation = new DataTransformation
+            {
+                TransformationType = _selectedType,
+                Parameters = new Dictionary<string, string>()
+            };
+
+            // Save parameters based on transformation type
+            if (_selectedType == TransformationType.FormatDate)
+            {
+                transformation.Parameters["SourceFormat"] = _sourceFormat;
+                transformation.Parameters["TargetFormat"] = _targetFormat;
+            }
+            else if (_selectedType == TransformationType.Replace)
+            {
+                transformation.Parameters["FindPattern"] = _findPattern;
+                transformation.Parameters["ReplaceValue"] = _replaceValue;
+                transformation.Parameters["UseRegex"] = _useRegex.ToString();
+            }
+            else if (_selectedType == TransformationType.DefaultValue)
+            {
+                transformation.Parameters["DefaultValue"] = _defaultValue;
+            }
+            else if (_selectedType == TransformationType.PadLeft || _selectedType == TransformationType.PadRight)
+            {
+                transformation.Parameters["PadLength"] = _padLength.ToString();
+                transformation.Parameters["PadChar"] = _padChar;
+            }
+            else if (_selectedType == TransformationType.Substring)
+            {
+                transformation.Parameters["SubstringStart"] = _substringStart.ToString();
+                transformation.Parameters["SubstringLength"] = _substringLength.ToString();
+            }
+
+            Mapping.Transformation = transformation;
+        }
+
+        MudDialog.Close(DialogResult.Ok(Mapping));
+    }
+            }
+            else if (_selectedType == TransformationType.Substring)
+            {
+                transformation.Parameters["SubstringStart"] = _substringStart.ToString();
+                transformation.Parameters["SubstringLength"] = _substringLength.ToString();
+            }
+
+            Mapping.Transformation = transformation;
+        }
+
+        await OnApply.InvokeAsync(Mapping);
+    }
+}

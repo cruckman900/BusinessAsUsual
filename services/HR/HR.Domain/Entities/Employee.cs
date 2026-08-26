@@ -5,7 +5,17 @@ namespace HR.Domain.Entities;
 /// </summary>
 public class Employee
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
+    /// Legacy ID from previous system for data migration and relationship mapping
+    /// </summary>
+    public string? LegacyId { get; set; }
 
     // Personal Information
     public string FirstName { get; set; } = string.Empty;
@@ -39,7 +49,7 @@ public class Employee
 
     // Work Location & Reporting
     public string? WorkLocation { get; set; }  // Office location or "Remote"
-    public string? ManagerId { get; set; }  // Direct manager/supervisor
+    public Guid? ManagerId { get; set; }  // Direct manager/supervisor
     public Employee? Manager { get; set; }  // Navigation property
 
     // Legacy: Keep for backward compatibility, will be replaced by many-to-many

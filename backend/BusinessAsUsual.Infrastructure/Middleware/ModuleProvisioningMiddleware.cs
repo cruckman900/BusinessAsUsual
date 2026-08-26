@@ -1,5 +1,6 @@
 using BusinessAsUsual.Application.Database;
 using BusinessAsUsual.Domain.Models;
+using BusinessAsUsual.Infrastructure.Provisioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -25,7 +26,8 @@ namespace BusinessAsUsual.Infrastructure.Middleware
 
         public async Task InvokeAsync(
             HttpContext context,
-            IProvisioningDb provisioningDb)
+            IProvisioningDb provisioningDb,
+            IModuleScriptExecutor scriptExecutor)
         {
             // Only process API routes that match module patterns
             var path = context.Request.Path.Value?.ToLowerInvariant();
@@ -39,7 +41,7 @@ namespace BusinessAsUsual.Infrastructure.Middleware
                 {
                     var potentialModuleKey = segments[1]; // "hr", "crm", "finance", etc.
 
-                    // Get tenant context from headers or claims (placeholder for now)
+                    // Get tenant context from headers or claims
                     var companyId = GetCompanyIdFromContext(context);
                     var tenantDbName = GetTenantDbNameFromContext(context);
 
@@ -69,8 +71,10 @@ namespace BusinessAsUsual.Infrastructure.Middleware
                                             module.ModuleName,
                                             tenantDbName);
 
-                                        // TODO: Load and execute module-specific schema script
-                                        // For now, just mark as provisioned
+                                        // Execute module-specific schema script
+                                        await scriptExecutor.ExecuteModuleScriptAsync(tenantDbName, potentialModuleKey);
+
+                                        // Mark module as provisioned
                                         module.IsProvisioned = true;
                                         config.LastUpdated = DateTime.UtcNow;
 

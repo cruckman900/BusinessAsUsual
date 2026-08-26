@@ -8,9 +8,9 @@ namespace HR.Application.Services;
 public interface IEmployeeService
 {
     Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync();
-    Task<EmployeeDto?> GetEmployeeByIdAsync(string id);
+    Task<EmployeeDto?> GetEmployeeByIdAsync(Guid id);
     Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeRequest request);
-    Task<EmployeeDto> UpdateEmployeeAsync(string id, UpdateEmployeeRequest request);
-    Task DeleteEmployeeAsync(string id);
+    Task<EmployeeDto> UpdateEmployeeAsync(Guid id, UpdateEmployeeRequest request);
+    Task DeleteEmployeeAsync(Guid id);
     Task<IEnumerable<EmployeeDto>> SearchEmployeesAsync(string searchTerm);
 }

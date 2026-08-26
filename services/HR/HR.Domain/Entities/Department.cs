@@ -8,7 +8,17 @@ public class Department
     /// <summary>
     /// Gets or sets the unique identifier for the department.
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
+    /// Legacy ID from previous system for data migration and relationship mapping
+    /// </summary>
+    public string? LegacyId { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the department.
@@ -38,7 +48,7 @@ public class Department
     /// <summary>
     /// Gets or sets the parent department ID for hierarchical structure (pods/sub-departments)
     /// </summary>
-    public string? ParentDepartmentId { get; set; }
+    public Guid? ParentDepartmentId { get; set; }
 
     /// <summary>
     /// Gets or sets the parent department navigation property
@@ -54,7 +64,7 @@ public class Department
     /// Legacy: Gets or sets the unique identifier of the single manager (for backward compatibility)
     /// </summary>
     [Obsolete("Use DepartmentManagers navigation property instead")]
-    public string? ManagerEmployeeId { get; set; }
+    public Guid? ManagerEmployeeId { get; set; }
 
     /// <summary>
     /// Legacy: Gets or sets the static employee count (for backward compatibility)

@@ -6,14 +6,19 @@ namespace HR.Domain.Entities;
 public class EmployeeDepartment
 {
     /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
     /// Gets or sets the employee ID
     /// </summary>
-    public string EmployeeId { get; set; } = string.Empty;
+    public Guid EmployeeId { get; set; }
 
     /// <summary>
     /// Gets or sets the department ID
     /// </summary>
-    public string DepartmentId { get; set; } = string.Empty;
+    public Guid DepartmentId { get; set; }
 
     /// <summary>
     /// Gets or sets whether this is the employee's primary department

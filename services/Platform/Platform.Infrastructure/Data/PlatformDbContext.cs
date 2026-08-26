@@ -15,6 +15,8 @@ public class PlatformDbContext : DbContext
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<ImportHistory> ImportHistories => Set<ImportHistory>();
+    public DbSet<MappingTemplate> MappingTemplates => Set<MappingTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,6 +87,29 @@ public class PlatformDbContext : DbContext
                 .WithMany(p => p.RolePermissions)
                 .HasForeignKey(e => e.PermissionId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ImportHistory configuration
+        modelBuilder.Entity<ImportHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.CompanyId, e.StartedAt });
+            entity.HasIndex(e => e.TableName);
+            entity.Property(e => e.TableName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.FileName).HasMaxLength(500);
+        });
+
+        // MappingTemplate configuration
+        modelBuilder.Entity<MappingTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.CompanyId, e.TableName });
+            entity.HasIndex(e => e.TemplateName);
+            entity.Property(e => e.TableName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.TemplateName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.ConfigurationJson).IsRequired();
         });
 
         // Seed system roles

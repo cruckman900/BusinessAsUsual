@@ -26,7 +26,7 @@ public class EmployeeServiceTests
         {
             new Employee
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -38,7 +38,7 @@ public class EmployeeServiceTests
             },
             new Employee
             {
-                Id = "2",
+                Id = Guid.NewGuid(),
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
@@ -65,9 +65,10 @@ public class EmployeeServiceTests
     public async Task GetEmployeeByIdAsync_Should_Return_Employee_When_Found()
     {
         // Arrange
+        var employeeId = Guid.NewGuid();
         var employee = new Employee
         {
-            Id = "123",
+            Id = employeeId,
             FirstName = "John",
             LastName = "Doe",
             Email = "john.doe@example.com",
@@ -78,14 +79,14 @@ public class EmployeeServiceTests
             EmploymentType = EmploymentType.FullTime
         };
 
-        _mockRepository.Setup(r => r.GetByIdAsync("123")).ReturnsAsync(employee);
+        _mockRepository.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync(employee);
 
         // Act
-        var result = await _service.GetEmployeeByIdAsync("123");
+        var result = await _service.GetEmployeeByIdAsync(employeeId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be("123");
+        result!.Id.Should().Be(employeeId);
         result.FirstName.Should().Be("John");
         result.LastName.Should().Be("Doe");
     }
@@ -94,10 +95,11 @@ public class EmployeeServiceTests
     public async Task GetEmployeeByIdAsync_Should_Return_Null_When_Not_Found()
     {
         // Arrange
-        _mockRepository.Setup(r => r.GetByIdAsync("999")).ReturnsAsync((Employee?)null);
+        var nonExistentId = Guid.NewGuid();
+        _mockRepository.Setup(r => r.GetByIdAsync(nonExistentId)).ReturnsAsync((Employee?)null);
 
         // Act
-        var result = await _service.GetEmployeeByIdAsync("999");
+        var result = await _service.GetEmployeeByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
@@ -207,9 +209,10 @@ public class EmployeeServiceTests
     public async Task UpdateEmployeeAsync_Should_Update_Existing_Employee()
     {
         // Arrange
+        var employeeId = Guid.NewGuid();
         var existingEmployee = new Employee
         {
-            Id = "123",
+            Id = employeeId,
             FirstName = "Old",
             LastName = "Name",
             Email = "old@example.com",
@@ -232,12 +235,12 @@ public class EmployeeServiceTests
             Status = "OnLeave"
         };
 
-        _mockRepository.Setup(r => r.GetByIdAsync("123")).ReturnsAsync(existingEmployee);
+        _mockRepository.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync(existingEmployee);
         _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<Employee>()))
             .ReturnsAsync((Employee e) => e);
 
         // Act
-        var result = await _service.UpdateEmployeeAsync("123", updateRequest);
+        var result = await _service.UpdateEmployeeAsync(employeeId, updateRequest);
 
         // Assert
         result.Should().NotBeNull();
@@ -246,7 +249,7 @@ public class EmployeeServiceTests
         result.Email.Should().Be("new@example.com");
         result.JobTitle.Should().Be("New Title");
         _mockRepository.Verify(r => r.UpdateAsync(It.Is<Employee>(e =>
-            e.Id == "123" &&
+            e.Id == employeeId &&
             e.FirstName == "New" &&
             e.Status == EmploymentStatus.OnLeave &&
             e.EmploymentType == EmploymentType.PartTime
@@ -269,21 +272,22 @@ public class EmployeeServiceTests
             Status = "Active"
         };
 
-        _mockRepository.Setup(r => r.GetByIdAsync("999")).ReturnsAsync((Employee?)null);
+        var nonExistentId = Guid.NewGuid();
+        _mockRepository.Setup(r => r.GetByIdAsync(nonExistentId)).ReturnsAsync((Employee?)null);
 
         // Act
-        Func<Task> act = async () => await _service.UpdateEmployeeAsync("999", updateRequest);
+        Func<Task> act = async () => await _service.UpdateEmployeeAsync(nonExistentId, updateRequest);
 
         // Assert
         await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Employee with ID 999 not found");
+            .WithMessage($"Employee with ID {nonExistentId} not found");
     }
 
     [Fact]
     public async Task DeleteEmployeeAsync_Should_Call_Repository_Delete()
     {
         // Arrange
-        var employeeId = "123";
+        var employeeId = Guid.NewGuid();
 
         // Act
         await _service.DeleteEmployeeAsync(employeeId);
@@ -301,7 +305,7 @@ public class EmployeeServiceTests
         {
             new Employee
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -313,7 +317,7 @@ public class EmployeeServiceTests
             },
             new Employee
             {
-                Id = "2",
+                Id = Guid.NewGuid(),
                 FirstName = "Johnny",
                 LastName = "Smith",
                 Email = "johnny.smith@example.com",

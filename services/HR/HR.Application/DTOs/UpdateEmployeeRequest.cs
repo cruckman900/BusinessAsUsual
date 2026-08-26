@@ -33,6 +33,6 @@ public class UpdateEmployeeRequest
     public DateTime HireDate { get; set; }
     public string Status { get; set; } = "Active";
     public string? WorkLocation { get; set; }
-    public string? ManagerId { get; set; }
+    public Guid? ManagerId { get; set; }
     public string? SalaryGrade { get; set; }
 }

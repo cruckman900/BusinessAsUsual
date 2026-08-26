@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\services\Inventory\Inventory.Web\Inventory.Web.csproj" />
     <ProjectReference Include="..\..\services\Sales\Sales.Web\Sales.Web.csproj" />
     <ProjectReference Include="..\..\services\Services\Services.Web\Services.Web.csproj" />
+    <ProjectReference Include="..\..\services\Platform\Platform.Infrastructure\Platform.Infrastructure.csproj" />
     <ProjectReference Include="..\..\services\Platform\Platform.Web\Platform.Web.csproj" />
     <ProjectReference Include="..\..\services\LearningManagement\LMS.API\LMS.API.csproj" />
     <ProjectReference Include="..\..\services\LearningManagement\LMS.Infrastructure\LMS.Infrastructure.csproj" />

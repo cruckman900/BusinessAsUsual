@@ -59,7 +59,7 @@ public class HRSeedData
         {
             new Department
             {
-                Id = "DEPT001",
+                Id = Guid.Parse("10000001-0000-0000-0000-000000000001"),
                 Name = "Engineering",
                 Code = "ENG",
                 Description = "Software development and technical teams",
@@ -69,7 +69,7 @@ public class HRSeedData
             },
             new Department
             {
-                Id = "DEPT002",
+                Id = Guid.Parse("10000002-0000-0000-0000-000000000002"),
                 Name = "Project Management",
                 Code = "PM",
                 Description = "Project planning, coordination, and delivery",
@@ -79,7 +79,7 @@ public class HRSeedData
             },
             new Department
             {
-                Id = "DEPT003",
+                Id = Guid.Parse("10000003-0000-0000-0000-000000000003"),
                 Name = "Human Resources",
                 Code = "HR",
                 Description = "People operations, recruitment, and employee relations",
@@ -89,7 +89,7 @@ public class HRSeedData
             },
             new Department
             {
-                Id = "DEPT004",
+                Id = Guid.Parse("10000004-0000-0000-0000-000000000004"),
                 Name = "Data & Analytics",
                 Code = "DATA",
                 Description = "Data engineering, analytics, and business intelligence",
@@ -102,11 +102,17 @@ public class HRSeedData
 
     private List<Employee> CreateEmployees(List<Department> departments)
     {
+        var emp001 = Guid.Parse("00000001-0000-0000-0000-000000000001");
+        var emp002 = Guid.Parse("00000002-0000-0000-0000-000000000002");
+        var emp003 = Guid.Parse("00000003-0000-0000-0000-000000000003");
+        var emp004 = Guid.Parse("00000004-0000-0000-0000-000000000004");
+        var emp005 = Guid.Parse("00000005-0000-0000-0000-000000000005");
+
         return new List<Employee>
         {
             new Employee
             {
-                Id = "EMP001",
+                Id = emp001,
                 FirstName = "Sarah",
                 LastName = "Johnson",
                 Email = "sarah.johnson@businessasusual.com",
@@ -123,7 +129,7 @@ public class HRSeedData
             },
             new Employee
             {
-                Id = "EMP002",
+                Id = emp002,
                 FirstName = "Michael",
                 LastName = "Chen",
                 Email = "michael.chen@businessasusual.com",
@@ -133,7 +139,7 @@ public class HRSeedData
                 Status = EmploymentStatus.Active,
                 HireDate = DateTime.UtcNow.AddMonths(-8),
                 WorkLocation = "Main Office - Floor 3",
-                ManagerId = "EMP001",
+                ManagerId = emp001,
                 SalaryGrade = "L2",
                 Department = "Engineering",
                 CreatedAt = DateTime.UtcNow.AddMonths(-8),
@@ -141,7 +147,7 @@ public class HRSeedData
             },
             new Employee
             {
-                Id = "EMP003",
+                Id = emp003,
                 FirstName = "Emily",
                 LastName = "Rodriguez",
                 Email = "emily.rodriguez@businessasusual.com",
@@ -158,7 +164,7 @@ public class HRSeedData
             },
             new Employee
             {
-                Id = "EMP004",
+                Id = emp004,
                 FirstName = "David",
                 LastName = "Kim",
                 Email = "david.kim@businessasusual.com",
@@ -175,7 +181,7 @@ public class HRSeedData
             },
             new Employee
             {
-                Id = "EMP005",
+                Id = emp005,
                 FirstName = "Lisa",
                 LastName = "Anderson",
                 Email = "lisa.anderson@businessasusual.com",
@@ -195,6 +201,12 @@ public class HRSeedData
 
     private List<EmployeeDepartment> CreateEmployeeDepartments(List<Employee> employees, List<Department> departments)
     {
+        var emp001 = Guid.Parse("00000001-0000-0000-0000-000000000001");
+        var emp002 = Guid.Parse("00000002-0000-0000-0000-000000000002");
+        var emp003 = Guid.Parse("00000003-0000-0000-0000-000000000003");
+        var emp004 = Guid.Parse("00000004-0000-0000-0000-000000000004");
+        var emp005 = Guid.Parse("00000005-0000-0000-0000-000000000005");
+
         var engineeringDept = departments.First(d => d.Code == "ENG");
         var pmDept = departments.First(d => d.Code == "PM");
         var hrDept = departments.First(d => d.Code == "HR");
@@ -204,35 +216,35 @@ public class HRSeedData
         {
             new EmployeeDepartment
             {
-                EmployeeId = "EMP001",
+                EmployeeId = emp001,
                 DepartmentId = engineeringDept.Id,
                 IsPrimary = true,
                 JoinedDate = employees[0].HireDate
             },
             new EmployeeDepartment
             {
-                EmployeeId = "EMP002",
+                EmployeeId = emp002,
                 DepartmentId = engineeringDept.Id,
                 IsPrimary = true,
                 JoinedDate = employees[1].HireDate
             },
             new EmployeeDepartment
             {
-                EmployeeId = "EMP003",
+                EmployeeId = emp003,
                 DepartmentId = pmDept.Id,
                 IsPrimary = true,
                 JoinedDate = employees[2].HireDate
             },
             new EmployeeDepartment
             {
-                EmployeeId = "EMP004",
+                EmployeeId = emp004,
                 DepartmentId = dataDept.Id,
                 IsPrimary = true,
                 JoinedDate = employees[3].HireDate
             },
             new EmployeeDepartment
             {
-                EmployeeId = "EMP005",
+                EmployeeId = emp005,
                 DepartmentId = hrDept.Id,
                 IsPrimary = true,
                 JoinedDate = employees[4].HireDate
@@ -242,6 +254,12 @@ public class HRSeedData
 
     private List<TrainingCompletion> CreateTrainingCompletions(List<Employee> employees)
     {
+        var emp001 = Guid.Parse("00000001-0000-0000-0000-000000000001");
+        var emp002 = Guid.Parse("00000002-0000-0000-0000-000000000002");
+        var emp003 = Guid.Parse("00000003-0000-0000-0000-000000000003");
+        var emp004 = Guid.Parse("00000004-0000-0000-0000-000000000004");
+        var emp005 = Guid.Parse("00000005-0000-0000-0000-000000000005");
+
         // Sample course IDs that match the LMS seed data
         var csharpCourseId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var agileCourseId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -253,7 +271,7 @@ public class HRSeedData
             // Alice (EMP001) - Software Engineer - completed C# Fundamentals
             new TrainingCompletion
             {
-                EmployeeId = "EMP001",
+                EmployeeId = emp001,
                 CourseId = csharpCourseId,
                 CourseName = "C# Fundamentals",
                 CompletionDate = DateTime.UtcNow.AddDays(-30),
@@ -266,7 +284,7 @@ public class HRSeedData
             // Alice also completed Agile Methodology
             new TrainingCompletion
             {
-                EmployeeId = "EMP001",
+                EmployeeId = emp001,
                 CourseId = agileCourseId,
                 CourseName = "Agile Methodology",
                 CompletionDate = DateTime.UtcNow.AddDays(-15),
@@ -279,7 +297,7 @@ public class HRSeedData
             // Bob (EMP002) - Senior Developer - completed Database Design
             new TrainingCompletion
             {
-                EmployeeId = "EMP002",
+                EmployeeId = emp002,
                 CourseId = databaseCourseId,
                 CourseName = "Database Design Principles",
                 CompletionDate = DateTime.UtcNow.AddDays(-20),
@@ -292,7 +310,7 @@ public class HRSeedData
             // Carol (EMP003) - Project Manager - completed Agile
             new TrainingCompletion
             {
-                EmployeeId = "EMP003",
+                EmployeeId = emp003,
                 CourseId = agileCourseId,
                 CourseName = "Agile Methodology",
                 CompletionDate = DateTime.UtcNow.AddDays(-10),
@@ -305,7 +323,7 @@ public class HRSeedData
             // David (EMP004) - Data Analyst - completed C# Fundamentals
             new TrainingCompletion
             {
-                EmployeeId = "EMP004",
+                EmployeeId = emp004,
                 CourseId = csharpCourseId,
                 CourseName = "C# Fundamentals",
                 CompletionDate = DateTime.UtcNow.AddDays(-5),
@@ -318,7 +336,7 @@ public class HRSeedData
             // Emily (EMP005) - HR Manager - completed Workplace Safety
             new TrainingCompletion
             {
-                EmployeeId = "EMP005",
+                EmployeeId = emp005,
                 CourseId = safetyFundamentalsId,
                 CourseName = "Workplace Safety Fundamentals",
                 CompletionDate = DateTime.UtcNow.AddDays(-7),

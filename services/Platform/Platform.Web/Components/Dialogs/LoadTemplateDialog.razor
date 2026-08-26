@@ -1,0 +1,98 @@
+@using Platform.Application.DTOs.Import
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.FolderOpen" Class="mr-2" />
+            Load Mapping Template
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Info">
+                Select a saved template to load column mappings for: <strong>@SelectedTable</strong>
+            </MudAlert>
+
+            @if (!Templates.Any())
+            {
+                <MudAlert Severity="Severity.Warning">
+                    No templates found for this table.
+                </MudAlert>
+            }
+            else
+            {
+                <MudList T="string" Clickable="true">
+                    @foreach (var template in Templates)
+                    {
+                        <MudListItem T="string" OnClick="@(() => SelectTemplate(template.Id))" 
+                                     Class="@(SelectedTemplateId == template.Id ? "mud-theme-primary" : "")">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.body1">
+                                        <strong>@template.TemplateName</strong>
+                                        @if (template.IsShared)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="ml-2">Shared</MudChip>
+                                        }
+                                    </MudText>
+                                    @if (!string.IsNullOrEmpty(template.Description))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@template.Description</MudText>
+                                    }
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Created: @template.CreatedAt.ToLocalTime().ToString("g")
+                                        @if (template.UpdatedAt != null)
+                                        {
+                                            <text> | Updated: @template.UpdatedAt.Value.ToLocalTime().ToString("g")</text>
+                                        }
+                                    </MudText>
+                                </MudStack>
+                                @if (SelectedTemplateId == template.Id)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                }
+                            </MudStack>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Load" Disabled="@(!SelectedTemplateId.HasValue)">
+            Load Template
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public IEnumerable<MappingTemplateDto> Templates { get; set; } = Enumerable.Empty<MappingTemplateDto>();
+
+    [Parameter]
+    public string SelectedTable { get; set; } = string.Empty;
+
+    private Guid? SelectedTemplateId { get; set; }
+
+    private void SelectTemplate(Guid templateId)
+    {
+        SelectedTemplateId = templateId;
+    }
+
+    private void Load()
+    {
+        if (SelectedTemplateId.HasValue)
+        {
+            MudDialog.Close(DialogResult.Ok(SelectedTemplateId.Value));
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

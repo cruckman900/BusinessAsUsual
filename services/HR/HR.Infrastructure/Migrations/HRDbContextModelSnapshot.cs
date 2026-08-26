@@ -24,12 +24,16 @@ namespace HR.Infrastructure.Migrations
 
             modelBuilder.Entity("HR.Domain.Entities.Department", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CostCenter")
                         .HasMaxLength(50)
@@ -48,20 +52,23 @@ namespace HR.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("LegacyId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Location")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ManagerEmployeeId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("ManagerEmployeeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ParentDepartmentId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid?>("ParentDepartmentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -81,11 +88,14 @@ namespace HR.Infrastructure.Migrations
 
             modelBuilder.Entity("HR.Domain.Entities.DepartmentManager", b =>
                 {
-                    b.Property<string>("DepartmentId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ManagerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("ManagerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
@@ -113,8 +123,9 @@ namespace HR.Infrastructure.Migrations
 
             modelBuilder.Entity("HR.Domain.Entities.Employee", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AddressLine1")
                         .HasMaxLength(200)
@@ -127,6 +138,9 @@ namespace HR.Infrastructure.Migrations
                     b.Property<string>("City")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Country")
                         .HasMaxLength(100)
@@ -180,8 +194,11 @@ namespace HR.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ManagerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("LegacyId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ManagerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PersonalEmail")
                         .HasMaxLength(255)
@@ -236,14 +253,17 @@ namespace HR.Infrastructure.Migrations
 
             modelBuilder.Entity("HR.Domain.Entities.EmployeeDepartment", b =>
                 {
-                    b.Property<string>("EmployeeId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("DepartmentId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("AllocationPercentage")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
@@ -263,6 +283,59 @@ namespace HR.Infrastructure.Migrations
                     b.HasIndex("LeftDate");
 
                     b.ToTable("EmployeeDepartments");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.TrainingCompletion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CertificateNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CompletionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CourseName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TimeSpentMinutes")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompletionDate");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SourceEventId")
+                        .IsUnique();
+
+                    b.ToTable("TrainingCompletions");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Department", b =>
@@ -330,6 +403,17 @@ namespace HR.Infrastructure.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("HR.Domain.Entities.TrainingCompletion", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.Employee", "Employee")
+                        .WithMany("TrainingCompletions")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("HR.Domain.Entities.Department", b =>
                 {
                     b.Navigation("DepartmentManagers");
@@ -346,6 +430,8 @@ namespace HR.Infrastructure.Migrations
                     b.Navigation("EmployeeDepartments");
 
                     b.Navigation("ManagedDepartments");
+
+                    b.Navigation("TrainingCompletions");
                 });
 #pragma warning restore 612, 618
         }

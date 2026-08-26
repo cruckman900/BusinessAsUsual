@@ -21,6 +21,8 @@
     <ProjectReference Include="..\HR.Application\HR.Application.csproj" />
     <ProjectReference Include="..\HR.Infrastructure\HR.Infrastructure.csproj" />
     <ProjectReference Include="..\HR.Contracts\HR.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

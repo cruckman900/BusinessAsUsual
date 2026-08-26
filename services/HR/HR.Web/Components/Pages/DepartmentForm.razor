@@ -107,9 +107,9 @@
                                    HelperText="Select a parent department to create a sub-department/pod"
                                    AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem Value="@((string?)null)">-- No Parent (Top-Level Department) --</MudSelectItem>
-                            @foreach (var dept in allDepartments.Where(d => d.Id != Id))
+                            @foreach (var dept in allDepartments.Where(d => !Id.HasValue || d.Id != Id.Value))
                             {
-                                <MudSelectItem Value="@dept.Id">@dept.Name @(!string.IsNullOrEmpty(dept.Code) ? $"({dept.Code})" : "")</MudSelectItem>
+                                <MudSelectItem Value="@dept.Id.ToString()">@dept.Name @(!string.IsNullOrEmpty(dept.Code) ? $"({dept.Code})" : "")</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
@@ -134,7 +134,7 @@
                                    AnchorOrigin="Origin.BottomCenter">
                             @foreach (var emp in employees)
                             {
-                                <MudSelectItem T="string" Value="@emp.Id">@emp.FirstName @emp.LastName - @emp.JobTitle</MudSelectItem>
+                                <MudSelectItem T="string" Value="@emp.Id.ToString()">@emp.FirstName @emp.LastName - @emp.JobTitle</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
@@ -168,11 +168,9 @@
 
     @code {
     [Parameter]
-    public string? Id { get; set; }
+    public Guid? Id { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrEmpty(Id) 
-        && !Id.Equals("create", StringComparison.OrdinalIgnoreCase)
-        && !Id.Equals("new", StringComparison.OrdinalIgnoreCase);
+    private bool IsEditMode => Id.HasValue && Id.Value != Guid.Empty;
     private DepartmentFormModel model = new();
     private List<HR.Application.DTOs.EmployeeDto> employees = new();
     private List<HR.Application.DTOs.DepartmentDto> allDepartments = new();
@@ -185,7 +183,7 @@
         await LoadEmployees();
         await LoadAllDepartments();
 
-        if (IsEditMode && !string.IsNullOrEmpty(Id))
+        if (IsEditMode && Id.HasValue)
         {
             await LoadDepartment();
         }
@@ -227,7 +225,7 @@
     {
         try
         {
-            var department = await DepartmentService.GetDepartmentByIdAsync(Id!);
+            var department = await DepartmentService.GetDepartmentByIdAsync(Id!.Value);
             if (department != null)
             {
                 model.Name = department.Name;
@@ -235,14 +233,14 @@
                 model.Code = department.Code;
                 model.Location = department.Location;
                 model.CostCenter = department.CostCenter;
-                model.ParentDepartmentId = department.ParentDepartmentId;
-                model.ManagerEmployeeId = department.ManagerEmployeeId ?? string.Empty;
+                model.ParentDepartmentId = department.ParentDepartmentId?.ToString();
+                model.ManagerEmployeeId = department.ManagerEmployeeId?.ToString() ?? string.Empty;
                 model.IsActive = department.IsActive;
 
                 // Load existing managers
                 if (department.Managers != null && department.Managers.Any())
                 {
-                    selectedManagerIds = department.Managers.Select(m => m.ManagerId).ToHashSet();
+                    selectedManagerIds = department.Managers.Select(m => m.ManagerId.ToString()).ToHashSet();
                 }
             }
             else
@@ -272,13 +270,13 @@
                     Code = model.Code,
                     Location = model.Location,
                     CostCenter = model.CostCenter,
-                    ParentDepartmentId = model.ParentDepartmentId,
-                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : model.ManagerEmployeeId,
-                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.ToList() : null,
+                    ParentDepartmentId = string.IsNullOrEmpty(model.ParentDepartmentId) ? null : Guid.Parse(model.ParentDepartmentId),
+                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : Guid.Parse(model.ManagerEmployeeId),
+                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.Select(Guid.Parse).ToList() : null,
                     IsActive = model.IsActive
                 };
 
-                await DepartmentService.UpdateDepartmentAsync(Id!, updateRequest);
+                await DepartmentService.UpdateDepartmentAsync(Id!.Value, updateRequest);
                 Snackbar.Add("Department updated successfully", Severity.Success);
             }
             else
@@ -290,9 +288,9 @@
                     Code = model.Code,
                     Location = model.Location,
                     CostCenter = model.CostCenter,
-                    ParentDepartmentId = model.ParentDepartmentId,
-                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : model.ManagerEmployeeId,
-                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.ToList() : null,
+                    ParentDepartmentId = string.IsNullOrEmpty(model.ParentDepartmentId) ? null : Guid.Parse(model.ParentDepartmentId),
+                    ManagerEmployeeId = string.IsNullOrEmpty(model.ManagerEmployeeId) ? null : Guid.Parse(model.ManagerEmployeeId),
+                    ManagerIds = selectedManagerIds != null && selectedManagerIds.Any() ? selectedManagerIds.Select(Guid.Parse).ToList() : null,
                     IsActive = model.IsActive
                 };
 

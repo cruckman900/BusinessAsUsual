@@ -23,7 +23,7 @@ public class ExportServiceTests
         {
             new EmployeeDto
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.doe@example.com",
@@ -92,7 +92,7 @@ public class ExportServiceTests
         {
             new EmployeeDto
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane@example.com",
@@ -119,7 +119,7 @@ public class ExportServiceTests
         {
             new EmployeeDto
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 FirstName = "Alice",
                 LastName = "Johnson",
                 Email = "alice@example.com",
@@ -128,7 +128,7 @@ public class ExportServiceTests
             },
             new EmployeeDto
             {
-                Id = "2",
+                Id = Guid.NewGuid(),
                 FirstName = "Bob",
                 LastName = "Williams",
                 Email = "bob@example.com",
@@ -137,7 +137,7 @@ public class ExportServiceTests
             },
             new EmployeeDto
             {
-                Id = "3",
+                Id = Guid.NewGuid(),
                 FirstName = "Charlie",
                 LastName = "Brown",
                 Email = "charlie@example.com",
@@ -170,7 +170,7 @@ public class ExportServiceTests
         {
             new DepartmentDto
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 Name = "Engineering",
                 Description = "Software Engineering Department",
                 EmployeeCount = 25
@@ -219,7 +219,7 @@ public class ExportServiceTests
         {
             new DepartmentDto
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 Name = "Sales",
                 Description = null,  // Null description
                 EmployeeCount = 10
@@ -242,9 +242,9 @@ public class ExportServiceTests
         // Arrange
         var departments = new List<DepartmentDto>
         {
-            new DepartmentDto { Id = "1", Name = "Engineering", Description = "Tech team", EmployeeCount = 30 },
-            new DepartmentDto { Id = "2", Name = "Sales", Description = "Sales team", EmployeeCount = 15 },
-            new DepartmentDto { Id = "3", Name = "HR", Description = "Human Resources", EmployeeCount = 5 }
+            new DepartmentDto { Id = Guid.NewGuid(), Name = "Engineering", Description = "Tech team", EmployeeCount = 30 },
+            new DepartmentDto { Id = Guid.NewGuid(), Name = "Sales", Description = "Sales team", EmployeeCount = 15 },
+            new DepartmentDto { Id = Guid.NewGuid(), Name = "HR", Description = "Human Resources", EmployeeCount = 5 }
         };
 
         // Act

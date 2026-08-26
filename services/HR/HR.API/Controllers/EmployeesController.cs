@@ -38,7 +38,7 @@ public class EmployeesController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EmployeeDto>> GetEmployee(string id)
+    public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id)
     {
         _logger.LogInformation("Getting employee {EmployeeId}", id);
         var employee = await _employeeService.GetEmployeeByIdAsync(id);
@@ -71,7 +71,7 @@ public class EmployeesController : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EmployeeDto>> UpdateEmployee(string id, [FromBody] UpdateEmployeeRequest request)
+    public async Task<ActionResult<EmployeeDto>> UpdateEmployee(Guid id, [FromBody] UpdateEmployeeRequest request)
     {
         _logger.LogInformation("Updating employee {EmployeeId}", id);
 
@@ -92,7 +92,7 @@ public class EmployeesController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteEmployee(string id)
+    public async Task<IActionResult> DeleteEmployee(Guid id)
     {
         _logger.LogInformation("Deleting employee {EmployeeId}", id);
 

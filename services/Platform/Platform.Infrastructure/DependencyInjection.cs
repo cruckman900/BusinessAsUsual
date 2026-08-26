@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Platform.Application.Interfaces;
+using Platform.Application.Services;
 using Platform.Domain.Interfaces;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.Repositories;
+using Platform.Infrastructure.Services;
 
 namespace Platform.Infrastructure;
 
@@ -23,6 +26,14 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
+
+        // Register import services
+        services.AddScoped<ISchemaIntrospectionService, SchemaIntrospectionService>();
+        services.AddScoped<IFileParserService, FileParserService>();
+        services.AddScoped<IDataTransformationService, DataTransformationService>();
+        services.AddScoped<IColumnMappingService, ColumnMappingService>();
+        services.AddScoped<IBatchImportService, BatchImportService>();
+        services.AddScoped<IMappingTemplateService, MappingTemplateService>();
 
         return services;
     }

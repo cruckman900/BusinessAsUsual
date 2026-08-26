@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.19" />
+    <PackageReference Include="MudBlazor" Version="8.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\services\CRM\CRM.Application\CRM.Application.csproj" />
+    <ProjectReference Include="..\..\services\HR\HR.Application\HR.Application.csproj" />
+    <ProjectReference Include="..\..\services\Inventory\Inventory.Application\Inventory.Application.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -8,7 +8,7 @@ public class DepartmentDto
     /// <summary>
     /// The unique identifier of the department
     /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
 
     /// <summary>
     /// The name of the department
@@ -38,7 +38,7 @@ public class DepartmentDto
     /// <summary>
     /// The parent department ID (for sub-departments/pods)
     /// </summary>
-    public string? ParentDepartmentId { get; set; }
+    public Guid? ParentDepartmentId { get; set; }
 
     /// <summary>
     /// The parent department name
@@ -53,7 +53,7 @@ public class DepartmentDto
     /// <summary>
     /// Legacy: The employee ID of the primary manager (for backward compatibility)
     /// </summary>
-    public string? ManagerEmployeeId { get; set; }
+    public Guid? ManagerEmployeeId { get; set; }
 
     /// <summary>
     /// Legacy: The name of the primary manager (for backward compatibility)
@@ -96,7 +96,7 @@ public class DepartmentDto
 /// </summary>
 public class DepartmentManagerDto
 {
-    public string ManagerId { get; set; } = string.Empty;
+    public Guid ManagerId { get; set; }
     public string ManagerName { get; set; } = string.Empty;
     public string? ManagerRole { get; set; }
     public bool IsPrimary { get; set; }
@@ -136,17 +136,17 @@ public class CreateDepartmentRequest
     /// <summary>
     /// The parent department ID (for sub-departments)
     /// </summary>
-    public string? ParentDepartmentId { get; set; }
+    public Guid? ParentDepartmentId { get; set; }
 
     /// <summary>
     /// Legacy: The employee ID of the primary manager (for backward compatibility)
     /// </summary>
-    public string? ManagerEmployeeId { get; set; }
+    public Guid? ManagerEmployeeId { get; set; }
 
     /// <summary>
     /// List of manager IDs to assign to this department
     /// </summary>
-    public List<string>? ManagerIds { get; set; }
+    public List<Guid>? ManagerIds { get; set; }
 
     /// <summary>
     /// Indicates whether the department is active
@@ -187,17 +187,17 @@ public class UpdateDepartmentRequest
     /// <summary>
     /// The parent department ID
     /// </summary>
-    public string? ParentDepartmentId { get; set; }
+    public Guid? ParentDepartmentId { get; set; }
 
     /// <summary>
     /// Legacy: The employee ID of the primary manager
     /// </summary>
-    public string? ManagerEmployeeId { get; set; }
+    public Guid? ManagerEmployeeId { get; set; }
 
     /// <summary>
     /// List of manager IDs (replaces existing managers)
     /// </summary>
-    public List<string>? ManagerIds { get; set; }
+    public List<Guid>? ManagerIds { get; set; }
 
     /// <summary>
     /// Indicates whether the department is active

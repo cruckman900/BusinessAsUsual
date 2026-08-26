@@ -31,4 +31,7 @@
     <ProjectReference Include="..\HR.Application\HR.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="4.0.102" />
+  </ItemGroup>
 </Project>

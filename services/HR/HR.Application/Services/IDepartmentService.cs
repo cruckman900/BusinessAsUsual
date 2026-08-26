@@ -18,7 +18,7 @@ public interface IDepartmentService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<DepartmentDto?> GetDepartmentByIdAsync(string id);
+    Task<DepartmentDto?> GetDepartmentByIdAsync(Guid id);
 
     /// <summary>
     /// Create a new department
@@ -33,14 +33,14 @@ public interface IDepartmentService
     /// <param name="id"></param>
     /// <param name="request"></param>
     /// <returns></returns>
-    Task<DepartmentDto> UpdateDepartmentAsync(string id, UpdateDepartmentRequest request);
+    Task<DepartmentDto> UpdateDepartmentAsync(Guid id, UpdateDepartmentRequest request);
 
     /// <summary>
     /// Delete a department by its ID
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task DeleteDepartmentAsync(string id);
+    Task DeleteDepartmentAsync(Guid id);
 
     /// <summary>
     /// Search departments by a search term

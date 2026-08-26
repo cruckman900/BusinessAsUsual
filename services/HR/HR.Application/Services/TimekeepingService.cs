@@ -54,7 +54,7 @@ public sealed class TimekeepingService : ITimekeepingService
 
         await _eventBus.PublishAsync(new TimeClockPunchedIntegrationEvent
         {
-            EmployeeId = request.EmployeeId,
+            EmployeeId = request.EmployeeId.ToString(),
             EmployeeName = request.EmployeeName,
             Action = request.Action,
             IsClockIn = request.IsClockIn,
@@ -74,12 +74,12 @@ public sealed class TimekeepingService : ITimekeepingService
         return MapToDto(sheet);
     }
 
-    public Task<IEnumerable<TimesheetDto>> GetTimesheetsAsync(string? employeeId = null)
+    public Task<IEnumerable<TimesheetDto>> GetTimesheetsAsync(Guid? employeeId = null)
     {
         var query = _store.Timesheets.Values.AsEnumerable();
-        if (!string.IsNullOrWhiteSpace(employeeId))
+        if (employeeId.HasValue)
         {
-            query = query.Where(t => t.EmployeeId == employeeId);
+            query = query.Where(t => t.EmployeeId == employeeId.Value);
         }
 
         var result = query
@@ -90,7 +90,7 @@ public sealed class TimekeepingService : ITimekeepingService
         return Task.FromResult<IEnumerable<TimesheetDto>>(result);
     }
 
-    public Task<TimesheetDto?> GetTimesheetByIdAsync(string id)
+    public Task<TimesheetDto?> GetTimesheetByIdAsync(Guid id)
     {
         return Task.FromResult(_store.Timesheets.TryGetValue(id, out var sheet)
             ? MapToDto(sheet)
@@ -110,8 +110,8 @@ public sealed class TimekeepingService : ITimekeepingService
 
         await _eventBus.PublishAsync(new TimesheetSubmittedIntegrationEvent
         {
-            TimesheetId = sheet.Id,
-            EmployeeId = sheet.EmployeeId,
+            TimesheetId = sheet.Id.ToString(),
+            EmployeeId = sheet.EmployeeId.ToString(),
             EmployeeName = sheet.EmployeeName,
             WorkDate = sheet.WorkDate.ToString("yyyy-MM-dd"),
             TotalWorkedHours = sheet.TotalWorkedHours,

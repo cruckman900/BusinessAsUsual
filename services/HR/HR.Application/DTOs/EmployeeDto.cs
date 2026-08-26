@@ -7,7 +7,7 @@ namespace HR.Application.DTOs;
 /// </summary>
 public class EmployeeDto
 {
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
 
     // Personal Information
     public string FirstName { get; set; } = string.Empty;
@@ -41,7 +41,7 @@ public class EmployeeDto
 
     // Work Location & Reporting
     public string? WorkLocation { get; set; }
-    public string? ManagerId { get; set; }
+    public Guid? ManagerId { get; set; }
     public string? ManagerName { get; set; }  // Computed for display
 
     // Legacy: Keep for backward compatibility
@@ -69,7 +69,7 @@ public class EmployeeDto
 /// </summary>
 public class EmployeeDepartmentDto
 {
-    public string DepartmentId { get; set; } = string.Empty;
+    public Guid DepartmentId { get; set; }
     public string DepartmentName { get; set; } = string.Empty;
     public bool IsPrimary { get; set; }
     public int? AllocationPercentage { get; set; }

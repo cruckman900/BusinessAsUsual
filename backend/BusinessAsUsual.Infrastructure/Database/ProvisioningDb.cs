@@ -293,5 +293,25 @@ namespace BusinessAsUsual.Infrastructure.Database
             var result = await cmd.ExecuteScalarAsync();
             return result as string;
         }
+
+        /// <summary>
+        /// Executes an arbitrary SQL script against a specific tenant database.
+        /// Used for module-specific schema provisioning scripts.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="script">SQL script to execute.</param>
+        /// <returns>A task that represents the asynchronous execution operation.</returns>
+        public async Task ExecuteScriptAsync(string tenantDbName, string script)
+        {
+            var builder = new SqlConnectionStringBuilder(_rawConn)
+            {
+                InitialCatalog = tenantDbName
+            };
+
+            var executor = new SchemaExecutor();
+            await executor.ExecuteScriptAsync(builder.ConnectionString, script);
+
+            Console.WriteLine($"🟢 Script executed successfully on {tenantDbName}");
+        }
     }
 }

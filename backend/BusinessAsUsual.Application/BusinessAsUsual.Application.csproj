@@ -21,7 +21,6 @@
     <Folder Include="Modules\Accounting.Application\" />
     <Folder Include="Modules\Timekeeping.Application\" />
     <Folder Include="Modules\Orders.Application\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

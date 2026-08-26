@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
     <ProjectReference Include="..\..\CRM\CRM.Application\CRM.Application.csproj" />
     <ProjectReference Include="..\..\Inventory\Inventory.Application\Inventory.Application.csproj" />
+    <ProjectReference Include="..\..\..\shared\BusinessAsUsual.Shared.UI\BusinessAsUsual.Shared.UI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

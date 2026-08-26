@@ -1,0 +1,128 @@
+@using Platform.Application.DTOs.Import
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Import ID</MudText>
+                <MudText Typo="Typo.body2" Class="mb-3">@ImportDetail.Id</MudText>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Table Name</MudText>
+                <MudText Typo="Typo.body2" Class="mb-3">@ImportDetail.TableName</MudText>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Status</MudText>
+                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(ImportDetail.Status)">
+                    @ImportDetail.Status
+                </MudChip>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Started At</MudText>
+                <MudText Typo="Typo.body2" Class="mb-3">@ImportDetail.StartedAt.ToLocalTime().ToString("f")</MudText>
+            </MudItem>
+            @if (ImportDetail.CompletedAt.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Completed At</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-3">@ImportDetail.CompletedAt.Value.ToLocalTime().ToString("f")</MudText>
+                </MudItem>
+            }
+            @if (ImportDetail.Duration.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Duration</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-3">@FormatDuration(ImportDetail.Duration.Value)</MudText>
+                </MudItem>
+            }
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Total Rows</MudText>
+                <MudText Typo="Typo.h6">@ImportDetail.TotalRows.ToString("N0")</MudText>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Successful Rows</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Success">@ImportDetail.SuccessfulRows.ToString("N0")</MudText>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Error">Failed Rows</MudText>
+                <MudText Typo="Typo.h6" Color="@(ImportDetail.FailedRows > 0 ? Color.Error : Color.Default)">
+                    @ImportDetail.FailedRows.ToString("N0")
+                </MudText>
+            </MudItem>
+            @if (!string.IsNullOrWhiteSpace(ImportDetail.FileName))
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">File Name</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-3">@ImportDetail.FileName</MudText>
+                </MudItem>
+            }
+            @if (ImportDetail.ErrorMessages?.Any() == true)
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">Errors</MudText>
+                    <MudPaper Class="pa-3" Elevation="0" Style="background-color: var(--mud-palette-error-lighten); max-height: 300px; overflow-y: auto;">
+                        @foreach (var error in ImportDetail.ErrorMessages)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Error" Class="mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Error" Size="Size.Small" Class="mr-1" />
+                                @error
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+            @if (!string.IsNullOrWhiteSpace(ImportDetail.MappingConfiguration))
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Column Mapping Configuration</MudText>
+                    <MudPaper Class="pa-3" Elevation="0" Style="background-color: var(--mud-palette-surface); max-height: 200px; overflow-y: auto;">
+                        <MudText Typo="Typo.body2" Style="font-family: monospace; white-space: pre-wrap; word-break: break-all;">
+                            @ImportDetail.MappingConfiguration
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+            @if (ImportDetail.RolledBackAt.HasValue)
+            {
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info">
+                        This import was rolled back on @ImportDetail.RolledBackAt.Value.ToLocalTime().ToString("f")
+                    </MudAlert>
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Primary">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public ImportHistoryDetailDto ImportDetail { get; set; } = null!;
+
+    private void Close() => MudDialog.Close();
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Completed" => Color.Success,
+        "CompletedWithErrors" => Color.Warning,
+        "Failed" => Color.Error,
+        "Cancelled" => Color.Default,
+        "RolledBack" => Color.Info,
+        "InProgress" => Color.Primary,
+        _ => Color.Default
+    };
+
+    private string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalSeconds < 1)
+            return $"{duration.TotalMilliseconds:F0}ms";
+        if (duration.TotalMinutes < 1)
+            return $"{duration.TotalSeconds:F1}s";
+        return $"{duration.TotalMinutes:F1}m";
+    }
+}

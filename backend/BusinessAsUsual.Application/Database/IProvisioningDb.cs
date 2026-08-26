@@ -61,5 +61,14 @@ namespace BusinessAsUsual.Application.Database
         /// <param name="companyId">Unique identifier of the company.</param>
         /// <returns>The module configuration JSON string, or null if not found.</returns>
         Task<string?> GetModuleConfigurationAsync(string tenantDbName, Guid companyId);
+
+        /// <summary>
+        /// Executes an arbitrary SQL script against a specific tenant database.
+        /// Used for module-specific schema provisioning scripts.
+        /// </summary>
+        /// <param name="tenantDbName">Name of the tenant database.</param>
+        /// <param name="script">SQL script to execute.</param>
+        /// <returns>A task that represents the asynchronous execution operation.</returns>
+        Task ExecuteScriptAsync(string tenantDbName, string script);
     }
 }

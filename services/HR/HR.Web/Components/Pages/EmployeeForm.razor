@@ -242,9 +242,9 @@
                                    Variant="Variant.Outlined"
                                    AnchorOrigin="Origin.BottomCenter">
                             <MudSelectItem Value="@("")">-- No Manager --</MudSelectItem>
-                            @foreach (var emp in allEmployees.Where(e => e.Id != Id))
+                            @foreach (var emp in allEmployees.Where(e => !Id.HasValue || e.Id != Id.Value))
                             {
-                                <MudSelectItem Value="@emp.Id">@($"{emp.FirstName} {emp.LastName} - {emp.JobTitle}")</MudSelectItem>
+                                <MudSelectItem Value="@emp.Id.ToString()">@($"{emp.FirstName} {emp.LastName} - {emp.JobTitle}")</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
@@ -272,11 +272,9 @@
 
 @code {
     [Parameter]
-    public string? Id { get; set; }
+    public Guid? Id { get; set; }
 
-    private bool IsEditMode => !string.IsNullOrEmpty(Id) 
-        && !Id.Equals("create", StringComparison.OrdinalIgnoreCase)
-        && !Id.Equals("new", StringComparison.OrdinalIgnoreCase);
+    private bool IsEditMode => Id.HasValue && Id.Value != Guid.Empty;
     private EmployeeFormModel model = new();
     private List<HR.Application.DTOs.DepartmentDto> departments = new();
     private List<HR.Application.DTOs.EmployeeDto> allEmployees = new();
@@ -290,7 +288,7 @@
         await LoadDepartments();
         await LoadAllEmployees();
 
-        if (IsEditMode && !string.IsNullOrEmpty(Id))
+        if (IsEditMode && Id.HasValue)
         {
             await LoadEmployee();
         }
@@ -334,7 +332,7 @@
     {
         try
         {
-            var employee = await EmployeeService.GetEmployeeByIdAsync(Id!);
+            var employee = await EmployeeService.GetEmployeeByIdAsync(Id!.Value);
             if (employee != null)
             {
                 model.FirstName = employee.FirstName;
@@ -348,7 +346,7 @@
                 model.Status = employee.Status;
                 model.WorkLocation = employee.WorkLocation;
                 model.SalaryGrade = employee.SalaryGrade;
-                model.ManagerId = employee.ManagerId;
+                model.ManagerId = employee.ManagerId?.ToString();
 
                 // Address
                 model.AddressLine1 = employee.AddressLine1;
@@ -400,7 +398,7 @@
                     HireDate = hireDate ?? DateTime.Today,
                     Status = model.Status,
                     WorkLocation = model.WorkLocation,
-                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : model.ManagerId,
+                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : Guid.Parse(model.ManagerId),
                     SalaryGrade = model.SalaryGrade,
                     AddressLine1 = model.AddressLine1,
                     AddressLine2 = model.AddressLine2,
@@ -413,7 +411,7 @@
                     EmergencyContactRelationship = model.EmergencyContactRelationship
                 };
 
-                await EmployeeService.UpdateEmployeeAsync(Id!, updateRequest);
+                await EmployeeService.UpdateEmployeeAsync(Id!.Value, updateRequest);
                 Snackbar.Add("Employee updated successfully", Severity.Success);
             }
             else
@@ -432,7 +430,7 @@
                     HireDate = hireDate ?? DateTime.Today,
                     Status = model.Status,
                     WorkLocation = model.WorkLocation,
-                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : model.ManagerId,
+                    ManagerId = string.IsNullOrEmpty(model.ManagerId) ? null : Guid.Parse(model.ManagerId),
                     SalaryGrade = model.SalaryGrade,
                     AddressLine1 = model.AddressLine1,
                     AddressLine2 = model.AddressLine2,

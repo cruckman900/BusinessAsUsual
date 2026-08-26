@@ -2,8 +2,8 @@ namespace HR.Application.DTOs;
 
 public class TimeEntryDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string EmployeeId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
     public DateTime WorkDate { get; set; }
     public string Action { get; set; } = string.Empty;
@@ -13,8 +13,8 @@ public class TimeEntryDto
 
 public class TimesheetDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string EmployeeId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
     public DateTime WorkDate { get; set; }
     public decimal TotalWorkedHours { get; set; }

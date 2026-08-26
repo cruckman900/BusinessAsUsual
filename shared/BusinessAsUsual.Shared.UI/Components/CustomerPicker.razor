@@ -1,7 +1,6 @@
-@using System.Net.Http.Json
 @using MudBlazor
 @using CRM.Application.Services
-@using CustomerDto = CRM.Application.DTOs.CustomerDto
+@using CRM.Application.DTOs
 @inject ICustomerService CustomerService
 
 <MudStack Spacing="2">
@@ -76,14 +75,14 @@
                 else if (!_customersLoaded)
                 {
                     <text>Loading customers...</text>
-            }
-            else
-            {
-                <text>No customers available</text>
-            }
-        </MudText>
-    </NoItemsTemplate>
-</MudAutocomplete>
+                }
+                else
+                {
+                    <text>No customers available</text>
+                }
+            </MudText>
+        </NoItemsTemplate>
+    </MudAutocomplete>
 </MudStack>
 
 @code {

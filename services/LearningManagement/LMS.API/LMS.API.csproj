@@ -23,4 +23,8 @@
     <ProjectReference Include="..\LMS.Contracts\LMS.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="4.0.102" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+  </ItemGroup>
 </Project>

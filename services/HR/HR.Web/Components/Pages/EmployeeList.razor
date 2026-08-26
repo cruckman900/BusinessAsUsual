@@ -96,7 +96,7 @@
                 <PropertyColumn Property="x => x.Id" Title="Employee ID">
                     <CellTemplate>
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Text">
-                            @context.Item.Id.Substring(0, Math.Min(8, context.Item.Id.Length))
+                            @context.Item.Id.ToString().Substring(0, 8)
                         </MudChip>
                     </CellTemplate>
                 </PropertyColumn>
@@ -238,12 +238,12 @@
         Navigation.NavigateTo("/hr/employees/create");
     }
 
-    private void NavigateToDetail(string id)
+    private void NavigateToDetail(Guid id)
     {
         Navigation.NavigateTo($"/hr/employees/details/{id}");
     }
 
-    private void NavigateToEdit(string id)
+    private void NavigateToEdit(Guid id)
     {
         Navigation.NavigateTo($"/hr/employees/edit/{id}");
     }

@@ -31,7 +31,7 @@ public class TimeClockController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<TimesheetDto>> Punch([FromBody] PunchRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.EmployeeId))
+        if (request.EmployeeId == Guid.Empty)
         {
             return BadRequest(new { message = "EmployeeId is required" });
         }
@@ -46,7 +46,7 @@ public class TimeClockController : ControllerBase
     /// </summary>
     [HttpGet("timesheets")]
     [ProducesResponseType(typeof(IEnumerable<TimesheetDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<TimesheetDto>>> GetTimesheets([FromQuery] string? employeeId = null)
+    public async Task<ActionResult<IEnumerable<TimesheetDto>>> GetTimesheets([FromQuery] Guid? employeeId = null)
     {
         var timesheets = await _timekeepingService.GetTimesheetsAsync(employeeId);
         return Ok(timesheets);
@@ -58,7 +58,7 @@ public class TimeClockController : ControllerBase
     [HttpGet("timesheets/{id}")]
     [ProducesResponseType(typeof(TimesheetDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TimesheetDto>> GetTimesheet(string id)
+    public async Task<ActionResult<TimesheetDto>> GetTimesheet(Guid id)
     {
         var timesheet = await _timekeepingService.GetTimesheetByIdAsync(id);
         if (timesheet == null)

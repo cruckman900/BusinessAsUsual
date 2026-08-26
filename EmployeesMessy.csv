@@ -1,0 +1,6 @@
+first name,last,email address,phone,hire dt,title,emp type,active?,pay grade,location,dept
+Emily,Davis,emily.davis@company.com,555-0106,2021-02-15,QA Engineer,Full-Time,Yes,E2,Bldg A,Quality Assurance
+David,Martinez,david.m@company.com,(555) 0107,2019-08-20,Accountant,FT,Y,F2,Building B,Finance
+Lisa,Garcia,lisa.garcia@company.com,555.0108,03/10/2020,HR Manager,Full Time,Active,H3,Bldg C,Human Resources
+James,Rodriguez,james.rod@company.com,5550109,2022-01-05,Junior Dev,full-time,1,E1,Building A,Engineering
+Maria,Wilson,maria.wilson@company.com,555-0110,2020/07/12,Sales Rep,FullTime,TRUE,S2,Remote,Sales

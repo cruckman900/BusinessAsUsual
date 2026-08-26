@@ -324,7 +324,7 @@
 
 @code {
     [Parameter]
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
 
     private HR.Application.DTOs.DepartmentDto? department;
     private IEnumerable<HR.Application.DTOs.EmployeeDto> departmentEmployees = Array.Empty<HR.Application.DTOs.EmployeeDto>();

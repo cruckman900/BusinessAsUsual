@@ -8,8 +8,8 @@ namespace HR.Domain.Repositories;
 public interface IDepartmentRepository
 {
     Task<IEnumerable<Department>> GetAllAsync();
-    Task<Department?> GetByIdAsync(string id);
+    Task<Department?> GetByIdAsync(Guid id);
     Task<Department> CreateAsync(Department department);
     Task<Department> UpdateAsync(Department department);
-    Task DeleteAsync(string id);
+    Task DeleteAsync(Guid id);
 }

@@ -2,6 +2,8 @@ using HR.Domain.Entities;
 using HR.Infrastructure.Persistence;
 using HR.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
+using Moq;
 
 namespace HR.Tests.Unit;
 
@@ -10,15 +12,27 @@ namespace HR.Tests.Unit;
 /// </summary>
 public class EmployeeRepositoryTests
 {
+    private static readonly Guid TestCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
     private static HRDbContext CreateContext() =>
         new(new DbContextOptionsBuilder<HRDbContext>()
             .UseInMemoryDatabase($"HR_Repo_{Guid.NewGuid():N}")
             .Options);
 
+    private static ITenantContext CreateMockTenantContext()
+    {
+        var mock = new Mock<ITenantContext>();
+        mock.Setup(x => x.CompanyId).Returns(TestCompanyId);
+        mock.Setup(x => x.TenantDbName).Returns("TestTenant");
+        mock.Setup(x => x.IsResolved).Returns(true);
+        return mock.Object;
+    }
+
 #pragma warning disable CS0618 // Legacy Department field intentionally exercised for search coverage.
     private static Employee NewEmployee(string first, string last, string email, string? department = null) => new()
     {
-        Id = Guid.NewGuid().ToString(),
+        Id = Guid.NewGuid(),
+        CompanyId = TestCompanyId,
         FirstName = first,
         LastName = last,
         Email = email,
@@ -32,7 +46,8 @@ public class EmployeeRepositoryTests
     public async Task CreateAsync_And_GetById_Roundtrips()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
         var employee = NewEmployee("Ada", "Lovelace", "ada@example.com");
 
         await repo.CreateAsync(employee);
@@ -47,7 +62,8 @@ public class EmployeeRepositoryTests
     public async Task GetAllAsync_ReturnsOrderedByLastNameThenFirst()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
         await repo.CreateAsync(NewEmployee("Zoe", "Adams", "zoe@example.com"));
         await repo.CreateAsync(NewEmployee("Alan", "Adams", "alan@example.com"));
         await repo.CreateAsync(NewEmployee("Bob", "Baker", "bob@example.com"));
@@ -65,7 +81,8 @@ public class EmployeeRepositoryTests
     public async Task UpdateAsync_PersistsChanges()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
         var employee = NewEmployee("Grace", "Hopper", "grace@example.com");
         await repo.CreateAsync(employee);
 
@@ -81,7 +98,8 @@ public class EmployeeRepositoryTests
     public async Task DeleteAsync_RemovesEmployee()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
         var employee = NewEmployee("Delete", "Me", "del@example.com");
         await repo.CreateAsync(employee);
 
@@ -95,9 +113,10 @@ public class EmployeeRepositoryTests
     public async Task DeleteAsync_IsNoOp_WhenMissing()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
 
-        var ex = await Record.ExceptionAsync(() => repo.DeleteAsync("missing"));
+        var ex = await Record.ExceptionAsync(() => repo.DeleteAsync(Guid.NewGuid()));
 
         Assert.Null(ex);
     }
@@ -107,7 +126,8 @@ public class EmployeeRepositoryTests
     public async Task SearchAsync_MatchesNameEmailOrDepartment()
     {
         using var context = CreateContext();
-        var repo = new EmployeeRepository(context);
+        var tenantContext = CreateMockTenantContext();
+        var repo = new EmployeeRepository(context, tenantContext);
         await repo.CreateAsync(NewEmployee("Ada", "Lovelace", "ada@example.com", "Engineering"));
         await repo.CreateAsync(NewEmployee("Bob", "Baker", "bob@example.com", "Finance"));
 

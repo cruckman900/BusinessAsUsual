@@ -1,0 +1,6 @@
+FirstName,LastName,Email,PhoneNumber,DateOfBirth,JobTitle,EmploymentType,Status,HireDate,SalaryGrade,WorkLocation,DepartmentName
+John,Doe,john.doe@company.com,555-0101,1985-03-15,Software Engineer,FullTime,Active,2020-01-15,E3,Building A,Engineering
+Jane,Smith,jane.smith@company.com,555-0102,1990-07-22,Product Manager,FullTime,Active,2019-06-01,M2,Building B,Product
+Michael,Johnson,michael.j@company.com,555-0103,1988-11-30,Senior Developer,FullTime,Active,2018-03-20,E4,Building A,Engineering
+Sarah,Williams,sarah.w@company.com,555-0104,1992-05-18,Marketing Specialist,FullTime,Active,2021-09-10,M1,Building C,Marketing
+Robert,Brown,robert.brown@company.com,555-0105,1987-09-25,DevOps Engineer,FullTime,Active,2020-11-01,E3,Building A,Engineering

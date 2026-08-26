@@ -1,0 +1,68 @@
+@using Platform.Application.DTOs.Import
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" />
+            Save Mapping Template
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudTextField @bind-Value="@TemplateName" 
+                          Label="Template Name" 
+                          Variant="Variant.Outlined" 
+                          Required="true"
+                          HelperText="Give this mapping template a descriptive name" />
+
+            <MudTextField @bind-Value="@Description" 
+                          Label="Description (optional)" 
+                          Variant="Variant.Outlined" 
+                          Lines="3"
+                          HelperText="Describe what this template is for" />
+
+            <MudCheckBox @bind-Value="@IsShared" Color="Color.Primary">
+                <MudText>Share with other users in my company</MudText>
+            </MudCheckBox>
+
+            <MudAlert Severity="Severity.Info">
+                This template will save your column mappings and transformations for table: <strong>@TableName</strong>
+            </MudAlert>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Save" Disabled="@(string.IsNullOrWhiteSpace(TemplateName))">
+            Save Template
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public string TableName { get; set; } = string.Empty;
+
+    private string TemplateName { get; set; } = string.Empty;
+    private string? Description { get; set; }
+    private bool IsShared { get; set; }
+
+    private void Save()
+    {
+        var dto = new SaveMappingTemplateDto
+        {
+            TemplateName = TemplateName,
+            Description = Description,
+            IsShared = IsShared
+        };
+
+        MudDialog.Close(DialogResult.Ok(dto));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

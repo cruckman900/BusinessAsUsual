@@ -4,11 +4,13 @@ using BusinessAsUsual.Core.Events;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Web.Modules.HR.Services;
 using BusinessAsUsual.Web.Services;
+using HR.Infrastructure.Extensions;
 using LMS.Application;
 using LMS.Infrastructure;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using Platform.Infrastructure;
 using Radzen;
 
 namespace BusinessAsUsual.Web
@@ -302,6 +304,14 @@ namespace BusinessAsUsual.Web
                     options.UseSqlServer(connectionString));
             }
 
+            // Register tenant context (scoped per request/circuit)
+            services.AddScoped<BusinessAsUsual.Application.Services.ITenantContext, BusinessAsUsual.Application.Services.TenantContext>();
+
+            // Register circuit handler to initialize tenant context
+            services.AddScoped<BusinessAsUsual.Web.Services.TenantContextCircuitHandler>();
+            services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler>(sp => 
+                sp.GetRequiredService<BusinessAsUsual.Web.Services.TenantContextCircuitHandler>());
+
             // Register repositories
             services.AddScoped<HR.Domain.Repositories.IEmployeeRepository, HR.Infrastructure.Repositories.EmployeeRepository>();
             services.AddScoped<HR.Domain.Repositories.IDepartmentRepository, HR.Infrastructure.Repositories.DepartmentRepository>();
@@ -354,6 +364,16 @@ namespace BusinessAsUsual.Web
         /// </summary>
         private static void RegisterPlatformModuleServices(IServiceCollection services, IConfiguration configuration)
         {
+            // Register Platform infrastructure services (import, schema introspection, etc.)
+            services.AddInfrastructure(configuration);
+
+            // Register HR tables for import functionality
+            ImportServiceExtensions.RegisterHRTablesForImport();
+
+            // Register Platform tenant context adapter (bridges BusinessAsUsual tenant context to Platform interfaces)
+            services.AddScoped<Platform.Application.Interfaces.ITenantContextProvider, BusinessAsUsual.Web.Services.PlatformTenantContextAdapter>();
+
+            // Register Platform application services
             services.AddScoped<Platform.Application.Interfaces.IUserService, Platform.Application.Services.MockUserService>();
             services.AddScoped<Platform.Application.Interfaces.IRoleService, Platform.Application.Services.MockRoleService>();
             services.AddScoped<Platform.Application.Interfaces.IPermissionService, Platform.Application.Services.MockPermissionService>();
@@ -393,12 +413,29 @@ namespace BusinessAsUsual.Web
                 return; // Skip seeding if data exists
             }
 
+            // Define stable Guid IDs for employees and departments
+            var emp001 = Guid.Parse("10000001-0000-0000-0000-000000000001");
+            var emp002 = Guid.Parse("10000002-0000-0000-0000-000000000002");
+            var emp003 = Guid.Parse("10000003-0000-0000-0000-000000000003");
+            var emp004 = Guid.Parse("10000004-0000-0000-0000-000000000004");
+            var emp005 = Guid.Parse("10000005-0000-0000-0000-000000000005");
+            var emp006 = Guid.Parse("10000006-0000-0000-0000-000000000006");
+            var emp007 = Guid.Parse("10000007-0000-0000-0000-000000000007");
+
+            var dept001 = Guid.Parse("20000001-0000-0000-0000-000000000001");
+            var dept002 = Guid.Parse("20000002-0000-0000-0000-000000000002");
+            var dept003 = Guid.Parse("20000003-0000-0000-0000-000000000003");
+            var dept004 = Guid.Parse("20000004-0000-0000-0000-000000000004");
+            var dept005 = Guid.Parse("20000005-0000-0000-0000-000000000005");
+            var dept006 = Guid.Parse("20000006-0000-0000-0000-000000000006");
+            var dept007 = Guid.Parse("20000007-0000-0000-0000-000000000007");
+
             // Step 1: Create Employees (without department assignments yet)
             var employees = new[]
             {
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp001",
+                    Id = emp001,
                     FirstName = "John",
                     LastName = "Smith",
                     Email = "john.smith@company.com",
@@ -423,7 +460,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp002",
+                    Id = emp002,
                     FirstName = "Sarah",
                     LastName = "Johnson",
                     Email = "sarah.johnson@company.com",
@@ -448,7 +485,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp003",
+                    Id = emp003,
                     FirstName = "Michael",
                     LastName = "Williams",
                     Email = "michael.williams@company.com",
@@ -467,7 +504,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp004",
+                    Id = emp004,
                     FirstName = "Emily",
                     LastName = "Davis",
                     Email = "emily.davis@company.com",
@@ -486,7 +523,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp005",
+                    Id = emp005,
                     FirstName = "David",
                     LastName = "Martinez",
                     Email = "david.martinez@company.com",
@@ -505,7 +542,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp006",
+                    Id = emp006,
                     FirstName = "Lisa",
                     LastName = "Anderson",
                     Email = "lisa.anderson@company.com",
@@ -524,7 +561,7 @@ namespace BusinessAsUsual.Web
                 },
                 new HR.Domain.Entities.Employee
                 {
-                    Id = "emp007",
+                    Id = emp007,
                     FirstName = "Robert",
                     LastName = "Taylor",
                     Email = "robert.taylor@company.com",
@@ -544,13 +581,13 @@ namespace BusinessAsUsual.Web
             };
 
             // Set manager relationships
-            employees[0].ManagerId = "emp006";  // John reports to Lisa (Engineering Manager)
+            employees[0].ManagerId = emp006;  // John reports to Lisa (Engineering Manager)
             employees[1].ManagerId = null;       // Sarah is a manager
             employees[2].ManagerId = null;       // Michael is a director
             employees[3].ManagerId = null;       // Emily is independent
             employees[4].ManagerId = null;       // David is independent
             employees[5].ManagerId = null;       // Lisa is a manager
-            employees[6].ManagerId = "emp002";  // Robert reports to Sarah (Sales Manager)
+            employees[6].ManagerId = emp002;  // Robert reports to Sarah (Sales Manager)
 
             dbContext.Employees.AddRange(employees);
             await dbContext.SaveChangesAsync();
@@ -560,84 +597,84 @@ namespace BusinessAsUsual.Web
             {
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept001",
+                    Id = dept001,
                     Name = "Engineering",
                     Description = "Software development and technical operations",
                     Code = "ENG",
                     Location = "Seattle Office",
                     CostCenter = "CC-1000",
                     IsActive = true,
-                    ManagerEmployeeId = "emp006"  // Lisa Anderson - legacy field
+                    ManagerEmployeeId = emp006  // Lisa Anderson - legacy field
                     // Note: EmployeeCount is now calculated dynamically from EmployeeDepartments
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept002",
+                    Id = dept002,
                     Name = "Sales",
                     Description = "Customer acquisition and account management",
                     Code = "SAL",
                     Location = "Seattle Office",
                     CostCenter = "CC-2000",
                     IsActive = true,
-                    ManagerEmployeeId = "emp002"  // Sarah Johnson - legacy field
+                    ManagerEmployeeId = emp002  // Sarah Johnson - legacy field
                     // Note: EmployeeCount is now calculated dynamically
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept003",
+                    Id = dept003,
                     Name = "Marketing",
                     Description = "Brand management and promotional campaigns",
                     Code = "MKT",
                     Location = "Remote",
                     CostCenter = "CC-3000",
                     IsActive = true,
-                    ManagerEmployeeId = "emp003"  // Michael Williams - legacy field
+                    ManagerEmployeeId = emp003  // Michael Williams - legacy field
                     // Note: EmployeeCount is now calculated dynamically
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept004",
+                    Id = dept004,
                     Name = "Human Resources",
                     Description = "Employee relations and talent management",
                     Code = "HR",
                     Location = "Seattle Office",
                     CostCenter = "CC-4000",
                     IsActive = true,
-                    ManagerEmployeeId = "emp004"  // Emily Davis - legacy field
+                    ManagerEmployeeId = emp004  // Emily Davis - legacy field
                     // Note: EmployeeCount is now calculated dynamically
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept005",
+                    Id = dept005,
                     Name = "Finance",
                     Description = "Financial planning and accounting",
                     Code = "FIN",
                     Location = "Seattle Office",
                     CostCenter = "CC-5000",
                     IsActive = true,
-                    ManagerEmployeeId = "emp005"  // David Martinez - legacy field
+                    ManagerEmployeeId = emp005  // David Martinez - legacy field
                     // Note: EmployeeCount is now calculated dynamically
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept006",
+                    Id = dept006,
                     Name = "Engineering - Frontend Team",
                     Description = "Frontend development specialists",
                     Code = "ENG-FE",
                     Location = "Seattle Office",
                     CostCenter = "CC-1100",
-                    ParentDepartmentId = "dept001",  // Sub-department of Engineering
+                    ParentDepartmentId = dept001,  // Sub-department of Engineering
                     IsActive = true
                 },
                 new HR.Domain.Entities.Department
                 {
-                    Id = "dept007",
+                    Id = dept007,
                     Name = "Engineering - Backend Team",
                     Description = "Backend and infrastructure development",
                     Code = "ENG-BE",
                     Location = "Seattle Office",
                     CostCenter = "CC-1200",
-                    ParentDepartmentId = "dept001",  // Sub-department of Engineering
+                    ParentDepartmentId = dept001,  // Sub-department of Engineering
                     IsActive = true
                 }
             };
@@ -649,27 +686,27 @@ namespace BusinessAsUsual.Web
             var employeeDepartments = new[]
             {
                 // John - Engineering (primary) + Frontend Team
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp001", DepartmentId = "dept001", IsPrimary = true, AllocationPercentage = 70, JoinedDate = DateTime.Now.AddYears(-2) },
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp001", DepartmentId = "dept006", IsPrimary = false, AllocationPercentage = 30, JoinedDate = DateTime.Now.AddYears(-1) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp001, DepartmentId = dept001, IsPrimary = true, AllocationPercentage = 70, JoinedDate = DateTime.Now.AddYears(-2) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp001, DepartmentId = dept006, IsPrimary = false, AllocationPercentage = 30, JoinedDate = DateTime.Now.AddYears(-1) },
 
                 // Sarah - Sales (primary)
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp002", DepartmentId = "dept002", IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-1).AddMonths(-6) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp002, DepartmentId = dept002, IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-1).AddMonths(-6) },
 
                 // Michael - Marketing (primary) + occasional Engineering collaboration
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp003", DepartmentId = "dept003", IsPrimary = true, AllocationPercentage = 90, JoinedDate = DateTime.Now.AddMonths(-6) },
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp003", DepartmentId = "dept001", IsPrimary = false, AllocationPercentage = 10, JoinedDate = DateTime.Now.AddMonths(-3) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp003, DepartmentId = dept003, IsPrimary = true, AllocationPercentage = 90, JoinedDate = DateTime.Now.AddMonths(-6) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp003, DepartmentId = dept001, IsPrimary = false, AllocationPercentage = 10, JoinedDate = DateTime.Now.AddMonths(-3) },
 
                 // Emily - HR (primary)
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp004", DepartmentId = "dept004", IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-3) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp004, DepartmentId = dept004, IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-3) },
 
                 // David - Finance (primary)
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp005", DepartmentId = "dept005", IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddMonths(-9) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp005, DepartmentId = dept005, IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddMonths(-9) },
 
                 // Lisa - Engineering (primary)
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp006", DepartmentId = "dept001", IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-4) },
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp006, DepartmentId = dept001, IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddYears(-4) },
 
                 // Robert - Sales (primary)
-                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = "emp007", DepartmentId = "dept002", IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddMonths(-3) }
+                new HR.Domain.Entities.EmployeeDepartment { EmployeeId = emp007, DepartmentId = dept002, IsPrimary = true, AllocationPercentage = 100, JoinedDate = DateTime.Now.AddMonths(-3) }
             };
 
             dbContext.EmployeeDepartments.AddRange(employeeDepartments);
@@ -679,26 +716,26 @@ namespace BusinessAsUsual.Web
             var departmentManagers = new[]
             {
                 // Engineering has Lisa as primary manager + John as team lead
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept001", ManagerId = "emp006", ManagerRole = "Engineering Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-4) },
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept001", ManagerId = "emp001", ManagerRole = "Tech Lead", IsPrimary = false, StartDate = DateTime.Now.AddYears(-1) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept001, ManagerId = emp006, ManagerRole = "Engineering Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-4) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept001, ManagerId = emp001, ManagerRole = "Tech Lead", IsPrimary = false, StartDate = DateTime.Now.AddYears(-1) },
 
                 // Sales has Sarah as primary manager
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept002", ManagerId = "emp002", ManagerRole = "Sales Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-1).AddMonths(-6) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept002, ManagerId = emp002, ManagerRole = "Sales Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-1).AddMonths(-6) },
 
                 // Marketing has Michael as director
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept003", ManagerId = "emp003", ManagerRole = "Marketing Director", IsPrimary = true, StartDate = DateTime.Now.AddMonths(-6) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept003, ManagerId = emp003, ManagerRole = "Marketing Director", IsPrimary = true, StartDate = DateTime.Now.AddMonths(-6) },
 
                 // HR has Emily
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept004", ManagerId = "emp004", ManagerRole = "HR Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-3) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept004, ManagerId = emp004, ManagerRole = "HR Manager", IsPrimary = true, StartDate = DateTime.Now.AddYears(-3) },
 
                 // Finance has David
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept005", ManagerId = "emp005", ManagerRole = "Finance Manager", IsPrimary = true, StartDate = DateTime.Now.AddMonths(-9) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept005, ManagerId = emp005, ManagerRole = "Finance Manager", IsPrimary = true, StartDate = DateTime.Now.AddMonths(-9) },
 
                 // Frontend Team has John as lead
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept006", ManagerId = "emp001", ManagerRole = "Frontend Team Lead", IsPrimary = true, StartDate = DateTime.Now.AddYears(-1) },
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept006, ManagerId = emp001, ManagerRole = "Frontend Team Lead", IsPrimary = true, StartDate = DateTime.Now.AddYears(-1) },
 
                 // Backend Team has Lisa overseeing
-                new HR.Domain.Entities.DepartmentManager { DepartmentId = "dept007", ManagerId = "emp006", ManagerRole = "Backend Team Supervisor", IsPrimary = true, StartDate = DateTime.Now.AddYears(-2) }
+                new HR.Domain.Entities.DepartmentManager { DepartmentId = dept007, ManagerId = emp006, ManagerRole = "Backend Team Supervisor", IsPrimary = true, StartDate = DateTime.Now.AddYears(-2) }
             };
 
             dbContext.DepartmentManagers.AddRange(departmentManagers);

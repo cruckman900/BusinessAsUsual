@@ -1,4 +1,6 @@
 using BusinessAsUsual.Core.Events;
+using BusinessAsUsual.Application.Services;
+using BusinessAsUsual.Infrastructure.Middleware;
 using HR.Application.Services;
 using HR.Domain.Repositories;
 using HR.Infrastructure;
@@ -43,6 +45,9 @@ else
 // Register repositories
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+
+// Register tenant context (scoped per request)
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -95,6 +100,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+
+// Tenant resolution middleware - must come before authorization/controllers
+app.UseMiddleware<TenantResolutionMiddleware>();
+
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");

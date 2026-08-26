@@ -28,7 +28,7 @@ public class DepartmentServiceTests
         {
             new Department
             {
-                Id = "1",
+                Id = Guid.NewGuid(),
                 Name = "Engineering",
                 Description = "Software Engineering",
                 Code = "ENG",
@@ -36,7 +36,7 @@ public class DepartmentServiceTests
             },
             new Department
             {
-                Id = "2",
+                Id = Guid.NewGuid(),
                 Name = "Sales",
                 Description = "Sales Department",
                 Code = "SAL",
@@ -59,9 +59,10 @@ public class DepartmentServiceTests
     public async Task GetDepartmentByIdAsync_Should_Return_Department_When_Found()
     {
         // Arrange
+        var departmentId = Guid.NewGuid();
         var department = new Department
         {
-            Id = "123",
+            Id = departmentId,
             Name = "Engineering",
             Description = "Software Engineering Department",
             Code = "ENG",
@@ -69,14 +70,14 @@ public class DepartmentServiceTests
             IsActive = true
         };
 
-        _mockDepartmentRepository.Setup(r => r.GetByIdAsync("123")).ReturnsAsync(department);
+        _mockDepartmentRepository.Setup(r => r.GetByIdAsync(departmentId)).ReturnsAsync(department);
 
         // Act
-        var result = await _service.GetDepartmentByIdAsync("123");
+        var result = await _service.GetDepartmentByIdAsync(departmentId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be("123");
+        result!.Id.Should().Be(departmentId);
         result.Name.Should().Be("Engineering");
         result.Code.Should().Be("ENG");
     }
@@ -85,10 +86,11 @@ public class DepartmentServiceTests
     public async Task GetDepartmentByIdAsync_Should_Return_Null_When_Not_Found()
     {
         // Arrange
-        _mockDepartmentRepository.Setup(r => r.GetByIdAsync("999")).ReturnsAsync((Department?)null);
+        var nonExistentId = Guid.NewGuid();
+        _mockDepartmentRepository.Setup(r => r.GetByIdAsync(nonExistentId)).ReturnsAsync((Department?)null);
 
         // Act
-        var result = await _service.GetDepartmentByIdAsync("999");
+        var result = await _service.GetDepartmentByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
@@ -130,14 +132,14 @@ public class DepartmentServiceTests
     public async Task CreateDepartmentAsync_Should_Add_Managers_When_Specified()
     {
         // Arrange
-        var managerId = "mgr-123";
+        var managerId = Guid.NewGuid();
         var request = new CreateDepartmentRequest
         {
             Name = "Engineering",
             Description = "Engineering Dept",
             Code = "ENG",
             IsActive = true,
-            ManagerIds = new List<string> { managerId }
+            ManagerIds = new List<Guid> { managerId }
         };
 
         var manager = new Employee
@@ -155,7 +157,7 @@ public class DepartmentServiceTests
 
         var createdDepartment = new Department
         {
-            Id = "dept-123",
+            Id = Guid.NewGuid(),
             Name = "Engineering",
             Description = "Engineering Dept",
             Code = "ENG",
@@ -182,9 +184,10 @@ public class DepartmentServiceTests
     public async Task UpdateDepartmentAsync_Should_Update_Existing_Department()
     {
         // Arrange
+        var departmentId = Guid.NewGuid();
         var existingDepartment = new Department
         {
-            Id = "123",
+            Id = departmentId,
             Name = "Old Name",
             Description = "Old Description",
             Code = "OLD",
@@ -201,12 +204,12 @@ public class DepartmentServiceTests
             IsActive = true
         };
 
-        _mockDepartmentRepository.Setup(r => r.GetByIdAsync("123")).ReturnsAsync(existingDepartment);
+        _mockDepartmentRepository.Setup(r => r.GetByIdAsync(departmentId)).ReturnsAsync(existingDepartment);
         _mockDepartmentRepository.Setup(r => r.UpdateAsync(It.IsAny<Department>()))
             .ReturnsAsync((Department d) => d);
 
         // Act
-        var result = await _service.UpdateDepartmentAsync("123", updateRequest);
+        var result = await _service.UpdateDepartmentAsync(departmentId, updateRequest);
 
         // Assert
         result.Should().NotBeNull();
@@ -214,7 +217,7 @@ public class DepartmentServiceTests
         result.Description.Should().Be("New Description");
         result.Code.Should().Be("NEW");
         _mockDepartmentRepository.Verify(r => r.UpdateAsync(It.Is<Department>(d =>
-            d.Id == "123" &&
+            d.Id == departmentId &&
             d.Name == "New Name" &&
             d.Code == "NEW"
         )), Times.Once);
@@ -232,21 +235,22 @@ public class DepartmentServiceTests
             IsActive = true
         };
 
-        _mockDepartmentRepository.Setup(r => r.GetByIdAsync("999")).ReturnsAsync((Department?)null);
+        var nonExistentId = Guid.NewGuid();
+        _mockDepartmentRepository.Setup(r => r.GetByIdAsync(nonExistentId)).ReturnsAsync((Department?)null);
 
         // Act
-        Func<Task> act = async () => await _service.UpdateDepartmentAsync("999", updateRequest);
+        Func<Task> act = async () => await _service.UpdateDepartmentAsync(nonExistentId, updateRequest);
 
         // Assert
         await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Department with ID 999 not found");
+            .WithMessage($"Department with ID {nonExistentId} not found");
     }
 
     [Fact]
     public async Task DeleteDepartmentAsync_Should_Call_Repository_Delete()
     {
         // Arrange
-        var departmentId = "123";
+        var departmentId = Guid.NewGuid();
 
         // Act
         await _service.DeleteDepartmentAsync(departmentId);

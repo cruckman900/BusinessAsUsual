@@ -1,0 +1,229 @@
+@page "/platform/import/history"
+@using Platform.Application.DTOs.Import
+@using Platform.Application.Services
+@using Platform.Web.Components.Dialogs
+@inject IBatchImportService BatchImportService
+@inject ITenantContextProvider TenantContext
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Import History</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+        Import History
+    </MudText>
+
+    <CustomDataGrid TItem="ImportHistoryDto"
+                    Items="@_importHistory"
+                    ShowSearch="true"
+                    SearchPlaceholder="Search by table name, file name, or status..."
+                    Loading="@_loading"
+                    RowsPerPage="25"
+                    Height="calc(100vh - 300px)">
+        <ToolbarContent>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Upload"
+                       Href="/platform/import"
+                       Class="ml-2">
+                New Import
+            </MudButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                           Color="Color.Default"
+                           OnClick="LoadHistory"
+                           Title="Refresh" />
+        </ToolbarContent>
+        <ChildContent>
+            <PropertyColumn T="ImportHistoryDto" TProperty="DateTime" Property="x => x.StartedAt" Title="Started" Sortable="true">
+                <CellTemplate>
+                    @context.Item.StartedAt.ToLocalTime().ToString("g")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="string" Property="x => x.TableName" Title="Table" Sortable="true" Filterable="true">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                        @context.Item.TableName
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="string" Property="x => x.FileName" Title="File" Sortable="true" Filterable="true">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@(context.Item.FileName ?? "-")</MudText>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="string" Property="x => x.Status" Title="Status" Sortable="true" Filterable="true">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">
+                        @context.Item.Status
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="int" Property="x => x.TotalRows" Title="Total" Sortable="true" />
+            <PropertyColumn T="ImportHistoryDto" TProperty="int" Property="x => x.SuccessfulRows" Title="Success" Sortable="true">
+                <CellTemplate>
+                    <MudText Color="Color.Success">@context.Item.SuccessfulRows.ToString("N0")</MudText>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="int" Property="x => x.FailedRows" Title="Failed" Sortable="true">
+                <CellTemplate>
+                    @if (context.Item.FailedRows > 0)
+                    {
+                        <MudText Color="Color.Error">@context.Item.FailedRows.ToString("N0")</MudText>
+                    }
+                    else
+                    {
+                        <MudText>0</MudText>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn T="ImportHistoryDto" TProperty="TimeSpan?" Property="x => x.Duration" Title="Duration" Sortable="true">
+                <CellTemplate>
+                    @if (context.Item.Duration.HasValue)
+                    {
+                        @FormatDuration(context.Item.Duration.Value)
+                    }
+                    else
+                    {
+                        <MudText Color="Color.Default">-</MudText>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn T="ImportHistoryDto" Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                       Size="Size.Small"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => ViewDetails(context.Item.Id))"
+                                       Title="View Details" />
+                        @if (context.Item.CanRollback)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                           Size="Size.Small"
+                                           Color="Color.Warning"
+                                           OnClick="@(() => RollbackImport(context.Item.Id))"
+                                           Title="Rollback Import" />
+                        }
+                        @if (context.Item.RolledBackAt.HasValue)
+                        {
+                            <MudTooltip Text="@($"Rolled back on {context.Item.RolledBackAt.Value.ToLocalTime():g}")">
+                                <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Small" Color="Color.Warning" />
+                            </MudTooltip>
+                        }
+                    </MudButtonGroup>
+                </CellTemplate>
+            </TemplateColumn>
+        </ChildContent>
+    </CustomDataGrid>
+
+    @if (!_loading && !_importHistory.Any())
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-4">
+            No import history found. <MudLink Href="/platform/import">Start your first import</MudLink>
+        </MudAlert>
+    }
+</MudContainer>
+
+@code {
+    private List<ImportHistoryDto> _importHistory = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+    }
+
+    private async Task LoadHistory()
+    {
+        _loading = true;
+        try
+        {
+            if (TenantContext.IsResolved && TenantContext.CompanyId != Guid.Empty)
+            {
+                _importHistory = await BatchImportService.GetImportHistoryAsync(TenantContext.CompanyId, pageSize: 100);
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Completed" => Color.Success,
+        "CompletedWithErrors" => Color.Warning,
+        "Failed" => Color.Error,
+        "Cancelled" => Color.Default,
+        "RolledBack" => Color.Info,
+        "InProgress" => Color.Primary,
+        _ => Color.Default
+    };
+
+    private string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalSeconds < 1)
+            return $"{duration.TotalMilliseconds:F0}ms";
+        if (duration.TotalMinutes < 1)
+            return $"{duration.TotalSeconds:F1}s";
+        return $"{duration.TotalMinutes:F1}m";
+    }
+
+    private async Task ViewDetails(Guid importId)
+    {
+        var detail = await BatchImportService.GetImportHistoryDetailAsync(importId);
+        if (detail == null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { nameof(ImportHistoryDetailDialog.ImportDetail), detail }
+        };
+
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        await DialogService.ShowAsync<ImportHistoryDetailDialog>("Import Details", parameters, options);
+    }
+
+    private async Task RollbackImport(Guid importId)
+    {
+        bool? confirm = false;
+        var dialogParameters = new DialogParameters
+        {
+            { "Title", "Confirm Rollback" },
+            { "Message", "Are you sure you want to rollback this import? This will mark the import as rolled back." },
+            { "YesText", "Rollback" },
+            { "CancelText", "Cancel" }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm", dialogParameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+            return;
+
+        if (TenantContext.IsResolved && TenantContext.UserId.HasValue)
+        {
+            var success = await BatchImportService.RollbackImportAsync(importId, TenantContext.UserId.Value);
+            if (success)
+            {
+                Snackbar.Add("Import rolled back successfully", Severity.Success);
+                await LoadHistory();
+            }
+            else
+            {
+                Snackbar.Add("Failed to rollback import", Severity.Error);
+            }
+        }
+    }
+}

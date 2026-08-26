@@ -7,14 +7,19 @@ namespace HR.Domain.Entities;
 public class DepartmentManager
 {
     /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
     /// Gets or sets the department ID
     /// </summary>
-    public string DepartmentId { get; set; } = string.Empty;
+    public Guid DepartmentId { get; set; }
 
     /// <summary>
     /// Gets or sets the employee ID of the manager
     /// </summary>
-    public string ManagerId { get; set; } = string.Empty;
+    public Guid ManagerId { get; set; }
 
     /// <summary>
     /// Gets or sets the management role/title for this department

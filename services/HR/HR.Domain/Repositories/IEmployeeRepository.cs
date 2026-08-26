@@ -8,9 +8,9 @@ namespace HR.Domain.Repositories;
 public interface IEmployeeRepository
 {
     Task<IEnumerable<Employee>> GetAllAsync();
-    Task<Employee?> GetByIdAsync(string id);
+    Task<Employee?> GetByIdAsync(Guid id);
     Task<Employee> CreateAsync(Employee employee);
     Task<Employee> UpdateAsync(Employee employee);
-    Task DeleteAsync(string id);
+    Task DeleteAsync(Guid id);
     Task<IEnumerable<Employee>> SearchAsync(string searchTerm);
 }

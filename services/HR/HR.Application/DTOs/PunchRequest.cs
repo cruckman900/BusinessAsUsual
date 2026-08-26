@@ -5,7 +5,7 @@ namespace HR.Application.DTOs;
 /// </summary>
 public class PunchRequest
 {
-    public string EmployeeId { get; set; } = string.Empty;
+    public Guid EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
 
     /// <summary>Reason/action, e.g. "start-day", "break", "lunch", "return", "end-day", "extra".</summary>

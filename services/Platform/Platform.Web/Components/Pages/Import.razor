@@ -1,0 +1,743 @@
+@page "/platform/import"
+@using Platform.Application.Services
+@using Platform.Application.DTOs.Import
+@using Platform.Application.Interfaces
+@using Platform.Web.Components.Dialogs
+@inject ISchemaIntrospectionService SchemaService
+@inject IFileParserService FileParser
+@inject IColumnMappingService MappingService
+@inject IDataTransformationService TransformationService
+@inject IBatchImportService ImportService
+@inject IMappingTemplateService TemplateService
+@inject ISnackbar Snackbar
+@inject ITenantContextProvider TenantContext
+@inject IDialogService DialogService
+
+<PageTitle>Import Data</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudText Typo="Typo.h4" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Upload" Class="mr-2" />
+            Import Data Wizard
+        </MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Import data from CSV or Excel files into your database tables with intelligent mapping and transformation.
+        </MudText>
+
+        <MudStepper @ref="_stepper" Linear="true" Color="Color.Primary">
+            <!-- Step 1: Table Selection -->
+            <MudStep Title="Select Table">
+                <MudText Typo="Typo.h6" Class="mb-4">Choose the table you want to import data into</MudText>
+
+                <MudSelect T="string" Value="@_selectedTable" ValueChanged="OnSelectedTableChanged" Label="Target Table" Variant="Variant.Outlined" 
+                           AnchorOrigin="Origin.BottomCenter" Class="mb-4">
+                    @foreach (var table in _availableTables)
+                    {
+                        <MudSelectItem Value="@table">@table</MudSelectItem>
+                    }
+                </MudSelect>
+
+                @if (!string.IsNullOrEmpty(_selectedTable) && _tableSchema != null)
+                {
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">Table Schema Preview</MudText>
+                    <MudTable Items="_tableSchema.Columns" Dense="true" Hover="true" Striped="true" Elevation="0" Class="mb-4">
+                        <HeaderContent>
+                            <MudTh>Column</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>Required</MudTh>
+                            <MudTh>Max Length</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Column">
+                                <MudIcon Icon="@(context.IsPrimaryKey ? Icons.Material.Filled.Key : Icons.Material.Filled.TableChart)" 
+                                         Size="Size.Small" Class="mr-2" />
+                                @context.ColumnName
+                            </MudTd>
+                            <MudTd DataLabel="Type">@context.DataType</MudTd>
+                            <MudTd DataLabel="Required">
+                                @if (context.IsRequired)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error">Required</MudChip>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Max Length">@(context.MaxLength?.ToString() ?? "N/A")</MudTd>
+                        </RowTemplate>
+                        </MudTable>
+                        }
+                    </MudStep>
+
+            <!-- Step 2: File Upload -->
+            <MudStep Title="Upload File">
+                <MudText Typo="Typo.h6" Class="mb-4">Upload or paste your data</MudText>
+
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="mb-4">
+                    <MudTabPanel Text="Upload File" Icon="@Icons.Material.Filled.CloudUpload">
+                        <MudFileUpload T="IBrowserFile" OnFilesChanged="OnFileSelected" Accept=".csv,.xlsx,.xls,.txt">
+                            <ActivatorContent>
+                                <MudPaper Outlined="true" Class="pa-8 text-center cursor-pointer hover-shadow">
+                                    <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" Color="Color.Primary" />
+                                    <MudText Typo="Typo.h6" Class="mt-2">Click to select a file or drag & drop</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Supported formats: CSV, Excel (.xlsx, .xls), Tab-delimited (.txt)
+                                    </MudText>
+                                </MudPaper>
+                            </ActivatorContent>
+                        </MudFileUpload>
+
+                        @if (_selectedFile != null)
+                        {
+                            <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle" Class="mt-2">
+                                @_selectedFile.Name (@FormatFileSize(_selectedFile.Size))
+                            </MudChip>
+                        }
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Paste Data" Icon="@Icons.Material.Filled.ContentPaste">
+                        <MudTextField T="string" @bind-Value="_pastedData" Label="Paste your data here" 
+                                      Variant="Variant.Outlined" Lines="10" Class="mb-2" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Paste CSV, tab-delimited, or pipe-separated data. First row should contain column headers.
+                        </MudText>
+                    </MudTabPanel>
+                </MudTabs>
+
+                @if (_parsedData != null)
+                {
+                    <MudAlert Severity="Severity.Success" Class="mb-2">
+                        Successfully parsed @_parsedData.RowCount rows with @_parsedData.Headers.Count columns
+                    </MudAlert>
+                }
+
+                @if (_parseErrors.Any())
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mb-2">
+                        Found @_parseErrors.Count parsing errors
+                    </MudAlert>
+                }
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ParseAndNextStep" 
+                           Disabled="(_selectedFile == null && string.IsNullOrWhiteSpace(_pastedData))">
+                    Parse & Continue
+                </MudButton>
+            </MudStep>
+
+            <!-- Step 3: Column Mapping -->
+            <MudStep Title="Map Columns">
+                <MudText Typo="Typo.h6" Class="mb-4">Map source columns to target schema</MudText>
+
+                @if (_mappingAnalysis != null)
+                {
+                    <MudStack Row="true" Spacing="2" Class="mb-4">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" 
+                                   StartIcon="@Icons.Material.Filled.FolderOpen" 
+                                   OnClick="LoadTemplate">
+                            Load Template
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Success" 
+                                   StartIcon="@Icons.Material.Filled.Save" 
+                                   OnClick="SaveTemplate">
+                            Save As Template
+                        </MudButton>
+                    </MudStack>
+
+                    <MudAlert Severity="@(_mappingAnalysis.ConfidenceScore > 0.8 ? Severity.Success : Severity.Info)" Class="mb-4">
+                        Auto-mapping confidence: @((_mappingAnalysis.ConfidenceScore * 100).ToString("F0"))%
+                    </MudAlert>
+
+                    <MudTable Items="_mappingAnalysis.Mappings" Dense="true" Hover="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Source Column</MudTh>
+                            <MudTh>Target Column</MudTh>
+                            <MudTh>Transformation</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Source">
+                                <strong>@context.SourceColumn</strong>
+                            </MudTd>
+                            <MudTd DataLabel="Target">
+                                <MudSelect T="string" Value="@context.TargetColumn" 
+                                           ValueChanged="@(newValue => OnTargetColumnChanged(context, newValue))"
+                                           Dense="true" Margin="Margin.Dense">
+                                    @foreach (var col in _tableSchema!.Columns.Where(c => c.IsUserProvided))
+                                    {
+                                        <MudSelectItem Value="@col.ColumnName">
+                                            @col.ColumnName
+                                            @if (col.IsRequired) { <MudChip T="string" Size="Size.Small" Color="Color.Error">Required</MudChip> }
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudTd>
+                            <MudTd DataLabel="Transformation">
+                                @if (context.Transformation != null)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.Transformation.TransformationType</MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">None</MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudIconButton Icon="@Icons.Material.Filled.Transform" Size="Size.Small" 
+                                               OnClick="@(() => ShowTransformationDialog(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+
+                    @if (_mappingAnalysis.UnmappedSourceColumns.Any())
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Small" Class="mr-1" />
+                                Unmapped Source Columns (@_mappingAnalysis.UnmappedSourceColumns.Count)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">
+                                These columns from your file could not be automatically matched. You can manually map them or ignore them if not needed.
+                            </MudText>
+                            <MudChipSet T="string">
+                                @foreach (var unmappedSource in _mappingAnalysis.UnmappedSourceColumns)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default" 
+                                             OnClick="@(() => AddManualMapping(unmappedSource))">
+                                        @unmappedSource
+                                        <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" Class="ml-1" />
+                                    </MudChip>
+                                }
+                            </MudChipSet>
+                        </MudAlert>
+                    }
+
+                    @if (_mappingAnalysis.UnmappedTargetColumns.Any())
+                    {
+                        <MudAlert Severity="Severity.Warning" Class="mt-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
+                                Required Columns Not Mapped
+                            </MudText>
+                            <MudText Typo="Typo.body2">
+                                @string.Join(", ", _mappingAnalysis.UnmappedTargetColumns)
+                            </MudText>
+                        </MudAlert>
+                    }
+
+                    @if (_tableSchema!.Columns.Any(c => c.IsAutoGenerated))
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mt-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" Class="mr-1" />
+                                Auto-Generated Columns
+                            </MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">
+                                These columns will be automatically populated and don't need to be in your import file:
+                            </MudText>
+                            <MudChipSet T="string">
+                                @foreach (var autoCol in _tableSchema.Columns.Where(c => c.IsAutoGenerated))
+                                {
+                                    <MudTooltip Text="@autoCol.AutoGenerationReason">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">
+                                            @autoCol.ColumnName
+                                        </MudChip>
+                                    </MudTooltip>
+                                }
+                            </MudChipSet>
+                        </MudAlert>
+                    }
+                }
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GeneratePreviewAndNextStep" 
+                           Disabled="@(_mappingAnalysis == null)" Class="mt-4">
+                    Generate Preview
+                </MudButton>
+            </MudStep>
+
+            <!-- Step 4: Preview Transformed Data -->
+            <MudStep Title="Preview">
+                <MudText Typo="Typo.h6" Class="mb-4">Preview transformed data</MudText>
+
+                @if (_previewData != null)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-4">
+                        Showing @_previewData.SampleRowCount of @_previewData.TotalRowCount rows
+                        @if (_previewData.HasMoreRows)
+                        {
+                            <text>(first @_previewData.SampleRowCount rows only)</text>
+                        }
+                    </MudAlert>
+
+                    <MudTable Items="_previewData.SampleRows" Dense="true" Hover="true" Striped="true" Elevation="0" Class="mb-4">
+                        <HeaderContent>
+                            @foreach (var header in _previewData.Headers)
+                            {
+                                <MudTh>@header</MudTh>
+                            }
+                        </HeaderContent>
+                        <RowTemplate>
+                            @foreach (var header in _previewData.Headers)
+                            {
+                                <MudTd DataLabel="@header">
+                                    @if (context.TryGetValue(header, out var value))
+                                    {
+                                        <text>@value</text>
+                                    }
+                                    else if (context.TryGetValue("Error", out var error))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">@error</MudText>
+                                    }
+                                </MudTd>
+                            }
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" Class="mb-4" />
+                    <MudText Typo="Typo.body2">Generating preview...</MudText>
+                }
+            </MudStep>
+
+            <!-- Step 5: Import -->
+            <MudStep Title="Import">
+                <MudText Typo="Typo.h6" Class="mb-4">Review and start import</MudText>
+
+                @if (_importProgress != null)
+                {
+                    <MudProgressLinear Value="@_importProgress.PercentComplete" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.body2" Class="mb-4">
+                        Processing batch @_importProgress.CurrentBatch of @_importProgress.TotalBatches
+                        (@_importProgress.SuccessfulRows successful, @_importProgress.FailedRows failed)
+                    </MudText>
+                }
+                else if (_importResult != null)
+                {
+                    <MudAlert Severity="@(_importResult.Success ? Severity.Success : Severity.Error)" Class="mb-4">
+                        Import @(_importResult.Success ? "completed successfully" : "completed with errors")!
+                        @_importResult.SuccessfulRows of @_importResult.TotalRows rows imported in @_importResult.Duration.TotalSeconds.ToString("F1")s
+                    </MudAlert>
+
+                    @if (_importResult.Errors.Any())
+                    {
+                        <MudExpansionPanels>
+                            <MudExpansionPanel Text="@($"View {_importResult.Errors.Count} Errors")">
+                                @foreach (var error in _importResult.Errors.Take(50))
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Error">
+                                        Row @error.RowNumber: @error.ErrorMessage
+                                    </MudText>
+                                }
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.body1" Class="mb-4">
+                        Ready to import @(_parsedData?.RowCount ?? 0) rows into <strong>@_selectedTable</strong>
+                    </MudText>
+                }
+
+                @if (_importResult == null)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="StartImport" 
+                               Disabled="@_isImporting">
+                        @if (_isImporting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <text>Importing...</text>
+                        }
+                        else
+                        {
+                            <text>Start Import</text>
+                        }
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ResetWizard">
+                        Import Another File
+                    </MudButton>
+                }
+            </MudStep>
+        </MudStepper>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudStepper? _stepper;
+    private List<string> _availableTables = new();
+    private string? _selectedTable;
+    private TableSchema? _tableSchema;
+    private IBrowserFile? _selectedFile;
+    private string? _pastedData;
+    private ParsedData? _parsedData;
+    private List<string> _parseErrors = new();
+    private ColumnMappingAnalysis? _mappingAnalysis;
+    private TransformedDataPreview? _previewData;
+    private ImportProgress? _importProgress;
+    private ImportResult? _importResult;
+    private bool _isImporting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _availableTables = await SchemaService.GetImportableTablesAsync();
+    }
+
+    private async Task OnTableSelected(string? tableName)
+    {
+        if (string.IsNullOrEmpty(tableName)) return;
+
+        _tableSchema = await SchemaService.GetTableSchemaAsync(tableName);
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedFile = e.File;
+        _pastedData = null; // Clear paste data if file selected
+    }
+
+    private async Task ParseAndNextStep()
+    {
+        try
+        {
+            if (_selectedFile != null)
+            {
+                using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // 50MB
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                ms.Position = 0;
+
+                var fileType = FileParser.DetectFileType(_selectedFile.Name);
+                _parsedData = await FileParser.ParseFileAsync(ms, _selectedFile.Name, fileType);
+            }
+            else if (!string.IsNullOrWhiteSpace(_pastedData))
+            {
+                _parsedData = await FileParser.ParseTextAsync(_pastedData, ImportFileType.Csv);
+            }
+
+            if (_parsedData != null)
+            {
+                _parseErrors = _parsedData.Errors;
+
+                if (_parsedData.RowCount > 0)
+                {
+                    // Auto-analyze column mappings
+                    _mappingAnalysis = await MappingService.AnalyzeAndMapColumnsAsync(
+                        _parsedData.Headers, 
+                        _tableSchema!);
+
+                    NextStep();
+                }
+                else
+                {
+                    Snackbar.Add("No data rows found to import", Severity.Warning);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error parsing file: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ValidateAndNextStep()
+    {
+        var (isValid, errors) = await MappingService.ValidateMappingsAsync(_mappingAnalysis!, _tableSchema!);
+
+        if (isValid)
+        {
+            NextStep();
+        }
+        else
+        {
+            foreach (var error in errors)
+            {
+                Snackbar.Add(error, Severity.Error);
+            }
+        }
+    }
+
+    private async Task GeneratePreviewAndNextStep()
+    {
+        try
+        {
+            // Validate first
+            var (isValid, errors) = await MappingService.ValidateMappingsAsync(_mappingAnalysis!, _tableSchema!);
+            if (!isValid)
+            {
+                foreach (var error in errors)
+                {
+                    Snackbar.Add(error, Severity.Error);
+                }
+                return;
+            }
+
+            // Move to preview step first
+            NextStep();
+            StateHasChanged();
+
+            // Generate preview asynchronously
+            _previewData = await ImportService.GeneratePreviewAsync(_parsedData!, _mappingAnalysis!, sampleSize: 20);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error generating preview: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task StartImport()
+    {
+        _isImporting = true;
+        var progress = new Progress<ImportProgress>(p =>
+        {
+            _importProgress = p;
+            InvokeAsync(StateHasChanged);
+        });
+
+        try
+        {
+            // Get real tenant/user context
+            var companyId = TenantContext.CompanyId;
+            var userId = TenantContext.UserId ?? Guid.Empty;
+
+            _importResult = await ImportService.ImportDataAsync(
+                _parsedData!,
+                _mappingAnalysis!,
+                _selectedTable!,
+                companyId.ToString(),
+                userId.ToString(),
+                batchSize: 1000,
+                progress: progress);
+
+            Snackbar.Add(
+                _importResult.Success 
+                    ? $"Import completed: {_importResult.SuccessfulRows} rows" 
+                    : $"Import completed with errors: {_importResult.FailedRows} failed",
+                _importResult.Success ? Severity.Success : Severity.Warning);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Import failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isImporting = false;
+        }
+    }
+
+    private async Task ShowTransformationDialog(ColumnMappingDefinition mapping)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Mapping"] = mapping
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = await DialogService.ShowAsync<TransformationEditorDialog>("Configure Transformation", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            // Mapping was updated in-place, just refresh the UI
+            StateHasChanged();
+            Snackbar.Add("Transformation updated successfully", Severity.Success);
+        }
+    }
+
+    private void AddManualMapping(string unmappedSourceColumn)
+    {
+        if (_mappingAnalysis == null || _tableSchema == null)
+            return;
+
+        // Create a new mapping with the unmapped source column
+        var newMapping = new ColumnMappingDefinition
+        {
+            SourceColumn = unmappedSourceColumn,
+            TargetColumn = string.Empty, // User will select this
+            IsRequired = false
+        };
+
+        // Add to mappings list
+        _mappingAnalysis.Mappings.Add(newMapping);
+
+        // Remove from unmapped sources
+        _mappingAnalysis.UnmappedSourceColumns.Remove(unmappedSourceColumn);
+
+        Snackbar.Add($"Added '{unmappedSourceColumn}' - select target column", Severity.Info);
+        StateHasChanged();
+    }
+
+    private void OnTargetColumnChanged(ColumnMappingDefinition mapping, string newTargetColumn)
+    {
+        mapping.TargetColumn = newTargetColumn;
+        RefreshUnmappedColumns();
+        StateHasChanged();
+    }
+
+    private void RefreshUnmappedColumns()
+    {
+        if (_mappingAnalysis == null || _tableSchema == null)
+            return;
+
+        // Get all required, user-provided target columns
+        var requiredTargetColumns = _tableSchema.Columns
+            .Where(c => c.IsRequired && !c.IsAutoGenerated)
+            .Select(c => c.ColumnName)
+            .ToHashSet();
+
+        // Get all currently mapped target columns
+        var mappedTargetColumns = _mappingAnalysis.Mappings
+            .Where(m => !string.IsNullOrEmpty(m.TargetColumn))
+            .Select(m => m.TargetColumn)
+            .ToHashSet();
+
+        // Update unmapped target columns list
+        _mappingAnalysis.UnmappedTargetColumns = requiredTargetColumns
+            .Except(mappedTargetColumns)
+            .ToList();
+    }
+
+    private void ResetWizard()
+    {
+        _selectedTable = null;
+        _tableSchema = null;
+        _selectedFile = null;
+        _pastedData = null;
+        _parsedData = null;
+        _parseErrors.Clear();
+        _mappingAnalysis = null;
+        _previewData = null;
+        _importProgress = null;
+        _importResult = null;
+        if (_stepper != null)
+        {
+            _stepper.ActiveIndex = 0;
+        }
+    }
+
+    private void NextStep()
+    {
+        if (_stepper != null)
+        {
+            _stepper.ActiveIndex++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (_stepper != null && _stepper.ActiveIndex > 0)
+        {
+            _stepper.ActiveIndex--;
+
+            // Refresh unmapped columns when returning to mapping step (step 2, index 2)
+            if (_stepper.ActiveIndex == 2 && _mappingAnalysis != null)
+            {
+                RefreshUnmappedColumns();
+            }
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private async Task OnSelectedTableChanged(string? value)
+    {
+        _selectedTable = value;
+        await OnTableSelected(value);
+    }
+
+    private async Task LoadTemplate()
+    {
+        if (!TenantContext.IsResolved || string.IsNullOrEmpty(_selectedTable))
+        {
+            Snackbar.Add("No table selected", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var templates = await TemplateService.GetAccessibleTemplatesAsync(
+                TenantContext.CompanyId, 
+                TenantContext.UserId ?? Guid.Empty, 
+                _selectedTable);
+
+            if (!templates.Any())
+            {
+                Snackbar.Add("No saved templates found for this table", Severity.Info);
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                { "Templates", templates },
+                { "SelectedTable", _selectedTable }
+            };
+
+            var dialog = await DialogService.ShowAsync<LoadTemplateDialog>("Load Mapping Template", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled && result.Data is Guid templateId)
+            {
+                var template = await TemplateService.GetTemplateByIdAsync(templateId);
+                if (template != null)
+                {
+                    // Deserialize the configuration and apply it to current mapping
+                    _mappingAnalysis = System.Text.Json.JsonSerializer.Deserialize<ColumnMappingAnalysis>(template.ConfigurationJson);
+                    Snackbar.Add($"Template '{template.TemplateName}' loaded successfully", Severity.Success);
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading template: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task SaveTemplate()
+    {
+        if (!TenantContext.IsResolved || string.IsNullOrEmpty(_selectedTable) || _mappingAnalysis == null)
+        {
+            Snackbar.Add("No mapping to save", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "TableName", _selectedTable }
+            };
+
+            var dialog = await DialogService.ShowAsync<SaveTemplateDialog>("Save Mapping Template", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled && result.Data is SaveMappingTemplateDto saveDto)
+            {
+                // Serialize current mapping configuration
+                saveDto.CompanyId = TenantContext.CompanyId;
+                saveDto.TableName = _selectedTable;
+                saveDto.ConfigurationJson = System.Text.Json.JsonSerializer.Serialize(_mappingAnalysis);
+
+                var templateId = await TemplateService.SaveTemplateAsync(saveDto, TenantContext.UserId ?? Guid.Empty);
+                Snackbar.Add($"Template '{saveDto.TemplateName}' saved successfully", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving template: {ex.Message}", Severity.Error);
+        }
+    }
+}

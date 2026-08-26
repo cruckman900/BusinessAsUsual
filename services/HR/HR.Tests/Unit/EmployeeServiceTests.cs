@@ -11,9 +11,9 @@ namespace HR.Tests.Unit;
 /// </summary>
 public class EmployeeServiceTests
 {
-    private static Employee SampleEmployee(string id = "E1") => new()
+    private static Employee SampleEmployee(Guid? id = null) => new()
     {
-        Id = id,
+        Id = id ?? Guid.NewGuid(),
         FirstName = "Ada",
         LastName = "Lovelace",
         Email = "ada@example.com",
@@ -37,7 +37,7 @@ public class EmployeeServiceTests
     public async Task GetAllEmployeesAsync_MapsRepositoryResults()
     {
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.GetAllAsync()).ReturnsAsync(new[] { SampleEmployee("E1"), SampleEmployee("E2") });
+        repo.Setup(r => r.GetAllAsync()).ReturnsAsync(new[] { SampleEmployee(Guid.NewGuid()), SampleEmployee(Guid.NewGuid()) });
         var service = new EmployeeService(repo.Object);
 
         var result = (await service.GetAllEmployeesAsync()).ToList();
@@ -51,21 +51,22 @@ public class EmployeeServiceTests
     public async Task GetEmployeeByIdAsync_ReturnsNull_WhenMissing()
     {
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((Employee?)null);
+        repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Employee?)null);
         var service = new EmployeeService(repo.Object);
 
-        Assert.Null(await service.GetEmployeeByIdAsync("missing"));
+        Assert.Null(await service.GetEmployeeByIdAsync(Guid.NewGuid()));
     }
 
     [Trait("Category", "Unit")]
     [Fact]
     public async Task GetEmployeeByIdAsync_ReturnsDto_WhenFound()
     {
+        var empId = Guid.NewGuid();
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.GetByIdAsync("E1")).ReturnsAsync(SampleEmployee("E1"));
+        repo.Setup(r => r.GetByIdAsync(empId)).ReturnsAsync(SampleEmployee(empId));
         var service = new EmployeeService(repo.Object);
 
-        var dto = await service.GetEmployeeByIdAsync("E1");
+        var dto = await service.GetEmployeeByIdAsync(empId);
 
         Assert.NotNull(dto);
         Assert.Equal("ada@example.com", dto!.Email);
@@ -109,11 +110,11 @@ public class EmployeeServiceTests
     public async Task UpdateEmployeeAsync_Throws_WhenMissing()
     {
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.GetByIdAsync(It.IsAny<string>())).ReturnsAsync((Employee?)null);
+        repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Employee?)null);
         var service = new EmployeeService(repo.Object);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            service.UpdateEmployeeAsync("missing", new UpdateEmployeeRequest
+            service.UpdateEmployeeAsync(Guid.NewGuid(), new UpdateEmployeeRequest
             {
                 FirstName = "X",
                 LastName = "Y",
@@ -127,13 +128,14 @@ public class EmployeeServiceTests
     [Fact]
     public async Task UpdateEmployeeAsync_UpdatesFields_WhenFound()
     {
-        var existing = SampleEmployee("E1");
+        var empId = Guid.NewGuid();
+        var existing = SampleEmployee(empId);
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.GetByIdAsync("E1")).ReturnsAsync(existing);
+        repo.Setup(r => r.GetByIdAsync(empId)).ReturnsAsync(existing);
         repo.Setup(r => r.UpdateAsync(It.IsAny<Employee>())).ReturnsAsync((Employee e) => e);
         var service = new EmployeeService(repo.Object);
 
-        var dto = await service.UpdateEmployeeAsync("E1", new UpdateEmployeeRequest
+        var dto = await service.UpdateEmployeeAsync(empId, new UpdateEmployeeRequest
         {
             FirstName = "Adele",
             LastName = "Lovelace",
@@ -152,13 +154,14 @@ public class EmployeeServiceTests
     [Fact]
     public async Task DeleteEmployeeAsync_DelegatesToRepository()
     {
+        var empId = Guid.NewGuid();
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.DeleteAsync("E1")).Returns(Task.CompletedTask);
+        repo.Setup(r => r.DeleteAsync(empId)).Returns(Task.CompletedTask);
         var service = new EmployeeService(repo.Object);
 
-        await service.DeleteEmployeeAsync("E1");
+        await service.DeleteEmployeeAsync(empId);
 
-        repo.Verify(r => r.DeleteAsync("E1"), Times.Once);
+        repo.Verify(r => r.DeleteAsync(empId), Times.Once);
     }
 
     [Trait("Category", "Unit")]
@@ -166,7 +169,7 @@ public class EmployeeServiceTests
     public async Task SearchEmployeesAsync_MapsResults()
     {
         var repo = new Mock<IEmployeeRepository>();
-        repo.Setup(r => r.SearchAsync("ada")).ReturnsAsync(new[] { SampleEmployee("E1") });
+        repo.Setup(r => r.SearchAsync("ada")).ReturnsAsync(new[] { SampleEmployee(Guid.NewGuid()) });
         var service = new EmployeeService(repo.Object);
 
         var results = (await service.SearchEmployeesAsync("ada")).ToList();

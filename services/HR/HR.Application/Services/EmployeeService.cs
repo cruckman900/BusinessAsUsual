@@ -22,7 +22,7 @@ public class EmployeeService : IEmployeeService
         return employees.Select(MapToDto);
     }
 
-    public async Task<EmployeeDto?> GetEmployeeByIdAsync(string id)
+    public async Task<EmployeeDto?> GetEmployeeByIdAsync(Guid id)
     {
         var employee = await _repository.GetByIdAsync(id);
         return employee == null ? null : MapToDto(employee);
@@ -45,7 +45,7 @@ public class EmployeeService : IEmployeeService
 #pragma warning disable CS0618 // Type or member is obsolete - setting legacy Department field for backward compatibility
         var employee = new Employee
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid(),
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
@@ -77,7 +77,7 @@ public class EmployeeService : IEmployeeService
         return MapToDto(created);
     }
 
-    public async Task<EmployeeDto> UpdateEmployeeAsync(string id, UpdateEmployeeRequest request)
+    public async Task<EmployeeDto> UpdateEmployeeAsync(Guid id, UpdateEmployeeRequest request)
     {
         var existing = await _repository.GetByIdAsync(id);
         if (existing == null)
@@ -128,7 +128,7 @@ public class EmployeeService : IEmployeeService
         return MapToDto(updated);
     }
 
-    public async Task DeleteEmployeeAsync(string id)
+    public async Task DeleteEmployeeAsync(Guid id)
     {
         await _repository.DeleteAsync(id);
     }

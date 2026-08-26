@@ -11,6 +11,6 @@ namespace HR.Application.Services;
 public interface ITimekeepingService
 {
     Task<TimesheetDto> RecordPunchAsync(PunchRequest request, CancellationToken cancellationToken = default);
-    Task<IEnumerable<TimesheetDto>> GetTimesheetsAsync(string? employeeId = null);
-    Task<TimesheetDto?> GetTimesheetByIdAsync(string id);
+    Task<IEnumerable<TimesheetDto>> GetTimesheetsAsync(Guid? employeeId = null);
+    Task<TimesheetDto?> GetTimesheetByIdAsync(Guid id);
 }

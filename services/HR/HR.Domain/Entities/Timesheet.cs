@@ -7,9 +7,14 @@ namespace HR.Domain.Entities;
 /// </summary>
 public class Timesheet
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string EmployeeId { get; set; } = string.Empty;
+    /// <summary>
+    /// Tenant/company identifier for multi-tenant isolation
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    public Guid EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
 
     /// <summary>Local work date the timesheet covers (date component only).</summary>

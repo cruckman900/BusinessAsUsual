@@ -1,0 +1,141 @@
+@using MudBlazor
+@using HR.Application.Services
+@using HR.Application.DTOs
+@inject IEmployeeService EmployeeService
+
+<MudAutocomplete T="EmployeeDto"
+                 Value="@SelectedEmployee"
+                 ValueChanged="@(async (EmployeeDto e) => await OnEmployeeSelected(e))"
+                 SearchFunc="SearchEmployees"
+                 ToStringFunc="@(e => e?.FullName ?? "")"
+                 Label="@Label"
+                 Variant="@Variant"
+                 Margin="@Margin"
+                 Dense="@Dense"
+                 Required="@Required"
+                 RequiredError="@RequiredError"
+                 Disabled="@Disabled"
+                 ResetValueOnEmptyText="false"
+                 CoerceText="false"
+                 CoerceValue="false"
+                 AdornmentIcon="@Icons.Material.Filled.Search"
+                 AdornmentColor="Color.Primary"
+                 Clearable="true"
+                 DebounceInterval="300"
+                 MinCharacters="0"
+                 MaxItems="20"
+                 ShowProgressIndicator="true">
+    <ItemTemplate Context="employee">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width: 100%;">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.body2"><b>@employee.FullName</b></MudText>
+                @if (!string.IsNullOrWhiteSpace(employee.JobTitle))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@employee.JobTitle</MudText>
+                }
+                @if (!string.IsNullOrWhiteSpace(employee.Email))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Info">@employee.Email</MudText>
+                }
+            </MudStack>
+            @if (employee.Status != null)
+            {
+                <MudChip T="string" Size="Size.Small" Color="@(employee.Status == "Active" ? Color.Success : Color.Default)">
+                    @employee.Status
+                </MudChip>
+            }
+        </MudStack>
+    </ItemTemplate>
+    <NoItemsTemplate>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            @if (_employeesLoaded && _allEmployees.Any())
+            {
+                <text>Type to search employees...</text>
+            }
+            else if (!_employeesLoaded)
+            {
+                <text>Loading employees...</text>
+            }
+            else
+            {
+                <text>No employees available</text>
+            }
+        </MudText>
+    </NoItemsTemplate>
+</MudAutocomplete>
+
+@code {
+    [Parameter] public EmployeeDto? SelectedEmployee { get; set; }
+    [Parameter] public EventCallback<EmployeeDto?> SelectedEmployeeChanged { get; set; }
+    [Parameter] public string Label { get; set; } = "Select Employee";
+    [Parameter] public Variant Variant { get; set; } = Variant.Outlined;
+    [Parameter] public Margin Margin { get; set; } = Margin.Dense;
+    [Parameter] public bool Dense { get; set; } = true;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public string RequiredError { get; set; } = "Employee is required";
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool ActiveOnly { get; set; } = true;
+
+    private List<EmployeeDto> _allEmployees = new();
+    private bool _employeesLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeesAsync();
+    }
+
+    private async Task OnEmployeeSelected(EmployeeDto? employee)
+    {
+        SelectedEmployee = employee;
+        await SelectedEmployeeChanged.InvokeAsync(employee);
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        if (_employeesLoaded) return;
+
+        try
+        {
+            var response = await EmployeeService.GetAllEmployeesAsync();
+            _allEmployees = response.ToList();
+            _employeesLoaded = true;
+        }
+        catch (Exception)
+        {
+            _allEmployees = new List<EmployeeDto>();
+        }
+    }
+
+    private async Task<IEnumerable<EmployeeDto>> SearchEmployees(string? searchText, CancellationToken cancellationToken)
+    {
+        await LoadEmployeesAsync();
+
+        // Filter by active status if requested
+        var filteredEmployees = ActiveOnly 
+            ? _allEmployees.Where(e => e.Status == "Active").ToList()
+            : _allEmployees;
+
+        // Show top 20 if no search text or just clicked
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return filteredEmployees
+                .OrderBy(e => e.LastName)
+                .ThenBy(e => e.FirstName)
+                .Take(20);
+        }
+
+        // Case-insensitive LIKE search across Name, Email, JobTitle
+        var search = searchText.Trim();
+        return filteredEmployees
+            .Where(e => e.FullName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                       e.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                       e.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                       (e.Email?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                       (e.JobTitle?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(e => e.FullName.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(e => e.LastName)
+            .ThenBy(e => e.FirstName)
+            .Take(20)
+            .ToList();
+    }
+}

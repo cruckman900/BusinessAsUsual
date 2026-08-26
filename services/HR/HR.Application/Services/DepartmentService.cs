@@ -24,7 +24,7 @@ public class DepartmentService : IDepartmentService
         return await Task.WhenAll(departments.Select(d => MapToDtoAsync(d)));
     }
 
-    public async Task<DepartmentDto?> GetDepartmentByIdAsync(string id)
+    public async Task<DepartmentDto?> GetDepartmentByIdAsync(Guid id)
     {
         var department = await _repository.GetByIdAsync(id);
         return department == null ? null : await MapToDtoAsync(department);
@@ -35,7 +35,7 @@ public class DepartmentService : IDepartmentService
 #pragma warning disable CS0618 // Type or member is obsolete - setting legacy fields for backward compatibility
         var department = new Department
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description,
             Code = request.Code,
@@ -74,7 +74,7 @@ public class DepartmentService : IDepartmentService
         return await MapToDtoAsync(created);
     }
 
-    public async Task<DepartmentDto> UpdateDepartmentAsync(string id, UpdateDepartmentRequest request)
+    public async Task<DepartmentDto> UpdateDepartmentAsync(Guid id, UpdateDepartmentRequest request)
     {
         var existing = await _repository.GetByIdAsync(id);
         if (existing == null)
@@ -125,7 +125,7 @@ public class DepartmentService : IDepartmentService
         return await MapToDtoAsync(updated);
     }
 
-    public async Task DeleteDepartmentAsync(string id)
+    public async Task DeleteDepartmentAsync(Guid id)
     {
         await _repository.DeleteAsync(id);
     }
