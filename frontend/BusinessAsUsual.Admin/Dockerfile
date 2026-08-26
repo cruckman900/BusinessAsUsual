@@ -10,6 +10,7 @@ COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/Busine
 COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
 COPY backend/BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj backend/BusinessAsUsual.Infrastructure/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
+COPY shared/BusinessAsUsual.Shared.UI/BusinessAsUsual.Shared.UI.csproj shared/BusinessAsUsual.Shared.UI/
 
 # Restore
 RUN dotnet restore frontend/BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj
@@ -20,6 +21,7 @@ COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
 COPY backend/BusinessAsUsual.Infrastructure backend/BusinessAsUsual.Infrastructure
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
+COPY shared/BusinessAsUsual.Shared.UI shared/BusinessAsUsual.Shared.UI
 
 # Publish
 RUN dotnet publish frontend/BusinessAsUsual.Admin/BusinessAsUsual.Admin.csproj -c Release -o /app/publish

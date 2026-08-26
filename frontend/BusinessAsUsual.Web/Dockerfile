@@ -9,6 +9,8 @@ COPY frontend/BusinessAsUsual.Web/BusinessAsUsual.Web.csproj frontend/BusinessAs
 COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
 COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
 COPY backend/BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj backend/BusinessAsUsual.Infrastructure/
+# Shared UI library
+COPY shared/BusinessAsUsual.Shared.UI/BusinessAsUsual.Shared.UI.csproj shared/BusinessAsUsual.Shared.UI/
 # HR service projects referenced by the web shell
 COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
 COPY services/HR/HR.Application/HR.Application.csproj services/HR/HR.Application/
@@ -62,6 +64,8 @@ COPY frontend/BusinessAsUsual.Web frontend/BusinessAsUsual.Web
 COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
 COPY backend/BusinessAsUsual.Infrastructure backend/BusinessAsUsual.Infrastructure
+# Shared UI library source
+COPY shared/BusinessAsUsual.Shared.UI shared/BusinessAsUsual.Shared.UI
 # HR service source
 COPY services/HR/HR.Domain services/HR/HR.Domain
 COPY services/HR/HR.Application services/HR/HR.Application
