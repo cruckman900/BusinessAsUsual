@@ -32,9 +32,12 @@ public class BatchImportServiceTests : IDisposable
         _schemaServiceMock = new Mock<ISchemaIntrospectionService>();
         _configurationMock = new Mock<IConfiguration>();
 
+        // Mock IConfiguration indexer for connection string
+        var connectionStringSection = new Mock<IConfigurationSection>();
+        connectionStringSection.Setup(x => x.Value).Returns("Server=(localdb)\\mssqllocaldb;Database=Test;");
         _configurationMock
-            .Setup(x => x.GetConnectionString("PlatformDb"))
-            .Returns("Server=(localdb)\\mssqllocaldb;Database=Test;");
+            .Setup(x => x.GetSection("ConnectionStrings:PlatformDb"))
+            .Returns(connectionStringSection.Object);
 
         _sut = new BatchImportService(
             _loggerMock.Object,
