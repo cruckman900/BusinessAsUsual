@@ -3,7 +3,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Sales.Application\Sales.Application.csproj" />
     <ProjectReference Include="..\Sales.Contracts\Sales.Contracts.csproj" />
-    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </ProjectReference>
     <ProjectReference Include="..\..\CRM\CRM.Application\CRM.Application.csproj" />
     <ProjectReference Include="..\..\Inventory\Inventory.Application\Inventory.Application.csproj" />
     <ProjectReference Include="..\..\..\shared\BusinessAsUsual.Shared.UI\BusinessAsUsual.Shared.UI.csproj" />

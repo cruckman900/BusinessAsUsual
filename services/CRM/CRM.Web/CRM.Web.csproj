@@ -3,7 +3,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CRM.Application\CRM.Application.csproj" />
     <ProjectReference Include="..\CRM.Domain\CRM.Domain.csproj" />
-    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

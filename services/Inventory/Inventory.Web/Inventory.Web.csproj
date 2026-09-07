@@ -4,7 +4,9 @@
     <ProjectReference Include="..\Inventory.Application\Inventory.Application.csproj" />
     <ProjectReference Include="..\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
-    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

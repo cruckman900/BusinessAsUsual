@@ -3,7 +3,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Finance.Application\Finance.Application.csproj" />
     <ProjectReference Include="..\Finance.Domain\Finance.Domain.csproj" />
-    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj" />
+    <ProjectReference Include="..\..\Platform\Platform.Web\Platform.Web.csproj">
+      <ExcludeAssets>contentfiles</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
