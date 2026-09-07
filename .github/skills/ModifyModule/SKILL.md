@@ -1,6 +1,8 @@
-# ModifyModule Skill
+# SKILL: ModifyModule
+## Name: ModifyModule
 
 ## Objective
+Enhance an existing module's dashboard to provide a more comprehensive, user-friendly experience, including improved navigation, insights, quick actions, and module information.
 
 ### Main Module Dashboard
 Transform the basic module dashboard into a comprehensive, user-friendly hub with the following structure (organized as rows):

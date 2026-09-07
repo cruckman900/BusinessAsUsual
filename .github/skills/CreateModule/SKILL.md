@@ -1,4 +1,6 @@
-# SKILL: Create a Complete Business Module
+# SKILL: CreateModule
+## Name: CreateModule
+## Description: Create a Complete Business Module
 
 ## Objective
 Create a fully functional business module from scratch in the Business As Usual platform, including API layer, web UI, database persistence, module registration, navigation, and mobile contracts.
