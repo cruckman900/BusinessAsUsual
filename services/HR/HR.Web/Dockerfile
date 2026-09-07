@@ -17,6 +17,10 @@ COPY shared/BusinessAsUsual.Shared.UI/BusinessAsUsual.Shared.UI.csproj shared/Bu
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
 COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
+COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
+COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
+COPY services/Inventory/Inventory.Application/Inventory.Application.csproj services/Inventory/Inventory.Application/
+COPY services/Inventory/Inventory.Domain/Inventory.Domain.csproj services/Inventory/Inventory.Domain/
 
 # Restore
 RUN dotnet restore services/HR/HR.Web/HR.Web.csproj
@@ -34,6 +38,10 @@ COPY shared/BusinessAsUsual.Shared.UI shared/BusinessAsUsual.Shared.UI
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
 COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
+COPY services/CRM/CRM.Application services/CRM/CRM.Application
+COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
+COPY services/Inventory/Inventory.Application services/Inventory/Inventory.Application
+COPY services/Inventory/Inventory.Domain services/Inventory/Inventory.Domain
 
 # Publish
 RUN dotnet publish services/HR/HR.Web/HR.Web.csproj -c Release -o /app/publish
