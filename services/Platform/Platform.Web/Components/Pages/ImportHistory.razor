@@ -11,6 +11,9 @@
 <PageTitle>Import History</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <!-- Breadcrumb -->
+    <PageBreadcrumb Items="_breadcrumbItems" />
+
     <MudText Typo="Typo.h4" Class="mb-4">
         <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
         Import History
@@ -130,6 +133,27 @@
 @code {
     private List<ImportHistoryDto> _importHistory = new();
     private bool _loading = true;
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new()
+        {
+            Text = "Platform",
+            Href = "/platform",
+            SubModules = new List<PageBreadcrumb.SubModuleItem>
+            {
+                new() { Text = "Platform Home", Href = "/platform", Icon = Icons.Material.Filled.Dashboard, Color = Color.Default },
+                new() { Text = "User Management", Href = "/platform/users", Icon = Icons.Material.Filled.ManageAccounts, Color = Color.Primary },
+                new() { Text = "Roles & Permissions", Href = "/platform/roles", Icon = Icons.Material.Filled.AdminPanelSettings, Color = Color.Info },
+                new() { Text = "Notifications", Href = "/platform/notifications", Icon = Icons.Material.Filled.Notifications, Color = Color.Warning },
+                new() { Text = "Settings", Href = "/platform/settings", Icon = Icons.Material.Filled.Settings, Color = Color.Secondary },
+                new() { Text = "Import Data", Href = "/platform/import", Icon = Icons.Material.Filled.Upload, Color = Color.Success },
+                new() { Text = "Audit Logs", Href = "/platform/audit", Icon = Icons.Material.Filled.History, Color = Color.Default }
+            }
+        },
+        new() { Text = "Import History", Href = "/platform/import/history", Icon = Icons.Material.Filled.History }
+    };
 
     protected override async Task OnInitializedAsync()
     {

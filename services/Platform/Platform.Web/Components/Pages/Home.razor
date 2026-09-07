@@ -7,11 +7,7 @@
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-2 pa-0">
     <!-- Breadcrumb -->
-    <div class="mb-3">
-        <MudLink Href="/dashboard">Dashboard</MudLink>
-        <span class="mx-2">/</span>
-        <MudText Typo="Typo.body2" Inline="true" Color="Color.Primary">Platform</MudText>
-    </div>
+    <PageBreadcrumb Items="_breadcrumbItems" />
 
     <!-- Page Title -->
     <MudText Typo="Typo.h4" GutterBottom="true">
@@ -402,4 +398,24 @@
     {
         NavigationManager.NavigateTo("/platform/audit");
     }
+
+    private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new() { Text = "Dashboard", Href = "/dashboard" },
+        new()
+        {
+            Text = "Platform",
+            Href = "/platform",
+            SubModules = new List<PageBreadcrumb.SubModuleItem>
+            {
+                new() { Text = "Platform Home", Href = "/platform", Icon = Icons.Material.Filled.Dashboard, Color = Color.Default },
+                new() { Text = "User Management", Href = "/platform/users", Icon = Icons.Material.Filled.ManageAccounts, Color = Color.Primary },
+                new() { Text = "Roles & Permissions", Href = "/platform/roles", Icon = Icons.Material.Filled.AdminPanelSettings, Color = Color.Info },
+                new() { Text = "Notifications", Href = "/platform/notifications", Icon = Icons.Material.Filled.Notifications, Color = Color.Warning },
+                new() { Text = "Settings", Href = "/platform/settings", Icon = Icons.Material.Filled.Settings, Color = Color.Secondary },
+                new() { Text = "Import Data", Href = "/platform/import", Icon = Icons.Material.Filled.Upload, Color = Color.Success },
+                new() { Text = "Audit Logs", Href = "/platform/audit", Icon = Icons.Material.Filled.History, Color = Color.Default }
+            }
+        }
+    };
 }

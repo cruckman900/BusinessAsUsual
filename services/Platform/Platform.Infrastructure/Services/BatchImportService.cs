@@ -308,12 +308,12 @@ public class BatchImportService : IBatchImportService
             TotalRowCount = sourceData.RowCount
         };
 
-        // Get column headers from mappings
-        preview.Headers = mappings.Mappings
+        // Get initial column headers from mappings (target columns)
+        var headerSet = mappings.Mappings
             .Where(m => !string.IsNullOrEmpty(m.TargetColumn))
             .Select(m => m.TargetColumn)
             .Distinct()
-            .ToList();
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // Transform sample rows
         var rowsToPreview = Math.Min(sampleSize, sourceData.RowCount);
@@ -323,6 +323,12 @@ public class BatchImportService : IBatchImportService
             {
                 var transformedRow = await TransformRowAsync(sourceData.Rows[i], mappings);
                 preview.SampleRows.Add(transformedRow);
+
+                // Add any keys produced by transformations to header set so preview shows them
+                foreach (var key in transformedRow.Keys)
+                {
+                    headerSet.Add(key);
+                }
             }
             catch (Exception ex)
             {
@@ -335,6 +341,8 @@ public class BatchImportService : IBatchImportService
             }
         }
 
+        // Finalize headers from accumulated header set preserving mapping order where possible
+        preview.Headers = headerSet.ToList();
         return preview;
     }
 
