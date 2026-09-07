@@ -379,9 +379,9 @@ services:
   lms-web:
     build:
       context: .
-      dockerfile: services/Services/LMS.Web/Dockerfile
-    image: bau/services-web:latest
-    container_name: bau-services-web
+      dockerfile: services/LearningManagement/LMS.Web/Dockerfile
+    image: bau/lms-web:latest
+    container_name: bau-lms-web
     restart: unless-stopped
     networks:
       - bau-heavy
@@ -390,10 +390,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ASPNETCORE_URLS=http://+:80
-      # Services.Web calls Services.API over the internal compose network
-      - ServicesApi__Url=http://services-api:80
+      # LMS.Web calls LMS.API over the internal compose network
+      - LmsApi__Url=http://lms-api:80
     depends_on:
-      - services-api
+      - lms-api
     deploy:
       resources:
         limits:
