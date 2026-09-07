@@ -15,6 +15,8 @@ COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj se
 COPY services/Platform/Platform.Domain/Platform.Domain.csproj services/Platform/Platform.Domain/
 COPY shared/BusinessAsUsual.Shared.UI/BusinessAsUsual.Shared.UI.csproj shared/BusinessAsUsual.Shared.UI/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
+COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
+COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
 
 # Restore
 RUN dotnet restore services/HR/HR.Web/HR.Web.csproj
@@ -30,6 +32,8 @@ COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infras
 COPY services/Platform/Platform.Domain services/Platform/Platform.Domain
 COPY shared/BusinessAsUsual.Shared.UI shared/BusinessAsUsual.Shared.UI
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
+COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
+COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 
 # Publish
 RUN dotnet publish services/HR/HR.Web/HR.Web.csproj -c Release -o /app/publish

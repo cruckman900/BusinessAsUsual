@@ -20,6 +20,8 @@ COPY services/HR/HR.Application/HR.Application.csproj services/HR/HR.Application
 COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
 COPY services/HR/HR.Infrastructure/HR.Infrastructure.csproj services/HR/HR.Infrastructure/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
+COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
+COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
 
 # Restore
 RUN dotnet restore services/Sales/Sales.Web/Sales.Web.csproj
@@ -40,6 +42,8 @@ COPY services/HR/HR.Application services/HR/HR.Application
 COPY services/HR/HR.Domain services/HR/HR.Domain
 COPY services/HR/HR.Infrastructure services/HR/HR.Infrastructure
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
+COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
+COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 
 # Publish
 RUN dotnet publish services/Sales/Sales.Web/Sales.Web.csproj -c Release -o /app/publish
