@@ -21,7 +21,7 @@
             }
             else
             {
-                <MudList T="string" Clickable="true">
+                <MudList T="string">
                     @foreach (var template in Templates)
                     {
                         <MudListItem T="string" OnClick="@(() => SelectTemplate(template.Id))" 

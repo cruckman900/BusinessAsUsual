@@ -8,7 +8,7 @@
     <DialogContent>
 
         <MudSelect T="string" @bind-Value="_selectedType" Label="Transformation Type" Variant="Variant.Outlined" Class="mb-4">
-            <MudSelectItem Value="@((string)"")"">None</MudSelectItem>
+            <MudSelectItem Value="@string.Empty">None</MudSelectItem>
             <MudSelectItem Value="@TransformationType.TrimWhitespace">Trim Whitespace</MudSelectItem>
             <MudSelectItem Value="@TransformationType.UpperCase">Uppercase</MudSelectItem>
             <MudSelectItem Value="@TransformationType.LowerCase">Lowercase</MudSelectItem>

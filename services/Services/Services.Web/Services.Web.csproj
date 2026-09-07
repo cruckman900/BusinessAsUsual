@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MudBlazor" Version="9.6.0" />
+    <PackageReference Include="MudBlazor" Version="9.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Services.Application\Services.Application.csproj" />

@@ -28,7 +28,7 @@
             Import data from CSV or Excel files into your database tables with intelligent mapping and transformation.
         </MudText>
 
-        <MudStepper @ref="_stepper" Linear="true" Color="Color.Primary">
+        <MudStepper @ref="_stepper" NonLinear="false" CurrentStepColor="Color.Primary" ActiveIndex="_currentStepIndex" ActiveIndexChanged="OnActiveIndexChanged">
             <!-- Step 1: Table Selection -->
             <MudStep Title="Select Table">
                 <MudText Typo="Typo.h6" Class="mb-4">Choose the table you want to import data into</MudText>
@@ -370,6 +370,7 @@
 
 @code {
     private MudStepper? _stepper;
+    private int _currentStepIndex;
     private List<string> _availableTables = new();
     private string? _selectedTable;
     private TableSchema? _tableSchema;
@@ -452,7 +453,7 @@
                         _parsedData.Headers, 
                         _tableSchema!);
 
-                    NextStep();
+                    await NextStep();
                 }
                 else
                 {
@@ -472,7 +473,7 @@
 
         if (isValid)
         {
-            NextStep();
+            await NextStep();
         }
         else
         {
@@ -499,7 +500,7 @@
             }
 
             // Move to preview step first
-            NextStep();
+            await NextStep();
             StateHasChanged();
 
             // Generate preview asynchronously
@@ -625,7 +626,7 @@
             .ToList();
     }
 
-    private void ResetWizard()
+    private async Task ResetWizard()
     {
         _selectedTable = null;
         _tableSchema = null;
@@ -639,30 +640,35 @@
         _importResult = null;
         if (_stepper != null)
         {
-            _stepper.ActiveIndex = 0;
+            await _stepper.ResetAsync();
         }
     }
 
-    private void NextStep()
+    private async Task NextStep()
     {
         if (_stepper != null)
         {
-            _stepper.ActiveIndex++;
+            await _stepper.NextStepAsync();
         }
     }
 
-    private void PreviousStep()
+    private async Task PreviousStep()
     {
-        if (_stepper != null && _stepper.ActiveIndex > 0)
+        if (_stepper != null && _currentStepIndex > 0)
         {
-            _stepper.ActiveIndex--;
+            await _stepper.PreviousStepAsync();
 
             // Refresh unmapped columns when returning to mapping step (step 2, index 2)
-            if (_stepper.ActiveIndex == 2 && _mappingAnalysis != null)
+            if (_currentStepIndex == 2 && _mappingAnalysis != null)
             {
                 RefreshUnmappedColumns();
             }
         }
+    }
+
+    private void OnActiveIndexChanged(int newIndex)
+    {
+        _currentStepIndex = newIndex;
     }
 
     private string FormatFileSize(long bytes)
@@ -714,7 +720,7 @@
             var dialog = await DialogService.ShowAsync<LoadTemplateDialog>("Load Mapping Template", parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled && result.Data is Guid templateId)
+            if (result != null && !result.Canceled && result.Data is Guid templateId)
             {
                 var template = await TemplateService.GetTemplateByIdAsync(templateId);
                 if (template != null)
@@ -750,7 +756,7 @@
             var dialog = await DialogService.ShowAsync<SaveTemplateDialog>("Save Mapping Template", parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled && result.Data is SaveMappingTemplateDto saveDto)
+            if (result != null && !result.Canceled && result.Data is SaveMappingTemplateDto saveDto)
             {
                 // Serialize current mapping configuration
                 saveDto.CompanyId = TenantContext.CompanyId;

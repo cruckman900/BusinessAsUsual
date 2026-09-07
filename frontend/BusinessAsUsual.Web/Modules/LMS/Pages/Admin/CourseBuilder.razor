@@ -141,7 +141,7 @@
                         <MudText Typo="Typo.body1" Class="mb-2">@selectedLesson.Description</MudText>
                         <MudDivider Class="my-3" />
 
-                        <MudTabs Elevation="2" Rounded="true" PanelClass="pa-3" @bind-ActivePanelIndex="_activeTabIndex">
+                        <MudTabs Elevation="2" Rounded="true" TabPanelsClass="pa-3" @bind-ActivePanelIndex="_activeTabIndex">
                             <MudTabPanel Text="Content Blocks" Icon="@Icons.Material.Filled.Article">
 
 
@@ -429,7 +429,7 @@
                 new() { Text = "Learning Management", Href = "/lms" },
                 new() { Text = "Admin", Href = "/lms/admin" },
                 new() { Text = "Courses", Href = "/lms/admin/courses" },
-                new() { Text = course?.Title ?? "Builder", Href = null }
+                new() { Text = course?.Title ?? "Builder", Href = "" }
             };
         }
         catch (Exception ex)

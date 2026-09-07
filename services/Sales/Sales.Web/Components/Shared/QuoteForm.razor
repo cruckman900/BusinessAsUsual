@@ -11,7 +11,7 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form" @bind-IsValid="@_isValid">
-            <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+            <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" TabPanelsClass="pa-4">
                 <MudTabPanel Text="Customer Info" Icon="@Icons.Material.Filled.Person">
                     <MudGrid>
                         <MudItem xs="12">
@@ -107,8 +107,8 @@
 
                 <MudTabPanel Text="Line Items" Icon="@Icons.Material.Filled.ShoppingCart">
                     @* Product Selection Panel - Inline *@
-                    <MudExpansionPanels @bind-Expanded="_showProductPanel" Class="mb-3">
-                        <MudExpansionPanel Text="Add Product from Inventory" 
+                    <MudExpansionPanels Class="mb-3">
+                        <MudExpansionPanel @bind-Expanded="_showProductPanel" Text="Add Product from Inventory" 
                                           Icon="@Icons.Material.Filled.Inventory"
                                           MaxHeight="400">
                             <MudStack Spacing="3" Class="pa-4">
@@ -193,21 +193,18 @@
                                 <MudTd DataLabel="Product">
                                     <MudTextField @bind-Value="context.ProductName"
                                                   Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Dense="true" />
+                                                  Margin="Margin.Dense" />
                                 </MudTd>
                                 <MudTd DataLabel="Description">
                                     <MudTextField @bind-Value="context.Description"
                                                   Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Dense="true" />
+                                                  Margin="Margin.Dense" />
                                 </MudTd>
                                 <MudTd DataLabel="Qty">
                                     <MudNumericField @bind-Value="context.Quantity"
                                                      Min="0.01m"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
-                                                     Dense="true"
                                                      Style="width: 80px;" />
                                 </MudTd>
                                 <MudTd DataLabel="Price">
@@ -216,7 +213,6 @@
                                                      Format="C2"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
-                                                     Dense="true"
                                                      Style="width: 100px;" />
                                 </MudTd>
                                 <MudTd DataLabel="Discount">
@@ -225,7 +221,6 @@
                                                      Max="100m"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
-                                                     Dense="true"
                                                      Style="width: 70px;" />
                                 </MudTd>
                                 <MudTd DataLabel="Tax">
@@ -234,7 +229,6 @@
                                                      Max="100m"
                                                      Variant="Variant.Outlined"
                                                      Margin="Margin.Dense"
-                                                     Dense="true"
                                                      Style="width: 70px;" />
                                 </MudTd>
                                 <MudTd DataLabel="Total">

@@ -104,7 +104,7 @@ public class AnalyticsController : ControllerBase
             result.Data!,
             cancellationToken);
 
-        var fileName = $"quiz-analytics-{result.Data.QuizTitle.Replace(" ", "-")}-{DateTime.UtcNow:yyyyMMdd}.csv";
+        var fileName = $"quiz-analytics-{result.Data!.QuizTitle.Replace(" ", "-")}-{DateTime.UtcNow:yyyyMMdd}.csv";
         return File(csvBytes, "text/csv", fileName);
     }
 

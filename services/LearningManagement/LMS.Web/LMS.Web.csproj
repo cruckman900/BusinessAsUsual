@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
-    <PackageReference Include="MudBlazor" Version="9.6.0" />
+    <PackageReference Include="MudBlazor" Version="9.9.0" />
     <PackageReference Include="Radzen.Blazor" Version="11.2.5" />
   </ItemGroup>
 
@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="4.0.102" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.102.3" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
 

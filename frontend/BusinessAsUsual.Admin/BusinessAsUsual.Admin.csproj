@@ -54,7 +54,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.0" />
     <!-- Removed AspNetCore.HealthChecks.UI - brings in Kubernetes dependencies we don't need -->
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.19" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.101.2" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
     <PackageReference Include="Docker.DotNet" Version="3.125.5" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />

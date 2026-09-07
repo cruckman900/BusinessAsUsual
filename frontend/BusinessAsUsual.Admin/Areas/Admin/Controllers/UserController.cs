@@ -555,7 +555,7 @@ namespace BusinessAsUsual.Admin.Areas.Admin.Controllers
         /// Toggles a user's active status.
         /// </summary>
         /// <param name="id">The user ID.</param>
-        /// <param name="isActive">The new active status.</param>
+        /// <param name="request">The request containing the new active status.</param>
         /// <returns>JSON result indicating success or failure.</returns>
         [HttpPost("api/{id}/toggle-status")]
         public async Task<IActionResult> ToggleUserStatus(string id, [FromBody] ToggleStatusRequest request)

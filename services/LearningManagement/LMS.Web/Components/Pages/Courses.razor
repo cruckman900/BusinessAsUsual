@@ -68,7 +68,7 @@
             var publishedCourses = await CourseRepository.GetPublishedCoursesAsync();
             courses = publishedCourses.ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log error
             courses = new List<LMS.Domain.Entities.Course>();

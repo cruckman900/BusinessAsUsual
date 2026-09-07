@@ -96,19 +96,26 @@ public class ToastService
         }
     }
 
-    public void Deleted(string itemName, Action undoAction)
+    public void Deleted(string itemName, Action? undoAction = null)
     {
-        _snackbar.Add($"{itemName} deleted", Severity.Info, config =>
+        if (undoAction != null)
         {
-            config.Action = "Undo";
-            config.ActionColor = Color.Warning;
-            config.OnClick = _ =>
+            _snackbar.Add($"{itemName} deleted", Severity.Info, config =>
             {
-                undoAction();
-                return Task.CompletedTask;
-            };
-            config.VisibleStateDuration = 5000; // Give time to undo
-        });
+                config.Action = "Undo";
+                config.ActionColor = Color.Warning;
+                config.OnClick = _ =>
+                {
+                    undoAction();
+                    return Task.CompletedTask;
+                };
+                config.VisibleStateDuration = 5000; // Give time to undo
+            });
+        }
+        else
+        {
+            _snackbar.Add($"{itemName} deleted", Severity.Info);
+        }
     }
 
     public void Saved(string itemName)

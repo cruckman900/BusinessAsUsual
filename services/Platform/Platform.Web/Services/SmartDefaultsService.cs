@@ -21,6 +21,16 @@ public class SmartDefaultsService
         return fallback;
     }
 
+    // Get remembered value or a guaranteed non-null default
+    public T GetValueOrDefault<T>(string key, T fallback) where T : notnull
+    {
+        if (_defaults.TryGetValue(key, out var value) && value is T typedValue)
+        {
+            return typedValue;
+        }
+        return fallback;
+    }
+
     // Clear a specific remembered value
     public void ClearValue(string key)
     {
@@ -60,7 +70,7 @@ public class SmartDefaultsService
     {
         return new UserDefaults
         {
-            DefaultRole = GetValue("user.lastRole", "User"),
+            DefaultRole = GetValueOrDefault("user.lastRole", "User"),
             DefaultActive = GetValue("user.defaultActive", true),
             DefaultDepartment = GetValue<string?>("user.lastDepartment", null),
             DefaultTimezone = GetValue("user.timezone", TimeZoneInfo.Local.Id)
@@ -72,8 +82,8 @@ public class SmartDefaultsService
         return new FormDefaults
         {
             DefaultDate = GetValue("form.lastDate", DateTime.Today),
-            DefaultCurrency = GetValue("form.currency", "USD"),
-            DefaultLanguage = GetValue("form.language", "en-US")
+            DefaultCurrency = GetValueOrDefault("form.currency", "USD"),
+            DefaultLanguage = GetValueOrDefault("form.language", "en-US")
         };
     }
 

@@ -37,7 +37,7 @@
             <MudIconButton Icon="@Icons.Material.Filled.Refresh"
                            Color="Color.Default"
                            OnClick="LoadHistory"
-                           Title="Refresh" />
+                           title="Refresh" />
         </ToolbarContent>
         <ChildContent>
             <PropertyColumn T="ImportHistoryDto" TProperty="DateTime" Property="x => x.StartedAt" Title="Started" Sortable="true">
@@ -101,14 +101,14 @@
                                        Size="Size.Small"
                                        Color="Color.Primary"
                                        OnClick="@(() => ViewDetails(context.Item.Id))"
-                                       Title="View Details" />
+                                       title="View Details" />
                         @if (context.Item.CanRollback)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.Undo"
                                            Size="Size.Small"
                                            Color="Color.Warning"
                                            OnClick="@(() => RollbackImport(context.Item.Id))"
-                                           Title="Rollback Import" />
+                                           title="Rollback Import" />
                         }
                         @if (context.Item.RolledBackAt.HasValue)
                         {
@@ -221,7 +221,6 @@
 
     private async Task RollbackImport(Guid importId)
     {
-        bool? confirm = false;
         var dialogParameters = new DialogParameters
         {
             { "Title", "Confirm Rollback" },
@@ -233,7 +232,7 @@
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm", dialogParameters);
         var result = await dialog.Result;
 
-        if (result.Canceled)
+        if (result == null || result.Canceled)
             return;
 
         if (TenantContext.IsResolved && TenantContext.UserId.HasValue)
