@@ -13,6 +13,7 @@ COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
 COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
+COPY backend/BusinessAsUsual.Infrastructure/BusinessAsUsual.Infrastructure.csproj backend/BusinessAsUsual.Infrastructure/
 COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj services/Platform/Platform.Infrastructure/
 COPY services/Platform/Platform.Application/Platform.Application.csproj services/Platform/Platform.Application/
 COPY services/Platform/Platform.Domain/Platform.Domain.csproj services/Platform/Platform.Domain/
@@ -29,6 +30,7 @@ COPY services/HR/HR.Domain services/HR/HR.Domain
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
 COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
+COPY backend/BusinessAsUsual.Infrastructure backend/BusinessAsUsual.Infrastructure
 COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infrastructure
 COPY services/Platform/Platform.Application services/Platform/Platform.Application
 COPY services/Platform/Platform.Domain services/Platform/Platform.Domain
