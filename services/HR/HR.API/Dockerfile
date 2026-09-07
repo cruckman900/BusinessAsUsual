@@ -11,6 +11,11 @@ COPY services/HR/HR.Infrastructure/HR.Infrastructure.csproj services/HR/HR.Infra
 COPY services/HR/HR.Contracts/HR.Contracts.csproj services/HR/HR.Contracts/
 COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
+COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
+COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
+COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj services/Platform/Platform.Infrastructure/
+COPY services/Platform/Platform.Application/Platform.Application.csproj services/Platform/Platform.Application/
+COPY services/Platform/Platform.Domain/Platform.Domain.csproj services/Platform/Platform.Domain/
 
 # Restore
 RUN dotnet restore services/HR/HR.API/HR.API.csproj
@@ -22,6 +27,11 @@ COPY services/HR/HR.Infrastructure services/HR/HR.Infrastructure
 COPY services/HR/HR.Contracts services/HR/HR.Contracts
 COPY services/HR/HR.Domain services/HR/HR.Domain
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
+COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
+COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
+COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infrastructure
+COPY services/Platform/Platform.Application services/Platform/Platform.Application
+COPY services/Platform/Platform.Domain services/Platform/Platform.Domain
 
 # Publish
 RUN dotnet publish services/HR/HR.API/HR.API.csproj -c Release -o /app/publish
