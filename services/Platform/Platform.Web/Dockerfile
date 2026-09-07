@@ -10,6 +10,15 @@ COPY services/Platform/Platform.Application/Platform.Application.csproj services
 COPY services/Platform/Platform.Infrastructure/Platform.Infrastructure.csproj services/Platform/Platform.Infrastructure/
 COPY services/Platform/Platform.Domain/Platform.Domain.csproj services/Platform/Platform.Domain/
 COPY shared/BusinessAsUsual.Shared.UI/BusinessAsUsual.Shared.UI.csproj shared/BusinessAsUsual.Shared.UI/
+COPY services/CRM/CRM.Application/CRM.Application.csproj services/CRM/CRM.Application/
+COPY services/CRM/CRM.Domain/CRM.Domain.csproj services/CRM/CRM.Domain/
+COPY services/HR/HR.Application/HR.Application.csproj services/HR/HR.Application/
+COPY services/HR/HR.Domain/HR.Domain.csproj services/HR/HR.Domain/
+COPY services/HR/HR.Infrastructure/HR.Infrastructure.csproj services/HR/HR.Infrastructure/
+COPY services/Inventory/Inventory.Application/Inventory.Application.csproj services/Inventory/Inventory.Application/
+COPY services/Inventory/Inventory.Domain/Inventory.Domain.csproj services/Inventory/Inventory.Domain/
+COPY backend/BusinessAsUsual.Application/BusinessAsUsual.Application.csproj backend/BusinessAsUsual.Application/
+COPY backend/BusinessAsUsual.Domain/BusinessAsUsual.Domain.csproj backend/BusinessAsUsual.Domain/
 COPY BusinessAsUsual.Core/BusinessAsUsual.Core.csproj BusinessAsUsual.Core/
 
 # Restore
@@ -21,6 +30,15 @@ COPY services/Platform/Platform.Application services/Platform/Platform.Applicati
 COPY services/Platform/Platform.Infrastructure services/Platform/Platform.Infrastructure
 COPY services/Platform/Platform.Domain services/Platform/Platform.Domain
 COPY shared/BusinessAsUsual.Shared.UI shared/BusinessAsUsual.Shared.UI
+COPY services/CRM/CRM.Application services/CRM/CRM.Application
+COPY services/CRM/CRM.Domain services/CRM/CRM.Domain
+COPY services/HR/HR.Application services/HR/HR.Application
+COPY services/HR/HR.Domain services/HR/HR.Domain
+COPY services/HR/HR.Infrastructure services/HR/HR.Infrastructure
+COPY services/Inventory/Inventory.Application services/Inventory/Inventory.Application
+COPY services/Inventory/Inventory.Domain services/Inventory/Inventory.Domain
+COPY backend/BusinessAsUsual.Application backend/BusinessAsUsual.Application
+COPY backend/BusinessAsUsual.Domain backend/BusinessAsUsual.Domain
 COPY BusinessAsUsual.Core BusinessAsUsual.Core
 
 # Publish
