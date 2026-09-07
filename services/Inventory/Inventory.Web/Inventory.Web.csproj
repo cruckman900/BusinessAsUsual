@@ -22,4 +22,12 @@
     <StaticWebAssetBasePath>_content/Inventory.Web</StaticWebAssetBasePath>
   </PropertyGroup>
 
+  <!-- Exclude Platform.Web content files from publish output to prevent conflicts -->
+  <Target Name="ExcludePlatformWebContentFromPublish" BeforeTargets="_HandleFileConflictsForPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'appsettings.json' AND $([System.String]::Copy('%(ResolvedFileToPublish.FullPath)').Contains('Platform.Web'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'appsettings.Development.json' AND $([System.String]::Copy('%(ResolvedFileToPublish.FullPath)').Contains('Platform.Web'))" />
+    </ItemGroup>
+  </Target>
+
 </Project>
