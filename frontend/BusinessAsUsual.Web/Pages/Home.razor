@@ -1,8 +1,14 @@
 @page "/"
 @using BusinessAsUsual.Web.Components.Layout
 @using BusinessAsUsual.Web.Components.Shared
+@using BusinessAsUsual.Web.Components
+@using BusinessAsUsual.Web.Services
+@using BusinessAsUsual.Application.Services
 @layout SplashLayout
 @inject NavigationManager NavigationManager
+@inject AuthenticationService AuthService
+@inject TenantDatabaseResetService TenantResetService
+@inject ITenantContext TenantContext
 
 <link href="css/organizational-background.css" rel="stylesheet" />
 
@@ -80,6 +86,8 @@
                         Sign In
                     </MudText>
                     <MudForm @ref="LoginForm">
+                        <CompanyPicker @bind-SelectedCompany="SelectedCompany" Class="mb-3" />
+
                         <MudTextField Label="Username"
                                       @bind-Value="Username"
                                       Immediate="true"
@@ -112,8 +120,17 @@
                                Color="Color.Primary"
                                FullWidth="true"
                                Class="mb-2"
-                               OnClick="LoginUser">
-                        Sign In
+                               OnClick="LoginUser"
+                               Disabled="@(_isLoggingIn || SelectedCompany is null)">
+                        @if (_isLoggingIn)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Preparing tenant data...</span>
+                        }
+                        else
+                        {
+                            <span>Sign In</span>
+                        }
                     </MudButton>
 
                     <MudDivider Class="my-3" />
@@ -267,9 +284,12 @@
     string Username = "";
     string Password = "";
     bool ShowError = false;
+    bool _isLoggingIn = false;
 
     MudForm? LoginForm;
     InputType PasswordInputType = InputType.Password;
+
+    CompanyOption? SelectedCompany;
 
     string PasswordToggleIcon => PasswordInputType == InputType.Password
         ? Icons.Material.Filled.Visibility
@@ -282,18 +302,50 @@
             : InputType.Password;
     }
 
-    void HandleKeyDown(KeyboardEventArgs args)
+    async Task HandleKeyDown(KeyboardEventArgs args)
     {
         if (args.Key == "Enter")
         {
-            LoginUser();
+            await LoginUser();
         }
     }
 
-    void LoginUser()
+    async Task LoginUser()
     {
+        if (SelectedCompany is null)
+        {
+            ShowError = true;
+            return;
+        }
+
         if (Username == "admin" && Password == "password")
         {
+            _isLoggingIn = true;
+            StateHasChanged();
+
+            var selected = SelectedCompany;
+
+            // Apply the selected tenant to this circuit before resetting/reseeding data so
+            // subsequent module calls resolve the chosen tenant instead of the default.
+            TenantContext.SetContext(selected.CompanyId, selected.DbName);
+
+            // Refresh all correlating module "tenant" databases so the demo always
+            // starts from a clean, fully-populated dataset (no stale/empty tables).
+            await TenantResetService.ResetAllAsync(selected.CompanyId, selected.DbName);
+
+            // Login the user with the AuthenticationService, persisting the selected company
+            // as part of the session identity.
+            AuthService.Login(
+                username: Username,
+                email: "admin@businessasusual.com",
+                fullName: "Admin User",
+                role: "Administrator",
+                companyId: selected.CompanyId,
+                companyName: selected.Name,
+                tenantDbName: selected.DbName
+            );
+
+            _isLoggingIn = false;
             NavigationManager.NavigateTo("/dashboard");
         }
         else
