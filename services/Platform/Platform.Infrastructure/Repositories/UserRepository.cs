@@ -2,16 +2,19 @@ using Microsoft.EntityFrameworkCore;
 using Platform.Domain.Entities;
 using Platform.Domain.Interfaces;
 using Platform.Infrastructure.Data;
+using BusinessAsUsual.Application.Services;
 
 namespace Platform.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
     private readonly PlatformDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public UserRepository(PlatformDbContext context)
+    public UserRepository(PlatformDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()
@@ -19,6 +22,7 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
+            .Where(u => u.CompanyId == _tenantContext.CompanyId)
             .ToListAsync();
     }
 
@@ -27,7 +31,7 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id && u.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<User?> GetByUsernameAsync(string username)
@@ -35,7 +39,7 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Username == username);
+            .FirstOrDefaultAsync(u => u.Username == username && u.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
@@ -43,11 +47,12 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .FirstOrDefaultAsync(u => u.Email == email && u.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<User> AddAsync(User user)
     {
+        user.CompanyId = _tenantContext.CompanyId;
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return user;
@@ -76,22 +81,22 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .Where(u => u.UserRoles.Any(ur => ur.RoleId == roleId))
+            .Where(u => u.UserRoles.Any(ur => ur.RoleId == roleId) && u.CompanyId == _tenantContext.CompanyId)
             .ToListAsync();
     }
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _context.Users.AnyAsync(u => u.Id == id);
+        return await _context.Users.AnyAsync(u => u.Id == id && u.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<bool> UsernameExistsAsync(string username)
     {
-        return await _context.Users.AnyAsync(u => u.Username == username);
+        return await _context.Users.AnyAsync(u => u.Username == username && u.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<bool> EmailExistsAsync(string email)
     {
-        return await _context.Users.AnyAsync(u => u.Email == email);
+        return await _context.Users.AnyAsync(u => u.Email == email && u.CompanyId == _tenantContext.CompanyId);
     }
 }

@@ -2,30 +2,37 @@ using Microsoft.EntityFrameworkCore;
 using Services.Domain.Entities;
 using Services.Domain.Interfaces;
 using Services.Infrastructure.Data;
+using BusinessAsUsual.Application.Services;
 
 namespace Services.Infrastructure.Repositories;
 
 public class ServiceRepository : IServiceRepository
 {
     private readonly ServicesDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public ServiceRepository(ServicesDbContext db)
+    public ServiceRepository(ServicesDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
     }
 
     public async Task<List<Service>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _db.Services.AsNoTracking().ToListAsync(cancellationToken);
+        return await _db.Services.AsNoTracking()
+            .Where(s => s.CompanyId == _tenantContext.CompanyId)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Service?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _db.Services.FindAsync(new object[] { id }, cancellationToken);
+        var service = await _db.Services.FindAsync(new object[] { id }, cancellationToken);
+        return service != null && service.CompanyId == _tenantContext.CompanyId ? service : null;
     }
 
     public async Task<Service> CreateAsync(Service service, CancellationToken cancellationToken = default)
     {
+        service.CompanyId = _tenantContext.CompanyId;
         _db.Services.Add(service);
         await _db.SaveChangesAsync(cancellationToken);
         return service;

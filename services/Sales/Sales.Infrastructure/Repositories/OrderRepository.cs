@@ -2,21 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Sales.Domain.Entities;
 using Sales.Domain.Repositories;
 using Sales.Infrastructure.Persistence;
+using BusinessAsUsual.Application.Services;
 
 namespace Sales.Infrastructure.Repositories;
 
 public class OrderRepository : IOrderRepository
 {
     private readonly SalesDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public OrderRepository(SalesDbContext context)
+    public OrderRepository(SalesDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<Order>> GetAllAsync()
     {
         return await _context.Orders
+            .Where(o => o.CompanyId == _tenantContext.CompanyId)
             .Include(o => o.LineItems)
             .Include(o => o.Payments)
             .ToListAsync();
@@ -27,11 +31,12 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders
             .Include(o => o.LineItems)
             .Include(o => o.Payments)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id && o.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<Order> AddAsync(Order order)
     {
+        order.CompanyId = _tenantContext.CompanyId;
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
         return order;
@@ -56,6 +61,6 @@ public class OrderRepository : IOrderRepository
 
     public async Task<int> CountAsync()
     {
-        return await _context.Orders.CountAsync();
+        return await _context.Orders.CountAsync(o => o.CompanyId == _tenantContext.CompanyId);
     }
 }

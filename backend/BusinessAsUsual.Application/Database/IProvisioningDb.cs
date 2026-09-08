@@ -70,5 +70,12 @@ namespace BusinessAsUsual.Application.Database
         /// <param name="script">SQL script to execute.</param>
         /// <returns>A task that represents the asynchronous execution operation.</returns>
         Task ExecuteScriptAsync(string tenantDbName, string script);
+
+        /// <summary>
+        /// Retrieves all provisioned companies from the master database, for use by
+        /// tenant selection UIs (e.g. the Web shell's login page).
+        /// </summary>
+        /// <returns>A task that resolves to the list of provisioned companies.</returns>
+        Task<List<Company>> GetAllCompaniesAsync();
     }
 }

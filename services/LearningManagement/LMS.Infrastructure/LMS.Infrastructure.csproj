@@ -4,6 +4,7 @@
     <ProjectReference Include="..\LMS.Domain\LMS.Domain.csproj" />
     <ProjectReference Include="..\LMS.Application\LMS.Application.csproj" />
     <ProjectReference Include="..\..\..\BusinessAsUsual.Core\BusinessAsUsual.Core.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

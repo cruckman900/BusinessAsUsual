@@ -19,11 +19,12 @@ public class DataSeeder
             return;
 
         var now = DateTime.UtcNow;
+        var demoCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var samples = new List<Service>
         {
-            new Service { Id = Guid.NewGuid(), Name = "Standard Consultation", Description = "A standard 30-minute consultation.", BasePrice = 49.99M, IsActive = true, CreatedAt = now },
-            new Service { Id = Guid.NewGuid(), Name = "Premium Consultation", Description = "A 60-minute deep-dive session.", BasePrice = 99.99M, IsActive = true, CreatedAt = now },
-            new Service { Id = Guid.NewGuid(), Name = "On-site Visit", Description = "Travel to customer site for assessment.", BasePrice = 199.99M, IsActive = true, CreatedAt = now }
+            new Service { Id = Guid.NewGuid(), CompanyId = demoCompanyId, Name = "Standard Consultation", Description = "A standard 30-minute consultation.", BasePrice = 49.99M, IsActive = true, CreatedAt = now },
+            new Service { Id = Guid.NewGuid(), CompanyId = demoCompanyId, Name = "Premium Consultation", Description = "A 60-minute deep-dive session.", BasePrice = 99.99M, IsActive = true, CreatedAt = now },
+            new Service { Id = Guid.NewGuid(), CompanyId = demoCompanyId, Name = "On-site Visit", Description = "Travel to customer site for assessment.", BasePrice = 199.99M, IsActive = true, CreatedAt = now }
         };
 
         _db.Services.AddRange(samples);

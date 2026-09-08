@@ -6,6 +6,7 @@ namespace Inventory.Domain.Entities;
 public class PurchaseOrder
 {
     public Guid Id { get; set; }
+    public Guid CompanyId { get; set; }
     public string OrderNumber { get; set; } = string.Empty;
     public Guid SupplierId { get; set; }
     public Guid WarehouseId { get; set; }

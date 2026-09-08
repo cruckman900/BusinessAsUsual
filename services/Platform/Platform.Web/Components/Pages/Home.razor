@@ -360,6 +360,17 @@
     </MudGrid>
 </MudContainer>
 
+<style>
+    .mud-card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mud-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
 @code {
     private int TotalUsers = 0;
     private int ActiveUsers = 0;
@@ -398,6 +409,8 @@
     {
         NavigationManager.NavigateTo("/platform/audit");
     }
+
+
 
     private List<PageBreadcrumb.BreadcrumbItem> _breadcrumbItems = new()
     {

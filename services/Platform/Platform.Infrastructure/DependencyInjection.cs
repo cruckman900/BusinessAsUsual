@@ -7,6 +7,7 @@ using Platform.Domain.Interfaces;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.Repositories;
 using Platform.Infrastructure.Services;
+using BusinessAsUsual.Application.Services;
 
 namespace Platform.Infrastructure;
 
@@ -21,6 +22,10 @@ public static class DependencyInjection
             options.UseSqlServer(
                 configuration.GetConnectionString("PlatformDb") ?? 
                 "Server=(localdb)\\mssqllocaldb;Database=BusinessAsUsual_Platform;Trusted_Connection=True;MultipleActiveResultSets=true"));
+
+        // Register tenant context
+        services.AddScoped<ITenantContext, TenantContext>();
+        services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
 
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();

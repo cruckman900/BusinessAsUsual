@@ -2,10 +2,12 @@
 using BusinessAsUsual.API.Common;
 using BusinessAsUsual.Application.Common;
 using BusinessAsUsual.Application.Database;
+using BusinessAsUsual.Application.Services;
 using BusinessAsUsual.Application.Services.Provisioning;
 using BusinessAsUsual.Infrastructure;
 using BusinessAsUsual.Infrastructure.Database;
 using BusinessAsUsual.Infrastructure.Extensions;
+using BusinessAsUsual.Infrastructure.Middleware;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Infrastructure.Provisioning;
 using DotNetEnv;
@@ -48,8 +50,22 @@ namespace BusinessAsUsual.API
             //TODO: builder.Services.AddBusinessAsUsualServices();
 
             builder.Services.AddSingleton<IAppEnvironment, AppEnvironment>();
+            builder.Services.AddScoped<ITenantContext, TenantContext>();
+            builder.Services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
             builder.Services.AddScoped<IProvisioningService, ProvisioningService>();
-            builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
+
+            // When no SQL Server connection string is configured (e.g. local demo/video recording
+            // environments), fall back to a SQLite-backed provisioning implementation so tenant
+            // creation still works end-to-end without requiring a real SQL Server instance.
+            if (string.IsNullOrWhiteSpace(connString))
+            {
+                Console.WriteLine("ℹ️ No AWS_SQL_CONNECTION_STRING configured — using SQLite-backed provisioning for tenants.");
+                builder.Services.AddScoped<IProvisioningDb>(_ => new SqliteProvisioningDb());
+            }
+            else
+            {
+                builder.Services.AddScoped<IProvisioningDb, ProvisioningDb>();
+            }
 
             builder.Services.AddPlatformMetrics();
 
@@ -59,10 +75,10 @@ namespace BusinessAsUsual.API
                 builder.Services.AddSingleton<IMetricPublisher, CloudWatchMetricPublisher>();
             }
 
-            // Validate connection string
+            // Validate connection string (skip the SQL Server readiness wait when using the SQLite fallback)
             if (string.IsNullOrWhiteSpace(connString))
             {
-                Console.WriteLine("❌ AWS_SQL_CONNECTION_STRING is missing or empty.");
+                Console.WriteLine("ℹ️ AWS_SQL_CONNECTION_STRING is missing or empty; SQLite fallback is active.");
             }
             else
             {
@@ -131,6 +147,7 @@ namespace BusinessAsUsual.API
             app.UseRouting();
             app.UseAuthorization();
             app.UseCors("AllowAdmin");
+            app.UseMiddleware<TenantResolutionMiddleware>();
 
             app.MapControllers();
 

@@ -2,20 +2,24 @@ using Inventory.Domain.Entities;
 using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
 
 namespace Inventory.Infrastructure.Repositories;
 
 public class PurchaseOrderRepository : IPurchaseOrderRepository
 {
     private readonly InventoryDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public PurchaseOrderRepository(InventoryDbContext context)
+    public PurchaseOrderRepository(InventoryDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<PurchaseOrder>> GetAllAsync()
         => await _context.PurchaseOrders
+            .Where(po => po.CompanyId == _tenantContext.CompanyId)
             .Include(po => po.Supplier)
             .Include(po => po.Warehouse)
             .Include(po => po.Lines)
@@ -56,6 +60,7 @@ public class PurchaseOrderRepository : IPurchaseOrderRepository
     public async Task<PurchaseOrder> AddAsync(PurchaseOrder entity)
     {
         entity.Id = Guid.NewGuid();
+        entity.CompanyId = _tenantContext.CompanyId;
         entity.CreatedAt = DateTime.UtcNow;
         foreach (var line in entity.Lines)
         {

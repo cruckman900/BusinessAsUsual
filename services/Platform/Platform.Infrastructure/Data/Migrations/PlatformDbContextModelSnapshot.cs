@@ -17,7 +17,7 @@ namespace Platform.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -149,6 +149,9 @@ namespace Platform.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -186,7 +189,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000001-0000-0000-0000-000000000001"),
                             Action = "create",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9194),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1531),
                             Description = "Create new users",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -197,7 +201,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000001-0000-0000-0000-000000000002"),
                             Action = "read",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9295),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1639),
                             Description = "View users",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -208,7 +213,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000001-0000-0000-0000-000000000003"),
                             Action = "update",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9298),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1642),
                             Description = "Update users",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -219,7 +225,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000001-0000-0000-0000-000000000004"),
                             Action = "delete",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9300),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1645),
                             Description = "Delete users",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -230,7 +237,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000002-0000-0000-0000-000000000001"),
                             Action = "create",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9302),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1647),
                             Description = "Create new roles",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -241,7 +249,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000002-0000-0000-0000-000000000002"),
                             Action = "read",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9308),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1653),
                             Description = "View roles",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -252,7 +261,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000002-0000-0000-0000-000000000003"),
                             Action = "update",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9310),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1656),
                             Description = "Update roles",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -263,7 +273,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         {
                             Id = new Guid("00000002-0000-0000-0000-000000000004"),
                             Action = "delete",
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(9312),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 295, DateTimeKind.Utc).AddTicks(1658),
                             Description = "Delete roles",
                             IsSystemPermission = true,
                             Module = "Platform",
@@ -276,6 +287,9 @@ namespace Platform.Infrastructure.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -307,7 +321,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(2417),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 294, DateTimeKind.Utc).AddTicks(4191),
                             Description = "Full system access",
                             IsSystemRole = true,
                             Name = "Administrator"
@@ -315,7 +330,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(2513),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 294, DateTimeKind.Utc).AddTicks(4303),
                             Description = "Departmental management access",
                             IsSystemRole = true,
                             Name = "Manager"
@@ -323,7 +339,8 @@ namespace Platform.Infrastructure.Data.Migrations
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 8, 26, 11, 14, 17, 816, DateTimeKind.Utc).AddTicks(2514),
+                            CompanyId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            CreatedAt = new DateTime(2026, 9, 7, 21, 22, 6, 294, DateTimeKind.Utc).AddTicks(4305),
                             Description = "Standard user access",
                             IsSystemRole = true,
                             Name = "User"
@@ -355,6 +372,9 @@ namespace Platform.Infrastructure.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")

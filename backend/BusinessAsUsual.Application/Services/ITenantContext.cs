@@ -28,7 +28,11 @@ namespace BusinessAsUsual.Application.Services
 
         /// <summary>
         /// Sets the tenant context information.
-        /// Called by TenantResolutionMiddleware after extracting tenant from request.
+        /// Called by TenantResolutionMiddleware after extracting tenant from request, and by
+        /// Blazor circuit handlers/login flows to (re-)establish the active tenant for a
+        /// long-lived circuit. Safe to call more than once (e.g. when a user switches tenants
+        /// or signs in after a default tenant was assigned at circuit-open); the most recent
+        /// call wins.
         /// </summary>
         void SetContext(Guid companyId, string tenantDbName, Guid? userId = null);
     }

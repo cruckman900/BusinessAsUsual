@@ -2,20 +2,24 @@ using Inventory.Domain.Entities;
 using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
 
 namespace Inventory.Infrastructure.Repositories;
 
 public class InventoryTransactionRepository : IInventoryTransactionRepository
 {
     private readonly InventoryDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public InventoryTransactionRepository(InventoryDbContext context)
+    public InventoryTransactionRepository(InventoryDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<InventoryTransaction>> GetAllAsync()
         => await _context.InventoryTransactions
+            .Where(t => t.CompanyId == _tenantContext.CompanyId)
             .Include(t => t.Product)
             .Include(t => t.Warehouse)
             .Include(t => t.BinLocation)
@@ -57,6 +61,7 @@ public class InventoryTransactionRepository : IInventoryTransactionRepository
     public async Task<InventoryTransaction> AddAsync(InventoryTransaction entity)
     {
         entity.Id = Guid.NewGuid();
+        entity.CompanyId = _tenantContext.CompanyId;
         _context.InventoryTransactions.Add(entity);
         await _context.SaveChangesAsync();
         return entity;

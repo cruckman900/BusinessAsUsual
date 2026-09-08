@@ -279,18 +279,18 @@
 
     private List<QuickAction> _quickActions = new()
     {
-        new("Add Employee", "Quickly add a new employee", Icons.Material.Filled.PersonAdd, Color.Primary, "/hr/employees/new", true),
-        new("View Reports", "Access analytics and reports", Icons.Material.Filled.BarChart, Color.Info, "/hr/reports", true),
-        new("Manage Benefits", "Employee benefits management", Icons.Material.Filled.CardGiftcard, Color.Success, "/hr/benefits", true),
-        new("Onboarding", "New employee onboarding", Icons.Material.Filled.AssignmentInd, Color.Warning, "/hr/onboarding", true),
+        new("Platform SQL Import", "Import data via SQL script", Icons.Material.Filled.CloudUpload, Color.Primary, "/platform/import", true),
+        new("Add Employee", "Quickly add a new employee", Icons.Material.Filled.PersonAdd, Color.Secondary, "/hr/employees/new", true),
+        new("New Sales Order", "Create a new customer order", Icons.Material.Filled.ShoppingCart, Color.Success, "/sales/orders", true),
+        new("Stock Management", "View and adjust inventory stock", Icons.Material.Filled.Inventory2, Color.Warning, "/inventory/stock", true),
+        new("Sales Quotes", "Create and manage quotes", Icons.Material.Filled.RequestQuote, Color.Info, "/sales/quotes", true),
+        new("CRM Pipeline", "Track sales opportunities", Icons.Material.Filled.Contacts, Color.Tertiary, "/crm/pipeline", true),
         new("Departments", "Manage departments", Icons.Material.Filled.Business, Color.Secondary, "/hr/departments", true),
-        new("Settings", "System configuration", Icons.Material.Filled.Settings, Color.Default, "/hr/settings", true),
-        new("Finance Module", "Coming soon", Icons.Material.Filled.AttachMoney, Color.Default, "#", false),
-        new("CRM Module", "Coming soon", Icons.Material.Filled.Contacts, Color.Default, "#", false),
-        new("Inventory", "Coming soon", Icons.Material.Filled.Inventory, Color.Default, "#", false),
-        new("Analytics", "Coming soon", Icons.Material.Filled.Analytics, Color.Default, "#", false),
-        new("Support", "Coming soon", Icons.Material.Filled.Support, Color.Default, "#", false),
-        new("Documentation", "Coming soon", Icons.Material.Filled.MenuBook, Color.Default, "#", false)
+        new("Learning Courses", "Browse training courses", Icons.Material.Filled.School, Color.Primary, "/lms/courses", true),
+        new("Purchase Orders", "Manage supplier purchase orders", Icons.Material.Filled.LocalShipping, Color.Warning, "/inventory/purchase-orders", true),
+        new("Receivables", "View accounts receivable", Icons.Material.Filled.AttachMoney, Color.Success, "/finance/receivables", true),
+        new("Manage Users", "Platform user administration", Icons.Material.Filled.ManageAccounts, Color.Default, "/platform/users", true),
+        new("Import History", "Review past data imports", Icons.Material.Filled.History, Color.Default, "/platform/import/history", true)
     };
 
     private List<ActivityItem> _recentActivities = new()

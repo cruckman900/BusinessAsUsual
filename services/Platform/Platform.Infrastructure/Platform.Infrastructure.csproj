@@ -3,16 +3,17 @@
   <ItemGroup>
     <ProjectReference Include="..\Platform.Domain\Platform.Domain.csproj" />
     <ProjectReference Include="..\Platform.Application\Platform.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
   </ItemGroup>
 
   <PropertyGroup>

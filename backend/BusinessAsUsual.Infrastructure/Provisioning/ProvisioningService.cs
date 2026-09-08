@@ -249,5 +249,14 @@ namespace BusinessAsUsual.Infrastructure.Provisioning
 
             return $"BAU_{cleaned.ToUpperInvariant()}";
         }
+
+        /// <summary>
+        /// Retrieves all provisioned companies, for use by tenant selection UIs
+        /// (e.g. the Web shell's login page tenant switcher).
+        /// </summary>
+        public Task<List<Company>> GetAllCompaniesAsync()
+        {
+            return _db.GetAllCompaniesAsync();
+        }
     }
 }

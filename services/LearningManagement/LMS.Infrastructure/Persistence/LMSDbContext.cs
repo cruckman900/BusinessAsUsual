@@ -1,13 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using LMS.Domain.Entities;
 using System.Text.Json;
+using BusinessAsUsual.Application.Services;
 
 namespace LMS.Infrastructure.Persistence;
 
 public class LMSDbContext : DbContext
 {
+    private readonly ITenantContext? _tenantContext;
+
     public LMSDbContext(DbContextOptions<LMSDbContext> options) : base(options)
     {
+    }
+
+    public LMSDbContext(DbContextOptions<LMSDbContext> options, ITenantContext tenantContext) : base(options)
+    {
+        _tenantContext = tenantContext;
     }
 
     public DbSet<Course> Courses => Set<Course>();
@@ -233,5 +241,50 @@ public class LMSDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .IsRequired(false);
         });
+
+        // Apply tenant (CompanyId) global query filter to all BaseEntity-derived types.
+        // The filter closes over 'this' so it re-evaluates CurrentCompanyId per query using the live tenant context.
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(BaseEntity.CompanyId));
+                var contextConst = System.Linq.Expressions.Expression.Constant(this);
+                var currentCompanyIdProp = System.Linq.Expressions.Expression.Property(contextConst, nameof(CurrentCompanyId));
+                var body = System.Linq.Expressions.Expression.Equal(property, currentCompanyIdProp);
+                var lambda = System.Linq.Expressions.Expression.Lambda(body, parameter);
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+            }
+        }
+    }
+
+    private static readonly Guid DefaultDemoCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    private Guid CurrentCompanyId => _tenantContext != null && _tenantContext.IsResolved
+        ? _tenantContext.CompanyId
+        : DefaultDemoCompanyId;
+
+    public override int SaveChanges()
+    {
+        StampTenantId();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        StampTenantId();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void StampTenantId()
+    {
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Added && entry.Entity.CompanyId == Guid.Empty)
+            {
+                entry.Entity.CompanyId = CurrentCompanyId;
+            }
+        }
     }
 }

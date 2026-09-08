@@ -6,6 +6,7 @@ namespace Sales.Domain.Entities;
 public class Quote
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid CompanyId { get; set; }
     public string QuoteNumber { get; set; } = string.Empty;
 
     // Customer details

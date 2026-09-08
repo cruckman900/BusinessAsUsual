@@ -2,6 +2,7 @@ using LMS.Infrastructure;
 using LMS.Infrastructure.Persistence;
 using LMS.Infrastructure.Data;
 using LMS.Application;
+using LMS.Web.Services;
 using BusinessAsUsual.Core.Events;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,6 +25,11 @@ builder.Services.AddInProcessEventBus();
 // Add LMS services
 builder.Services.AddLMSApplication();
 builder.Services.AddLMSInfrastructure(builder.Configuration);
+
+// Register circuit handler to initialize tenant context
+builder.Services.AddScoped<TenantContextCircuitHandler>();
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler>(sp =>
+    sp.GetRequiredService<TenantContextCircuitHandler>());
 
 var app = builder.Build();
 

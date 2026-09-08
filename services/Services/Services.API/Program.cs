@@ -3,12 +3,16 @@ using Services.Infrastructure.Data;
 using Services.Infrastructure.Repositories;
 using Services.Domain.Interfaces;
 using Services.Infrastructure.Seeding;
+using BusinessAsUsual.Application.Services;
+using BusinessAsUsual.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
 
 // Configure EF Core: prefer SQL Server when a connection string is provided, otherwise use InMemory fallback
 var servicesConnection = builder.Configuration.GetConnectionString("Services");
@@ -67,6 +71,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<TenantResolutionMiddleware>();
+
 app.MapControllers();
+
+// Dev/demo-only endpoint that clears and reseeds the Services database so a fresh,
+// fully-populated "tenant" dataset is available every time a user logs in with the
+// admin/password demo credentials.
+app.MapPost("/api/services/tenant-reset", async (ServicesDbContext context) =>
+{
+    if (usingSqlServer)
+    {
+        return Results.BadRequest("Tenant reset is only supported for the in-memory demo database.");
+    }
+
+    context.Services.RemoveRange(context.Services);
+    await context.SaveChangesAsync();
+
+    var seeder = new DataSeeder(context);
+    await seeder.SeedAsync();
+
+    return Results.Ok(new { message = "Services tenant database reset and reseeded." });
+}).AllowAnonymousTenant();
 
 app.Run();

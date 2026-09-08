@@ -2,20 +2,24 @@ using Inventory.Domain.Entities;
 using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
 
 namespace Inventory.Infrastructure.Repositories;
 
 public class StockItemRepository : IStockItemRepository
 {
     private readonly InventoryDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public StockItemRepository(InventoryDbContext context)
+    public StockItemRepository(InventoryDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<StockItem>> GetAllAsync()
         => await _context.StockItems
+            .Where(s => s.CompanyId == _tenantContext.CompanyId)
             .Include(s => s.Product)
             .Include(s => s.Warehouse)
             .Include(s => s.BinLocation)
@@ -52,6 +56,7 @@ public class StockItemRepository : IStockItemRepository
     public async Task<StockItem> AddAsync(StockItem entity)
     {
         entity.Id = Guid.NewGuid();
+        entity.CompanyId = _tenantContext.CompanyId;
         entity.CreatedAt = DateTime.UtcNow;
         entity.LastStockDate = DateTime.UtcNow;
         _context.StockItems.Add(entity);

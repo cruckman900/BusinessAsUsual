@@ -1,5 +1,6 @@
 using Platform.Application;
 using Platform.Infrastructure;
+using BusinessAsUsual.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowShell");
+app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

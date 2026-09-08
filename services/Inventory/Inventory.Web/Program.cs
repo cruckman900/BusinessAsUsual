@@ -5,6 +5,7 @@ using Inventory.Infrastructure.Persistence;
 using Inventory.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using BusinessAsUsual.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,10 @@ builder.Services.AddScoped<IStockItemRepository, StockItemRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
 builder.Services.AddScoped<IInventoryTransactionRepository, InventoryTransactionRepository>();
+
+// Register tenant context for multi-tenant isolation (TenantContextCircuitHandler in the
+// shell will populate this per-circuit; standalone runs default to unresolved until set).
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 
 // Register services
 builder.Services.AddScoped<ProductService>();

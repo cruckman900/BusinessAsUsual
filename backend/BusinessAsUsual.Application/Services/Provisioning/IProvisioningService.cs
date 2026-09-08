@@ -43,5 +43,12 @@ namespace BusinessAsUsual.Application.Services.Provisioning
         /// <returns>A task that represents the asynchronous operation. The task result contains a <see
         /// cref="ProvisioningResult"/> indicating the outcome of the provisioning process.</returns>
         Task<ProvisioningResult> ProvisionTenantAsync(ProvisioningRequest request);
+
+        /// <summary>
+        /// Retrieves all provisioned companies, for use by tenant selection UIs
+        /// (e.g. the Web shell's login page tenant switcher).
+        /// </summary>
+        /// <returns>A task that resolves to the list of provisioned companies.</returns>
+        Task<List<BusinessAsUsual.Domain.Entities.Company>> GetAllCompaniesAsync();
     }
 }

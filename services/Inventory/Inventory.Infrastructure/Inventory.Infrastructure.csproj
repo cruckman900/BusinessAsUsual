@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

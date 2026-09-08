@@ -1,6 +1,7 @@
 using BusinessAsUsual.Core.Events;
 using BusinessAsUsual.Application.Services;
 using BusinessAsUsual.Infrastructure.Middleware;
+using HR.API.Seeding;
 using HR.Application.Services;
 using HR.Domain.Repositories;
 using HR.Infrastructure;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
 // Register tenant context (scoped per request)
 builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
@@ -106,7 +108,30 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymousTenant();
+
+// Dev/demo-only endpoint that clears and reseeds the HR database so a fresh, fully
+// populated "tenant" dataset (departments/employees) is available on demand. Mirrors
+// the Sales/Inventory tenant-reset endpoints; only supported against the in-memory
+// demo database, not a shared SQL Server instance.
+app.MapPost("/api/hr/tenant-reset", async (HRDbContext context) =>
+{
+    if (!useInMemory)
+    {
+        return Results.BadRequest("Tenant reset is only supported for the in-memory demo database.");
+    }
+
+    context.TrainingCompletions.RemoveRange(context.TrainingCompletions);
+    context.DepartmentManagers.RemoveRange(context.DepartmentManagers);
+    context.EmployeeDepartments.RemoveRange(context.EmployeeDepartments);
+    context.Employees.RemoveRange(context.Employees);
+    context.Departments.RemoveRange(context.Departments);
+    await context.SaveChangesAsync();
+
+    await new HRSeeder(context).SeedAsync();
+
+    return Results.Ok(new { message = "HR tenant database reset and reseeded." });
+}).AllowAnonymousTenant();
 
 // Initialize database on startup. Runs in all environments so the shared RDS
 // database is created/migrated on first deploy (Production included). The
@@ -128,6 +153,8 @@ app.MapHealthChecks("/health");
             Console.WriteLine("✓ In-memory database ready for HR Service");
             db.Database.EnsureCreated();
         }
+
+        await new HRSeeder(db).SeedAsync();
     }
     catch (Exception ex)
     {

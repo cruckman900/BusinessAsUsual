@@ -2,20 +2,23 @@ using Inventory.Domain.Entities;
 using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
 
 namespace Inventory.Infrastructure.Repositories;
 
 public class ProductRepository : IProductRepository
 {
     private readonly InventoryDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public ProductRepository(InventoryDbContext context)
+    public ProductRepository(InventoryDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<Product>> GetAllAsync()
-        => await _context.Products.Where(p => p.IsActive).ToListAsync();
+        => await _context.Products.Where(p => p.CompanyId == _tenantContext.CompanyId && p.IsActive).ToListAsync();
 
     public async Task<Product?> GetByIdAsync(Guid id)
         => await _context.Products
@@ -47,6 +50,7 @@ public class ProductRepository : IProductRepository
     public async Task<Product> AddAsync(Product entity)
     {
         entity.Id = Guid.NewGuid();
+        entity.CompanyId = _tenantContext.CompanyId;
         entity.CreatedAt = DateTime.UtcNow;
         _context.Products.Add(entity);
         await _context.SaveChangesAsync();

@@ -8,6 +8,7 @@ using LMS.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using BusinessAsUsual.Application.Services;
 
 namespace LMS.Infrastructure;
 
@@ -15,6 +16,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddLMSInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // Add tenant context
+        services.AddScoped<ITenantContext, TenantContext>();
+        services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
+
         // Add DbContext
         var connectionString = configuration.GetConnectionString("LMSDatabase") ?? "Data Source=lms.db";
         services.AddDbContext<LMSDbContext>(options =>

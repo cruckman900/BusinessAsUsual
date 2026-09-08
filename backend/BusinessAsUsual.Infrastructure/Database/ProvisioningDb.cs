@@ -313,5 +313,39 @@ namespace BusinessAsUsual.Infrastructure.Database
 
             Console.WriteLine($"🟢 Script executed successfully on {tenantDbName}");
         }
+
+        /// <summary>
+        /// Retrieves all provisioned companies from the master database, for use by
+        /// tenant selection UIs (e.g. the Web shell's login page).
+        /// </summary>
+        public async Task<List<Company>> GetAllCompaniesAsync()
+        {
+            var builder = new SqlConnectionStringBuilder(_rawConn)
+            {
+                InitialCatalog = "BusinessAsUsual"
+            };
+
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT Id, Name, DbName, AdminEmail, BillingPlan FROM Companies ORDER BY Name";
+
+            var companies = new List<Company>();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                companies.Add(new Company
+                {
+                    Id = reader.GetGuid(0),
+                    Name = reader.GetString(1),
+                    DbName = reader.GetString(2),
+                    AdminEmail = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    BillingPlan = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+                });
+            }
+
+            return companies;
+        }
     }
 }

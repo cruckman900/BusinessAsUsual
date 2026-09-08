@@ -1,0 +1,142 @@
+@using MudBlazor
+
+<PageTitle>Session Expired - Business As Usual</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column align-center justify-center" Style="min-height: 70vh; text-align: center;">
+
+    <!-- Animated Icon -->
+    <div class="tenant-error-icon-container mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.Business"
+                 Color="Color.Warning"
+                 Style="font-size: 10rem; opacity: 0.3;"
+                 Class="tenant-error-icon" />
+        <MudIcon Icon="@Icons.Material.Filled.Lock"
+                 Color="Color.Warning"
+                 Style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem;" />
+    </div>
+
+    <!-- Error Message -->
+    <MudText Typo="Typo.h3" GutterBottom="true" Class="mb-2" Style="font-weight: 600;">
+        Your Session Needs Attention
+    </MudText>
+
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6" Style="max-width: 500px;">
+        We couldn't verify which company/tenant this request belongs to. This usually happens
+        when a session has expired or you navigated here before signing in.
+        Let's get you back on track.
+    </MudText>
+
+    <!-- Quick Actions -->
+    <MudPaper Elevation="0" Class="pa-4 mb-6" Style="background: transparent; border: 1px dashed var(--mud-palette-divider); border-radius: 8px; max-width: 600px; width: 100%;">
+        <MudText Typo="Typo.subtitle2" Class="mb-3" Color="Color.Secondary">
+            <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Size="Size.Small" Class="mr-2" />
+            Here's what you can do:
+        </MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Login"
+                           Href="/login"
+                           Size="Size.Large">
+                    Sign In Again
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="Reload"
+                           Size="Size.Large">
+                    Reload Page
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (ShowDetails)
+    {
+        <MudExpansionPanels Elevation="0" Style="max-width: 600px; width: 100%;">
+            <MudExpansionPanel Text="Technical details">
+                <MudText Typo="Typo.caption" Style="font-family: monospace; white-space: pre-wrap;">@Detail</MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
+
+    <!-- Decorative Elements -->
+    <div class="tenant-error-decoration">
+        <MudIcon Icon="@Icons.Material.Filled.Domain" Color="Color.Warning" Style="font-size: 2rem; opacity: 0.1; position: absolute; top: 10%; left: 10%;" />
+        <MudIcon Icon="@Icons.Material.Filled.VpnKey" Color="Color.Error" Style="font-size: 2.5rem; opacity: 0.1; position: absolute; bottom: 15%; right: 15%;" />
+        <MudIcon Icon="@Icons.Material.Filled.Help" Color="Color.Info" Style="font-size: 1.8rem; opacity: 0.1; position: absolute; top: 20%; right: 20%;" />
+    </div>
+
+</MudContainer>
+
+<style>
+    .tenant-error-icon-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tenant-error-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .tenant-error-decoration {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 600px) {
+        .tenant-error-icon-container {
+            width: 140px;
+            height: 140px;
+        }
+
+        .tenant-error-icon {
+            font-size: 7rem !important;
+        }
+    }
+</style>
+
+@code {
+    /// <summary>
+    /// The raw exception message/stack, shown collapsed under a "Technical details" panel
+    /// so end users get a friendly message while developers can still see specifics.
+    /// </summary>
+    [Parameter] public string? Detail { get; set; }
+
+    /// <summary>
+    /// Whether to render the technical details panel. Typically bound to the hosting
+    /// environment (e.g. only true in Development).
+    /// </summary>
+    [Parameter] public bool ShowDetails { get; set; }
+
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void Reload()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}

@@ -2,20 +2,23 @@ using Inventory.Domain.Entities;
 using Inventory.Domain.Interfaces;
 using Inventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BusinessAsUsual.Application.Services;
 
 namespace Inventory.Infrastructure.Repositories;
 
 public class SupplierRepository : ISupplierRepository
 {
     private readonly InventoryDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public SupplierRepository(InventoryDbContext context)
+    public SupplierRepository(InventoryDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<Supplier>> GetAllAsync()
-        => await _context.Suppliers.Where(s => s.IsActive).ToListAsync();
+        => await _context.Suppliers.Where(s => s.CompanyId == _tenantContext.CompanyId && s.IsActive).ToListAsync();
 
     public async Task<Supplier?> GetByIdAsync(Guid id)
         => await _context.Suppliers
@@ -37,6 +40,7 @@ public class SupplierRepository : ISupplierRepository
     public async Task<Supplier> AddAsync(Supplier entity)
     {
         entity.Id = Guid.NewGuid();
+        entity.CompanyId = _tenantContext.CompanyId;
         entity.CreatedAt = DateTime.UtcNow;
         _context.Suppliers.Add(entity);
         await _context.SaveChangesAsync();

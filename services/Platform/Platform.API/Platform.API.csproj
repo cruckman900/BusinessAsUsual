@@ -8,18 +8,20 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Platform.Application\Platform.Application.csproj" />
     <ProjectReference Include="..\Platform.Infrastructure\Platform.Infrastructure.csproj" />
     <ProjectReference Include="..\Platform.Contracts\Platform.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

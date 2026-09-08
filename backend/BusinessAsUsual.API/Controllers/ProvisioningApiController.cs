@@ -1,6 +1,8 @@
 ﻿using BusinessAsUsual.Application.Contracts;
 using BusinessAsUsual.Application.Services.Provisioning;
+using BusinessAsUsual.Infrastructure.Middleware;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BusinessAsUsual.API.Controllers
 {
@@ -9,9 +11,13 @@ namespace BusinessAsUsual.API.Controllers
     /// </summary>
     /// <remarks>This controller exposes endpoints for initiating company provisioning operations via HTTP. It
     /// is intended to be used by clients that need to provision new companies or tenants in the system. All routes are
-    /// prefixed with 'api/provisioning'.</remarks>
+    /// prefixed with 'api/provisioning'.
+    /// Exempt from mandatory tenant resolution: provisioning/creating a new tenant and listing
+    /// existing tenants (for the login page's tenant switcher) necessarily happen before any
+    /// tenant context can be known.</remarks>
     [ApiController]
     [Route("api/provisioning")]
+    [AllowAnonymousTenant]
     public class ProvisioningApiController : ControllerBase
     {
         private readonly IProvisioningService _provisioner;
@@ -48,6 +54,24 @@ namespace BusinessAsUsual.API.Controllers
                 companyId = result.CompanyId,
                 tenantDbName = result.TenantDbName
             });
+        }
+
+        /// <summary>
+        /// Retrieves all provisioned companies, for use by tenant selection UIs
+        /// (e.g. the Web shell's login page tenant switcher).
+        /// </summary>
+        /// <returns>An <see cref="IActionResult"/> containing the list of companies with their Id, Name, and DbName.</returns>
+        [HttpGet("companies")]
+        public async Task<IActionResult> GetCompanies()
+        {
+            var companies = await _provisioner.GetAllCompaniesAsync();
+
+            return Ok(companies.Select(c => new
+            {
+                companyId = c.Id,
+                name = c.Name,
+                dbName = c.DbName
+            }));
         }
     }
 }

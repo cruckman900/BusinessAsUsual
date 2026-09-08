@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
     <ProjectReference Include="..\Sales.Application\Sales.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

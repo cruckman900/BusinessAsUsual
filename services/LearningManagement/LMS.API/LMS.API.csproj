@@ -21,6 +21,8 @@
     <ProjectReference Include="..\LMS.Application\LMS.Application.csproj" />
     <ProjectReference Include="..\LMS.Infrastructure\LMS.Infrastructure.csproj" />
     <ProjectReference Include="..\LMS.Contracts\LMS.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

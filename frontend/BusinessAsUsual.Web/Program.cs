@@ -1,5 +1,6 @@
 using Amazon.CloudWatch;
 using ApexCharts;
+using BusinessAsUsual.Application.Services;
 using BusinessAsUsual.Core.Events;
 using BusinessAsUsual.Infrastructure.Monitoring;
 using BusinessAsUsual.Web.Modules.HR.Services;
@@ -89,6 +90,17 @@ namespace BusinessAsUsual.Web
             builder.Services.AddScoped<AuthenticationService>();
             builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
+            // Register tenant database reset service - clears and reseeds all correlating
+            // module databases whenever a user logs in with the admin/password demo credentials.
+            builder.Services.AddScoped<TenantDatabaseResetService>();
+
+            // Register the DelegatingHandler that auto-attaches X-Company-Id/X-Tenant-Db/X-User-Id
+            // headers (from the current circuit's ITenantContext) to outgoing requests. Attach via
+            // .AddHttpMessageHandler<TenantPropagationHandler>() on every named/typed HttpClient
+            // that calls a tenant-enforced downstream API (see TenantResolutionMiddleware).
+            builder.Services.AddTransient<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
+            builder.Services.AddSingleton<ITenantContextAccessor, TenantContextAccessor>();
+
             // Register Platform module services
             builder.Services.AddScoped<Platform.Web.Services.ToastService>();
             builder.Services.AddScoped<Platform.Web.Services.SmartDefaultsService>();
@@ -117,7 +129,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(hrServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register named HttpClient for the Finance microservice (services/Finance/Finance.API).
             // The Pay Runs page reaches payroll data over HTTP because the PayrollDataStore /
@@ -127,7 +139,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(financeServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register named HttpClient for the Inventory microservice
             var inventoryServiceUrl = builder.Configuration["InventoryService:Url"] ?? "http://localhost:5142";
@@ -135,7 +147,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(inventoryServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register LMS Service for integrated learning module (using repositories, not HTTP)
             builder.Services.AddScoped<ILMSService, LMSService>();
@@ -146,7 +158,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(salesServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register named HttpClient for the CRM microservice
             var crmServiceUrl = builder.Configuration["CrmApi:Url"] ?? "http://localhost:5004";
@@ -154,7 +166,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(crmServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register named HttpClient for the Services microservice
             var servicesServiceUrl = builder.Configuration["ServicesApi:Url"] ?? "http://localhost:7286";
@@ -162,7 +174,7 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(servicesServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
-            });
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
 
             // Register named HttpClient for the Platform microservice
             var platformServiceUrl = builder.Configuration["PlatformApi:Url"] ?? "http://localhost:7400";
@@ -170,6 +182,17 @@ namespace BusinessAsUsual.Web
             {
                 client.BaseAddress = new Uri(platformServiceUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
+            }).AddHttpMessageHandler<BusinessAsUsual.Infrastructure.Http.TenantPropagationHandler>();
+
+            // Register named HttpClient for the backend provisioning API (BusinessAsUsual.API).
+            // Used by the login/splash page to fetch the list of provisioned tenants/companies.
+            builder.Services.AddHttpClient("ProvisioningApi", client =>
+            {
+                client.BaseAddress = new Uri(
+                    builder.Configuration["ApiBaseUrl"]
+                    ?? "https://localhost:5001" // fallback for dev
+                );
+                client.Timeout = TimeSpan.FromSeconds(5);
             });
 
             // Register Master Navigation Orchestrator
@@ -402,7 +425,7 @@ namespace BusinessAsUsual.Web
         /// Seeds sample HR data in development mode.
         /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete - intentionally using legacy fields for seed data
-        private static async Task SeedHRDataAsync(IServiceProvider services)
+        internal static async Task SeedHRDataAsync(IServiceProvider services)
         {
             using var scope = services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<HR.Infrastructure.Persistence.HRDbContext>();
@@ -753,7 +776,7 @@ namespace BusinessAsUsual.Web
         /// <summary>
         /// Initialize LMS database (run migrations) in all environments
         /// </summary>
-        private static async Task InitializeLMSDatabaseAsync(IServiceProvider services)
+        internal static async Task InitializeLMSDatabaseAsync(IServiceProvider services)
         {
             try
             {
@@ -781,7 +804,7 @@ namespace BusinessAsUsual.Web
         /// <summary>
         /// Seeds the LMS database with demo courses and content
         /// </summary>
-        private static async Task SeedLMSDataAsync(IServiceProvider services)
+        internal static async Task SeedLMSDataAsync(IServiceProvider services)
         {
             using var scope = services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<LMS.Infrastructure.Persistence.LMSDbContext>();

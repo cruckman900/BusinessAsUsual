@@ -2,21 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Sales.Domain.Entities;
 using Sales.Domain.Repositories;
 using Sales.Infrastructure.Persistence;
+using BusinessAsUsual.Application.Services;
 
 namespace Sales.Infrastructure.Repositories;
 
 public class QuoteRepository : IQuoteRepository
 {
     private readonly SalesDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
-    public QuoteRepository(SalesDbContext context)
+    public QuoteRepository(SalesDbContext context, ITenantContext tenantContext)
     {
         _context = context;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IEnumerable<Quote>> GetAllAsync()
     {
         return await _context.Quotes
+            .Where(q => q.CompanyId == _tenantContext.CompanyId)
             .Include(q => q.LineItems)
             .ToListAsync();
     }
@@ -25,11 +29,12 @@ public class QuoteRepository : IQuoteRepository
     {
         return await _context.Quotes
             .Include(q => q.LineItems)
-            .FirstOrDefaultAsync(q => q.Id == id);
+            .FirstOrDefaultAsync(q => q.Id == id && q.CompanyId == _tenantContext.CompanyId);
     }
 
     public async Task<Quote> AddAsync(Quote quote)
     {
+        quote.CompanyId = _tenantContext.CompanyId;
         _context.Quotes.Add(quote);
         await _context.SaveChangesAsync();
         return quote;

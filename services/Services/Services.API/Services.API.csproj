@@ -14,6 +14,8 @@
     <ProjectReference Include="..\Services.Application\Services.Application.csproj" />
     <ProjectReference Include="..\Services.Infrastructure\Services.Infrastructure.csproj" />
     <ProjectReference Include="..\Services.Contracts\Services.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Application\BusinessAsUsual.Application.csproj" />
+    <ProjectReference Include="..\..\..\backend\BusinessAsUsual.Infrastructure\BusinessAsUsual.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
