@@ -1,0 +1,121 @@
+@* 
+    Reusable company/tenant picker used on the login portal (and, in the future, for a
+    post-login "switch company" flow). Fetches the list of provisioned companies from the
+    backend provisioning API and falls back to the built-in demo tenant if the API is
+    unreachable or no companies have been provisioned yet.
+*@
+@using BusinessAsUsual.Web.Services
+@inject IHttpClientFactory HttpClientFactory
+
+<MudAutocomplete T="CompanyOption"
+                 Label="Company"
+                 Placeholder="Search for your company..."
+                 @bind-Value="SelectedCompanyInternal"
+                 SearchFunc="SearchCompanies"
+                 ToStringFunc="@(c => c?.Name ?? string.Empty)"
+                 Variant="Variant.Outlined"
+                 FullWidth="true"
+                 Class="@Class"
+                 Disabled="@_isLoading"
+                 Immediate="true"
+                 CoerceText="true"
+                 ResetValueOnEmptyText="false"
+                 AdornmentIcon="@Icons.Material.Filled.Business"
+                 Adornment="Adornment.Start">
+    <ItemTemplate Context="company">
+        <MudText>@company.Name</MudText>
+    </ItemTemplate>
+    <NoItemsTemplate>
+        <MudText Class="pa-2">No matching companies found.</MudText>
+    </NoItemsTemplate>
+</MudAutocomplete>
+
+@code {
+    /// <summary>
+    /// The currently selected company. Two-way bindable from the parent component.
+    /// </summary>
+    [Parameter] public CompanyOption? SelectedCompany { get; set; }
+
+    /// <summary>
+    /// Callback invoked whenever the selected company changes.
+    /// </summary>
+    [Parameter] public EventCallback<CompanyOption?> SelectedCompanyChanged { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes applied to the underlying input.
+    /// </summary>
+    [Parameter] public string Class { get; set; } = string.Empty;
+
+    private List<CompanyOption> Companies = new();
+    private bool _isLoading = true;
+
+    public static readonly Guid DefaultCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public const string DefaultCompanyName = "Demo Tenant";
+    public const string DefaultTenantDbName = "TestTenant";
+
+    private CompanyOption? SelectedCompanyInternal
+    {
+        get => SelectedCompany;
+        set
+        {
+            if (SelectedCompany == value)
+                return;
+
+            SelectedCompany = value;
+            SelectedCompanyChanged.InvokeAsync(value);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("ProvisioningApi");
+            var response = await client.GetFromJsonAsync<List<CompanyDto>>("api/provisioning/companies");
+
+            if (response is not null && response.Count > 0)
+            {
+                Companies = response
+                    .Select(c => new CompanyOption(c.CompanyId, c.Name, c.DbName))
+                    .OrderBy(c => c.Name)
+                    .ToList();
+            }
+        }
+        catch
+        {
+            // Backend provisioning API unreachable; fall back to the default demo tenant below.
+        }
+        finally
+        {
+            if (Companies.Count == 0)
+            {
+                Companies = new List<CompanyOption>
+                {
+                    new(DefaultCompanyId, DefaultCompanyName, DefaultTenantDbName)
+                };
+            }
+
+            SelectedCompany ??= Companies[0];
+            await SelectedCompanyChanged.InvokeAsync(SelectedCompany);
+
+            _isLoading = false;
+        }
+    }
+
+    private Task<IEnumerable<CompanyOption>> SearchCompanies(string text, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return Task.FromResult(Companies.AsEnumerable());
+
+        return Task.FromResult(Companies
+            .Where(c => c.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
+            .AsEnumerable());
+    }
+
+    private class CompanyDto
+    {
+        public Guid CompanyId { get; set; }
+        public string Name { get; set; } = "";
+        public string DbName { get; set; } = "";
+    }
+}

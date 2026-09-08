@@ -8,6 +8,15 @@ public class AuthenticationService
     private UserSession? _currentUser;
 
     /// <summary>
+    /// Default demo tenant identity, used for the development auto-login and as a fallback
+    /// when no company is explicitly selected at login time. Must match the CompanyId/TenantDb
+    /// used by TenantContextCircuitHandler and the module seeders (see DemoTenant).
+    /// </summary>
+    public static readonly Guid DefaultCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public const string DefaultCompanyName = "Demo Tenant";
+    public const string DefaultTenantDbName = "TestTenant";
+
+    /// <summary>
     /// Event raised when authentication state changes (login/logout).
     /// </summary>
     public event Action? OnAuthStateChanged;
@@ -29,17 +38,34 @@ public class AuthenticationService
     {
         // Initialize with a default test user for development
         // Remove this in production
-        Login("admin", "admin@businessasusual.com", "Admin User", "Administrator");
+        Login(
+            username: "admin",
+            email: "admin@businessasusual.com",
+            fullName: "Admin User",
+            role: "Administrator",
+            companyId: DefaultCompanyId,
+            companyName: DefaultCompanyName,
+            tenantDbName: DefaultTenantDbName);
     }
 
     /// <summary>
-    /// Logs in a user with the specified credentials.
+    /// Logs in a user with the specified credentials and selected company/tenant.
     /// </summary>
     /// <param name="username">The username.</param>
     /// <param name="email">The user's email address.</param>
     /// <param name="fullName">The user's full name.</param>
     /// <param name="role">The user's role. Defaults to "User".</param>
-    public void Login(string username, string email, string fullName, string role = "User")
+    /// <param name="companyId">The unique identifier of the selected company/tenant. Defaults to the demo tenant.</param>
+    /// <param name="companyName">The display name of the selected company/tenant. Defaults to the demo tenant name.</param>
+    /// <param name="tenantDbName">The tenant database name for the selected company. Defaults to the demo tenant database.</param>
+    public void Login(
+        string username,
+        string email,
+        string fullName,
+        string role = "User",
+        Guid? companyId = null,
+        string? companyName = null,
+        string? tenantDbName = null)
     {
         _currentUser = new UserSession
         {
@@ -47,7 +73,10 @@ public class AuthenticationService
             Email = email,
             FullName = fullName,
             Role = role,
-            LoginTime = DateTime.UtcNow
+            LoginTime = DateTime.UtcNow,
+            CompanyId = companyId ?? DefaultCompanyId,
+            CompanyName = companyName ?? DefaultCompanyName,
+            TenantDbName = tenantDbName ?? DefaultTenantDbName
         };
         OnAuthStateChanged?.Invoke();
     }
@@ -140,6 +169,21 @@ public class UserSession
     /// Gets or sets the time when the user logged in.
     /// </summary>
     public DateTime LoginTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unique identifier of the company/tenant the user is signed into.
+    /// </summary>
+    public Guid CompanyId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display name of the company/tenant the user is signed into.
+    /// </summary>
+    public string CompanyName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the tenant database name associated with the selected company.
+    /// </summary>
+    public string TenantDbName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the user's preferences.

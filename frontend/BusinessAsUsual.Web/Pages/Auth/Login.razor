@@ -1,5 +1,6 @@
 ﻿@page "/login"
 @using BusinessAsUsual.Web.Components.Layout
+@using BusinessAsUsual.Web.Components
 @using BusinessAsUsual.Web.Services
 @using BusinessAsUsual.Application.Services
 @layout LoginLayout
@@ -7,7 +8,6 @@
 @inject AuthenticationService AuthService
 @inject TenantDatabaseResetService TenantResetService
 @inject ITenantContext TenantContext
-@inject IHttpClientFactory HttpClientFactory
 
 
 <div class="login-wrapper">
@@ -28,19 +28,7 @@
         </div>
 
         <MudForm @ref="LoginForm">
-            @if (Companies.Count > 0)
-            {
-                <MudSelect T="string" Label="Tenant"
-                           @bind-Value="SelectedCompanyDbName"
-                           Variant="Variant.Outlined"
-                           FullWidth="true"
-                           Class="login-input">
-                    @foreach (var company in Companies)
-                    {
-                        <MudSelectItem Value="@company.DbName">@company.Name</MudSelectItem>
-                    }
-                </MudSelect>
-            }
+            <CompanyPicker @bind-SelectedCompany="SelectedCompany" Class="login-input" />
 
             <MudTextField Label="Username"
                           @bind-Value="Username"
@@ -75,7 +63,7 @@
                    FullWidth="true"
                    Class="login-button"
                    OnClick="LoginUser"
-                   Disabled="@_isLoggingIn">
+                   Disabled="@(_isLoggingIn || SelectedCompany is null)">
             @if (_isLoggingIn)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -100,48 +88,7 @@
     MudForm? LoginForm;
     InputType PasswordInputType = InputType.Password;
 
-    List<CompanyOption> Companies = new();
-    string SelectedCompanyDbName = "";
-
-    static readonly Guid DefaultCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    const string DefaultTenantDb = "TestTenant";
-
-    record CompanyOption(Guid CompanyId, string Name, string DbName);
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            var client = HttpClientFactory.CreateClient("ProvisioningApi");
-            var response = await client.GetFromJsonAsync<List<CompanyDto>>("api/provisioning/companies");
-
-            if (response is not null && response.Count > 0)
-            {
-                Companies = response
-                    .Select(c => new CompanyOption(c.CompanyId, c.Name, c.DbName))
-                    .ToList();
-                SelectedCompanyDbName = Companies[0].DbName;
-                return;
-            }
-        }
-        catch
-        {
-            // Backend provisioning API unreachable; fall back to the default demo tenant below.
-        }
-
-        Companies = new List<CompanyOption>
-        {
-            new(DefaultCompanyId, "Demo Tenant", DefaultTenantDb)
-        };
-        SelectedCompanyDbName = DefaultTenantDb;
-    }
-
-    class CompanyDto
-    {
-        public Guid CompanyId { get; set; }
-        public string Name { get; set; } = "";
-        public string DbName { get; set; } = "";
-    }
+    CompanyOption? SelectedCompany;
 
     string PasswordToggleIcon => PasswordInputType == InputType.Password
         ? Icons.Material.Filled.Visibility
@@ -164,13 +111,18 @@
 
     async Task LoginUser()
     {
+        if (SelectedCompany is null)
+        {
+            ShowError = true;
+            return;
+        }
+
         if (Username == "admin" && Password == "password")
         {
             _isLoggingIn = true;
             StateHasChanged();
 
-            var selected = Companies.FirstOrDefault(c => c.DbName == SelectedCompanyDbName)
-                ?? new CompanyOption(DefaultCompanyId, "Demo Tenant", DefaultTenantDb);
+            var selected = SelectedCompany;
 
             // Apply the selected tenant to this circuit before resetting/reseeding data so
             // subsequent module calls resolve the chosen tenant instead of the default.
@@ -180,12 +132,16 @@
             // starts from a clean, fully-populated dataset (no stale/empty tables).
             await TenantResetService.ResetAllAsync(selected.CompanyId, selected.DbName);
 
-            // Login the user with the AuthenticationService
+            // Login the user with the AuthenticationService, persisting the selected company
+            // as part of the session identity.
             AuthService.Login(
                 username: Username,
                 email: "admin@businessasusual.com",
                 fullName: "Admin User",
-                role: "Administrator"
+                role: "Administrator",
+                companyId: selected.CompanyId,
+                companyName: selected.Name,
+                tenantDbName: selected.DbName
             );
 
             _isLoggingIn = false;
