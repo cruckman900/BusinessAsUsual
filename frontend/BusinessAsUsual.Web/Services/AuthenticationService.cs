@@ -82,6 +82,27 @@ public class AuthenticationService
     }
 
     /// <summary>
+    /// Switches the currently signed-in user's active company/tenant without ending the session.
+    /// Used by the in-app company switcher (e.g., <c>TenantDisplay</c>) once a new tenant context
+    /// has already been applied via <c>ITenantContext.SetContext</c>.
+    /// </summary>
+    /// <param name="companyId">The unique identifier of the newly selected company/tenant.</param>
+    /// <param name="companyName">The display name of the newly selected company/tenant.</param>
+    /// <param name="tenantDbName">The tenant database name for the newly selected company.</param>
+    public void SwitchCompany(Guid companyId, string companyName, string tenantDbName)
+    {
+        if (_currentUser is null)
+        {
+            return;
+        }
+
+        _currentUser.CompanyId = companyId;
+        _currentUser.CompanyName = companyName;
+        _currentUser.TenantDbName = tenantDbName;
+        OnAuthStateChanged?.Invoke();
+    }
+
+    /// <summary>
     /// Logs out the current user.
     /// </summary>
     public void Logout()

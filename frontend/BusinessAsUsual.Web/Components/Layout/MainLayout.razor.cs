@@ -43,6 +43,13 @@ namespace BusinessAsUsual.Web.Components.Layout
         /// </summary>
         [Inject] public IModuleDiscoveryService ModuleDiscoveryService { get; set; } = default!;
 
+        /// <summary>
+        /// Gets or sets the authentication service used to read the currently signed-in user's
+        /// active company/tenant, so the top bar reflects the real selection made at login or
+        /// via the in-app company switcher.
+        /// </summary>
+        [Inject] public AuthenticationService AuthService { get; set; } = default!;
+
         // ------------------------------------------------------------
         // State
         // ------------------------------------------------------------
@@ -53,7 +60,7 @@ namespace BusinessAsUsual.Web.Components.Layout
         private ModuleDefinition? ActiveModule =>
             Modules.FirstOrDefault(m => m.Name == _currentModule);
 
-        private string CurrentTenant = "Business A";
+        private string CurrentTenant => AuthService.CurrentUser?.CompanyName ?? "Select company";
         private List<string> AvailableTenants = new() { "Business A", "Business B" };
 
         private DrawerVariant SidebarVariant => DrawerVariant.Responsive;
@@ -83,12 +90,18 @@ namespace BusinessAsUsual.Web.Components.Layout
         protected override async Task OnInitializedAsync()
         {
             Nav.LocationChanged += HandleLocationChanged;
+            AuthService.OnAuthStateChanged += HandleAuthStateChanged;
 
             // Load modules from Module Registry Service FIRST
             await LoadModulesAsync();
 
             // Then update module from current URI (after modules are loaded)
             UpdateModuleFromUri(Nav.Uri);
+        }
+
+        private void HandleAuthStateChanged()
+        {
+            InvokeAsync(StateHasChanged);
         }
 
         private async Task LoadModulesAsync()
@@ -192,11 +205,6 @@ namespace BusinessAsUsual.Web.Components.Layout
                 _currentModule = null;
         }
 
-        private void HandleTenantChanged(string tenant)
-        {
-            CurrentTenant = tenant;
-        }
-
         private void SelectModule(string module)
         {
             _currentModule = module;
@@ -250,6 +258,7 @@ namespace BusinessAsUsual.Web.Components.Layout
         public void Dispose()
         {
             Nav.LocationChanged -= HandleLocationChanged;
+            AuthService.OnAuthStateChanged -= HandleAuthStateChanged;
         }
     }
 }

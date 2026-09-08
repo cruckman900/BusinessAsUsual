@@ -1,3 +1,93 @@
-﻿@code {
+﻿@using BusinessAsUsual.Web.Services
+@using BusinessAsUsual.Application.Services
+@inject AuthenticationService AuthService
+@inject ITenantContext TenantContext
+@inject TenantDatabaseResetService TenantResetService
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<div style="position: relative; display: inline-block;">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Inherit"
+               StartIcon="@Icons.Material.Filled.Business"
+               OnClick="@(() => _pickerOpen = !_pickerOpen)"
+               Class="tenant-display-button"
+               title="Switch company">
+        @(CurrentTenant ?? AuthService.CurrentUser?.CompanyName ?? "Select company")
+    </MudButton>
+
+    @if (_pickerOpen)
+    {
+        <MudPaper Class="tenant-display-dropdown"
+                  Elevation="8"
+                  Style="position: absolute; right: 0; top: 48px; min-width: 320px; z-index: 9999; padding: 16px;">
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Switch Company</MudText>
+            <CompanyPicker @bind-SelectedCompany="_selectedCompany" />
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                <MudButton Variant="Variant.Text" OnClick="@(() => _pickerOpen = false)">Cancel</MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="@(_selectedCompany is null || _switching)"
+                           OnClick="HandleSwitch">
+                    @if (_switching)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    Switch
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+</div>
+
+@if (_pickerOpen)
+{
+    <div style="position: fixed; inset: 0; z-index: 9998;" @onclick="@(() => _pickerOpen = false)"></div>
+}
+
+@code {
     [Parameter] public string? CurrentTenant { get; set; }
+
+    private bool _pickerOpen = false;
+    private bool _switching = false;
+    private CompanyOption? _selectedCompany;
+
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += OnAuthStateChanged;
+    }
+
+    private void OnAuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSwitch()
+    {
+        if (_selectedCompany is null)
+        {
+            return;
+        }
+
+        _switching = true;
+        StateHasChanged();
+
+        var selected = _selectedCompany;
+
+        // Apply the newly selected tenant to this circuit, then refresh module data so the
+        // switched-to company's data is present without requiring a full re-login.
+        TenantContext.SetContext(selected.CompanyId, selected.DbName);
+        await TenantResetService.ResetAllAsync(selected.CompanyId, selected.DbName);
+
+        AuthService.SwitchCompany(selected.CompanyId, selected.Name, selected.DbName);
+
+        _switching = false;
+        _pickerOpen = false;
+        Snackbar.Add($"Switched to {selected.Name}", Severity.Success);
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= OnAuthStateChanged;
+    }
 }
